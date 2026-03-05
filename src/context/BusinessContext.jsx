@@ -1,3 +1,4 @@
+// frontend/src/context/BusinessContext.jsx
 import { createContext, useState, useEffect } from "react";
 import axios from "../api/axios";
 
@@ -7,7 +8,7 @@ export const BusinessProvider = ({ children }) => {
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Fetch businesses from backend on app start
+  // ================= FETCH BUSINESSES =================
   useEffect(() => {
     const fetchBusinesses = async () => {
       setLoading(true);
@@ -24,33 +25,31 @@ export const BusinessProvider = ({ children }) => {
     fetchBusinesses();
   }, []);
 
-  // Add Business via backend
+  // ================= ADD BUSINESS =================
   const addBusiness = async (businessData) => {
     try {
       const { data } = await axios.post("/api/business", businessData);
       setBusinesses((prev) => [...prev, data.business]);
-      return { success: true };
+      return { success: true, business: data.business };
     } catch (error) {
       console.error("Failed to add business:", error);
       return { success: false, message: error.response?.data?.message || "Add failed" };
     }
   };
 
-  // Update Status via backend (Admin)
+  // ================= UPDATE BUSINESS STATUS =================
   const updateBusinessStatus = async (id, status) => {
     try {
       const { data } = await axios.put(`/api/business/${id}`, { status });
-      setBusinesses((prev) =>
-        prev.map((b) => (b._id === id ? data.business : b))
-      );
+      setBusinesses((prev) => prev.map((b) => (b._id === id ? data.business : b)));
       return { success: true };
     } catch (error) {
-      console.error("Failed to update status:", error);
-      return { success: false };
+      console.error("Failed to update business status:", error);
+      return { success: false, message: error.response?.data?.message || "Update failed" };
     }
   };
 
-  // Delete Business via backend
+  // ================= DELETE BUSINESS =================
   const deleteBusiness = async (id) => {
     try {
       await axios.delete(`/api/business/${id}`);
@@ -58,7 +57,28 @@ export const BusinessProvider = ({ children }) => {
       return { success: true };
     } catch (error) {
       console.error("Failed to delete business:", error);
-      return { success: false };
+      return { success: false, message: error.response?.data?.message || "Delete failed" };
+    }
+  };
+
+  // ================= TOGGLE PAID SERVICE =================
+  const togglePaidService = async (id) => {
+    try {
+      const business = businesses.find((b) => b._id === id);
+      if (!business) return { success: false, message: "Business not found" };
+
+      const { data } = await axios.put(`/api/business/${id}/toggle-paid`, {
+        isPaid: !business.isPaid,
+      });
+
+      setBusinesses((prev) =>
+        prev.map((b) => (b._id === id ? data.business : b))
+      );
+
+      return { success: true, business: data.business };
+    } catch (error) {
+      console.error("Failed to toggle paid service:", error);
+      return { success: false, message: error.response?.data?.message || "Toggle failed" };
     }
   };
 
@@ -68,11 +88,8 @@ export const BusinessProvider = ({ children }) => {
     addBusiness,
     updateBusinessStatus,
     deleteBusiness,
+    togglePaidService,
   };
 
-  return (
-    <BusinessContext.Provider value={value}>
-      {children}
-    </BusinessContext.Provider>
-  );
+  return <BusinessContext.Provider value={value}>{children}</BusinessContext.Provider>;
 };
