@@ -9,11 +9,9 @@ import axios from "../../api/axios";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-toast.configure();
-
 const AdminDashboard = () => {
   const { user, token, logout } = useContext(AuthContext);
-  const { businesses, updateBusinessStatus, deleteBusiness } = useContext(BusinessContext);
+  const { businesses, updateBusinessStatus } = useContext(BusinessContext);
 
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("business");
@@ -31,10 +29,11 @@ const AdminDashboard = () => {
   // ================= Filter businesses by search =================
   useEffect(() => {
     if (!searchQuery) return setFilteredBusinesses(businesses);
-    const filtered = businesses.filter((b) =>
-      b.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      b.category.toLowerCase().includes(searchQuery.toLowerCase())
+    const filtered = businesses.filter(
+      (b) =>
+        b.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.category.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredBusinesses(filtered);
   }, [searchQuery, businesses]);
@@ -42,34 +41,42 @@ const AdminDashboard = () => {
   // ================= CHANGE PASSWORD =================
   const handlePasswordChange = async (e) => {
     e.preventDefault();
-    setPassMessage(""); setPassError("");
+    setPassMessage("");
+    setPassError("");
     try {
-      const { data } = await axios.put("/api/admin/change-password", passwordData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await axios.put(
+        "/api/admin/change-password",
+        passwordData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setPassMessage(data.message);
       setPasswordData({ currentPassword: "", newPassword: "" });
       toast.success(data.message);
     } catch (err) {
-      setPassError(err.response?.data?.message || "Failed to change password");
-      toast.error(err.response?.data?.message || "Failed to change password");
+      const message = err.response?.data?.message || "Failed to change password";
+      setPassError(message);
+      toast.error(message);
     }
   };
 
   // ================= CREATE ADMIN =================
   const handleCreateAdmin = async (e) => {
     e.preventDefault();
-    setAdminMessage(""); setAdminError("");
+    setAdminMessage("");
+    setAdminError("");
     try {
-      const { data } = await axios.post("/api/admin/create-admin", adminData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await axios.post(
+        "/api/admin/create-admin",
+        adminData,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       setAdminMessage("Admin created: " + data.admin.email);
       setAdminData({ name: "", email: "", password: "" });
       toast.success("Admin created: " + data.admin.email);
     } catch (err) {
-      setAdminError(err.response?.data?.message || "Failed to create admin");
-      toast.error(err.response?.data?.message || "Failed to create admin");
+      const message = err.response?.data?.message || "Failed to create admin";
+      setAdminError(message);
+      toast.error(message);
     }
   };
 
