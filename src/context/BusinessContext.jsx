@@ -10,20 +10,26 @@ export const BusinessProvider = ({ children }) => {
 
   // ================= FETCH BUSINESSES =================
   useEffect(() => {
-    const fetchBusinesses = async () => {
-      setLoading(true);
-      try {
-        const { data } = await axios.get("/api/business");
-        setBusinesses(data.businesses || []);
-      } catch (error) {
-        console.error("Failed to fetch businesses:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchBusinesses = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get("/api/business");
 
-    fetchBusinesses();
-  }, []);
+      if (Array.isArray(data)) {
+        setBusinesses(data);
+      } else {
+        setBusinesses(data.businesses || []);
+      }
+
+    } catch (error) {
+      console.error("Failed to fetch businesses:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchBusinesses();
+}, []);
 
   // ================= ADD BUSINESS =================
   const addBusiness = async (businessData) => {
