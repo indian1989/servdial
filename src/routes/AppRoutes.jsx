@@ -60,6 +60,7 @@ function AppRoutes() {
   <Route path="add-business" element={<AddBusiness />} />
   <Route path="add-city" element={<AddCity />} />
   <Route path="add-category" element={<AddCategory />} />
+  <Route path="add-banner" element={<BannerManager />} />  <Route path="add-category" element={<AddCategory />} />
   <Route path="banners" element={<BannerManager />} />
 </Route>
 
