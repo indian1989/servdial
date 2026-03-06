@@ -14,6 +14,7 @@ import BannerManager from "../pages/admin/BannerManager";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AddCity from "../pages/admin/AddCity";
 import AddCategory from "../pages/admin/AddCategory";
+import AdminLayout from "../layouts/AdminLayout";
 
 import ProtectedRoute from "./ProtectedRoute";
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
@@ -48,13 +49,19 @@ function AppRoutes() {
 
       {/* ADMIN DASHBOARD */}
       <Route
-        path="/admin"
-        element={
-          <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
-            <AdminDashboard />
-          </ProtectedRoute>
-        }
-      />
+  path="/admin"
+  element={
+    <ProtectedRoute allowedRoles={["admin", "superadmin"]}>
+      <AdminLayout />
+    </ProtectedRoute>
+  }
+>
+  <Route path="dashboard" element={<AdminDashboard />} />
+  <Route path="add-business" element={<AddBusiness />} />
+  <Route path="add-city" element={<AddCity />} />
+  <Route path="add-category" element={<AddCategory />} />
+  <Route path="banners" element={<BannerManager />} />
+</Route>
 
       <Route
         path="/admin/banners"
@@ -91,6 +98,8 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+
 
       {/* Provider Dashboard */}
       <Route
