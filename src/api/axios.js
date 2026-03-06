@@ -1,10 +1,11 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL,
+  baseURL:
+    import.meta.env.VITE_API_BASE_URL ||
+    "https://servdial-backend.onrender.com",
 });
 
-// Automatically attach token
 API.interceptors.request.use((req) => {
   const user = JSON.parse(localStorage.getItem("servdial_user"));
 
