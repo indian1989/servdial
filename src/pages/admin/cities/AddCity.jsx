@@ -1,6 +1,6 @@
 import { useState, useContext } from "react";
-import axios from "../../api/axios";
-import { AuthContext } from "../../context/AuthContext";
+import axios from "../../../api/axios";
+import { AuthContext } from "../../../context/AuthContext";
 
 const AddCity = () => {
   const { user } = useContext(AuthContext);

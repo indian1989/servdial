@@ -10,10 +10,16 @@ import Login from "../pages/Login";
 import Register from "../pages/Register";
 import NotFound from "../pages/NotFound";
 
-import BannerManager from "../pages/admin/BannerManager";
 import AdminDashboard from "../pages/admin/AdminDashboard";
-import AddCity from "../pages/admin/AddCity";
-import AddCategory from "../pages/admin/AddCategory";
+import ManageBusinesses from "../pages/admin/businesses/ManageBusinesses";
+import ManageCities from "../pages/admin/cities/ManageCities";
+import ManageCategories from "../pages/admin/categories/ManageCategories";
+import ManageBannerAds from "../pages/admin/banners/ManageBannerAds";
+import ManageAdmins from "../pages/admin/admins/ManageAdmins";
+import ManageUsers from "../pages/admin/ManageUsers";
+import AddBanner from "../pages/admin/banners/AddBanner";
+import AddCity from "../pages/admin/cities/AddCity";
+import AddCategory from "../pages/admin/categories/AddCategory";
 import AdminLayout from "../layouts/AdminLayout";
 
 import ProtectedRoute from "./ProtectedRoute";
@@ -61,7 +67,13 @@ function AppRoutes() {
   <Route path="add-city" element={<AddCity />} />
   <Route path="add-category" element={<AddCategory />} />
   <Route path="add-banner" element={<BannerManager />} />  <Route path="add-category" element={<AddCategory />} />
-  <Route path="banners" element={<BannerManager />} />
+  <Route path="/admin/businesses" element={<ManageBusinesses />} />
+  <Route path="/admin/cities" element={<ManageCities />} />
+  <Route path="/admin/categories" element={<ManageCategories />} />
+  <Route path="/admin/banners" element={<ManageBannerAds />} />
+  <Route path="/admin/admins" element={<ManageAdmins />} />
+  <Route path="/admin/users" element={<ManageUsers />} />
+  <Route path="/admin/add-banner" element={<AddBanner />} />
 </Route>
 
       <Route
