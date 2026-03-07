@@ -4,8 +4,6 @@ import axios from "../api/axios";
 import { Helmet } from "react-helmet-async";
 import { getUserCity } from "../utils/getUserCity";
 import SearchBar from "../components/search/SearchBar";
-import CategoryGrid from "../components/home/CategoryGrid";
-
 
 const Home = () => {
 
@@ -20,12 +18,14 @@ const Home = () => {
   useEffect(()=>{
 
     const detectCity = async ()=>{
+
       const userCity = await getUserCity();
 
       if(userCity){
         setCity(userCity);
         localStorage.setItem("servdial_city", userCity);
       }
+
     };
 
     detectCity();
@@ -40,7 +40,7 @@ const Home = () => {
         const cityRes = await axios.get("/api/cities");
         setCities(cityRes.data.cities || []);
 
-        const featRes = await axios.get("/api/featured");
+        const featRes = await axios.get("/api/businesses?sort=featured&limit=6");
         setFeatured(featRes.data.businesses || []);
 
       }catch(err){
@@ -53,191 +53,160 @@ const Home = () => {
 
   },[]);
 
-
   return (
 
-    <>
-    <Helmet>
+  <>
+  <Helmet>
 
-      <title>ServDial - Find Local Services Near You</title>
+  <title>ServDial - Find Local Services Near You</title>
 
-      <meta
-        name="description"
-        content="ServDial helps you find the best local businesses like plumbers, electricians, doctors, restaurants and more in your city."
-      />
+  <meta
+  name="description"
+  content="ServDial helps you find the best local businesses like plumbers, electricians, doctors, restaurants and more in your city."
+  />
 
-      <link rel="canonical" href="https://servdial.onrender.com/" />
+  <link rel="canonical" href="https://servdial.onrender.com/" />
 
-    </Helmet>
+  </Helmet>
 
+  <div className="bg-gray-50 min-h-screen">
 
-    <div className="bg-gray-50 min-h-screen">
+  {/* HERO */}
 
+  <div className="bg-blue-600 text-white py-20">
 
-      {/* HERO */}
+  <div className="max-w-6xl mx-auto text-center px-6">
 
-      <div className="bg-blue-600 text-white py-20 px-6">
+  <h1 className="text-4xl font-bold mb-4">
+  Find Local Services Near You
+  </h1>
 
-        <div className="max-w-5xl mx-auto text-center">
+  <p className="mb-8 text-lg">
+  Search trusted businesses in your city
+  </p>
 
-          <h1 className="text-4xl font-bold mb-4">
-            Find Trusted Local Services
-          </h1>
+  <SearchBar />
 
-          <p className="text-lg mb-8">
-            Discover the best businesses in your city
-          </p>
+  </div>
 
-          <SearchBar city={city} cities={cities} />
+  </div>
 
-        </div>
+  {/* POPULAR CATEGORIES */}
 
-      </div>
+  <div className="max-w-6xl mx-auto px-6 py-12">
 
+  <h2 className="text-2xl font-bold mb-6">
+  Popular Categories
+  </h2>
 
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
 
-      {/* POPULAR CATEGORIES */}
+  {categories.slice(0,8).map((cat)=>(
 
-      <CategoryGrid categories={categories} city={city} />
+  <Link
+  key={cat._id}
+  to={`/category/${cat.slug}`}
+  className="bg-white shadow rounded p-6 text-center hover:shadow-lg"
+  >
 
-      {/* POPULAR CITIES */}
+  <h3 className="font-semibold">
+  {cat.name}
+  </h3>
 
-      <div className="bg-white py-12">
+  </Link>
 
-        <div className="max-w-6xl mx-auto px-6">
+  ))}
 
-          <h2 className="text-2xl font-bold mb-8">
-            Browse by City
-          </h2>
+  </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+  </div>
 
-            {cities.slice(0,8).map((c)=>(
+  {/* POPULAR CITIES */}
 
-              <Link
-                key={c._id}
-                to={`/${c.name}`}
-                className="border rounded-lg p-6 text-center hover:bg-gray-50"
-              >
+  <div className="bg-white py-12">
 
-                {c.name}
+  <div className="max-w-6xl mx-auto px-6">
 
-              </Link>
+  <h2 className="text-2xl font-bold mb-6">
+  Browse by City
+  </h2>
 
-            ))}
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
 
-          </div>
+  {cities.slice(0,8).map((c)=>(
 
-        </div>
+  <Link
+  key={c._id}
+  to={`/${c.name}`}
+  className="border p-6 rounded text-center hover:bg-gray-50"
+  >
 
-      </div>
+  {c.name}
 
+  </Link>
 
+  ))}
 
-      {/* FEATURED BUSINESSES */}
+  </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-12">
+  </div>
 
-        <h2 className="text-2xl font-bold mb-8">
-          Featured Businesses
-        </h2>
+  </div>
 
-        <div className="grid md:grid-cols-3 gap-6">
+  {/* FEATURED BUSINESSES */}
 
-          {featured.map((biz)=>(
+  <div className="max-w-6xl mx-auto px-6 py-12">
 
-            <Link
-              key={biz._id}
-              to={`/business/${biz._id}`}
-              className="bg-white shadow rounded-lg p-5 hover:shadow-lg"
-            >
+  <h2 className="text-2xl font-bold mb-6">
+  Featured Businesses
+  </h2>
 
-              {biz.image && (
-                <img
-                  src={biz.image}
-                  alt={biz.name}
-                  className="w-full h-40 object-cover rounded mb-3"
-                />
-              )}
+  <div className="grid md:grid-cols-3 gap-6">
 
-              <h3 className="text-lg font-semibold">
-                {biz.name}
-              </h3>
+  {featured.map((biz)=>(
 
-              <p className="text-gray-500 text-sm">
-                {biz.category}
-              </p>
+  <Link
+  key={biz._id}
+  to={`/business/${biz._id}`}
+  className="bg-white shadow rounded-lg p-5 hover:shadow-lg"
+  >
 
-              <p className="text-yellow-500 text-sm mt-1">
-                ⭐ {biz.rating || "New"}
-              </p>
+  {biz.images?.[0] && (
 
-            </Link>
+  <img
+  src={biz.images[0]}
+  alt={biz.name}
+  className="w-full h-40 object-cover rounded mb-3"
+  />
 
-          ))}
+  )}
 
-        </div>
+  <h3 className="text-lg font-semibold">
+  {biz.name}
+  </h3>
 
-      </div>
+  <p className="text-gray-500 text-sm">
+  {biz.category}
+  </p>
 
+  <p className="text-yellow-500 text-sm mt-1">
+  ⭐ {biz.rating || "New"}
+  </p>
 
+  </Link>
 
-      {/* TRENDING SEARCHES */}
+  ))}
 
-      <div className="bg-gray-100 py-12">
+  </div>
 
-        <div className="max-w-6xl mx-auto px-6">
+  </div>
 
-          <h2 className="text-xl font-semibold mb-6">
-            Popular Searches
-          </h2>
+  </div>
 
-          <div className="grid md:grid-cols-4 gap-3 text-sm">
+  </>
 
-            <Link to="/delhi/plumber">Plumber in Delhi</Link>
-            <Link to="/mumbai/electrician">Electrician in Mumbai</Link>
-            <Link to="/patna/hospital">Hospitals in Patna</Link>
-            <Link to="/bangalore/restaurant">Restaurants in Bangalore</Link>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-
-      {/* PROVIDER CTA */}
-
-      <div className="bg-blue-600 text-white py-16">
-
-        <div className="max-w-5xl mx-auto text-center">
-
-          <h2 className="text-3xl font-bold mb-4">
-            Own a Business?
-          </h2>
-
-          <p className="mb-6">
-            List your business on ServDial and reach thousands of customers.
-          </p>
-
-          <Link
-            to="/add-business"
-            className="bg-yellow-400 text-black font-semibold px-6 py-3 rounded"
-          >
-            Add Your Business
-          </Link>
-
-        </div>
-
-      </div>
-
-
-
-    </div>
-
-    </>
   );
+
 };
 
 export default Home;

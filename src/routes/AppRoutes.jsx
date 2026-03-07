@@ -8,11 +8,10 @@ import AdminLayout from "../layouts/AdminLayout";
 
 /* PUBLIC PAGES */
 import Home from "../pages/Home";
-import AllBusinesses from "../pages/AllBusinesses";
 import NotFound from "../pages/NotFound";
-import BusinessListPage from "../pages/BusinessListPage";
 import CityCategoryPage from "../pages/CityCategoryPage";
 import CategoryPage from "../pages/CategoryPage";
+import BusinessPage from "../pages/BusinessPage";
 
 /* AUTH */
 import Login from "../pages/Login";
@@ -50,7 +49,7 @@ function AppRoutes() {
   return (
     <Routes>
 
-      {/* AUTH ROUTES */}
+      {/* ================= AUTH ROUTES ================= */}
       <Route element={<AuthLayout />}>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -58,15 +57,22 @@ function AppRoutes() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Route>
 
-      {/* PUBLIC WEBSITE */}
+      {/* ================= PUBLIC WEBSITE ================= */}
       <Route element={<PublicLayout />}>
+
+        {/* Homepage */}
         <Route path="/" element={<Home />} />
-        <Route path="/:city/:service" element={<AllBusinesses />} />
-        <Route path="/:city" element={<AllBusinesses />} />
-        <Route path="/:city/:category" element={<BusinessListPage />} />
-        <Route path="/:city/:category" element={<CityCategoryPage />} />
+
+        {/* Business Details */}
+        <Route path="/business/:id" element={<BusinessPage />} />
+
+        {/* SEO Category Pages */}
         <Route path="/category/:category" element={<CategoryPage />} />
 
+        {/* SEO City + Category */}
+        <Route path="/:city/:category" element={<CityCategoryPage />} />
+
+        {/* Add Business */}
         <Route
           path="/add-business"
           element={
@@ -75,9 +81,10 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
       </Route>
 
-      {/* ADMIN PANEL */}
+      {/* ================= ADMIN PANEL ================= */}
       <Route
         path="/admin"
         element={
@@ -86,6 +93,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
+
         <Route path="dashboard" element={<AdminDashboard />} />
 
         {/* BUSINESSES */}
@@ -109,9 +117,10 @@ function AppRoutes() {
 
         {/* ADMINS */}
         <Route path="admins" element={<ManageAdmins />} />
+
       </Route>
 
-      {/* PROVIDER DASHBOARD */}
+      {/* ================= PROVIDER DASHBOARD ================= */}
       <Route
         path="/provider/dashboard"
         element={
@@ -121,7 +130,7 @@ function AppRoutes() {
         }
       />
 
-      {/* 404 */}
+      {/* ================= 404 ================= */}
       <Route path="*" element={<NotFound />} />
 
     </Routes>
