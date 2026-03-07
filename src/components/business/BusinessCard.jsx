@@ -1,75 +1,55 @@
-import React, { memo } from "react";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
+import { Link } from "react-router-dom";
 
-const BusinessCard = ({ business, userRole }) => {
-  const {
-    name,
-    category,
-    city,
-    address,
-    phone,
-    description,
-    images = [],
-    location,
-    paidServices = {},
-  } = business;
-
-  // Check if any paid feature is restricted
-  const isPaidRestricted =
-    !["admin", "superadmin"].includes(userRole) &&
-    Object.values(paidServices).some(Boolean);
-
-  const mapAvailable =
-    location?.coordinates?.length === 2 &&
-    !isNaN(location.coordinates[0]) &&
-    !isNaN(location.coordinates[1]);
-
+const BusinessCard = ({ business }) => {
   return (
-    <div className="border rounded p-4 shadow-md mb-4 bg-white">
-      <h2 className="text-xl font-bold">{name}</h2>
-      <p className="text-sm text-gray-600">{category} | {city}</p>
-
-      {images[0] ? (
+    <Link
+      to={`/business/${business._id}`}
+      className="bg-white shadow-md rounded-xl overflow-hidden hover:shadow-xl transition duration-300"
+    >
+      {/* Image */}
+      {business.image && (
         <img
-          src={images[0]}
-          alt={name}
-          className="w-full h-48 object-cover mt-2 rounded"
+          src={business.image}
+          alt={business.name}
+          className="w-full h-44 object-cover"
         />
-      ) : (
-        <div className="w-full h-48 bg-gray-200 mt-2 rounded flex items-center justify-center text-gray-500">
-          No Image Available
-        </div>
       )}
 
-      <p className="mt-2">{description}</p>
-      <p className="mt-1 font-medium">Phone: {phone}</p>
-      <p className="mt-1 font-medium">Address: {address}</p>
+      {/* Content */}
+      <div className="p-4">
 
-      {mapAvailable && (
-        <MapContainer
-          center={[location.coordinates[1], location.coordinates[0]]}
-          zoom={13}
-          style={{ height: "200px", width: "100%", marginTop: "10px" }}
-        >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution="&copy; OpenStreetMap contributors"
-          />
-          <Marker position={[location.coordinates[1], location.coordinates[0]]}>
-            <Popup>{name}</Popup>
-          </Marker>
-        </MapContainer>
-      )}
+        {/* Business Name */}
+        <h2 className="text-lg font-semibold text-gray-800 mb-1">
+          {business.name}
+        </h2>
 
-      {isPaidRestricted && (
-        <div className="mt-2 p-2 bg-yellow-100 text-yellow-800 font-semibold rounded">
-          This feature will be available soon
-        </div>
-      )}
-    </div>
+        {/* Category */}
+        <p className="text-sm text-gray-500">
+          {business.category}
+        </p>
+
+        {/* Rating */}
+        <p className="text-yellow-500 text-sm mt-1">
+          ⭐ {business.rating || "New"}
+        </p>
+
+        {/* Phone */}
+        {business.phone && (
+          <p className="text-blue-600 text-sm mt-2">
+            📞 {business.phone}
+          </p>
+        )}
+
+        {/* Address */}
+        {business.address && (
+          <p className="text-gray-600 text-sm mt-1 line-clamp-2">
+            📍 {business.address}
+          </p>
+        )}
+
+      </div>
+    </Link>
   );
 };
 
-// Memoize to prevent unnecessary re-renders
-export default memo(BusinessCard);
+export default BusinessCard;

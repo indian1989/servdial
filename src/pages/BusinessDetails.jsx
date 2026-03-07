@@ -7,21 +7,16 @@ const BusinessDetails = () => {
   const { id } = useParams();
 
   const [business, setBusiness] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     const fetchBusiness = async () => {
       try {
-        setLoading(true);
-        setError(null);
-
         const { data } = await axios.get(`/api/business/${id}`);
         setBusiness(data.business);
       } catch (err) {
-        setError(
-          err.response?.data?.message || "Failed to fetch business details"
-        );
+        setError(err.response?.data?.message || "Failed to load business");
       } finally {
         setLoading(false);
       }
@@ -32,127 +27,178 @@ const BusinessDetails = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-gray-500">Loading business details...</p>
+      <div className="min-h-screen flex justify-center items-center">
+        <p className="text-gray-500 text-lg">Loading business...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-500">{error}</p>
+      <div className="min-h-screen flex justify-center items-center">
+        <p className="text-red-500 text-lg">{error}</p>
       </div>
     );
   }
 
   if (!business) return null;
 
+  /* SEO DATA */
+
   const title = `${business.name} - ${business.category} in ${business.city} | ServDial`;
 
-  const description = `${business.name} is one of the best ${business.category} in ${business.city}. Contact details, address, ratings and reviews available on ServDial.`;
+  const description = `${business.name} is a trusted ${business.category} service in ${business.city}. Contact details, ratings, reviews and address available on ServDial.`;
 
   const canonicalUrl = `https://servdial.com/business/${business._id}`;
 
-  /* 🔥 JSON-LD STRUCTURED DATA */
+  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${business.address}`;
+
+  const whatsappUrl = `https://wa.me/${business.phone}`;
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
     name: business.name,
     image: business.image || "",
-    description: description,
+    description,
+    telephone: business.phone,
     address: {
       "@type": "PostalAddress",
-      streetAddress: business.address || "",
+      streetAddress: business.address,
       addressLocality: business.city,
-      addressCountry: "IN",
+      addressCountry: "IN"
     },
-    telephone: business.phone || "",
     aggregateRating: business.rating
       ? {
           "@type": "AggregateRating",
           ratingValue: business.rating,
-          reviewCount: business.reviewCount || 1,
+          reviewCount: business.reviewCount || 1
         }
       : undefined,
-    url: canonicalUrl,
+    url: canonicalUrl
   };
 
   return (
     <>
-      {/* SEO META */}
       <Helmet>
         <title>{title}</title>
         <meta name="description" content={description} />
 
-        {/* Open Graph */}
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
         <meta property="og:type" content="business.business" />
         <meta property="og:url" content={canonicalUrl} />
 
-        {/* Canonical */}
         <link rel="canonical" href={canonicalUrl} />
 
-        {/* 🔥 JSON-LD Schema */}
         <script type="application/ld+json">
           {JSON.stringify(jsonLd)}
         </script>
       </Helmet>
 
-      <div className="min-h-screen bg-gray-50 px-6 py-10">
-        <div className="max-w-4xl mx-auto bg-white shadow-lg rounded-xl p-8">
+      <div className="min-h-screen bg-gray-50 py-10 px-5">
 
-          <h1 className="text-3xl font-bold mb-4">
-            {business.name}
-          </h1>
+        <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden">
 
-          <p className="text-gray-600 mb-2">
-            Category: <strong>{business.category}</strong>
-          </p>
-
-          <p className="text-gray-600 mb-2">
-            City: <strong>{business.city}</strong>
-          </p>
-
-          <p className="text-yellow-500 font-semibold mb-4">
-            ⭐ {business.rating || "New"}
-          </p>
-
-          {business.description && (
-            <div className="mt-4">
-              <h2 className="text-xl font-semibold mb-2">
-                About {business.name}
-              </h2>
-              <p className="text-gray-700 leading-relaxed">
-                {business.description}
-              </p>
-            </div>
+          {/* IMAGE */}
+          {business.image && (
+            <img
+              src={business.image}
+              alt={business.name}
+              className="w-full h-72 object-cover"
+            />
           )}
 
-          {business.phone && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold">
-                Contact Information
+          <div className="p-8">
+
+            {/* TITLE */}
+            <h1 className="text-3xl font-bold mb-2">
+              {business.name}
+            </h1>
+
+            <p className="text-gray-500 mb-4">
+              {business.category} in {business.city}
+            </p>
+
+            {/* RATING */}
+            <p className="text-yellow-500 font-semibold mb-4 text-lg">
+              ⭐ {business.rating || "New Business"}
+            </p>
+
+            {/* DESCRIPTION */}
+            {business.description && (
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold mb-2">
+                  About {business.name}
+                </h2>
+                <p className="text-gray-700 leading-relaxed">
+                  {business.description}
+                </p>
+              </div>
+            )}
+
+            {/* CONTACT */}
+            <div className="mb-6">
+
+              <h3 className="text-xl font-semibold mb-2">
+                Contact Details
               </h3>
-              <p className="text-gray-700 mt-2">
-                📞 {business.phone}
-              </p>
-            </div>
-          )}
 
-          {business.address && (
-            <div className="mt-6">
-              <h3 className="text-lg font-semibold">
-                Address
-              </h3>
-              <p className="text-gray-700 mt-2">
-                {business.address}
-              </p>
+              {business.phone && (
+                <p className="text-gray-700 mb-2">
+                  📞 {business.phone}
+                </p>
+              )}
+
+              {business.address && (
+                <p className="text-gray-700">
+                  📍 {business.address}
+                </p>
+              )}
+
             </div>
-          )}
+
+            {/* ACTION BUTTONS */}
+
+            <div className="flex flex-wrap gap-4 mt-6">
+
+              {business.phone && (
+                <a
+                  href={`tel:${business.phone}`}
+                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
+                >
+                  📞 Call Now
+                </a>
+              )}
+
+              {business.phone && (
+                <a
+                  href={whatsappUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600"
+                >
+                  💬 WhatsApp
+                </a>
+              )}
+
+              {business.address && (
+                <a
+                  href={mapUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-black"
+                >
+                  🗺 View on Map
+                </a>
+              )}
+
+            </div>
+
+          </div>
 
         </div>
+
       </div>
     </>
   );

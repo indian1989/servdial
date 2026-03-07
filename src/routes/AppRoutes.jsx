@@ -10,6 +10,9 @@ import AdminLayout from "../layouts/AdminLayout";
 import Home from "../pages/Home";
 import AllBusinesses from "../pages/AllBusinesses";
 import NotFound from "../pages/NotFound";
+import BusinessListPage from "../pages/BusinessListPage";
+import CityCategoryPage from "../pages/CityCategoryPage";
+import CategoryPage from "../pages/CategoryPage";
 
 /* AUTH */
 import Login from "../pages/Login";
@@ -60,6 +63,9 @@ function AppRoutes() {
         <Route path="/" element={<Home />} />
         <Route path="/:city/:service" element={<AllBusinesses />} />
         <Route path="/:city" element={<AllBusinesses />} />
+        <Route path="/:city/:category" element={<BusinessListPage />} />
+        <Route path="/:city/:category" element={<CityCategoryPage />} />
+        <Route path="/category/:category" element={<CategoryPage />} />
 
         <Route
           path="/add-business"
