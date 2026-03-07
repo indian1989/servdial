@@ -93,7 +93,6 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-
         <Route path="dashboard" element={<AdminDashboard />} />
 
         {/* BUSINESSES */}
@@ -117,7 +116,6 @@ function AppRoutes() {
 
         {/* ADMINS */}
         <Route path="admins" element={<ManageAdmins />} />
-
       </Route>
 
       {/* ================= PROVIDER DASHBOARD ================= */}
