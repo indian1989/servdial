@@ -1,6 +1,6 @@
 // src/pages/admin/ManageAdmins.jsx
 import React, { useState, useEffect } from "react";
-import API from "../api/axios";
+import API from "../../../api/axios";
 import { useNavigate } from "react-router-dom";
 
 const ManageAdmins = () => {

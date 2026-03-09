@@ -1,6 +1,6 @@
 // src/pages/admin/AddBusiness.jsx
 import React, { useState } from "react";
-import API from "../api/axios";
+import API from "../../../api/axios";
 import { useNavigate } from "react-router-dom";
 
 const AddBusiness = () => {
