@@ -141,75 +141,8 @@ const Home = () => {
   </div>
 );
 
-      {/* HEADER */}
-      <Header />
-
-      {/* HERO SEARCH */}
-      <HeroSearch />
-
-      {/* POPULAR CATEGORIES */}
-      <PopularCategories />
-
-      {/* ALL CATEGORIES GRID */}
-      <CategoriesGrid categories={categories} />
-
-      {/* FEATURED BUSINESSES */}
-      <FeaturedBusinesses
-        businesses={featuredBusinesses}
-        loading={loading}
-      />
-
-      {/* POPULAR BUSINESSES */}
-      <PopularBusinesses
-        businesses={featuredBusinesses}
-        loading={loading}
-      />
-
-      {/* TOP RATED BUSINESSES */}
-      <TopRatedBusinesses
-        businesses={topRatedBusinesses}
-        loading={loading}
-      />
-
-      {/* NEARBY BUSINESSES */}
-      <NearbyBusinesses
-        businesses={nearbyBusinesses}
-        userLocation={userLocation}
-      />
-
-      {/* MAP SECTION */}
-      <MapSection businesses={nearbyBusinesses} />
-
-      {/* AI RECOMMENDATION */}
-      {detectedCity && (
-        <RecommendedBusinesses city={detectedCity} />
-      )}
-
-      {/* FEATURED CITIES */}
-      <FeaturedCities cities={cities} />
-
-      {/* POPULAR SEARCHES */}
-      <PopularSearches />
-
-      {/* WHY SERVDIAL */}
-      <WhyChooseServDial />
-
-      {/* TESTIMONIALS */}
-      <Testimonials />
-
-      {/* DOWNLOAD APP */}
-      <DownloadApp />
-
-      {/* BECOME PROVIDER */}
-      <BecomeProvider />
-
-      {/* FOOTER */}
-      <Footer />
-
-    </div>
-
-  );
-
 };
 
 export default Home;
+
+     
