@@ -1,10 +1,6 @@
 import { useEffect, useState } from "react";
 import API from "../api/axios";
 
-// Layout
-import Header from "../components/layout/Header";
-import Footer from "../components/layout/Footer";
-
 // Sections
 import HeroSearch from "../components/home/HeroSearch";
 import CategoriesGrid from "../components/home/CategoriesGrid";
@@ -138,9 +134,6 @@ const Home = () => {
 return (
     <div className="bg-gray-50 min-h-screen">
 
- {/* HEADER */}
-      <Header />
-
       {/* HERO SEARCH */}
       <HeroSearch />
 
@@ -199,9 +192,6 @@ return (
 
       {/* BECOME PROVIDER */}
       <BecomeProvider />
-
-      {/* FOOTER */}
-      <Footer />
 
     </div>
 

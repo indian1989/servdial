@@ -32,7 +32,7 @@ const CategoriesGrid = ({ city }) => {
 
   const categories = [
     { name: "Restaurants", icon: Utensils },
-    { name: "Hotels", icon: Hotel },
+    { name: "Hotels", image: "https://cdn-icons-png.flaticon.com/512/139/139899.png" },
     { name: "Hospitals", icon: Stethoscope },
     { name: "Schools", icon: GraduationCap },
     { name: "Plumbers", icon: Wrench },
