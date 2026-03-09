@@ -136,8 +136,10 @@ const Home = () => {
   },[]);
 
   return (
-
-    <div className="bg-gray-50 min-h-screen">
+  <div style={{padding:"50px"}}>
+    <h1>ServDial Home Working</h1>
+  </div>
+);
 
       {/* HEADER */}
       <Header />
