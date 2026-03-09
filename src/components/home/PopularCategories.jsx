@@ -7,7 +7,6 @@ const categories = [
   { name: "AC Repair", image: "https://cdn-icons-png.flaticon.com/512/1532/1532556.png" },
   { name: "Car Repair", image: "https://cdn-icons-png.flaticon.com/512/743/743007.png" },
   { name: "Bike Repair", image: "https://cdn-icons-png.flaticon.com/512/2972/2972185.png" },
-  { name: "Hotels", image: "https://cdn-icons-png.flaticon.com/512/139/139899.png" },
   { name: "Restaurant", image: "https://cdn-icons-png.flaticon.com/512/3075/3075977.png" },
   { name: "Event Management", image: "https://cdn-icons-png.flaticon.com/512/3132/3132693.png" },
   { name: "Wedding Planner", image: "https://cdn-icons-png.flaticon.com/512/2936/2936886.png" },
