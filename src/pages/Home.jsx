@@ -21,7 +21,6 @@ import BecomeProvider from "../components/home/BecomeProvider";
 import RecommendedBusinesses from "../components/recommendation/RecommendedBusinesses";
 
 const Home = () => {
-
   const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
   const [nearbyBusinesses, setNearbyBusinesses] = useState([]);
   const [topRatedBusinesses, setTopRatedBusinesses] = useState([]);
@@ -30,174 +29,105 @@ const Home = () => {
   const [detectedCity, setDetectedCity] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const [userLocation, setUserLocation] = useState({
-    lat: null,
-    lng: null
-  });
+  const [userLocation, setUserLocation] = useState({ lat: null, lng: null });
 
-  // ================= DETECT USER LOCATION =================
-
+  // Detect user location
   const detectLocation = () => {
-
-    if (typeof window === "undefined") return;
-
-    if (!navigator.geolocation) {
-      console.log("Geolocation not supported");
-      return;
-    }
-
+    if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
-
         setUserLocation({ lat, lng });
-
         fetchNearbyBusinesses(lat, lng);
-
       },
-      () => {
-        console.log("Location permission denied");
-      }
+      () => console.log("Location permission denied")
     );
   };
 
-  // ================= FETCH NEARBY BUSINESSES =================
-
+  // Fetch nearby businesses
   const fetchNearbyBusinesses = async (lat, lng) => {
-
     if (!lat || !lng) return;
-
     try {
-
       const res = await API.get(`/api/business/nearby?lat=${lat}&lng=${lng}&limit=8`);
-
       setNearbyBusinesses(res?.data?.businesses || []);
-
-      if (res?.data?.city) {
-        setDetectedCity(res.data.city);
-      }
-
+      if (res?.data?.city) setDetectedCity(res.data.city);
     } catch (err) {
       console.log("Nearby fetch failed", err);
     }
-
   };
 
-  // ================= FETCH HOMEPAGE DATA =================
-
+  // Fetch homepage data
   const fetchHomepageData = async () => {
-
     try {
-
       setLoading(true);
-
-      const [
-        featuredRes,
-        topRatedRes,
-        categoryRes,
-        citiesRes
-      ] = await Promise.all([
+      const [featuredRes, topRatedRes, categoryRes, citiesRes] = await Promise.all([
         API.get("/api/business/featured"),
         API.get("/api/business/top-rated?limit=8"),
         API.get("/api/categories"),
-        API.get("/api/cities")
+        API.get("/api/cities"),
       ]);
 
       setFeaturedBusinesses(featuredRes?.data?.businesses || []);
       setTopRatedBusinesses(topRatedRes?.data?.businesses || []);
       setCategories(categoryRes?.data?.categories || categoryRes?.data || []);
       setCities(citiesRes?.data?.cities || citiesRes?.data || []);
-
     } catch (err) {
-
       console.error("Homepage load error", err);
-
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
-  // ================= LOAD DATA =================
-
   useEffect(() => {
-
     detectLocation();
     fetchHomepageData();
-
   }, []);
 
+  // ======================= RETURN =======================
   return (
     <div className="bg-gray-50 min-h-screen">
+      {/* Only sections, no Header/Footer */}
 
-      {/* HERO SEARCH */}
       <HeroSearch />
 
-      {/* POPULAR CATEGORIES */}
       <PopularCategories />
 
-      {/* ALL CATEGORIES GRID */}
-      <CategoriesGrid categories={categories} />
+      {categories.length > 0 && <CategoriesGrid categories={categories} />}
 
-      {/* FEATURED BUSINESSES */}
-      <FeaturedBusinesses
-        businesses={featuredBusinesses}
-        loading={loading}
-      />
-
-      {/* POPULAR BUSINESSES */}
-      <PopularBusinesses
-        businesses={featuredBusinesses}
-        loading={loading}
-      />
-
-      {/* TOP RATED BUSINESSES */}
-      <TopRatedBusinesses
-        businesses={topRatedBusinesses}
-        loading={loading}
-      />
-
-      {/* NEARBY BUSINESSES */}
-      <NearbyBusinesses
-        businesses={nearbyBusinesses || []}
-        userLocation={userLocation}
-      />
-
-      {/* MAP SECTION */}
-      {nearbyBusinesses?.length > 0 && (
-        <MapSection businesses={nearbyBusinesses} />
+      {featuredBusinesses.length > 0 && (
+        <FeaturedBusinesses businesses={featuredBusinesses} loading={loading} />
       )}
 
-      {/* AI RECOMMENDATION */}
-      {detectedCity && (
-        <RecommendedBusinesses city={detectedCity} />
+      {featuredBusinesses.length > 0 && (
+        <PopularBusinesses businesses={featuredBusinesses} loading={loading} />
       )}
 
-      {/* FEATURED CITIES */}
-      <FeaturedCities cities={cities} />
+      {topRatedBusinesses.length > 0 && (
+        <TopRatedBusinesses businesses={topRatedBusinesses} loading={loading} />
+      )}
 
-      {/* POPULAR SEARCHES */}
+      {nearbyBusinesses.length > 0 && (
+        <NearbyBusinesses businesses={nearbyBusinesses} userLocation={userLocation} />
+      )}
+
+      {nearbyBusinesses.length > 0 && <MapSection businesses={nearbyBusinesses} />}
+
+      {detectedCity && <RecommendedBusinesses city={detectedCity} />}
+
+      {cities.length > 0 && <FeaturedCities cities={cities} />}
+
       <PopularSearches />
 
-      {/* WHY SERVDIAL */}
       <WhyChooseServDial />
 
-      {/* TESTIMONIALS */}
       <Testimonials />
 
-      {/* DOWNLOAD APP */}
       <DownloadApp />
 
-      {/* BECOME PROVIDER */}
       <BecomeProvider />
-
     </div>
   );
-
 };
 
 export default Home;
