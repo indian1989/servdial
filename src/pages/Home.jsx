@@ -9,7 +9,6 @@ import Footer from "../components/layout/Footer";
 import HeroSearch from "../components/home/HeroSearch";
 import CategoriesGrid from "../components/home/CategoriesGrid";
 import PopularBusinesses from "../components/home/PopularBusinesses";
-import LatestBusinesses from "../components/home/LatestBusinesses";
 import TopRatedBusinesses from "../components/home/TopRatedBusinesses";
 import NearbyBusinesses from "../components/home/NearbyBusinesses";
 import RecommendedBusinesses from "../components/recommendation/RecommendedBusinesses";
@@ -146,9 +145,6 @@ const Home = () => {
         businesses={featuredBusinesses}
         loading={loading}
       />
-
-      {/* LATEST BUSINESSES */}
-      <LatestBusinesses />
 
       {/* TOP RATED */}
       <TopRatedBusinesses
