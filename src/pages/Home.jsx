@@ -8,15 +8,21 @@ import Footer from "../components/layout/Footer";
 // Sections
 import HeroSearch from "../components/home/HeroSearch";
 import CategoriesGrid from "../components/home/CategoriesGrid";
+import PopularCategories from "../components/home/PopularCategories";
 import PopularBusinesses from "../components/home/PopularBusinesses";
+import FeaturedBusinesses from "../components/home/FeaturedBusinesses";
 import TopRatedBusinesses from "../components/home/TopRatedBusinesses";
 import NearbyBusinesses from "../components/home/NearbyBusinesses";
-import RecommendedBusinesses from "../components/recommendation/RecommendedBusinesses";
+import MapSection from "../components/home/MapSection";
+import PopularSearches from "../components/home/PopularSearches";
 import FeaturedCities from "../components/home/FeaturedCities";
 import WhyChooseServDial from "../components/home/WhyChooseServDial";
 import Testimonials from "../components/home/Testimonials";
 import DownloadApp from "../components/home/DownloadApp";
 import BecomeProvider from "../components/home/BecomeProvider";
+
+// Optional AI recommendation
+import RecommendedBusinesses from "../components/recommendation/RecommendedBusinesses";
 
 const Home = () => {
 
@@ -53,7 +59,7 @@ const Home = () => {
         fetchNearbyBusinesses(lat,lng);
 
       },
-      (err)=>{
+      ()=>{
         console.log("Location permission denied");
       }
     );
@@ -63,13 +69,15 @@ const Home = () => {
 
   const fetchNearbyBusinesses = async (lat,lng) => {
 
+    if(!lat || !lng) return;
+
     try{
 
       const res = await API.get(`/api/business/nearby?lat=${lat}&lng=${lng}&limit=8`);
 
-      setNearbyBusinesses(res.data.businesses || []);
+      setNearbyBusinesses(res?.data?.businesses || []);
 
-      if(res.data.city){
+      if(res?.data?.city){
         setDetectedCity(res.data.city);
       }
 
@@ -101,10 +109,10 @@ const Home = () => {
 
       ]);
 
-      setFeaturedBusinesses(featuredRes.data.businesses || []);
-      setTopRatedBusinesses(topRatedRes.data.businesses || []);
-      setCategories(categoryRes.data || []);
-      setCities(citiesRes.data || []);
+      setFeaturedBusinesses(featuredRes?.data?.businesses || []);
+      setTopRatedBusinesses(topRatedRes?.data?.businesses || []);
+      setCategories(categoryRes?.data?.categories || categoryRes?.data || []);
+      setCities(citiesRes?.data?.cities || citiesRes?.data || []);
 
     }catch(err){
 
@@ -138,15 +146,24 @@ const Home = () => {
       <HeroSearch />
 
       {/* POPULAR CATEGORIES */}
+      <PopularCategories />
+
+      {/* ALL CATEGORIES GRID */}
       <CategoriesGrid categories={categories} />
 
       {/* FEATURED BUSINESSES */}
+      <FeaturedBusinesses
+        businesses={featuredBusinesses}
+        loading={loading}
+      />
+
+      {/* POPULAR BUSINESSES */}
       <PopularBusinesses
         businesses={featuredBusinesses}
         loading={loading}
       />
 
-      {/* TOP RATED */}
+      {/* TOP RATED BUSINESSES */}
       <TopRatedBusinesses
         businesses={topRatedBusinesses}
         loading={loading}
@@ -158,11 +175,19 @@ const Home = () => {
         userLocation={userLocation}
       />
 
+      {/* MAP SECTION */}
+      <MapSection businesses={nearbyBusinesses} />
+
       {/* AI RECOMMENDATION */}
-      <RecommendedBusinesses city={detectedCity} />
+      {detectedCity && (
+        <RecommendedBusinesses city={detectedCity} />
+      )}
 
       {/* FEATURED CITIES */}
       <FeaturedCities cities={cities} />
+
+      {/* POPULAR SEARCHES */}
+      <PopularSearches />
 
       {/* WHY SERVDIAL */}
       <WhyChooseServDial />
