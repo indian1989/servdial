@@ -1,5 +1,5 @@
 import { useEffect, useState, useContext } from "react";
-import axios from "../../api/axios";
+import API from "../../api/axios";
 import { AuthContext } from "../../context/AuthContext"; // assume you have auth context
 
 const AddBusiness = () => {
@@ -21,8 +21,8 @@ const AddBusiness = () => {
   const fetchDropdowns = async () => {
     try {
       const [citiesRes, categoriesRes] = await Promise.all([
-        axios.get("/cities"),
-        axios.get("/categories"),
+        API.get("/cities"),
+        API.get("/categories"),
       ]);
       setCities(citiesRes.data);
       setCategories(categoriesRes.data);
@@ -61,7 +61,7 @@ const AddBusiness = () => {
 
     try {
       setLoading(true);
-      await axios.post("/business", data, {
+      await API.post("/business", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setLoading(false);
