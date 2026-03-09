@@ -1,7 +1,8 @@
 // src/components/home/PopularCategories.jsx
+import electricianIcon from "../../assets/icons/electrician.png";
 
 const categories = [
-  { name: "Electrician", image: "https://cdn-icons-png.flaticon.com/512/1046/1046857.png" },
+  { name: "Electrician", image: electricianIcon },
   { name: "Plumber", image: "https://cdn-icons-png.flaticon.com/512/2966/2966489.png" },
   { name: "Painter", image: "https://cdn-icons-png.flaticon.com/512/1995/1995527.png" },
   { name: "AC Repair", image: "https://cdn-icons-png.flaticon.com/512/1532/1532556.png" },
