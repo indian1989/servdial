@@ -1,26 +1,46 @@
 // src/components/home/PopularCategories.jsx
 import electricianIcon from "../../assets/icons/electrician.png";
+import plumberIcon from "../../assets/icons/plumber.png";
+import painterIcon from "../../assets/icons/painter.png";
+import acRepairIcon from "../../assets/icons/ac-repair.png";
+import carRepairIcon from "../../assets/icons/car-repair.png";
+import bikeRepairIcon from "../../assets/icons/bike-repair.png";
+import hotelIcon from "../../assets/icons/hotels.png";
+import restaurantIcon from "../../assets/icons/restaurant.png";
+import eventManagementIcon from "../../assets/icons/event-management.png";
+import weddingPlannerIcon from "../../assets/icons/wedding-planner.png";
+import schoolIcon from "../../assets/icons/school.png";
+import coachingIcon from "../../assets/icons/coaching.png";
+import gymIcon from "../../assets/icons/gym.png";
+import hospitalIcon from "../../assets/icons/hospital.png";
+import salonIcon from "../../assets/icons/salon.png";
+import interiorDesignerIcon from "../../assets/icons/interior-designer.png";
+import realEstateIcon from "../../assets/icons/real-estate.png";
+import packersMoversIcon from "../../assets/icons/packers-movers.png";
+import courierServiceIcon from "../../assets/icons/courier-service.png";
+import digitalMarketingIcon from "../../assets/icons/digital-marketing.png";
 
 const categories = [
   { name: "Electrician", image: electricianIcon },
-  { name: "Plumber", image: "https://cdn-icons-png.flaticon.com/512/2966/2966489.png" },
-  { name: "Painter", image: "https://cdn-icons-png.flaticon.com/512/1995/1995527.png" },
-  { name: "AC Repair", image: "https://cdn-icons-png.flaticon.com/512/1532/1532556.png" },
-  { name: "Car Repair", image: "https://cdn-icons-png.flaticon.com/512/743/743007.png" },
-  { name: "Bike Repair", image: "https://cdn-icons-png.flaticon.com/512/2972/2972185.png" },
-  { name: "Restaurant", image: "https://cdn-icons-png.flaticon.com/512/3075/3075977.png" },
-  { name: "Event Management", image: "https://cdn-icons-png.flaticon.com/512/3132/3132693.png" },
-  { name: "Wedding Planner", image: "https://cdn-icons-png.flaticon.com/512/2936/2936886.png" },
-  { name: "School", image: "https://cdn-icons-png.flaticon.com/512/3135/3135755.png" },
-  { name: "Coaching", image: "https://cdn-icons-png.flaticon.com/512/3135/3135768.png" },
-  { name: "Gym", image: "https://cdn-icons-png.flaticon.com/512/1046/1046784.png" },
-  { name: "Hospital", image: "https://cdn-icons-png.flaticon.com/512/2967/2967350.png" },
-  { name: "Salon", image: "https://cdn-icons-png.flaticon.com/512/2965/2965567.png" },
-  { name: "Interior Designer", image: "https://cdn-icons-png.flaticon.com/512/1046/1046786.png" },
-  { name: "Real Estate", image: "https://cdn-icons-png.flaticon.com/512/1483/1483336.png" },
-  { name: "Packers Movers", image: "https://cdn-icons-png.flaticon.com/512/1046/1046858.png" },
-  { name: "Courier Service", image: "https://cdn-icons-png.flaticon.com/512/2920/2920050.png" },
-  { name: "Digital Marketing", image: "https://cdn-icons-png.flaticon.com/512/1006/1006771.png" },
+  { name: "Plumber", image: plumberIcon },
+  { name: "Painter", image: painterIcon },
+  { name: "AC Repair", image: acRepairIcon },
+  { name: "Car Repair", image: carRepairIcon },
+  { name: "Bike Repair", image: bikeRepairIcon },
+  { name: "Hotel", image: hotelIcon },
+  { name: "Restaurant", image: restaurantIcon },
+  { name: "Event Management", image: eventManagementIcon },
+  { name: "Wedding Planner", image: weddingPlannerIcon },
+  { name: "School", image: schoolIcon },
+  { name: "Coaching", image: coachingIcon },
+  { name: "Gym", image: gymIcon },
+  { name: "Hospital", image: hospitalIcon },
+  { name: "Salon", image: salonIcon },
+  { name: "Interior Designer", image: interiorDesignerIcon },
+  { name: "Real Estate", image: realEstateIcon },
+  { name: "Packers Movers", image: packersMoversIcon },
+  { name: "Courier Service", image: courierServiceIcon },
+  { name: "Digital Marketing", image: digitalMarketingIcon },
 ];
 
 const PopularCategories = () => {
