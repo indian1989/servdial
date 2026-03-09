@@ -12,6 +12,9 @@ import NotFound from "../pages/NotFound";
 import CityCategoryPage from "../pages/CityCategoryPage";
 import CategoryPage from "../pages/CategoryPage";
 import BusinessPage from "../pages/BusinessPage";
+import LatestBusinesses from "../pages/LatestBusinesses";
+import SearchResults from "../pages/SearchResults";
+import SEOLandingPage from "../pages/seo/SEOLandingPage";
 
 /* AUTH */
 import Login from "../pages/Login";
@@ -63,14 +66,23 @@ function AppRoutes() {
         {/* Homepage */}
         <Route path="/" element={<Home />} />
 
+        {/* Search */}
+        <Route path="/search" element={<SearchResults />} />
+
+        {/* Latest Businesses */}
+        <Route path="/latest-businesses" element={<LatestBusinesses />} />
+
         {/* Business Details */}
         <Route path="/business/:id" element={<BusinessPage />} />
 
-        {/* SEO Category Pages */}
+        {/* SEO Category Page */}
         <Route path="/category/:category" element={<CategoryPage />} />
 
-        {/* SEO City + Category */}
+        {/* SEO City + Category (old style URL) */}
         <Route path="/:city/:category" element={<CityCategoryPage />} />
+
+        {/* Modern SEO URL */}
+        <Route path="/:seoSlug" element={<SEOLandingPage />} />
 
         {/* Add Business */}
         <Route

@@ -5,16 +5,18 @@ import API from "../api/axios";
 import Header from "../components/layout/Header";
 import Footer from "../components/layout/Footer";
 
-// Home Sections
+// Sections
 import HeroSearch from "../components/home/HeroSearch";
-import Categories from "../components/home/Categories";
-import FeaturedBusinesses from "../components/home/FeaturedBusinesses";
-import NearbyBusinesses from "../components/home/NearbyBusinesses";
-import MapSection from "../components/home/MapSection";
+import CategoriesGrid from "../components/home/CategoriesGrid";
+import PopularBusinesses from "../components/home/PopularBusinesses";
+import LatestBusinesses from "../components/home/LatestBusinesses";
 import TopRatedBusinesses from "../components/home/TopRatedBusinesses";
-import CitiesSection from "../components/home/CitiesSection";
-import BannerAds from "../components/home/BannerAds";
-import HowItWorks from "../components/home/HowItWorks";
+import NearbyBusinesses from "../components/home/NearbyBusinesses";
+import RecommendedBusinesses from "../components/recommendation/RecommendedBusinesses";
+import FeaturedCities from "../components/home/FeaturedCities";
+import WhyChooseServDial from "../components/home/WhyChooseServDial";
+import Testimonials from "../components/home/Testimonials";
+import DownloadApp from "../components/home/DownloadApp";
 import BecomeProvider from "../components/home/BecomeProvider";
 
 const Home = () => {
@@ -24,6 +26,7 @@ const Home = () => {
   const [topRatedBusinesses,setTopRatedBusinesses] = useState([]);
   const [categories,setCategories] = useState([]);
   const [cities,setCities] = useState([]);
+  const [detectedCity,setDetectedCity] = useState(null);
   const [loading,setLoading] = useState(true);
 
   const [userLocation,setUserLocation] = useState({
@@ -31,7 +34,7 @@ const Home = () => {
     lng:null
   });
 
-  // ================= GET USER GPS LOCATION =================
+  // ================= DETECT USER LOCATION =================
 
   const detectLocation = () => {
 
@@ -48,11 +51,33 @@ const Home = () => {
 
         setUserLocation({lat,lng});
 
+        fetchNearbyBusinesses(lat,lng);
+
       },
       (err)=>{
         console.log("Location permission denied");
       }
     );
+  };
+
+  // ================= FETCH NEARBY BUSINESSES =================
+
+  const fetchNearbyBusinesses = async (lat,lng) => {
+
+    try{
+
+      const res = await API.get(`/api/business/nearby?lat=${lat}&lng=${lng}&limit=8`);
+
+      setNearbyBusinesses(res.data.businesses || []);
+
+      if(res.data.city){
+        setDetectedCity(res.data.city);
+      }
+
+    }catch(err){
+      console.log("Nearby fetch failed",err);
+    }
+
   };
 
   // ================= FETCH HOMEPAGE DATA =================
@@ -65,22 +90,19 @@ const Home = () => {
 
       const [
         featuredRes,
-        nearbyRes,
         topRatedRes,
         categoryRes,
         citiesRes
       ] = await Promise.all([
 
-        API.get("/api/featured"),
-        API.get("/api/business?limit=8"),
-        API.get("/api/business?sort=rating&limit=8"),
+        API.get("/api/business/featured"),
+        API.get("/api/business/top-rated?limit=8"),
         API.get("/api/categories"),
         API.get("/api/cities")
 
       ]);
 
-      setFeaturedBusinesses(featuredRes.data || []);
-      setNearbyBusinesses(nearbyRes.data.businesses || []);
+      setFeaturedBusinesses(featuredRes.data.businesses || []);
       setTopRatedBusinesses(topRatedRes.data.businesses || []);
       setCategories(categoryRes.data || []);
       setCities(citiesRes.data || []);
@@ -117,11 +139,20 @@ const Home = () => {
       <HeroSearch />
 
       {/* POPULAR CATEGORIES */}
-      <Categories categories={categories} />
+      <CategoriesGrid categories={categories} />
 
       {/* FEATURED BUSINESSES */}
-      <FeaturedBusinesses
+      <PopularBusinesses
         businesses={featuredBusinesses}
+        loading={loading}
+      />
+
+      {/* LATEST BUSINESSES */}
+      <LatestBusinesses />
+
+      {/* TOP RATED */}
+      <TopRatedBusinesses
+        businesses={topRatedBusinesses}
         loading={loading}
       />
 
@@ -129,31 +160,24 @@ const Home = () => {
       <NearbyBusinesses
         businesses={nearbyBusinesses}
         userLocation={userLocation}
-        loading={loading}
       />
 
-      {/* MAP DISCOVERY */}
-      <MapSection
-        businesses={nearbyBusinesses}
-        userLocation={userLocation}
-      />
+      {/* AI RECOMMENDATION */}
+      <RecommendedBusinesses city={detectedCity} />
 
-      {/* TOP RATED BUSINESSES */}
-      <TopRatedBusinesses
-        businesses={topRatedBusinesses}
-        loading={loading}
-      />
+      {/* FEATURED CITIES */}
+      <FeaturedCities cities={cities} />
 
-      {/* EXPLORE CITIES */}
-      <CitiesSection cities={cities} />
+      {/* WHY SERVDIAL */}
+      <WhyChooseServDial />
 
-      {/* BANNER ADS */}
-      <BannerAds />
+      {/* TESTIMONIALS */}
+      <Testimonials />
 
-      {/* HOW SERVDIAL WORKS */}
-      <HowItWorks />
+      {/* DOWNLOAD APP */}
+      <DownloadApp />
 
-      {/* BECOME PROVIDER CTA */}
+      {/* BECOME PROVIDER */}
       <BecomeProvider />
 
       {/* FOOTER */}

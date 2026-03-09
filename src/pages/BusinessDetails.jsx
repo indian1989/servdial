@@ -1,207 +1,308 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "../api/axios";
-import { Helmet } from "react-helmet-async";
+import API from "../api/axios";
+
+import EnquiryForm from "../components/enquiry/EnquiryForm";
+import ReviewForm from "../components/reviews/ReviewForm";
+import ReviewsList from "../components/reviews/ReviewsList";
+import RatingBreakdown from "../components/reviews/RatingBreakdown";
+import TrackBusinessView from "../components/analytics/TrackBusinessView";
+
+import {
+ MapContainer,
+ TileLayer,
+ Marker,
+ Popup
+} from "react-leaflet";
+
+import L from "leaflet";
+
+const markerIcon = new L.Icon({
+ iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
+ iconSize: [25, 41],
+ iconAnchor: [12, 41]
+});
 
 const BusinessDetails = () => {
-  const { id } = useParams();
 
-  const [business, setBusiness] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+const { id } = useParams();
 
-  useEffect(() => {
-    const fetchBusiness = async () => {
-      try {
-        const { data } = await axios.get(`/api/business/${id}`);
-        setBusiness(data.business);
-      } catch (err) {
-        setError(err.response?.data?.message || "Failed to load business");
-      } finally {
-        setLoading(false);
-      }
-    };
+const [business, setBusiness] = useState(null);
+const [reviews, setReviews] = useState([]);
+const [similar, setSimilar] = useState([]);
 
-    fetchBusiness();
-  }, [id]);
+const user = JSON.parse(localStorage.getItem("servdial_user"));
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        <p className="text-gray-500 text-lg">Loading business...</p>
-      </div>
-    );
-  }
+/* Fetch Business */
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        <p className="text-red-500 text-lg">{error}</p>
-      </div>
-    );
-  }
+const fetchBusiness = async () => {
 
-  if (!business) return null;
+ try {
 
-  /* SEO DATA */
+ const res = await API.get(`/business/${id}`);
 
-  const title = `${business.name} - ${business.category} in ${business.city} | ServDial`;
+ setBusiness(res.data.business);
+ setReviews(res.data.reviews || []);
 
-  const description = `${business.name} is a trusted ${business.category} service in ${business.city}. Contact details, ratings, reviews and address available on ServDial.`;
+ if(res.data.business?.category?._id){
+ fetchSimilar(res.data.business.category._id);
+ }
 
-  const canonicalUrl = `https://servdial.com/business/${business._id}`;
+ } catch (err) {
+ console.error(err);
+ }
 
-  const mapUrl = `https://www.google.com/maps/search/?api=1&query=${business.address}`;
+};
 
-  const whatsappUrl = `https://wa.me/${business.phone}`;
+/* Fetch Similar Businesses */
 
-  const jsonLd = {
-    "@context": "https://schema.org",
-    "@type": "LocalBusiness",
-    name: business.name,
-    image: business.image || "",
-    description,
-    telephone: business.phone,
-    address: {
-      "@type": "PostalAddress",
-      streetAddress: business.address,
-      addressLocality: business.city,
-      addressCountry: "IN"
-    },
-    aggregateRating: business.rating
-      ? {
-          "@type": "AggregateRating",
-          ratingValue: business.rating,
-          reviewCount: business.reviewCount || 1
-        }
-      : undefined,
-    url: canonicalUrl
-  };
+const fetchSimilar = async (categoryId) => {
 
-  return (
-    <>
-      <Helmet>
-        <title>{title}</title>
-        <meta name="description" content={description} />
+ try {
 
-        <meta property="og:title" content={title} />
-        <meta property="og:description" content={description} />
-        <meta property="og:type" content="business.business" />
-        <meta property="og:url" content={canonicalUrl} />
+ const res = await API.get("/business/similar", {
+ params: { category: categoryId }
+ });
 
-        <link rel="canonical" href={canonicalUrl} />
+ setSimilar(res.data || []);
 
-        <script type="application/ld+json">
-          {JSON.stringify(jsonLd)}
-        </script>
-      </Helmet>
+ } catch (err) {
+ console.error(err);
+ }
 
-      <div className="min-h-screen bg-gray-50 py-10 px-5">
+};
 
-        <div className="max-w-5xl mx-auto bg-white shadow-xl rounded-xl overflow-hidden">
+useEffect(() => {
+ fetchBusiness();
+}, [id]);
 
-          {/* IMAGE */}
-          {business.image && (
-            <img
-              src={business.image}
-              alt={business.name}
-              className="w-full h-72 object-cover"
-            />
-          )}
+if (!business) return <p className="p-10">Loading...</p>;
 
-          <div className="p-8">
+const lat = business?.location?.coordinates?.[1];
+const lng = business?.location?.coordinates?.[0];
 
-            {/* TITLE */}
-            <h1 className="text-3xl font-bold mb-2">
-              {business.name}
-            </h1>
+return (
 
-            <p className="text-gray-500 mb-4">
-              {business.category} in {business.city}
-            </p>
+<div className="max-w-7xl mx-auto px-4 py-8">
 
-            {/* RATING */}
-            <p className="text-yellow-500 font-semibold mb-4 text-lg">
-              ⭐ {business.rating || "New Business"}
-            </p>
+{/* Track Page View */}
+<TrackBusinessView businessId={business._id} />
 
-            {/* DESCRIPTION */}
-            {business.description && (
-              <div className="mb-6">
-                <h2 className="text-xl font-semibold mb-2">
-                  About {business.name}
-                </h2>
-                <p className="text-gray-700 leading-relaxed">
-                  {business.description}
-                </p>
-              </div>
-            )}
+{/* HEADER */}
 
-            {/* CONTACT */}
-            <div className="mb-6">
+<div className="grid md:grid-cols-3 gap-6 mb-10">
 
-              <h3 className="text-xl font-semibold mb-2">
-                Contact Details
-              </h3>
+<img
+ src={business.logo}
+ alt={business.name}
+ className="w-full h-60 object-cover rounded"
+/>
 
-              {business.phone && (
-                <p className="text-gray-700 mb-2">
-                  📞 {business.phone}
-                </p>
-              )}
+<div className="md:col-span-2">
 
-              {business.address && (
-                <p className="text-gray-700">
-                  📍 {business.address}
-                </p>
-              )}
+<h1 className="text-3xl font-bold mb-2">
+{business.name}
+</h1>
 
-            </div>
+<p className="text-gray-500 mb-2">
+{business.category?.name}
+</p>
 
-            {/* ACTION BUTTONS */}
+<p className="text-yellow-500 mb-2">
+⭐ {business.rating || 0}
+</p>
 
-            <div className="flex flex-wrap gap-4 mt-6">
+<p className="text-gray-600 mb-4">
+{business.description}
+</p>
 
-              {business.phone && (
-                <a
-                  href={`tel:${business.phone}`}
-                  className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700"
-                >
-                  📞 Call Now
-                </a>
-              )}
+<div className="flex gap-3 flex-wrap">
 
-              {business.phone && (
-                <a
-                  href={whatsappUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-green-500 text-white px-6 py-3 rounded-lg hover:bg-green-600"
-                >
-                  💬 WhatsApp
-                </a>
-              )}
+<a
+ href={`tel:${business.phone}`}
+ onClick={() => API.post("/analytics/call", { business: business._id })}
+ className="bg-blue-600 text-white px-4 py-2 rounded"
+>
+Call
+</a>
 
-              {business.address && (
-                <a
-                  href={mapUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="bg-gray-800 text-white px-6 py-3 rounded-lg hover:bg-black"
-                >
-                  🗺 View on Map
-                </a>
-              )}
+<a
+ href={`https://wa.me/${business.whatsapp}`}
+ onClick={() => API.post("/analytics/whatsapp", { business: business._id })}
+ className="bg-green-600 text-white px-4 py-2 rounded"
+>
+WhatsApp
+</a>
 
-            </div>
+{business.website && (
+<a
+ href={business.website}
+ target="_blank"
+ rel="noreferrer"
+ className="bg-gray-800 text-white px-4 py-2 rounded"
+>
+Website
+</a>
+)}
 
-          </div>
+</div>
 
-        </div>
+{/* Lead Enquiry Form */}
 
-      </div>
-    </>
-  );
+<div className="mt-6">
+<EnquiryForm businessId={business._id} />
+</div>
+
+</div>
+
+</div>
+
+{/* GALLERY */}
+
+{business.images?.length > 0 && (
+
+<div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-10">
+
+{business.images.map((img, i) => (
+<img
+ key={i}
+ src={img}
+ className="h-40 w-full object-cover rounded"
+/>
+))}
+
+</div>
+
+)}
+
+{/* ADDRESS + MAP */}
+
+<div className="grid md:grid-cols-2 gap-8 mb-10">
+
+<div>
+
+<h2 className="text-xl font-semibold mb-3">
+Business Location
+</h2>
+
+<p className="text-gray-600 mb-2">
+{business.address}
+</p>
+
+<p className="text-gray-500">
+{business.city}
+</p>
+
+<h3 className="font-semibold mt-6 mb-2">
+Opening Hours
+</h3>
+
+<p className="text-gray-600">
+{business.openingHours || "Not Provided"}
+</p>
+
+</div>
+
+<div className="h-80 rounded overflow-hidden">
+
+{lat && lng && (
+
+<MapContainer
+ center={[lat, lng]}
+ zoom={15}
+ style={{ height: "100%", width: "100%" }}
+>
+
+<TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+<Marker position={[lat, lng]} icon={markerIcon}>
+
+<Popup>
+{business.name}
+</Popup>
+
+</Marker>
+
+</MapContainer>
+
+)}
+
+</div>
+
+</div>
+
+{/* REVIEWS */}
+
+<div className="grid md:grid-cols-3 gap-8 mt-10">
+
+<div>
+<RatingBreakdown reviews={reviews} />
+</div>
+
+<div className="md:col-span-2">
+
+<ReviewsList
+ reviews={reviews}
+ refresh={fetchBusiness}
+/>
+
+{user && (
+<ReviewForm
+ businessId={business._id}
+ refresh={fetchBusiness}
+/>
+)}
+
+</div>
+
+</div>
+
+{/* SIMILAR BUSINESSES */}
+
+<div className="mt-12">
+
+<h2 className="text-xl font-semibold mb-4">
+Similar Businesses
+</h2>
+
+<div className="grid md:grid-cols-3 gap-6">
+
+{similar.map((biz) => (
+
+<div
+ key={biz._id}
+ className="border rounded p-4"
+>
+
+<img
+ src={biz.logo}
+ className="h-32 w-full object-cover mb-3"
+/>
+
+<h3 className="font-semibold">
+{biz.name}
+</h3>
+
+<p className="text-sm text-gray-500">
+{biz.city}
+</p>
+
+<p className="text-yellow-500 text-sm">
+⭐ {biz.rating || 0}
+</p>
+
+</div>
+
+))}
+
+</div>
+
+</div>
+
+</div>
+
+);
+
 };
 
 export default BusinessDetails;

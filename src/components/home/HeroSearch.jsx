@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Search, Mic, MapPin } from "lucide-react";
 import API from "../../api/axios";
 import { useNavigate } from "react-router-dom";
+import SmartSearchBar from "../search/SmartSearchBar";
 
 const HeroSearch = ({ city }) => {
   const navigate = useNavigate();
@@ -100,17 +101,7 @@ const HeroSearch = ({ city }) => {
           {city || "Select City"}
         </span>
 
-        <input
-          type="text"
-          placeholder="Search for services, businesses..."
-          className="flex-1 outline-none text-gray-700"
-          value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setShowSuggestions(true);
-          }}
-        />
-
+       <SmartSearchBar />
         <button className="text-gray-400 mr-2">
           <Mic size={18} />
         </button>
