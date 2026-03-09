@@ -1,92 +1,82 @@
-import { useState } from "react";
-import axios from "../../api/axios";
+// src/pages/admin/AddBanner.jsx
+import React, { useState } from "react";
+import API from "../api/axios";
+import { useNavigate } from "react-router-dom";
 
 const AddBanner = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    link: "",
+    title: "",
     image: null,
-    isActive: true,
   });
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const handleChange = (e) => {
-    const { name, value, files, type, checked } = e.target;
-    if (type === "file") {
-      setFormData({ ...formData, image: files[0] });
-    } else if (type === "checkbox") {
-      setFormData({ ...formData, isActive: checked });
+    if (e.target.name === "image") {
+      setFormData({ ...formData, image: e.target.files[0] });
     } else {
-      setFormData({ ...formData, [name]: value });
+      setFormData({ ...formData, [e.target.name]: e.target.value });
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.link || !formData.image) {
-      return alert("Please provide link and image");
+    if (!formData.title || !formData.image) {
+      setError("Title and image are required");
+      return;
     }
 
     const data = new FormData();
-    data.append("link", formData.link);
+    data.append("title", formData.title);
     data.append("image", formData.image);
-    data.append("isActive", formData.isActive);
 
     try {
       setLoading(true);
-      await axios.post("/banners", data, {
+      await API.post("/banners", data, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setLoading(false);
-      alert("Banner added successfully");
-      setFormData({ link: "", image: null, isActive: true });
-    } catch (error) {
-      console.error(error);
+      navigate("/admin/manage-banners");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to add banner");
       setLoading(false);
-      alert("Failed to add banner");
     }
   };
 
   return (
-    <div className="admin-page">
-      <h2>Add New Banner</h2>
-
-      <form className="add-banner-form" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          name="link"
-          placeholder="Banner Link"
-          value={formData.link}
-          onChange={handleChange}
-          required
-        />
-
-        <input
-          type="file"
-          name="image"
-          accept="image/*"
-          onChange={handleChange}
-          required
-        />
-
-        {formData.image && (
-          <img
-            src={URL.createObjectURL(formData.image)}
-            alt="Preview"
-            style={{ width: "200px", margin: "10px 0" }}
-          />
-        )}
-
-        <label>
+    <div className="p-6 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Add New Banner</h1>
+      {error && <p className="text-red-500 mb-3">{error}</p>}
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label className="block font-semibold mb-1">Title*</label>
           <input
-            type="checkbox"
-            name="isActive"
-            checked={formData.isActive}
+            type="text"
+            name="title"
+            value={formData.title}
             onChange={handleChange}
-          />{" "}
-          Active
-        </label>
-
-        <button type="submit" disabled={loading}>
+            className="w-full border p-2 rounded"
+          />
+        </div>
+        <div>
+          <label className="block font-semibold mb-1">Banner Image*</label>
+          <input
+            type="file"
+            name="image"
+            accept="image/*"
+            onChange={handleChange}
+            className="w-full"
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          className={`w-full py-2 px-4 rounded text-white ${
+            loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
+          }`}
+        >
           {loading ? "Adding..." : "Add Banner"}
         </button>
       </form>

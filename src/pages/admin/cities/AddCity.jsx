@@ -1,72 +1,73 @@
-import { useState, useContext } from "react";
-import axios from "../../../api/axios";
-import { AuthContext } from "../../../context/AuthContext";
+// src/pages/admin/AddCity.jsx
+import React, { useState } from "react";
+import API from "../api/axios";
+import { useNavigate } from "react-router-dom";
 
 const AddCity = () => {
-  const { user } = useContext(AuthContext);
-
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({
+    name: "",
+    state: "",
+  });
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); setSuccess("");
-
-    if (!city || !state) return setError("City and State are required");
+    if (!formData.name || !formData.state) {
+      setError("City and State are required");
+      return;
+    }
 
     try {
-      // ⚡ Important: Send { name, state } instead of { city, state }
-      const res = await axios.post(
-        "/api/admin/city",       // Make sure route is /city in backend
-        { name: city, state },   
-        { headers: { Authorization: `Bearer ${user.token}` } }
-      );
-
-      setSuccess(`${res.data.city.name} added successfully!`);
-      setCity("");
-      setState("");
+      setLoading(true);
+      await API.post("/cities", formData);
+      setLoading(false);
+      navigate("/admin/manage-cities");
     } catch (err) {
-      console.log(err.response?.data); // For debugging
-      setError(err.response?.data?.message || "Failed to add city");
+      console.error(err);
+      setError("Failed to add city");
+      setLoading(false);
     }
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Add City</h2>
-      {error && <p className="text-red-600 mb-2">{error}</p>}
-      {success && <p className="text-green-600 mb-2">{success}</p>}
-
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+    <div className="p-6 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Add New City</h1>
+      {error && <p className="text-red-500 mb-3">{error}</p>}
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1 font-medium">City Name</label>
+          <label className="block font-semibold mb-1">City Name*</label>
           <input
             type="text"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            required
-            className="w-full border px-3 py-2 rounded"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
           />
         </div>
-
         <div>
-          <label className="block mb-1 font-medium">State</label>
+          <label className="block font-semibold mb-1">State*</label>
           <input
             type="text"
-            value={state}
-            onChange={(e) => setState(e.target.value)}
-            required
-            className="w-full border px-3 py-2 rounded"
+            name="state"
+            value={formData.state}
+            onChange={handleChange}
+            className="w-full border p-2 rounded"
           />
         </div>
-
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          disabled={loading}
+          className={`w-full py-2 px-4 rounded text-white ${
+            loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
+          }`}
         >
-          Add City
+          {loading ? "Adding..." : "Add City"}
         </button>
       </form>
     </div>

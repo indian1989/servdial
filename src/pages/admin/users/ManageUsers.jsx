@@ -1,19 +1,21 @@
-import { useEffect, useState } from "react";
-import axios from "../../api/axios";
+// src/pages/admin/ManageUsers.jsx
+import React, { useState, useEffect } from "react";
+import API from "../api/axios";
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  // Fetch users
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/users");
-      setUsers(res.data);
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
+      const response = await API.get("/users");
+      setUsers(response.data);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch users");
+    } finally {
       setLoading(false);
     }
   };
@@ -22,65 +24,42 @@ const ManageUsers = () => {
     fetchUsers();
   }, []);
 
-  // Block / Unblock user
-  const toggleBlock = async (user) => {
-    try {
-      await axios.put(`/users/${user._id}/block`, {
-        isBlocked: !user.isBlocked,
-      });
-      fetchUsers();
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  // Delete user
   const deleteUser = async (id) => {
-    if (!window.confirm("Delete this user?")) return;
+    if (!window.confirm("Are you sure you want to delete this user?")) return;
     try {
-      await axios.delete(`/users/${id}`);
-      fetchUsers();
-    } catch (error) {
-      console.error(error);
+      await API.delete(`/users/${id}`);
+      setUsers((prev) => prev.filter((u) => u._id !== id));
+    } catch (err) {
+      console.error(err);
+      setError("Failed to delete user");
     }
   };
 
   return (
-    <div className="admin-page">
-      <h2>Manage Users</h2>
-
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Manage Users</h1>
       {loading ? (
-        <p>Loading users...</p>
+        <p>Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
       ) : (
-        <table className="admin-table">
+        <table className="w-full border border-gray-200">
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Status</th>
-              <th>Actions</th>
+            <tr className="bg-gray-100">
+              <th className="p-2 border">Name</th>
+              <th className="p-2 border">Email</th>
+              <th className="p-2 border">Actions</th>
             </tr>
           </thead>
-
           <tbody>
-            {users.map((user) => (
-              <tr key={user._id}>
-                <td>{user.name}</td>
-                <td>{user.email}</td>
-                <td>
-                  {user.isBlocked ? (
-                    <span style={{ color: "red" }}>Blocked</span>
-                  ) : (
-                    <span style={{ color: "green" }}>Active</span>
-                  )}
-                </td>
-                <td>
-                  <button onClick={() => toggleBlock(user)}>
-                    {user.isBlocked ? "Unblock" : "Block"}
-                  </button>
+            {users.map((u) => (
+              <tr key={u._id} className="text-center border-t">
+                <td className="p-2">{u.name}</td>
+                <td className="p-2">{u.email}</td>
+                <td className="p-2 space-x-2">
                   <button
-                    style={{ color: "red" }}
-                    onClick={() => deleteUser(user._id)}
+                    onClick={() => deleteUser(u._id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
                   >
                     Delete
                   </button>

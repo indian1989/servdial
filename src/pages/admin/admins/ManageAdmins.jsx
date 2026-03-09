@@ -1,19 +1,24 @@
-import { useEffect, useState } from "react";
-import axios from "../../api/axios";
+// src/pages/admin/ManageAdmins.jsx
+import React, { useState, useEffect } from "react";
+import API from "../api/axios";
+import { useNavigate } from "react-router-dom";
 
 const ManageAdmins = () => {
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  // Fetch admins
+  // Fetch all admins
   const fetchAdmins = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/admins");
-      setAdmins(res.data);
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
+      const response = await API.get("/admins");
+      setAdmins(response.data);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch admins");
+    } finally {
       setLoading(false);
     }
   };
@@ -24,43 +29,54 @@ const ManageAdmins = () => {
 
   // Delete admin
   const deleteAdmin = async (id) => {
-    if (!window.confirm("Delete this admin?")) return;
+    if (!window.confirm("Are you sure you want to delete this admin?")) return;
     try {
-      await axios.delete(`/admins/${id}`);
-      fetchAdmins();
-    } catch (error) {
-      console.error(error);
+      await API.delete(`/admins/${id}`);
+      setAdmins((prev) => prev.filter((a) => a._id !== id));
+    } catch (err) {
+      console.error(err);
+      setError("Failed to delete admin");
     }
   };
 
   return (
-    <div className="admin-page">
-      <h2>Manage Admins</h2>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Manage Admins</h1>
+      <button
+        onClick={() => navigate("/admin/add-admin")}
+        className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
+      >
+        Add New Admin
+      </button>
 
       {loading ? (
-        <p>Loading admins...</p>
+        <p>Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
       ) : (
-        <table className="admin-table">
+        <table className="w-full border border-gray-200">
           <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Actions</th>
+            <tr className="bg-gray-100">
+              <th className="p-2 border">Name</th>
+              <th className="p-2 border">Email</th>
+              <th className="p-2 border">Actions</th>
             </tr>
           </thead>
-
           <tbody>
-            {admins.map((admin) => (
-              <tr key={admin._id}>
-                <td>{admin.name}</td>
-                <td>{admin.email}</td>
-                <td>{admin.role}</td>
-                <td>
-                  <button>Edit</button>
+            {admins.map((a) => (
+              <tr key={a._id} className="text-center border-t">
+                <td className="p-2">{a.name}</td>
+                <td className="p-2">{a.email}</td>
+                <td className="p-2 space-x-2">
                   <button
-                    style={{ color: "red" }}
-                    onClick={() => deleteAdmin(admin._id)}
+                    onClick={() => navigate(`/admin/edit-admin/${a._id}`)}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => deleteAdmin(a._id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
                   >
                     Delete
                   </button>
@@ -74,4 +90,4 @@ const ManageAdmins = () => {
   );
 };
 
-export default ManageAdmins;````
+export default ManageAdmins;

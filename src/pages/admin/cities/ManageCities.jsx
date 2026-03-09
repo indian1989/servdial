@@ -1,20 +1,24 @@
-import { useEffect, useState } from "react";
-import axios from "../../api/axios";
+// src/pages/admin/ManageCities.jsx
+import React, { useState, useEffect } from "react";
+import API from "../api/axios";
+import { useNavigate } from "react-router-dom";
 
 const ManageCities = () => {
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [newCity, setNewCity] = useState("");
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
-  // Fetch cities
+  // Fetch all cities
   const fetchCities = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/cities");
-      setCities(res.data);
-      setLoading(false);
-    } catch (error) {
-      console.error(error);
+      const response = await API.get("/cities");
+      setCities(response.data);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch cities");
+    } finally {
       setLoading(false);
     }
   };
@@ -23,64 +27,56 @@ const ManageCities = () => {
     fetchCities();
   }, []);
 
-  // Add City
-  const addCity = async () => {
-    if (!newCity.trim()) return alert("Enter city name");
-
-    try {
-      await axios.post("/cities", { name: newCity });
-      setNewCity("");
-      fetchCities();
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  // Delete City
+  // Delete city
   const deleteCity = async (id) => {
-    if (!window.confirm("Delete this city?")) return;
-
+    if (!window.confirm("Are you sure you want to delete this city?")) return;
     try {
-      await axios.delete(`/cities/${id}`);
-      fetchCities();
-    } catch (error) {
-      console.error(error);
+      await API.delete(`/cities/${id}`);
+      setCities((prev) => prev.filter((c) => c._id !== id));
+    } catch (err) {
+      console.error(err);
+      setError("Failed to delete city");
     }
   };
 
   return (
-    <div className="admin-page">
-      <h2>Manage Cities</h2>
-
-      <div className="add-city-form">
-        <input
-          type="text"
-          placeholder="New city name"
-          value={newCity}
-          onChange={(e) => setNewCity(e.target.value)}
-        />
-        <button onClick={addCity}>Add City</button>
-      </div>
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Manage Cities</h1>
+      <button
+        onClick={() => navigate("/admin/add-city")}
+        className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
+      >
+        Add New City
+      </button>
 
       {loading ? (
-        <p>Loading cities...</p>
+        <p>Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
       ) : (
-        <table className="admin-table">
+        <table className="w-full border border-gray-200">
           <thead>
-            <tr>
-              <th>City Name</th>
-              <th>Actions</th>
+            <tr className="bg-gray-100">
+              <th className="p-2 border">City</th>
+              <th className="p-2 border">State</th>
+              <th className="p-2 border">Actions</th>
             </tr>
           </thead>
-
           <tbody>
-            {cities.map((city) => (
-              <tr key={city._id}>
-                <td>{city.name}</td>
-                <td>
+            {cities.map((c) => (
+              <tr key={c._id} className="text-center border-t">
+                <td className="p-2">{c.name}</td>
+                <td className="p-2">{c.state}</td>
+                <td className="p-2 space-x-2">
                   <button
-                    style={{ color: "red" }}
-                    onClick={() => deleteCity(city._id)}
+                    onClick={() => navigate(`/admin/edit-city/${c._id}`)}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => deleteCity(c._id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
                   >
                     Delete
                   </button>

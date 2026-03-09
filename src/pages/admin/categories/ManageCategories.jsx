@@ -1,115 +1,88 @@
-import React, { useEffect, useState } from "react";
-import axios from "../../../api/axios";
+// src/pages/admin/ManageCategories.jsx
+import React, { useState, useEffect } from "react";
+import API from "../api/axios";
+import { useNavigate } from "react-router-dom";
 
 const ManageCategories = () => {
   const [categories, setCategories] = useState([]);
-  const [name, setName] = useState("");
-  const [editId, setEditId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const navigate = useNavigate();
 
+  // Fetch categories
   const fetchCategories = async () => {
-    const res = await axios.get("/categories");
-    setCategories(res.data);
+    try {
+      setLoading(true);
+      const response = await API.get("/categories");
+      setCategories(response.data);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch categories");
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (editId) {
-      await axios.put(`/categories/${editId}`, { name });
-      setEditId(null);
-    } else {
-      await axios.post("/categories", { name });
-    }
-
-    setName("");
-    fetchCategories();
-  };
-
-  const handleEdit = (cat) => {
-    setName(cat.name);
-    setEditId(cat._id);
-  };
-
-  const handleDelete = async (id) => {
-    if (window.confirm("Delete category?")) {
-      await axios.delete(`/categories/${id}`);
-      fetchCategories();
+  // Delete category
+  const deleteCategory = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this category?")) return;
+    try {
+      await API.delete(`/categories/${id}`);
+      setCategories((prev) => prev.filter((c) => c._id !== id));
+    } catch (err) {
+      console.error(err);
+      setError("Failed to delete category");
     }
   };
 
   return (
-    <div className="container mt-4">
-
-      <h2 className="mb-4">Manage Categories</h2>
-
-      {/* Add Category */}
-      <form onSubmit={handleSubmit} className="mb-4">
-
-        <div className="input-group">
-
-          <input
-            type="text"
-            className="form-control"
-            placeholder="Category name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
-
-          <button className="btn btn-primary">
-            {editId ? "Update" : "Add"}
-          </button>
-
-        </div>
-
-      </form>
-
-      {/* Category List */}
-      <table className="table table-bordered">
-
-        <thead>
-          <tr>
-            <th>Category</th>
-            <th width="200">Actions</th>
-          </tr>
-        </thead>
-
-        <tbody>
-
-          {categories.map((cat) => (
-            <tr key={cat._id}>
-
-              <td>{cat.name}</td>
-
-              <td>
-
-                <button
-                  className="btn btn-warning btn-sm me-2"
-                  onClick={() => handleEdit(cat)}
-                >
-                  Edit
-                </button>
-
-                <button
-                  className="btn btn-danger btn-sm"
-                  onClick={() => handleDelete(cat._id)}
-                >
-                  Delete
-                </button>
-
-              </td>
-
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-4">Manage Categories</h1>
+      <button
+        onClick={() => navigate("/admin/add-category")}
+        className="bg-blue-500 text-white px-4 py-2 rounded mb-4"
+      >
+        Add New Category
+      </button>
+      {loading ? (
+        <p>Loading...</p>
+      ) : error ? (
+        <p className="text-red-500">{error}</p>
+      ) : (
+        <table className="w-full border border-gray-200">
+          <thead>
+            <tr className="bg-gray-100">
+              <th className="p-2 border">Name</th>
+              <th className="p-2 border">Actions</th>
             </tr>
-          ))}
-
-        </tbody>
-
-      </table>
-
+          </thead>
+          <tbody>
+            {categories.map((c) => (
+              <tr key={c._id} className="text-center border-t">
+                <td className="p-2">{c.name}</td>
+                <td className="p-2 space-x-2">
+                  <button
+                    onClick={() => navigate(`/admin/edit-category/${c._id}`)}
+                    className="bg-yellow-500 text-white px-3 py-1 rounded"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => deleteCategory(c._id)}
+                    className="bg-red-500 text-white px-3 py-1 rounded"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
     </div>
   );
 };

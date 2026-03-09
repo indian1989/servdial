@@ -1,57 +1,55 @@
-import { useState, useContext } from "react";
-import axios from "../../../api/axios";
-import { AuthContext } from "../../../context/AuthContext";
+// src/pages/admin/AddCategory.jsx
+import React, { useState } from "react";
+import API from "../api/axios";
+import { useNavigate } from "react-router-dom";
 
 const AddCategory = () => {
-  const { user } = useContext(AuthContext);
-
-  const [category, setCategory] = useState("");
+  const navigate = useNavigate();
+  const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(""); setSuccess("");
-
-    if (!category) return setError("Category name is required");
+    if (!name) {
+      setError("Category name is required");
+      return;
+    }
 
     try {
-      const res = await axios.post(
-        "/api/admin/category",
-        { name: category },
-        { headers: { Authorization: `Bearer ${user.token}` } }
-      );
-      setSuccess(`${res.data.category.name} added successfully!`);
-      setCategory("");
+      setLoading(true);
+      await API.post("/categories", { name });
+      setLoading(false);
+      navigate("/admin/manage-categories");
     } catch (err) {
-      console.log(err.response?.data); // ✅ For debugging
-      setError(err.response?.data?.message || "Failed to add category");
+      console.error(err);
+      setError("Failed to add category");
+      setLoading(false);
     }
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-4">Add Category</h2>
-      {error && <p className="text-red-600 mb-2">{error}</p>}
-      {success && <p className="text-green-600 mb-2">{success}</p>}
-
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+    <div className="p-6 max-w-md mx-auto">
+      <h1 className="text-2xl font-bold mb-4">Add New Category</h1>
+      {error && <p className="text-red-500 mb-3">{error}</p>}
+      <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block mb-1 font-medium">Category Name</label>
+          <label className="block font-semibold mb-1">Category Name*</label>
           <input
             type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            required
-            className="w-full border px-3 py-2 rounded"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="w-full border p-2 rounded"
           />
         </div>
-
         <button
           type="submit"
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          disabled={loading}
+          className={`w-full py-2 px-4 rounded text-white ${
+            loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
+          }`}
         >
-          Add Category
+          {loading ? "Adding..." : "Add Category"}
         </button>
       </form>
     </div>
