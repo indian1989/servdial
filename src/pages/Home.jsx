@@ -128,8 +128,8 @@ const Home = () => {
 
       <PopularCategories />
 
-      {categories.length > 0 && (
-        <CategoriesGrid categories={categories} />
+      {categories?.length > 0 && (
+        <CategoriesGrid city={detectCity} />
       )}
 
       {featuredBusinesses.length > 0 && (
