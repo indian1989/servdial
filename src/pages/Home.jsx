@@ -17,105 +17,160 @@ import Testimonials from "../components/home/Testimonials";
 import DownloadApp from "../components/home/DownloadApp";
 import BecomeProvider from "../components/home/BecomeProvider";
 
-// Optional AI recommendation
 import RecommendedBusinesses from "../components/recommendation/RecommendedBusinesses";
 
 const Home = () => {
+
   const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
-  const [nearbyBusinesses, setNearbyBusinesses] = useState([]);
   const [topRatedBusinesses, setTopRatedBusinesses] = useState([]);
+  const [nearbyBusinesses, setNearbyBusinesses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
+
   const [detectedCity, setDetectedCity] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const [userLocation, setUserLocation] = useState({ lat: null, lng: null });
+  const [userLocation, setUserLocation] = useState({
+    lat: null,
+    lng: null,
+  });
 
-  // Detect user location
+  // ================= Detect Location =================
+
   const detectLocation = () => {
+
     if (!navigator.geolocation) return;
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
+
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
+
         setUserLocation({ lat, lng });
+
         fetchNearbyBusinesses(lat, lng);
+
       },
       () => console.log("Location permission denied")
     );
   };
 
-  // Fetch nearby businesses
+  // ================= Nearby Businesses =================
+
   const fetchNearbyBusinesses = async (lat, lng) => {
+
     if (!lat || !lng) return;
+
     try {
-      const res = await API.get(`/api/business/nearby?lat=${lat}&lng=${lng}&limit=8`);
+
+      const res = await API.get(
+        `/api/business/nearby?lat=${lat}&lng=${lng}&limit=8`
+      );
+
       setNearbyBusinesses(res?.data?.businesses || []);
-      if (res?.data?.city) setDetectedCity(res.data.city);
+
+      if (res?.data?.city) {
+        setDetectedCity(res.data.city);
+      }
+
     } catch (err) {
+
       console.log("Nearby fetch failed", err);
+
     }
   };
 
-  // Fetch homepage data
+  // ================= Homepage Data =================
+
   const fetchHomepageData = async () => {
-    try {
-      setLoading(true);
-      const [featuredRes, topRatedRes, categoryRes, citiesRes] = await Promise.all([
-        API.get("/api/business/featured"),
-        API.get("/api/business/top-rated?limit=8"),
-        API.get("/api/categories"),
-        API.get("/api/cities"),
-      ]);
 
-      setFeaturedBusinesses(featuredRes?.data?.businesses || []);
-      setTopRatedBusinesses(topRatedRes?.data?.businesses || []);
-      setCategories(categoryRes?.data?.categories || categoryRes?.data || []);
-      setCities(citiesRes?.data?.cities || citiesRes?.data || []);
+    try {
+
+      setLoading(true);
+
+      const res = await API.get("/api/homepage");
+
+      const data = res.data;
+
+      setFeaturedBusinesses(data?.featuredBusinesses || []);
+      setTopRatedBusinesses(data?.topRatedBusinesses || []);
+      setCategories(data?.categories || []);
+      setCities(data?.cities || []);
+
     } catch (err) {
+
       console.error("Homepage load error", err);
+
     } finally {
+
       setLoading(false);
+
     }
   };
+
+  // ================= Load Data =================
 
   useEffect(() => {
+
     detectLocation();
     fetchHomepageData();
+
   }, []);
 
-  // ======================= RETURN =======================
+  // ================= Render =================
+
   return (
+
     <div className="bg-gray-50 min-h-screen">
-      {/* Only sections, no Header/Footer */}
 
       <HeroSearch />
 
       <PopularCategories />
 
-      {categories.length > 0 && <CategoriesGrid categories={categories} />}
-
-      {featuredBusinesses.length > 0 && (
-        <FeaturedBusinesses businesses={featuredBusinesses} loading={loading} />
+      {categories.length > 0 && (
+        <CategoriesGrid categories={categories} />
       )}
 
       {featuredBusinesses.length > 0 && (
-        <PopularBusinesses businesses={featuredBusinesses} loading={loading} />
+        <FeaturedBusinesses
+          businesses={featuredBusinesses}
+          loading={loading}
+        />
+      )}
+
+      {featuredBusinesses.length > 0 && (
+        <PopularBusinesses
+          businesses={featuredBusinesses}
+          loading={loading}
+        />
       )}
 
       {topRatedBusinesses.length > 0 && (
-        <TopRatedBusinesses businesses={topRatedBusinesses} loading={loading} />
+        <TopRatedBusinesses
+          businesses={topRatedBusinesses}
+          loading={loading}
+        />
       )}
 
       {nearbyBusinesses.length > 0 && (
-        <NearbyBusinesses businesses={nearbyBusinesses} userLocation={userLocation} />
+        <NearbyBusinesses
+          businesses={nearbyBusinesses}
+          userLocation={userLocation}
+        />
       )}
 
-      {nearbyBusinesses.length > 0 && <MapSection businesses={nearbyBusinesses} />}
+      {nearbyBusinesses.length > 0 && (
+        <MapSection businesses={nearbyBusinesses} />
+      )}
 
-      {detectedCity && <RecommendedBusinesses city={detectedCity} />}
+      {detectedCity && (
+        <RecommendedBusinesses city={detectedCity} />
+      )}
 
-      {cities.length > 0 && <FeaturedCities cities={cities} />}
+      {cities.length > 0 && (
+        <FeaturedCities cities={cities} />
+      )}
 
       <PopularSearches />
 
@@ -126,7 +181,9 @@ const Home = () => {
       <DownloadApp />
 
       <BecomeProvider />
+
     </div>
+
   );
 };
 
