@@ -105,7 +105,8 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
-        <Route path="dashboard" element={<AdminDashboard />} />
+        <Route index element={<AdminDashboard />} />
+<Route path="dashboard" element={<AdminDashboard />} />
 
         {/* BUSINESSES */}
         <Route path="businesses" element={<ManageBusinesses />} />
