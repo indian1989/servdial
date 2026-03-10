@@ -1,0 +1,38 @@
+import API from "./axios";
+
+// ----------------- Businesses -----------------
+export const getAllBusinesses = () => API.get("/admin/businesses");
+export const addBusiness = (data) => API.post("/admin/business", data);
+export const approveBusiness = (id) => API.put(`/admin/business/approve/${id}`);
+export const rejectBusiness = (id) => API.put(`/admin/business/reject/${id}`);
+export const toggleFeatured = (id) => API.put(`/admin/business/feature/${id}`);
+export const deleteBusiness = (id) => API.delete(`/admin/business/${id}`);
+
+// ==================== Users ====================
+export const getAllUsers = () => API.get("/admin/users");
+export const toggleUserStatus = (id) => API.put(`/admin/user/status/${id}`);
+export const deleteUser = (id) => API.delete(`/admin/user/${id}`);
+
+// ==================== Cities ====================
+export const getAllCities = () => API.get("/admin/cities");
+export const addCity = (data) => API.post("/admin/city", data);
+export const updateCity = (id, data) => API.put(`/admin/city/${id}`, data);
+export const deleteCity = (id) => API.delete(`/admin/city/${id}`);
+
+// ==================== Categories ====================
+export const getAllCategories = () => API.get("/admin/categories");
+export const addCategory = (data) => API.post("/admin/category", data);
+export const updateCategory = (id, data) => API.put(`/admin/category/${id}`, data);
+export const deleteCategory = (id) => API.delete(`/admin/category/${id}`);
+
+// ==================== Banner Ads ====================
+export const getAllBanners = () => API.get("/admin/banners");
+export const addBanner = (data) => API.post("/admin/banner", data);
+export const updateBanner = (id, data) => API.put(`/admin/banner/${id}`, data);
+export const deleteBanner = (id) => API.delete(`/admin/banner/${id}`);
+
+// ==================== Admins ====================
+export const getAllAdmins = () => API.get("/admin/admins");
+export const addAdmin = (data) => API.post("/admin/admin", data);
+export const updateAdmin = (id, data) => API.put(`/admin/admin/${id}`, data);
+export const deleteAdmin = (id) => API.delete(`/admin/admin/${id}`);

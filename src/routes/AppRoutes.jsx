@@ -29,24 +29,24 @@ import ProviderDashboard from "../pages/provider/ProviderDashboard";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 
 /* ADMIN - BUSINESSES */
-import ManageBusinesses from "../pages/admin/businesses/ManageBusinesses";
-import AddBusiness from "../pages/admin/businesses/AddBusiness";
+import ManageBusinesses from "../pages/admin/ManageBusinesses";
+import AddBusiness from "../pages/admin/AddBusiness";
 
 /* ADMIN - CITIES */
-import ManageCities from "../pages/admin/cities/ManageCities";
-import AddCity from "../pages/admin/cities/AddCity";
+import ManageCities from "../pages/admin/ManageCities";
+import AddCity from "../pages/admin/AddCity";
 
 /* ADMIN - CATEGORIES */
-import ManageCategories from "../pages/admin/categories/ManageCategories";
-import AddCategory from "../pages/admin/categories/AddCategory";
+import ManageCategories from "../pages/admin/ManageCategories";
+import AddCategory from "../pages/admin/AddCategory";
 
 /* ADMIN - BANNERS */
-import ManageBannerAds from "../pages/admin/banners/ManageBannerAds";
-import AddBanner from "../pages/admin/banners/AddBanner";
+import ManageBannerAds from "../pages/admin/ManageBannerAds";
+import AddBanner from "../pages/admin/AddBanner";
 
 /* ADMIN - USERS & ADMINS */
-import ManageUsers from "../pages/admin/users/ManageUsers";
-import ManageAdmins from "../pages/admin/admins/ManageAdmins";
+import ManageUsers from "../pages/admin/ManageUsers";
+import ManageAdmins from "../pages/admin/ManageAdmins";
 
 function AppRoutes() {
   return (
