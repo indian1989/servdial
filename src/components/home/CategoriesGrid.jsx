@@ -61,19 +61,17 @@ const CategoriesGrid = ({ city }) => {
 
   return (
     <section className="max-w-7xl mx-auto px-4 mt-12">
-
+      
       {/* TITLE */}
       <div className="text-center mb-8">
-        <h2 className="text-2xl font-bold">
-          Explore Popular Services
-        </h2>
+        <h2 className="text-2xl font-bold">Explore Popular Services</h2>
         <p className="text-gray-500 text-sm mt-1">
           Find trusted local businesses near you
         </p>
       </div>
 
       {/* GRID */}
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-4">
+      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-6">
 
         {categories.map((cat, index) => (
           <div
@@ -83,11 +81,11 @@ const CategoriesGrid = ({ city }) => {
           >
 
             {/* IMAGE ICON */}
-            <div className="bg-blue-50 p-2 rounded-xl group-hover:bg-blue-100 transition">
+            <div className="bg-blue-50 p-4 rounded-xl group-hover:bg-blue-100 transition">
               <img
                 src={cat.icon}
                 alt={cat.name}
-                className="w-18 h-18 object-contain"
+                className="w-32 h-32 object-contain"
               />
             </div>
 
