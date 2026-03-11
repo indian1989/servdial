@@ -1,48 +1,37 @@
-import { Link, Outlet } from "react-router-dom";
+
+import { Outlet } from "react-router-dom";
+import AdminSidebar from "../pages/admin/AdminSidebar";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 function AdminLayout() {
+
+  const { user } = useContext(AuthContext);
+
   return (
-    <div style={{ display: "flex", minHeight: "100vh" }}>
+    <div style={styles.container}>
 
       {/* SIDEBAR */}
-      <div
-        style={{
-          width: "240px",
-          background: "#111827",
-          color: "white",
-          padding: "20px"
-        }}
-      >
-        <h2>ServDial Admin</h2>
-
-        <nav style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "20px" }}>
-          <Link to="/admin/dashboard">Dashboard</Link>
-          <Link to="/admin/businesses">Businesses</Link>
-          <Link to="/admin/cities">Cities</Link>
-          <Link to="/admin/categories">Categories</Link>
-          <Link to="/admin/banners">Banner Ads</Link>
-          <Link to="/admin/users">Users</Link>
-          <Link to="/admin/admins">Admins</Link>
-        </nav>
-      </div>
+      <AdminSidebar />
 
       {/* MAIN AREA */}
-      <div style={{ flex: 1 }}>
+      <div style={styles.main}>
 
         {/* HEADER */}
-        <div
-          style={{
-            background: "#4f46e5",
-            color: "white",
-            padding: "15px",
-            fontWeight: "bold"
-          }}
-        >
-          Admin Panel
+        <div style={styles.header}>
+
+          <div>
+            <strong>ServDial Admin Panel</strong>
+          </div>
+
+          <div>
+            Logged in as: <b>{user?.name}</b>
+          </div>
+
         </div>
 
-        {/* CONTENT */}
-        <div style={{ padding: "20px" }}>
+        {/* PAGE CONTENT */}
+        <div style={styles.content}>
           <Outlet />
         </div>
 
@@ -51,5 +40,34 @@ function AdminLayout() {
     </div>
   );
 }
+
+const styles = {
+
+  container: {
+    display: "flex",
+    minHeight: "100vh",
+    background: "#f9fafb"
+  },
+
+  main: {
+    flex: 1,
+    display: "flex",
+    flexDirection: "column"
+  },
+
+  header: {
+    background: "#4f46e5",
+    color: "white",
+    padding: "15px 25px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+
+  content: {
+    padding: "25px"
+  }
+
+};
 
 export default AdminLayout;
