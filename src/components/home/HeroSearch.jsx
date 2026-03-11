@@ -101,7 +101,9 @@ const HeroSearch = ({ city }) => {
           {city || "Select City"}
         </span>
 
+       <div className="flex-1">
        <SmartSearchBar />
+       </div>
         <button className="text-gray-400 mr-2">
           <Mic size={18} />
         </button>

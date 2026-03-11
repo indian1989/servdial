@@ -5,7 +5,7 @@ const API = axios.create({
   baseURL:
     import.meta.env.VITE_API_BASE_URL ||
     "https://servdial-backend.onrender.com",
-  timeout: 15000, // 15 seconds timeout
+    timeout: 30000, // 30 seconds timeout
   headers: {
     "Content-Type": "application/json",
   },
