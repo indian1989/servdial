@@ -4,7 +4,6 @@ import API from "../api/axios";
 // Sections
 import HeroSearch from "../components/home/HeroSearch";
 import CategoriesGrid from "../components/home/CategoriesGrid";
-import PopularCategories from "../components/home/PopularCategories";
 import PopularBusinesses from "../components/home/PopularBusinesses";
 import FeaturedBusinesses from "../components/home/FeaturedBusinesses";
 import TopRatedBusinesses from "../components/home/TopRatedBusinesses";
@@ -65,7 +64,7 @@ const Home = () => {
     try {
 
       const res = await API.get(
-        `/api/business/nearby?lat=${lat}&lng=${lng}&limit=8`
+        `/business/nearby?lat=${lat}&lng=${lng}&limit=8`
       );
 
       setNearbyBusinesses(res?.data?.businesses || []);
@@ -89,7 +88,7 @@ const Home = () => {
 
       setLoading(true);
 
-      const res = await API.get("/api/homepage");
+      const res = await API.get("/homepage");
 
       const data = res.data;
 
@@ -126,7 +125,6 @@ const Home = () => {
 
       <HeroSearch city={detectedCity} />
 
-      <PopularCategories />
 
       {categories?.length > 0 && (
         <CategoriesGrid city={detectedCity} />
