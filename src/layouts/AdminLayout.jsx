@@ -1,6 +1,6 @@
 
 import { Outlet } from "react-router-dom";
-import AdminSidebar from "../pages/admin/AdminSidebar";
+import AdminSidebar from "../components/admin/AdminSidebar";
 import { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 
