@@ -124,12 +124,12 @@ const Home = () => {
 
     <div className="bg-gray-50 min-h-screen">
 
-      <HeroSearch />
+      <HeroSearch city={detectedCity} />
 
       <PopularCategories />
 
       {categories?.length > 0 && (
-        <CategoriesGrid city={detectCity} />
+        <CategoriesGrid city={detectedCity} />
       )}
 
       {featuredBusinesses.length > 0 && (
