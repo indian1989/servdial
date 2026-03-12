@@ -60,41 +60,41 @@ function AppRoutes() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Route>
 
-      {/* ================= PUBLIC WEBSITE ================= */}
-      <Route element={<PublicLayout />}>
+{/* ================= PUBLIC WEBSITE ================= */}
+<Route element={<PublicLayout />}>
 
-        {/* Homepage */}
-        <Route path="/" element={<Home />} />
+  {/* Homepage */}
+  <Route path="/" element={<Home />} />
 
-        {/* Search */}
-        <Route path="/search" element={<SearchResults />} />
+  {/* Search */}
+  <Route path="/search" element={<SearchResults />} />
 
-        {/* Latest Businesses */}
-        <Route path="/latest-businesses" element={<LatestBusinesses />} />
+  {/* Latest Businesses */}
+  <Route path="/latest-businesses" element={<LatestBusinesses />} />
 
-        {/* Business Details */}
-        <Route path="/business/:id" element={<BusinessPage />} />
+  {/* Business Details */}
+  <Route path="/business/:id" element={<BusinessPage />} />
 
-        {/* SEO Category Page */}
-        <Route path="/category/:category" element={<CategoryPage />} />
+  {/* SEO Category Page */}
+  <Route path="/category/:category" element={<CategoryPage />} />
 
-        {/* SEO City + Category (old style URL) */}
-        <Route path="/:city/:category" element={<CityCategoryPage />} />
+  {/* SEO City + Category */}
+  <Route path="/:city/:category" element={<CityCategoryPage />} />
 
-        {/* Modern SEO URL */}
-        <Route path="/:seoSlug" element={<SEOLandingPage />} />
+  {/* Add Business */}
+  <Route
+    path="/add-business"
+    element={
+      <ProtectedRoute allowedRoles={["provider", "admin", "superadmin"]}>
+        <AddBusiness />
+      </ProtectedRoute>
+    }
+  />
 
-        {/* Add Business */}
-        <Route
-          path="/add-business"
-          element={
-            <ProtectedRoute allowedRoles={["provider", "admin", "superadmin"]}>
-              <AddBusiness />
-            </ProtectedRoute>
-          }
-        />
+  {/* Modern SEO URL */}
+  <Route path="/:seoSlug" element={<SEOLandingPage />} />
 
-      </Route>
+</Route>
 
       {/* ================= ADMIN PANEL ================= */}
       <Route

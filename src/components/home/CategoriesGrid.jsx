@@ -81,11 +81,11 @@ const CategoriesGrid = ({ city }) => {
           >
 
             {/* IMAGE ICON */}
-            <div className="bg-blue-50 p-4 rounded-xl group-hover:bg-blue-100 transition">
+            <div className="bg-blue-50 p-3 rounded-xl group-hover:bg-blue-100 transition">
               <img
                 src={cat.icon || "/default-icon.png"}
                 alt={cat.name}
-                className="w-32 h-32 object-contain"
+                className="w-10 h-10 object-contain"
               />
             </div>
 
