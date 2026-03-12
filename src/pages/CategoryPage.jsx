@@ -15,7 +15,7 @@ const fetchCities = async ()=>{
 
 try{
 
-const {data} = await axios.get("/api/cities");
+const {data} = await axios.get("/cities");
 
 setCities(data.cities || []);
 

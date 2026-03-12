@@ -12,7 +12,7 @@ const BusinessPage = () => {
   useEffect(() => {
     const fetchBusiness = async () => {
       try {
-        const { data } = await axios.get(`/api/business/${id}`);
+        const { data } = await axios.get(`/business/${id}`);
         setBusiness(data.business);
       } catch (error) {
         console.error(error);

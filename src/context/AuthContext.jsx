@@ -25,7 +25,7 @@ export const AuthProvider = ({ children }) => {
   // Login via backend
   const login = async (credentials) => {
   try {
-    const { data } = await axios.post("/api/auth/login", credentials);
+    const { data } = await axios.post("/auth/login", credentials);
 
     const userData = { ...data.user, token: data.token };
 
@@ -50,7 +50,7 @@ export const AuthProvider = ({ children }) => {
   // Register via backend
   const register = async (formData) => {
     try {
-      const { data } = await axios.post("/api/auth/register", formData);
+      const { data } = await axios.post("/auth/register", formData);
       const userData = { ...data.user, token: data.token };
       localStorage.setItem("servdial_user", JSON.stringify(userData));
       setUser(userData);

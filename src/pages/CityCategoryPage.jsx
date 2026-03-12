@@ -18,7 +18,7 @@ const CityCategoryPage = () => {
     const fetchBusinesses = async () => {
       try {
         const { data } = await axios.get(
-          `/api/business/search?city=${city}&category=${category}`
+          `/business/search?city=${city}&category=${category}`
         );
 
         setBusinesses(data.businesses || []);

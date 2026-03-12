@@ -17,8 +17,8 @@ const BusinessList = () => {
       setError(null);
 
       try {
-        const res = await axios.get("/api/business");
-        setBusinesses(res.data.businesses);
+        const res = await axios.get("/businesses"); // important
+        setBusinesses(res.data.businesses || []);
       } catch (err) {
         console.error("Failed to fetch businesses:", err);
         setError("Unable to load businesses. Please try again later.");

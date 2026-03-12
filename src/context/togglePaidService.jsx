@@ -19,7 +19,7 @@ export const togglePaidService = async (id, serviceKey, businesses, setBusinesse
 
   // Persist to Backend
   try {
-    await axios.put(`/api/business/${id}`, { paidServices: updatedPaidServices });
+    await axios.put(`/business/${id}`, { paidServices: updatedPaidServices });
   } catch (err) {
     console.error("Failed to toggle paid service:", err);
 

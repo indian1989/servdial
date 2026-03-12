@@ -45,7 +45,7 @@ const SEOLandingPage = () => {
       setLoading(true);
 
       const res = await API.get(
-        `/api/business?category=${category}&city=${city}`
+        `/business?category=${category}&city=${city}`
       );
 
       setBusinesses(res.data.businesses || []);
