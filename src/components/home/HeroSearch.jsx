@@ -14,31 +14,43 @@ const HeroSearch = ({ city }) => {
 
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // -----------------------------
-  // LOAD TRENDING CATEGORIES
-  // -----------------------------
-  useEffect(() => {
-    const fetchTrending = async () => {
-      try {
-        const res = await API.get("/categories/trending");
-        setTrending(res.data);
-      } catch {
-        setTrending([
-          "Restaurants",
-          "Hospitals",
-          "Electricians",
-          "Hotels",
-          "Real Estate",
-          "Schools",
-        ]);
-      }
-    };
+ // -----------------------------
+// LOAD TRENDING CATEGORIES
+// -----------------------------
+useEffect(() => {
+  const fetchTrending = async () => {
+    try {
 
-    fetchTrending();
+      const res = await API.get("/categories/trending");
 
-    const saved = JSON.parse(localStorage.getItem("recent_searches"));
-    if (saved) setRecent(saved);
-  }, []);
+      const list =
+        res?.data?.categories?.map((c) => c.name) || [];
+
+      setTrending(list);
+
+    } catch (err) {
+
+      console.error("Trending categories error:", err);
+
+      setTrending([
+        "Restaurants",
+        "Hospitals",
+        "Electricians",
+        "Hotels",
+        "Real Estate",
+        "Schools",
+      ]);
+
+    }
+  };
+
+  fetchTrending();
+
+  const saved = JSON.parse(localStorage.getItem("recent_searches"));
+
+  if (saved) setRecent(saved);
+
+}, []);
 
   // -----------------------------
   // SEARCH SUGGESTIONS
@@ -154,7 +166,8 @@ const HeroSearch = ({ city }) => {
 
       {/* TRENDING */}
       <div className="flex flex-wrap gap-2 mt-4 justify-center">
-        {trending.map((item, i) => (
+        {Array.isArray(trending) &&
+          trending.map((item, i) => (
           <button
             key={i}
             onClick={() => handleTrending(item)}
