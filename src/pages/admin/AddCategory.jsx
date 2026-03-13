@@ -94,7 +94,8 @@ const AddCategory = () => {
             </tr>
           </thead>
           <tbody>
-            {categories.map((cat) => (
+            {Array.isArray(categories) &&
+              categories.map((cat) => (
               <tr key={cat._id} className="text-center">
                 <td className="border px-3 py-2">{cat.name}</td>
                 <td className="border px-3 py-2 flex justify-center gap-2">

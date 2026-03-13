@@ -20,7 +20,7 @@ const AddCity = () => {
     setLoading(true);
     try {
       const res = await getAllCities();
-      setCities(res.data.cities || []);
+      setCities(res.data?.cities || []);
     } catch (err) {
       console.error(err);
       alert("Failed to fetch cities.");
@@ -138,7 +138,7 @@ const AddCity = () => {
 
           <tbody>
 
-            {cities.map((city) => (
+            {Array.isArray(cities) && cities.map((city) => (
               <tr key={city._id} className="text-center">
 
                 <td className="border px-3 py-2">{city.name}</td>

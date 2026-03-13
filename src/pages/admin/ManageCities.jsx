@@ -19,7 +19,7 @@ const ManageCities = () => {
     setLoading(true);
     try {
       const res = await getAllCities();
-      setCities(res.data.cities || []);
+      setCities(res.data?.cities || []);
     } catch (err) {
       console.error("Failed to fetch cities:", err);
       alert("Failed to fetch cities.");
@@ -79,15 +79,19 @@ const ManageCities = () => {
   };
 
   // ================= FILTER & PAGINATION =================
-  const filteredCities = cities.filter((c) =>
-    c.name.toLowerCase().includes(search.toLowerCase())
-  );
 
-  const totalPages = Math.ceil(filteredCities.length / PAGE_SIZE);
-  const paginatedCities = filteredCities.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
+const filteredCities = Array.isArray(cities)
+  ? cities.filter((c) =>
+      c.name.toLowerCase().includes(search.toLowerCase())
+    )
+  : [];
+
+const totalPages = Math.ceil(filteredCities.length / PAGE_SIZE);
+
+const paginatedCities = filteredCities.slice(
+  (currentPage - 1) * PAGE_SIZE,
+  currentPage * PAGE_SIZE
+);
 
   // ================= RENDER =================
   return (

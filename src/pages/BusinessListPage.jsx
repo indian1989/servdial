@@ -18,7 +18,7 @@ const BusinessListPage = () => {
         params: { city, category },
       });
 
-      setBusinesses(res.data);
+      setBusinesses(res?.data?.businesses || []);
       setLoading(false);
     } catch (error) {
       console.error("Error fetching businesses", error);

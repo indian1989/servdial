@@ -33,7 +33,7 @@ const LatestBusinesses = () => {
     const fetchBusinesses = async () => {
       try {
         const res = await API.get("/businesses/latest");
-        setBusinesses(res.data);
+        setBusinesses(res?.data?.businesses || []);
       } catch {
         setBusinesses([]);
       }

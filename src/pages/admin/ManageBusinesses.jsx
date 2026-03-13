@@ -18,7 +18,7 @@ const ManageBusinesses = () => {
     setLoading(true);
     try {
       const res = await getAllBusinesses();
-      setBusinesses(res.data);
+      setBusinesses(res?.data?.businesses || []);
     } catch (err) {
       console.error("Failed to fetch businesses:", err);
       alert("Failed to fetch businesses. Please try again.");
@@ -55,19 +55,23 @@ const ManageBusinesses = () => {
   };
 
   // ============ Filters ============
-  const filteredBusinesses = businesses
-    .filter((b) =>
-      statusFilter === "all" ? true : b.status === statusFilter
-    )
-    .filter((b) =>
-      b.name.toLowerCase().includes(search.toLowerCase())
-    );
 
-  const totalPages = Math.ceil(filteredBusinesses.length / PAGE_SIZE);
-  const paginatedBusinesses = filteredBusinesses.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+const safeBusinesses = Array.isArray(businesses) ? businesses : [];
+
+const filteredBusinesses = safeBusinesses
+  .filter((b) =>
+    statusFilter === "all" ? true : b.status === statusFilter
+  )
+  .filter((b) =>
+    b.name?.toLowerCase().includes(search?.toLowerCase())
   );
+
+const totalPages = Math.ceil(filteredBusinesses.length / PAGE_SIZE);
+
+const paginatedBusinesses = filteredBusinesses.slice(
+  (currentPage - 1) * PAGE_SIZE,
+  currentPage * PAGE_SIZE
+);
 
   // ============ Render ============
   return (

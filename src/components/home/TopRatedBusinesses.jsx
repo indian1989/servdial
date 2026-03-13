@@ -33,7 +33,7 @@ const TopRatedBusinesses = ({ city }) => {
     const fetchBusinesses = async () => {
       try {
         const res = await API.get(`/businesses/top-rated?city=${city}`);
-        setBusinesses(res.data);
+        setBusinesses(res?.data?.businesses || []);
       } catch {
         setBusinesses([]);
       }

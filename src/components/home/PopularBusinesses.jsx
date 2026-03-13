@@ -35,7 +35,7 @@ const PopularBusinesses = ({ city }) => {
     const fetchBusinesses = async () => {
       try {
         const res = await API.get(`/businesses/popular?city=${city}`);
-        setBusinesses(res.data);
+        setBusinesses(res?.data?.businesses || []);
       } catch {
         setBusinesses([]);
       }
