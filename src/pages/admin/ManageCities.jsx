@@ -19,7 +19,7 @@ const ManageCities = () => {
     setLoading(true);
     try {
       const res = await getAllCities();
-      setCities(res.data);
+      setCities(res.data.cities || []);
     } catch (err) {
       console.error("Failed to fetch cities:", err);
       alert("Failed to fetch cities.");

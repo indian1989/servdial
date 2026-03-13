@@ -20,7 +20,7 @@ const AddCity = () => {
     setLoading(true);
     try {
       const res = await getAllCities();
-      setCities(res.data);
+      setCities(res.data.cities || []);
     } catch (err) {
       console.error(err);
       alert("Failed to fetch cities.");
