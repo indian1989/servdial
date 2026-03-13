@@ -53,25 +53,6 @@ const AddBusiness = () => {
     description: "",
   });
 
-  // ================= IMAGE UPLOAD =================
-  const handleImageUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    setLoading(true);
-    try {
-      const urls = [];
-      for (let file of files) {
-        const res = await uploadImage(file);
-        urls.push(res.secure_url);
-      }
-      setImages(urls);
-    } catch (err) {
-      console.error(err);
-      alert("Image upload failed.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   // ================= SUBMIT FORM =================
   const handleSubmit = async (e) => {
     e.preventDefault();
