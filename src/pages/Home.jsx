@@ -170,12 +170,12 @@ const Home = () => {
         />
       )}
 
-      {topRatedBusinesses.length > 0 && (
+      {/*{topRatedBusinesses.length > 0 && (
         <TopRatedBusinesses
           businesses={topRatedBusinesses}
           loading={loading}
         />
-      )}
+      )}*/}
 
       {nearbyBusinesses.length > 0 && (
         <NearbyBusinesses
