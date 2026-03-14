@@ -1,141 +1,212 @@
-// Path: src/pages/admin/businesses/AddBusiness.jsx
-
-import React, { useEffect, useState } from "react";
-import { addBusiness, getCategories, getCities } from "../../api/adminAPI";
-import Loader from "../../components/common/Loader";
+import { useState, useEffect } from "react";
+import axios from "../../api/axios";
+import Select from "react-select";
 
 const AddBusiness = () => {
-
-  const [loading, setLoading] = useState(false);
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
 
   const [businessData, setBusinessData] = useState({
     name: "",
     category: "",
-    address: "",
     city: "",
     district: "",
     state: "",
     phone: "",
+    address: "",
+    website: "",
     description: "",
+    logo: null,
   });
 
-  // ================= LOAD DATA =================
+  const [loading, setLoading] = useState(false);
+
+  // ================= FETCH CATEGORIES & CITIES =================
+
   useEffect(() => {
     fetchData();
   }, []);
 
   const fetchData = async () => {
-
     try {
+      const catRes = await axios.get("/categories");
+      const cityRes = await axios.get("/cities");
 
-      const catRes = await getCategories();
-      const cityRes = await getCities();
+      const categoryOptions = (catRes.data.categories || []).map((cat) => ({
+        value: cat.name,
+        label: cat.name,
+      }));
 
-      setCategories(catRes.data.categories || []);
-      setCities(cityRes.data.cities || []);
+      const cityOptions = (cityRes.data.cities || []).map((city) => ({
+        value: city.name,
+        label: city.name,
+        district: city.district,
+        state: city.state,
+      }));
 
-    } catch (err) {
-      console.error("Failed to load data", err);
+      setCategories(categoryOptions);
+      setCities(cityOptions);
+    } catch (error) {
+      console.error("Error loading data:", error);
     }
-
   };
 
-  // ================= INPUT CHANGE =================
-  const handleChange = (e) => {
+  // ================= HANDLE INPUT =================
 
+  const handleChange = (e) => {
     const { name, value } = e.target;
 
     setBusinessData({
       ...businessData,
       [name]: value,
     });
+  };
 
+  // ================= HANDLE LOGO =================
+
+  const handleLogoChange = (e) => {
+    setBusinessData({
+      ...businessData,
+      logo: e.target.files[0],
+    });
   };
 
   // ================= SUBMIT =================
-  const handleSubmit = async (e) => {
 
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { name, category, city, district, state, phone } = businessData;
-
-    if (!name || !category || !city || !district || !state || !phone) {
-      return alert("Please fill all required fields.");
-    }
-
-    setLoading(true);
-
     try {
+      setLoading(true);
 
-      await addBusiness(businessData);
+      const formData = new FormData();
 
-      alert("Business added successfully!");
+      Object.keys(businessData).forEach((key) => {
+        formData.append(key, businessData[key]);
+      });
+
+      await axios.post("/businesses", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      alert("Business added successfully");
 
       setBusinessData({
         name: "",
         category: "",
-        address: "",
         city: "",
         district: "",
         state: "",
         phone: "",
+        address: "",
+        website: "",
         description: "",
+        logo: null,
       });
 
-    } catch (err) {
-
-      console.error(err);
-      alert("Failed to add business");
-
+    } catch (error) {
+      console.error(error);
+      alert("Error adding business");
     } finally {
-
       setLoading(false);
-
     }
-
   };
 
-  // ================= UI =================
   return (
+    <div className="p-6">
 
-    <div className="p-6 max-w-4xl mx-auto">
+      <h2 className="text-2xl font-bold mb-6">
+        Add Business
+      </h2>
 
-      <h2 className="text-2xl font-bold mb-6">Add Business</h2>
+      <form
+        onSubmit={handleSubmit}
+        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+      >
 
-      {loading && <Loader />}
-
-      <form onSubmit={handleSubmit} className="grid gap-4">
-
-        {/* Business Name */}
+        {/* BUSINESS NAME */}
         <input
           type="text"
           name="name"
           placeholder="Business Name *"
           value={businessData.name}
           onChange={handleChange}
+          required
           className="border px-3 py-2 rounded"
         />
 
-        {/* Category Dropdown */}
-        <select
-          name="category"
-          value={businessData.category}
+        {/* CATEGORY */}
+        <Select
+          placeholder="Search Category *"
+          options={categories}
+          value={
+            categories.find((c) => c.value === businessData.category) || null
+          }
+          onChange={(selected) =>
+            setBusinessData({
+              ...businessData,
+              category: selected.value,
+            })
+          }
+        />
+
+        {/* CITY */}
+        <Select
+          placeholder="Search City *"
+          options={cities}
+          value={cities.find((c) => c.value === businessData.city) || null}
+          onChange={(selected) =>
+            setBusinessData({
+              ...businessData,
+              city: selected.value,
+              district: selected.district || "",
+              state: selected.state || "",
+            })
+          }
+        />
+
+        {/* DISTRICT */}
+        <input
+          type="text"
+          name="district"
+          placeholder="District"
+          value={businessData.district}
+          readOnly
+          className="border px-3 py-2 rounded bg-gray-100"
+        />
+
+        {/* STATE */}
+        <input
+          type="text"
+          name="state"
+          placeholder="State"
+          value={businessData.state}
+          readOnly
+          className="border px-3 py-2 rounded bg-gray-100"
+        />
+
+        {/* PHONE */}
+        <input
+          type="text"
+          name="phone"
+          placeholder="Phone *"
+          value={businessData.phone}
+          onChange={handleChange}
+          required
+          className="border px-3 py-2 rounded"
+        />
+
+        {/* WEBSITE */}
+        <input
+          type="text"
+          name="website"
+          placeholder="Website"
+          value={businessData.website}
           onChange={handleChange}
           className="border px-3 py-2 rounded"
-        >
-          <option value="">Select Category *</option>
+        />
 
-          {categories.map((cat) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.name}
-            </option>
-          ))}
-
-        </select>
-
-        {/* Address */}
+        {/* ADDRESS */}
         <input
           type="text"
           name="address"
@@ -145,75 +216,35 @@ const AddBusiness = () => {
           className="border px-3 py-2 rounded"
         />
 
-        {/* City Dropdown */}
-        <select
-          name="city"
-          value={businessData.city}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
-        >
-          <option value="">Select City *</option>
-
-          {cities.map((city) => (
-            <option key={city._id} value={city.name}>
-              {city.name}
-            </option>
-          ))}
-
-        </select>
-
-        {/* District */}
+        {/* LOGO */}
         <input
-          type="text"
-          name="district"
-          placeholder="District *"
-          value={businessData.district}
-          onChange={handleChange}
+          type="file"
+          onChange={handleLogoChange}
           className="border px-3 py-2 rounded"
         />
 
-        {/* State */}
-        <input
-          type="text"
-          name="state"
-          placeholder="State *"
-          value={businessData.state}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
-        />
-
-        {/* Phone */}
-        <input
-          type="text"
-          name="phone"
-          placeholder="Phone *"
-          value={businessData.phone}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
-        />
-
-        {/* Description */}
+        {/* DESCRIPTION */}
         <textarea
           name="description"
           placeholder="Description"
           value={businessData.description}
           onChange={handleChange}
-          className="border px-3 py-2 rounded"
+          className="border px-3 py-2 rounded md:col-span-2"
         />
 
+        {/* SUBMIT BUTTON */}
         <button
           type="submit"
-          className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+          disabled={loading}
+          className="bg-blue-600 text-white py-2 rounded md:col-span-2"
         >
-          Add Business
+          {loading ? "Adding..." : "Add Business"}
         </button>
 
       </form>
 
     </div>
-
   );
-
 };
 
 export default AddBusiness;
