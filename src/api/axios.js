@@ -5,11 +5,12 @@ const API = axios.create({
   baseURL:
     import.meta.env.VITE_API_BASE_URL ||
     "https://servdial-backend.onrender.com/api",
-    timeout: 60000, // 60 seconds timeout
+  timeout: 60000,
   headers: {
     "Content-Type": "application/json",
   },
 });
+
 
 // ================= REQUEST INTERCEPTOR =================
 API.interceptors.request.use(
@@ -24,48 +25,53 @@ API.interceptors.request.use(
           config.headers.Authorization = `Bearer ${user.token}`;
         }
       }
-    } catch (error) {
+    } catch (err) {
       console.error("Invalid user data in localStorage");
       localStorage.removeItem("servdial_user");
     }
 
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
+
 
 // ================= RESPONSE INTERCEPTOR =================
 API.interceptors.response.use(
   (response) => response,
+
   (error) => {
-    // Network Error
+
     if (!error.response) {
       console.error("Network error:", error.message);
-      alert("Network error. Please check your connection.");
+      alert("Network error. Please check your internet connection.");
       return Promise.reject(error);
     }
 
     const { status, data } = error.response;
 
-    // Unauthorized (token expired / invalid)
+    // ================= 401 UNAUTHORIZED =================
     if (status === 401) {
-      console.warn("Session expired. Logging out.");
+      console.warn("Session expired. Redirecting to login...");
 
       localStorage.removeItem("servdial_user");
 
       window.location.href = "/login";
     }
 
-    // Forbidden
+    // ================= 403 FORBIDDEN =================
     if (status === 403) {
       console.warn("Access denied:", data?.message);
     }
 
-    // Server Error
+    // ================= 404 NOT FOUND =================
+    if (status === 404) {
+      console.warn("API route not found:", error.config?.url);
+    }
+
+    // ================= SERVER ERROR =================
     if (status >= 500) {
-      console.error("Server error:", data?.message);
+      console.error("Server error:", data?.message || "Internal server error");
     }
 
     return Promise.reject(error);
