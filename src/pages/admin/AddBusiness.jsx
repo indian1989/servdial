@@ -164,7 +164,6 @@ const AddBusiness = () => {
             setBusinessData({
               ...businessData,
               city: selected.value,
-              district: selected.district || "",
               state: selected.state || "",
             })
           }
