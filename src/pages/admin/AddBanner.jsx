@@ -18,7 +18,7 @@ const AddBanner = () => {
     setLoading(true);
     try {
       const res = await getAllBanners();
-      setBanners(res.data);
+      setBanners(res.data.banners);
     } catch (err) {
       console.error(err);
       alert("Failed to fetch banners.");

@@ -11,97 +11,119 @@ const HeroSearch = ({ city }) => {
   const [suggestions, setSuggestions] = useState([]);
   const [trending, setTrending] = useState([]);
   const [recent, setRecent] = useState([]);
-
   const [showSuggestions, setShowSuggestions] = useState(false);
 
- // -----------------------------
-// LOAD TRENDING CATEGORIES
-// -----------------------------
-useEffect(() => {
-  const fetchTrending = async () => {
-    try {
+  // -----------------------------
+  // LOAD TRENDING CATEGORIES
+  // -----------------------------
+  useEffect(() => {
+    const fetchTrending = async () => {
+      try {
+        const res = await API.get("/categories/trending");
 
-      const res = await API.get("/categories/trending");
+        const list =
+          res?.data?.categories?.map((c) => c.name) || [];
 
-      const list =
-        res?.data?.categories?.map((c) => c.name) || [];
+        setTrending(list);
 
-      setTrending(list);
+      } catch (err) {
 
-    } catch (err) {
+        console.error("Trending categories error:", err);
 
-      console.error("Trending categories error:", err);
+        setTrending([
+          "Restaurants",
+          "Hospitals",
+          "Electricians",
+          "Hotels",
+          "Real Estate",
+          "Schools",
+        ]);
+      }
+    };
 
-      setTrending([
-        "Restaurants",
-        "Hospitals",
-        "Electricians",
-        "Hotels",
-        "Real Estate",
-        "Schools",
-      ]);
+    fetchTrending();
 
-    }
-  };
+    const saved = JSON.parse(localStorage.getItem("recent_searches"));
+    if (saved) setRecent(saved);
 
-  fetchTrending();
-
-  const saved = JSON.parse(localStorage.getItem("recent_searches"));
-
-  if (saved) setRecent(saved);
-
-}, []);
+  }, []);
 
   // -----------------------------
   // SEARCH SUGGESTIONS
   // -----------------------------
   useEffect(() => {
-    if (!query) {
+
+    if (!query || !city) {
       setSuggestions([]);
       return;
     }
 
     const delay = setTimeout(async () => {
+
       try {
-        const res = await API.get(`/search/suggestions?q=${query}&city=${city}`);
-        setSuggestions(res.data);
+
+        const res = await API.get(
+          `/search/suggestions?q=${query}&city=${city}`
+        );
+
+        setSuggestions(res?.data || []);
+
       } catch {
+
         setSuggestions([]);
+
       }
+
     }, 400);
 
     return () => clearTimeout(delay);
+
   }, [query, city]);
 
   // -----------------------------
   // SAVE RECENT SEARCH
   // -----------------------------
   const saveRecent = (value) => {
+
     const updated = [value, ...recent.filter((r) => r !== value)].slice(0, 5);
+
     setRecent(updated);
-    localStorage.setItem("recent_searches", JSON.stringify(updated));
+
+    localStorage.setItem(
+      "recent_searches",
+      JSON.stringify(updated)
+    );
+
   };
 
   // -----------------------------
   // SEARCH SUBMIT
   // -----------------------------
   const handleSearch = (value = query) => {
+
     if (!value) return;
 
     saveRecent(value);
 
     navigate(`/search?q=${value}&city=${city}`);
+
+    setShowSuggestions(false);
+
   };
 
   // -----------------------------
   // CLICK TRENDING
   // -----------------------------
   const handleTrending = (value) => {
+
     setQuery(value);
+
     handleSearch(value);
+
   };
 
   return (
+
     <div className="w-full max-w-3xl mx-auto relative">
 
       {/* SEARCH BAR */}
@@ -113,9 +135,17 @@ useEffect(() => {
           {city || "Select City"}
         </span>
 
-       <div className="flex-1">
-       <SmartSearchBar />
-       </div>
+        <div
+          className="flex-1"
+          onFocus={() => setShowSuggestions(true)}
+        >
+          <SmartSearchBar
+            query={query}
+            setQuery={setQuery}
+            onSearch={handleSearch}
+          />
+        </div>
+
         <button className="text-gray-400 mr-2">
           <Mic size={18} />
         </button>
@@ -126,13 +156,16 @@ useEffect(() => {
         >
           <Search size={18} />
         </button>
+
       </div>
 
       {/* SUGGESTIONS */}
-      {showSuggestions && (suggestions.length > 0 || query) && (
+      {showSuggestions && (suggestions.length > 0 || recent.length > 0) && (
+
         <div className="absolute w-full bg-white border rounded-xl shadow-lg mt-2 z-50 max-h-80 overflow-y-auto">
 
           {suggestions.map((item, i) => (
+
             <div
               key={i}
               onClick={() => handleSearch(item.name)}
@@ -141,6 +174,7 @@ useEffect(() => {
               <Search size={16} className="text-gray-400" />
               {item.name}
             </div>
+
           ))}
 
           {/* RECENT */}
@@ -151,6 +185,7 @@ useEffect(() => {
               </div>
 
               {recent.map((item, i) => (
+
                 <div
                   key={i}
                   onClick={() => handleSearch(item)}
@@ -158,25 +193,33 @@ useEffect(() => {
                 >
                   {item}
                 </div>
+
               ))}
             </>
           )}
+
         </div>
+
       )}
 
       {/* TRENDING */}
       <div className="flex flex-wrap gap-2 mt-4 justify-center">
+
         {Array.isArray(trending) &&
           trending.map((item, i) => (
-          <button
-            key={i}
-            onClick={() => handleTrending(item)}
-            className="px-4 py-1 text-sm border rounded-full hover:bg-blue-50"
-          >
-            {item}
-          </button>
-        ))}
+
+            <button
+              key={i}
+              onClick={() => handleTrending(item)}
+              className="px-4 py-1 text-sm border rounded-full hover:bg-blue-50"
+            >
+              {item}
+            </button>
+
+          ))}
+
       </div>
+
     </div>
   );
 };

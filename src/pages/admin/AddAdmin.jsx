@@ -23,7 +23,7 @@ const AddAdmin = () => {
     setLoading(true);
     try {
       const res = await getAllAdmins();
-      setAdmins(res.data);
+      setAdmins(res.data.admins);
     } catch (err) {
       console.error(err);
       alert("Failed to fetch admins.");

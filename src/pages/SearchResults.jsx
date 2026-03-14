@@ -1,21 +1,6 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import API from "../api/axios";
-
-import {
-MapContainer,
-TileLayer,
-Marker,
-Popup
-} from "react-leaflet";
-
-import L from "leaflet";
-
-const markerIcon = new L.Icon({
-iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
-iconSize: [25, 41],
-iconAnchor: [12, 41]
-});
 
 const SearchResults = () => {
 
@@ -33,6 +18,9 @@ const [sort,setSort] = useState("popular");
 
 const [page,setPage] = useState(1);
 const [totalPages,setTotalPages] = useState(1);
+
+
+// ================= FETCH BUSINESSES =================
 
 const fetchBusinesses = async () => {
 
@@ -55,29 +43,55 @@ setBusinesses(res.data.businesses || []);
 setTotalPages(res.data.totalPages || 1);
 
 }catch(err){
+
 console.error(err);
+
 }
 
 setLoading(false);
 
 };
 
+
+// ================= LOAD DATA =================
+
 useEffect(()=>{
+
 fetchBusinesses();
+
 },[keyword,city,category,rating,sort,page]);
+
+
+// ================= RESET PAGE WHEN FILTER CHANGES =================
+
+useEffect(()=>{
+
+setPage(1);
+
+},[rating,sort,keyword,city,category]);
+
+
+// ================= SEO TITLE =================
+
+useEffect(()=>{
+
+document.title = `Search ${keyword || category || "Businesses"} in ${city || "India"} | ServDial`;
+
+},[keyword,city,category]);
+
+
+// ================= UI =================
 
 return(
 
 <div className="max-w-7xl mx-auto px-4 py-8">
 
-{/* Header */}
+{/* HEADER */}
 
 <div className="mb-6">
 
 <h1 className="text-2xl font-bold">
-
 Search Results
-
 </h1>
 
 <p className="text-gray-500 text-sm">
@@ -90,9 +104,10 @@ Search Results
 
 </div>
 
-{/* Filters */}
 
-<div className="grid md:grid-cols-4 gap-4 mb-6">
+{/* FILTERS */}
+
+<div className="grid md:grid-cols-4 gap-4 mb-6 sticky top-16 bg-white py-3 z-10">
 
 <select
 className="border p-2 rounded"
@@ -117,32 +132,33 @@ onChange={(e)=>setSort(e.target.value)}
 
 </div>
 
-{/* Results Layout */}
 
-<div className="grid lg:grid-cols-3 gap-6">
+{/* RESULTS */}
 
-{/* LEFT RESULTS */}
+<div className="space-y-4">
 
-<div className="lg:col-span-2 space-y-4">
-
-{loading && <p>Loading businesses...</p>}
+{loading && (
+<p className="text-gray-500">
+Loading businesses...
+</p>
+)}
 
 {!loading && businesses.length===0 && (
-
 <p>No businesses found.</p>
-
 )}
 
 {businesses.map((biz)=>(
-<div
+
+<Link
 key={biz._id}
-className="border rounded-lg p-4 hover:shadow-md"
+to={`/business/${biz._id}`}
+className="block border rounded-lg p-4 hover:shadow-md transition"
 >
 
 <div className="flex gap-4">
 
 <img
-src={biz.logo}
+src={biz.image || "/no-image.png"}
 alt={biz.name}
 className="w-20 h-20 object-cover rounded"
 />
@@ -150,106 +166,91 @@ className="w-20 h-20 object-cover rounded"
 <div className="flex-1">
 
 <h3 className="font-semibold text-lg">
-
 {biz.name}
-
 </h3>
 
 <p className="text-gray-600 text-sm">
-
 {biz.category?.name}
-
 </p>
 
 <p className="text-gray-500 text-sm">
-
-{biz.city}
-
+📍 {biz.city}
 </p>
 
 <p className="text-yellow-500 text-sm">
-
 ⭐ {biz.rating || "0"}
-
 </p>
 
-</div>
+{/* ACTION BUTTONS */}
+
+<div className="flex gap-2 mt-2">
+
+{biz.phone && (
+
+<a
+href={`tel:${biz.phone}`}
+onClick={(e)=>e.stopPropagation()}
+className="text-xs bg-green-500 text-white px-3 py-1 rounded"
+>
+Call
+</a>
+
+)}
+
+{biz.whatsapp && (
+
+<a
+href={`https://wa.me/${biz.whatsapp}`}
+target="_blank"
+rel="noreferrer"
+onClick={(e)=>e.stopPropagation()}
+className="text-xs bg-green-600 text-white px-3 py-1 rounded"
+>
+WhatsApp
+</a>
+
+)}
 
 </div>
 
 </div>
+
+</div>
+
+</Link>
+
 ))}
 
-{/* Pagination */}
+</div>
 
-<div className="flex gap-2 mt-6">
+
+{/* PAGINATION */}
+
+{totalPages>1 && (
+
+<div className="flex gap-2 mt-8 flex-wrap justify-center">
 
 {[...Array(totalPages)].map((_,i)=>(
+
 <button
 key={i}
 onClick={()=>setPage(i+1)}
 className={`px-3 py-1 border rounded ${
-page===i+1?"bg-blue-600 text-white":""
+page===i+1
+? "bg-blue-600 text-white"
+: "hover:bg-gray-100"
 }`}
 >
+
 {i+1}
+
 </button>
+
 ))}
 
 </div>
 
-</div>
-
-{/* RIGHT MAP */}
-
-<div className="h-[600px] rounded overflow-hidden">
-
-<MapContainer
-center={[20.5937,78.9629]}
-zoom={5}
-style={{height:"100%",width:"100%"}}
->
-
-<TileLayer
-url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-/>
-
-{businesses.map((biz)=>{
-
-if(!biz.location) return null;
-
-return(
-
-<Marker
-key={biz._id}
-position={[
-biz.location.coordinates[1],
-biz.location.coordinates[0]
-]}
-icon={markerIcon}
->
-
-<Popup>
-
-<b>{biz.name}</b>
-
-<br/>
-
-{biz.city}
-
-</Popup>
-
-</Marker>
-
-);
-
-})}
-
-</MapContainer>
-
-</div>
-
-</div>
+)}
 
 </div>
 

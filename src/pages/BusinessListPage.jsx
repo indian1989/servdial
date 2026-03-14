@@ -37,8 +37,10 @@ const BusinessListPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 py-10">
 
-      <h1 className="text-2xl font-bold mb-6 capitalize">
-        {category} in {city}
+<h1 className="text-2xl font-bold mb-6 capitalize">
+        <h1 className="text-2xl font-bold mb-6 capitalize">
+Best {category} services in {city}
+</h1>
       </h1>
 
       {businesses.length === 0 ? (

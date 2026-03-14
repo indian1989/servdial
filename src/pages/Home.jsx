@@ -8,7 +8,6 @@ import PopularBusinesses from "../components/home/PopularBusinesses";
 import FeaturedBusinesses from "../components/home/FeaturedBusinesses";
 import TopRatedBusinesses from "../components/home/TopRatedBusinesses";
 import NearbyBusinesses from "../components/home/NearbyBusinesses";
-import MapSection from "../components/home/MapSection";
 import PopularSearches from "../components/home/PopularSearches";
 import FeaturedCities from "../components/home/FeaturedCities";
 import WhyChooseServDial from "../components/home/WhyChooseServDial";
@@ -21,6 +20,7 @@ import RecommendedBusinesses from "../components/recommendation/RecommendedBusin
 const Home = () => {
 
   const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
+  const [latestBusinesses, setLatestBusinesses] = useState([]);
   const [topRatedBusinesses, setTopRatedBusinesses] = useState([]);
   const [nearbyBusinesses, setNearbyBusinesses] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -37,6 +37,13 @@ const Home = () => {
   // ================= Detect Location =================
 
   const detectLocation = () => {
+
+    const savedCity = localStorage.getItem("servdial_city");
+
+    if (savedCity) {
+      setDetectedCity(savedCity);
+      return;
+    }
 
     if (!navigator.geolocation) return;
 
@@ -67,10 +74,16 @@ const Home = () => {
         `/business/nearby?lat=${lat}&lng=${lng}&limit=8`
       );
 
-      setNearbyBusinesses(res?.data?.businesses || []);
+      const businesses = res?.data?.businesses || [];
+
+      setNearbyBusinesses(businesses);
 
       if (res?.data?.city) {
+
         setDetectedCity(res.data.city);
+
+        localStorage.setItem("servdial_city", res.data.city);
+
       }
 
     } catch (err) {
@@ -90,12 +103,13 @@ const Home = () => {
 
       const res = await API.get("/homepage");
 
-      const data = res.data;
+      const data = res.data || {};
 
-      setFeaturedBusinesses(data?.featuredBusinesses || []);
-      setTopRatedBusinesses(data?.topRatedBusinesses || []);
-      setCategories(data?.categories || []);
-      setCities(data?.cities || []);
+      setFeaturedBusinesses(data.featuredBusinesses || []);
+      setLatestBusinesses(data.latestBusinesses || []);
+      setTopRatedBusinesses(data.topRatedBusinesses || []);
+      setCategories(data.categories || []);
+      setCities(data.cities || []);
 
     } catch (err) {
 
@@ -117,6 +131,16 @@ const Home = () => {
 
   }, []);
 
+  // ================= Loading UI =================
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen text-gray-600 text-lg">
+        Loading ServDial...
+      </div>
+    );
+  }
+
   // ================= Render =================
 
   return (
@@ -125,9 +149,11 @@ const Home = () => {
 
       <HeroSearch city={detectedCity} />
 
-
-      {categories?.length > 0 && (
-        <CategoriesGrid city={detectedCity} />
+      {Array.isArray(categories) && categories.length > 0 && (
+        <CategoriesGrid
+          categories={categories}
+          city={detectedCity}
+        />
       )}
 
       {featuredBusinesses.length > 0 && (
@@ -137,9 +163,9 @@ const Home = () => {
         />
       )}
 
-      {featuredBusinesses.length > 0 && (
+      {latestBusinesses.length > 0 && (
         <PopularBusinesses
-          businesses={featuredBusinesses}
+          businesses={latestBusinesses}
           loading={loading}
         />
       )}
@@ -156,10 +182,6 @@ const Home = () => {
           businesses={nearbyBusinesses}
           userLocation={userLocation}
         />
-      )}
-
-      {nearbyBusinesses.length > 0 && (
-        <MapSection businesses={nearbyBusinesses} />
       )}
 
       {detectedCity && (

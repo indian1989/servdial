@@ -93,7 +93,7 @@ return (
 <div className="grid md:grid-cols-3 gap-6 mb-10">
 
 <img
- src={business.logo}
+ src={business.image || "/no-image.png"}
  alt={business.name}
  className="w-full h-60 object-cover rounded"
 />
@@ -230,6 +230,17 @@ Opening Hours
 </div>
 
 </div>
+
+<h2 className="text-xl font-semibold mt-10 mb-4">
+Nearby Businesses
+</h2>
+{nearby.map((biz) => (
+
+<div key={biz._id}>
+ {biz.name}
+</div>
+
+))}
 
 {/* REVIEWS */}
 

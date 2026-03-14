@@ -14,11 +14,21 @@ const Header = () => {
   const user = JSON.parse(localStorage.getItem("servdial_user"));
 
   // ===============================
-  // Detect City using GPS
+  // Detect City using GPS (with caching)
   // ===============================
   useEffect(() => {
+
+    const savedCity = localStorage.getItem("servdial_city");
+
+    // Use cached city if available
+    if (savedCity) {
+      setCity(savedCity);
+      return;
+    }
+
     if (!navigator.geolocation) {
       setCity("India");
+      localStorage.setItem("servdial_city", "India");
       return;
     }
 
@@ -28,7 +38,7 @@ const Header = () => {
 
         try {
           const res = await axios.get(
-            `https://nominatim.openstreetmap.org/reverse`,
+            "https://nominatim.openstreetmap.org/reverse",
             {
               params: {
                 lat: latitude,
@@ -39,18 +49,27 @@ const Header = () => {
           );
 
           const detectedCity =
-            res.data.address.city ||
-            res.data.address.town ||
-            res.data.address.state ||
+            res.data?.address?.city ||
+            res.data?.address?.town ||
+            res.data?.address?.state ||
             "India";
 
           setCity(detectedCity);
+
+          // Cache city
+          localStorage.setItem("servdial_city", detectedCity);
+
         } catch {
           setCity("India");
+          localStorage.setItem("servdial_city", "India");
         }
       },
-      () => setCity("India")
+      () => {
+        setCity("India");
+        localStorage.setItem("servdial_city", "India");
+      }
     );
+
   }, []);
 
   // ===============================
@@ -173,6 +192,7 @@ const Header = () => {
             </button>
 
           </div>
+
         </div>
 
       </div>
@@ -217,7 +237,23 @@ const Header = () => {
 
             </div>
 
-            {!user && (
+            {user ? (
+              <>
+                <Link
+                  to="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Dashboard
+                </Link>
+
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 text-white px-3 py-1 rounded text-sm"
+                >
+                  Logout
+                </button>
+              </>
+            ) : (
               <>
                 <Link
                   to="/login"
