@@ -29,20 +29,25 @@ const PopularBusinesses = ({ city }) => {
   }, []);
 
   // -----------------------------
-  // FETCH BUSINESSES
-  // -----------------------------
-  useEffect(() => {
-    const fetchBusinesses = async () => {
-      try {
-        const res = await API.get(`/businesses/popular?city=${city}`);
-        setBusinesses(res?.data?.businesses || []);
-      } catch {
-        setBusinesses([]);
-      }
-    };
+// FETCH BUSINESSES
+// -----------------------------
+useEffect(() => {
 
-    fetchBusinesses();
-  }, [city]);
+  if (!city) return;
+
+  const fetchBusinesses = async () => {
+    try {
+      const res = await API.get(`/businesses/popular?city=${city}`);
+      setBusinesses(res?.data?.businesses || []);
+    } catch (error) {
+      console.error("Popular businesses error:", error);
+      setBusinesses([]);
+    }
+  };
+
+  fetchBusinesses();
+
+}, [city]);
 
   // -----------------------------
   // GOOGLE DISTANCE CALCULATION
