@@ -136,19 +136,24 @@ const AddBusiness = () => {
         />
 
         {/* CATEGORY */}
-        <Select
-          placeholder="Search Category *"
-          options={categories}
-          value={
-            categories.find((c) => c.value === businessData.category) || null
-          }
-          onChange={(selected) =>
-            setBusinessData({
-              ...businessData,
-              category: selected.value,
-            })
-          }
-        />
+<Select
+  placeholder="Search Category *"
+  options={categories.map((c) => ({
+    value: c._id,
+    label: c.name,
+  }))}
+  value={
+    categories
+      .map((c) => ({ value: c._id, label: c.name }))
+      .find((c) => c.value === businessData.category) || null
+  }
+  onChange={(selected) =>
+    setBusinessData({
+      ...businessData,
+      category: selected.value,
+    })
+  }
+/>
 
         {/* CITY */}
         <Select
@@ -171,7 +176,7 @@ const AddBusiness = () => {
           name="district"
           placeholder="District"
           value={businessData.district}
-          readOnly
+          onChange={handleChange}
           className="border px-3 py-2 rounded bg-gray-100"
         />
 
