@@ -1,157 +1,220 @@
-import React, { useState, useEffect } from "react";
-import {
-  getAllCategories,
-  addCategory,
-  deleteCategory,
-} from "../../api/adminAPI";
+import React, { useEffect, useState } from "react";
+import Select from "react-select";
+import { addBusiness, getCategories, getCities } from "../../api/adminAPI";
 import Loader from "../../components/common/Loader";
-import { FaTrash } from "react-icons/fa";
 
-const AddCategory = () => {
-  const [categories, setCategories] = useState([]);
+const AddBusiness = () => {
+
   const [loading, setLoading] = useState(false);
-  const [categoryName, setCategoryName] = useState("");
+  const [categories, setCategories] = useState([]);
+  const [cities, setCities] = useState([]);
 
-  // ================= FETCH CATEGORIES =================
-  const fetchCategories = async () => {
-    setLoading(true);
-    try {
-      const res = await getAllCategories();
+  const [businessData, setBusinessData] = useState({
+    name: "",
+    category: "",
+    address: "",
+    city: "",
+    district: "",
+    state: "",
+    phone: "",
+    description: "",
+  });
 
-      // Handle different API response formats
-      const data =
-        res?.data?.categories ||
-        res?.data?.data ||
-        res?.data ||
-        [];
-
-      setCategories(Array.isArray(data) ? data : []);
-    } catch (err) {
-      console.error("Category fetch error:", err);
-      alert("Failed to fetch categories.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
+  // ================= LOAD DATA =================
   useEffect(() => {
-    fetchCategories();
+    fetchData();
   }, []);
 
-  // ================= ADD CATEGORY =================
-  const handleAddCategory = async () => {
-    if (!categoryName.trim()) {
-      return alert("Category name is required.");
-    }
-
-    setLoading(true);
-
+  const fetchData = async () => {
     try {
-      await addCategory({ name: categoryName });
 
-      setCategoryName("");
-      fetchCategories();
+      const catRes = await getCategories();
+      const cityRes = await getCities();
+
+      const categoryOptions = (catRes.data.categories || []).map((cat) => ({
+        value: cat._id,
+        label: cat.name.charAt(0).toUpperCase() + cat.name.slice(1),
+      }));
+
+      const cityOptions = (cityRes.data.cities || []).map((city) => ({
+  value: city.name,
+  label: city.name,
+  district: city.district,
+  state: city.state,
+}));
+
+      setCategories(categoryOptions);
+      setCities(cityOptions);
+
     } catch (err) {
-      console.error("Add category error:", err);
-      alert("Failed to add category.");
-    } finally {
-      setLoading(false);
+      console.error("Failed to load data", err);
     }
   };
 
-  // ================= DELETE CATEGORY =================
-  const handleDeleteCategory = async (id) => {
-    const confirmDelete = window.confirm(
-      "Are you sure you want to delete this category?"
-    );
+  // ================= INPUT CHANGE =================
+  const handleChange = (e) => {
 
-    if (!confirmDelete) return;
+    const { name, value } = e.target;
+
+    setBusinessData({
+      ...businessData,
+      [name]: value,
+    });
+
+  };
+
+  // ================= SUBMIT =================
+  const handleSubmit = async (e) => {
+
+    e.preventDefault();
+
+    const { name, category, city, district, state, phone } = businessData;
+
+    if (!name || !category || !city || !district || !state || !phone) {
+      return alert("Please fill all required fields.");
+    }
 
     setLoading(true);
 
     try {
-      await deleteCategory(id);
-      fetchCategories();
+
+      await addBusiness(businessData);
+
+      alert("Business added successfully!");
+
+      setBusinessData({
+        name: "",
+        category: "",
+        address: "",
+        city: "",
+        district: "",
+        state: "",
+        phone: "",
+        description: "",
+      });
+
     } catch (err) {
-      console.error("Delete category error:", err);
-      alert("Failed to delete category.");
+
+      console.error(err);
+      alert("Failed to add business");
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
 
   return (
+
     <div className="p-6 max-w-4xl mx-auto">
 
-      <h2 className="text-2xl font-bold mb-6">Add Category</h2>
+      <h2 className="text-2xl font-bold mb-6">Add Business</h2>
 
       {loading && <Loader />}
 
-      {/* ADD CATEGORY FORM */}
-      <div className="flex gap-2 mb-6">
+      <form onSubmit={handleSubmit} className="grid gap-4">
+
+        {/* Business Name */}
         <input
           type="text"
-          placeholder="Category Name *"
-          value={categoryName}
-          onChange={(e) => setCategoryName(e.target.value)}
-          className="border px-3 py-2 rounded flex-1"
+          name="name"
+          placeholder="Business Name *"
+          value={businessData.name}
+          onChange={handleChange}
+          className="border px-3 py-2 rounded"
+        />
+
+        {/* Category Search Dropdown */}
+        <Select
+          placeholder="Search Category *"
+          options={categories}
+          value={categories.find(c => c.value === businessData.category) || null}
+          onChange={(selected) =>
+            setBusinessData({
+              ...businessData,
+              category: selected.value,
+            })
+          }
+        />
+
+        {/* Address */}
+        <input
+          type="text"
+          name="address"
+          placeholder="Address"
+          value={businessData.address}
+          onChange={handleChange}
+          className="border px-3 py-2 rounded"
+        />
+
+        {/* City Search Dropdown */}
+        <Select
+  placeholder="Search City *"
+  options={cities}
+  value={cities.find((c) => c.value === businessData.city) || null}
+  onChange={(selected) =>
+    setBusinessData({
+      ...businessData,
+      city: selected.value,
+      state: selected.state || "",
+    })
+  }
+/>
+
+        {/* District */}
+        <input
+          type="text"
+          name="district"
+          placeholder="District *"
+          value={businessData.district}
+          onChange={handleChange}
+          className="border px-3 py-2 rounded"
+        />
+
+        {/* State */}
+        <input
+          type="text"
+          name="state"
+          placeholder="State *"
+          value={businessData.state}
+          readOnly
+          className="border px-3 py-2 rounded"
+        />
+
+        {/* Phone */}
+        <input
+          type="text"
+          name="phone"
+          placeholder="Phone *"
+          value={businessData.phone}
+          onChange={handleChange}
+          className="border px-3 py-2 rounded"
+        />
+
+        {/* Description */}
+        <textarea
+          name="description"
+          placeholder="Description"
+          value={businessData.description}
+          onChange={handleChange}
+          className="border px-3 py-2 rounded"
         />
 
         <button
-          onClick={handleAddCategory}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          type="submit"
+          className="bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
         >
-          Add Category
+          Add Business
         </button>
-      </div>
 
-      {/* CATEGORY TABLE */}
-      <div className="overflow-x-auto">
+      </form>
 
-        <table className="w-full border border-gray-200">
-
-          <thead className="bg-gray-100">
-            <tr className="text-center">
-              <th className="border px-3 py-2">Category Name</th>
-              <th className="border px-3 py-2">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-
-            {Array.isArray(categories) && categories.length > 0 ? (
-              categories.map((cat) => (
-                <tr key={cat._id} className="text-center">
-                  <td className="border px-3 py-2">{cat.name}</td>
-
-                  <td className="border px-3 py-2 flex justify-center">
-                    <button
-                      onClick={() => handleDeleteCategory(cat._id)}
-                      className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 flex items-center gap-1"
-                    >
-                      <FaTrash /> Delete
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan="2"
-                  className="text-center py-4 text-gray-500"
-                >
-                  No categories found
-                </td>
-              </tr>
-            )}
-
-          </tbody>
-
-        </table>
-
-      </div>
     </div>
+
   );
+
 };
 
-export default AddCategory;
+export default AddBusiness;
