@@ -1,4 +1,4 @@
-import axios from "axios";
+import API from "../api/axios";
 
 // ================= CLOUDINARY UPLOAD =================
 // file: File object from input
@@ -21,7 +21,7 @@ export const uploadImage = async (file) => {
   const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/upload`;
 
   try {
-    const res = await axios.post(url, formData, {
+    const res = await API.post(url, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
       },

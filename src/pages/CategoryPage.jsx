@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useEffect, useState } from "react";
-import API from "../../api/axios";
+import API from "../api/axios";
 
 const CategoryPage = () => {
 

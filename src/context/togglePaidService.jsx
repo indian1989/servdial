@@ -1,4 +1,4 @@
-import API from "../../api/axios";
+import API from "../api/axios";
 
 export const togglePaidService = async (id, serviceKey, businesses, setBusinesses) => {
   // Find current business
