@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
+import API from "../api/axios";
 import { MapPin, Menu, X } from "lucide-react";
 
 import logo from "../../assets/ServDial.png";
@@ -11,7 +12,7 @@ const Header = () => {
   const [city, setCity] = useState("Detecting...");
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const user = JSON.parse(localStorage.getItem("servdial_user"));
+  const { user } = useAuth();
 
   // ===============================
   // Detect City using GPS (with caching)
@@ -37,7 +38,7 @@ const Header = () => {
         const { latitude, longitude } = pos.coords;
 
         try {
-          const res = await axios.get(
+          const res = await API.get(
             "https://nominatim.openstreetmap.org/reverse",
             {
               params: {
@@ -149,11 +150,17 @@ const Header = () => {
               <div className="flex items-center gap-3">
 
                 <Link
-                  to="/dashboard"
-                  className="text-sm font-medium hover:text-blue-600"
-                >
-                  Dashboard
-                </Link>
+  to={
+    user?.role === "provider"
+      ? "/provider/dashboard"
+      : user?.role === "admin" || user?.role === "superadmin"
+      ? "/admin/dashboard"
+      : "/"
+  }
+  className="text-sm font-medium hover:text-blue-600"
+>
+  Dashboard
+</Link>
 
                 <button
                   onClick={handleLogout}
@@ -240,11 +247,17 @@ const Header = () => {
             {user ? (
               <>
                 <Link
-                  to="/dashboard"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Dashboard
-                </Link>
+  to={
+    user?.role === "provider"
+      ? "/provider/dashboard"
+      : user?.role === "admin" || user?.role === "superadmin"
+      ? "/admin/dashboard"
+      : "/"
+  }
+  onClick={() => setMenuOpen(false)}
+>
+  Dashboard
+</Link>
 
                 <button
                   onClick={handleLogout}

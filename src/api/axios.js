@@ -11,37 +11,40 @@ const API = axios.create({
   },
 });
 
+// ================= HELPER: GET STORED USER =================
+const getStoredUser = () => {
+  try {
+    const stored = localStorage.getItem("servdial_user");
+    return stored ? JSON.parse(stored) : null;
+  } catch (error) {
+    console.error("Invalid user data in localStorage");
+    localStorage.removeItem("servdial_user");
+    return null;
+  }
+};
 
 // ================= REQUEST INTERCEPTOR =================
 API.interceptors.request.use(
   (config) => {
-    try {
-      const storedUser = localStorage.getItem("servdial_user");
+    const user = getStoredUser();
 
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-
-        if (user?.token) {
-          config.headers.Authorization = `Bearer ${user.token}`;
-        }
-      }
-    } catch (err) {
-      console.error("Invalid user data in localStorage");
-      localStorage.removeItem("servdial_user");
+    if (user?.token) {
+      config.headers.Authorization = `Bearer ${user.token}`;
     }
+
+    // Optional: Add request id for debugging production logs
+    config.headers["x-request-id"] = Date.now();
 
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-
 // ================= RESPONSE INTERCEPTOR =================
 API.interceptors.response.use(
   (response) => response,
 
   (error) => {
-
     if (!error.response) {
       console.error("Network error:", error.message);
       alert("Network error. Please check your internet connection.");
@@ -52,11 +55,13 @@ API.interceptors.response.use(
 
     // ================= 401 UNAUTHORIZED =================
     if (status === 401) {
-      console.warn("Session expired. Redirecting to login...");
+      const user = getStoredUser();
 
-      localStorage.removeItem("servdial_user");
-
-      window.location.href = "/login";
+      if (user) {
+        console.warn("Session expired. Redirecting to login...");
+        localStorage.removeItem("servdial_user");
+        window.location.href = "/login";
+      }
     }
 
     // ================= 403 FORBIDDEN =================

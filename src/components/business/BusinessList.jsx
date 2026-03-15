@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from "react";
-import axios from "../../api/axios";
+import API from "../../api/axios";
 import BusinessCard from "./BusinessCard";
 import { AuthContext } from "../../context/AuthContext";
 
@@ -17,7 +17,7 @@ const BusinessList = () => {
       setError(null);
 
       try {
-        const res = await axios.get("/businesses"); // important
+        const res = await API.get("/businesses"); // important
         setBusinesses(res.data.businesses || []);
       } catch (err) {
         console.error("Failed to fetch businesses:", err);

@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import PublicLayout from "./PublicLayout";
 import AuthLayout from "./AuthLayout";
 import ProtectedRoute from "./ProtectedRoute";
+import Unauthorized from "../pages/Unauthorized";
 
 import AdminLayout from "../layouts/AdminLayout";
 
@@ -81,6 +82,9 @@ function AppRoutes() {
   {/* SEO City + Category */}
   <Route path="/:city/:category" element={<CityCategoryPage />} />
 
+  {/* Modern SEO URL */}
+  <Route path="/:seoSlug" element={<SEOLandingPage />} />
+
   {/* Add Business */}
   <Route
     path="/add-business"
@@ -90,9 +94,6 @@ function AppRoutes() {
       </ProtectedRoute>
     }
   />
-
-  {/* Modern SEO URL */}
-  <Route path="/:seoSlug" element={<SEOLandingPage />} />
 
 </Route>
 
@@ -133,13 +134,17 @@ function AppRoutes() {
 
       {/* ================= PROVIDER DASHBOARD ================= */}
       <Route
-        path="/provider/dashboard"
-        element={
-          <ProtectedRoute allowedRoles={["provider"]}>
-            <ProviderDashboard />
-          </ProtectedRoute>
-        }
-      />
+  path="/provider/dashboard"
+  element={
+    <ProtectedRoute allowedRoles={["provider", "admin", "superadmin"]}>
+      <ProviderDashboard />
+    </ProtectedRoute>
+  }
+/>
+
+      <Route path="/unauthorized" element={<Unauthorized />} />
+
+
 
       {/* ================= 404 ================= */}
       <Route path="*" element={<NotFound />} />
