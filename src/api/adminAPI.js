@@ -1,4 +1,4 @@
-import API from "axios";
+import API from "./axios";
 
 // ==================== Businesses ====================
 export const getAllBusinesses = () => API.get("/admin/businesses");
