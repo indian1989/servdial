@@ -15,7 +15,7 @@ try{
 
 const res = await API.get("/business/provider");
 
-setBusinesses(res.data || []);
+setBusinesses(res.data?.data || res.data || []);
 
 }catch(err){
 
@@ -126,7 +126,7 @@ className="border rounded-lg overflow-hidden shadow-sm"
 >
 
 <img
-src={biz.logo}
+src={biz.images?.[0] || "/no-image.png"}
 alt={biz.name}
 className="h-40 w-full object-cover"
 />

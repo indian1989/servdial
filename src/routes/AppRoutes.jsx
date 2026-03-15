@@ -1,3 +1,4 @@
+```jsx
 import { Routes, Route } from "react-router-dom";
 
 import PublicLayout from "./PublicLayout";
@@ -6,6 +7,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import Unauthorized from "../pages/Unauthorized";
 
 import AdminLayout from "../layouts/AdminLayout";
+import ProviderLayout from "../layouts/ProviderLayout";
 
 /* PUBLIC PAGES */
 import Home from "../pages/Home";
@@ -25,6 +27,7 @@ import ResetPassword from "../pages/ResetPassword";
 
 /* PROVIDER */
 import ProviderDashboard from "../pages/provider/ProviderDashboard";
+import ProviderBusinesses from "../pages/provider/ProviderBusinesses";
 
 /* ADMIN DASHBOARD */
 import AdminDashboard from "../pages/admin/AdminDashboard";
@@ -61,41 +64,34 @@ function AppRoutes() {
         <Route path="/reset-password/:token" element={<ResetPassword />} />
       </Route>
 
-{/* ================= PUBLIC WEBSITE ================= */}
-<Route element={<PublicLayout />}>
+      {/* ================= PUBLIC WEBSITE ================= */}
+      <Route element={<PublicLayout />}>
 
-  {/* Homepage */}
-  <Route path="/" element={<Home />} />
+        <Route path="/" element={<Home />} />
 
-  {/* Search */}
-  <Route path="/search" element={<SearchResults />} />
+        <Route path="/search" element={<SearchResults />} />
 
-  {/* Latest Businesses */}
-  <Route path="/latest-businesses" element={<LatestBusinesses />} />
+        <Route path="/latest-businesses" element={<LatestBusinesses />} />
 
-  {/* Business Details */}
-  <Route path="/business/:id" element={<BusinessPage />} />
+        <Route path="/business/:id" element={<BusinessPage />} />
 
-  {/* SEO Category Page */}
-  <Route path="/category/:category" element={<CategoryPage />} />
+        <Route path="/category/:category" element={<CategoryPage />} />
 
-  {/* SEO City + Category */}
-  <Route path="/:city/:category" element={<CityCategoryPage />} />
+        <Route path="/:city/:category" element={<CityCategoryPage />} />
 
-  {/* Modern SEO URL */}
-  <Route path="/:seoSlug" element={<SEOLandingPage />} />
+        <Route path="/:seoSlug" element={<SEOLandingPage />} />
 
-  {/* Add Business */}
-  <Route
-    path="/add-business"
-    element={
-      <ProtectedRoute allowedRoles={["provider", "admin", "superadmin"]}>
-        <AddBusiness />
-      </ProtectedRoute>
-    }
-  />
+        {/* Add Business */}
+        <Route
+          path="/add-business"
+          element={
+            <ProtectedRoute allowedRoles={["provider", "admin", "superadmin"]}>
+              <AddBusiness />
+            </ProtectedRoute>
+          }
+        />
 
-</Route>
+      </Route>
 
       {/* ================= ADMIN PANEL ================= */}
       <Route
@@ -106,8 +102,9 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       >
+
         <Route index element={<AdminDashboard />} />
-<Route path="dashboard" element={<AdminDashboard />} />
+        <Route path="dashboard" element={<AdminDashboard />} />
 
         {/* BUSINESSES */}
         <Route path="businesses" element={<ManageBusinesses />} />
@@ -130,21 +127,35 @@ function AppRoutes() {
 
         {/* ADMINS */}
         <Route path="admins" element={<ManageAdmins />} />
+
       </Route>
 
-      {/* ================= PROVIDER DASHBOARD ================= */}
+      {/* ================= PROVIDER PANEL ================= */}
       <Route
-  path="/provider/dashboard"
-  element={
-    <ProtectedRoute allowedRoles={["provider", "admin", "superadmin"]}>
-      <ProviderDashboard />
-    </ProtectedRoute>
-  }
-/>
+        path="/provider"
+        element={
+          <ProtectedRoute allowedRoles={["provider", "admin", "superadmin"]}>
+            <ProviderLayout />
+          </ProtectedRoute>
+        }
+      >
 
+        {/* Default route */}
+        <Route index element={<ProviderDashboard />} />
+
+        {/* Dashboard */}
+        <Route path="dashboard" element={<ProviderDashboard />} />
+
+        {/* My Businesses */}
+        <Route path="businesses" element={<ProviderBusinesses />} />
+
+        {/* Add Business */}
+        <Route path="add-business" element={<AddBusiness />} />
+
+      </Route>
+
+      {/* ================= UNAUTHORIZED ================= */}
       <Route path="/unauthorized" element={<Unauthorized />} />
-
-
 
       {/* ================= 404 ================= */}
       <Route path="*" element={<NotFound />} />
@@ -154,3 +165,4 @@ function AppRoutes() {
 }
 
 export default AppRoutes;
+```

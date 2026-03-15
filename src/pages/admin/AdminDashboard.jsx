@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "../../api/axios";
+import API from "../../api/axios";
 
 function AdminDashboard() {
 
@@ -22,8 +22,8 @@ function AdminDashboard() {
   const fetchStats = async () => {
     try {
 
-      const adminStats = await axios.get("/admin/dashboard");
-      const businessStats = await axios.get("/admin/business-stats");
+      const adminStats = await API.get("/admin/dashboard");
+      const businessStats = await API.get("/admin/business-stats");
 
       setStats({
         users: adminStats.data.stats.users,
