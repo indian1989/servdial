@@ -1,7 +1,7 @@
 import { useParams, Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { useEffect, useState } from "react";
-import axios from "../api/axios";
+import API from "../../api/axios";
 
 const CategoryPage = () => {
 
@@ -15,7 +15,7 @@ const fetchCities = async ()=>{
 
 try{
 
-const {data} = await axios.get("/cities");
+const {data} = await API.get("/cities");
 
 setCities(data.cities || []);
 

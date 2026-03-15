@@ -1,6 +1,6 @@
 // frontend/src/context/BusinessContext.jsx
 import { createContext, useState, useEffect } from "react";
-import axios from "../api/axios";
+import API from "../api/axios";
 
 export const BusinessContext = createContext();
 
@@ -13,7 +13,7 @@ export const BusinessProvider = ({ children }) => {
   const fetchBusinesses = async () => {
     setLoading(true);
     try {
-      const { data } = await axios.get("/business");
+      const { data } = await API.get("/business");
 
       if (Array.isArray(data)) {
         setBusinesses(data);
@@ -34,7 +34,7 @@ export const BusinessProvider = ({ children }) => {
   // ================= ADD BUSINESS =================
   const addBusiness = async (businessData) => {
     try {
-      const { data } = await axios.post("/business", businessData);
+      const { data } = await API.post("/business", businessData);
       setBusinesses((prev) => [...prev, data.business]);
       return { success: true, business: data.business };
     } catch (error) {
@@ -46,7 +46,7 @@ export const BusinessProvider = ({ children }) => {
   // ================= UPDATE BUSINESS STATUS =================
   const updateBusinessStatus = async (id, status) => {
     try {
-      const { data } = await axios.put(`/business/${id}`, { status });
+      const { data } = await API.put(`/business/${id}`, { status });
       setBusinesses((prev) => prev.map((b) => (b._id === id ? data.business : b)));
       return { success: true };
     } catch (error) {
@@ -58,7 +58,7 @@ export const BusinessProvider = ({ children }) => {
   // ================= DELETE BUSINESS =================
   const deleteBusiness = async (id) => {
     try {
-      await axios.delete(`/business/${id}`);
+      await API.delete(`/business/${id}`);
       setBusinesses((prev) => prev.filter((b) => b._id !== id));
       return { success: true };
     } catch (error) {
@@ -73,7 +73,7 @@ export const BusinessProvider = ({ children }) => {
       const business = businesses.find((b) => b._id === id);
       if (!business) return { success: false, message: "Business not found" };
 
-      const { data } = await axios.put(`/business/${id}/toggle-paid`, {
+      const { data } = await API.put(`/business/${id}/toggle-paid`, {
         isPaid: !business.isPaid,
       });
 

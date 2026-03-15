@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "../api/axios";
+import AP from "../api/axios";
 import { Helmet } from "react-helmet-async";
 import BusinessCard from "../components/business/BusinessCard";
 
@@ -17,7 +17,7 @@ const CityCategoryPage = () => {
   useEffect(() => {
     const fetchBusinesses = async () => {
       try {
-        const { data } = await axios.get(
+        const { data } = await API.get(
           `/business/search?city=${city}&category=${category}`
         );
 

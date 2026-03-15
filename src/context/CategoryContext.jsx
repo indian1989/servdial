@@ -1,5 +1,5 @@
 import { createContext, useState, useEffect } from "react";
-import axios from "../api/axios";
+import API from "../../api/axios";
 
 export const CategoryContext = createContext();
 
@@ -10,7 +10,7 @@ export const CategoryProvider = ({ children }) => {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const res = await axios.get("/categories");
+      const res = await API.get("/categories");
       setCategories(res.data);
     } catch (err) {
       console.error("Error fetching categories", err);

@@ -1,4 +1,4 @@
-import axios from "../api/axios";
+import API from "../../api/axios";
 
 export const togglePaidService = async (id, serviceKey, businesses, setBusinesses) => {
   // Find current business
@@ -19,7 +19,7 @@ export const togglePaidService = async (id, serviceKey, businesses, setBusinesse
 
   // Persist to Backend
   try {
-    await axios.put(`/business/${id}`, { paidServices: updatedPaidServices });
+    await API.put(`/business/${id}`, { paidServices: updatedPaidServices });
   } catch (err) {
     console.error("Failed to toggle paid service:", err);
 

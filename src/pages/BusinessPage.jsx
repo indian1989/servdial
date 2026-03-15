@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "../api/axios";
+import API from "../../api/axios";
 import { Helmet } from "react-helmet-async";
 
 const BusinessPage = () => {
@@ -12,7 +12,7 @@ const BusinessPage = () => {
   useEffect(() => {
     const fetchBusiness = async () => {
       try {
-        const { data } = await axios.get(`/business/${id}`);
+        const { data } = await API.get(`/business/${id}`);
         setBusiness(data.business);
       } catch (error) {
         console.error(error);

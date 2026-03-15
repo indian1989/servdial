@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axios from "../api/axios";
+import API from "../../api/axios";
 
 const BusinessListPage = () => {
   const { city, category } = useParams();
@@ -14,7 +14,7 @@ const BusinessListPage = () => {
 
   const fetchBusinesses = async () => {
     try {
-      const res = await axios.get(`/business/search`, {
+      const res = await API.get(`/business/search`, {
         params: { city, category },
       });
 

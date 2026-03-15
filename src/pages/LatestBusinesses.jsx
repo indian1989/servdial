@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Star, Phone, MapPin, BadgeCheck, MessageCircle } from "lucide-react";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
-import API from "../api/axios";
+import API from "../../api/axios";
 import { useNavigate } from "react-router-dom";
 
 const LatestBusinesses = () => {
