@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import API from "../../api/axios";
 
-const MyLeads = () => {
+const ProviderLeads = () => {
 
 const [leads,setLeads] = useState([]);
 const [loading,setLoading] = useState(true);
@@ -81,4 +81,4 @@ className="border p-4 rounded"
 
 };
 
-export default MyLeads;
+export default ProviderLeads;

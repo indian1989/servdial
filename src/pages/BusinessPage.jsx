@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import API from "../api/axios";
 import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
+
 
 const BusinessPage = () => {
   const { id } = useParams();
@@ -106,6 +108,13 @@ const BusinessPage = () => {
               <p className="text-gray-700 leading-relaxed">
                 {business.description}
               </p>
+
+              <Link
+                to={`/claim-business/${business._id}`}
+                className="bg-green-600 text-white px-4 py-2"
+              >
+                Claim This Business
+              </Link>
             </div>
           )}
 

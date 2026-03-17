@@ -1,35 +1,31 @@
-const ProviderSidebar = ({ activeTab, setActiveTab }) => {
-  const menuItems = [
-    { id: "dashboard", label: "Dashboard" },
-    { id: "business", label: "My Business" },
-    { id: "leads", label: "Leads" },
-    { id: "reviews", label: "Reviews" },
-    { id: "settings", label: "Settings" },
-  ];
+import { Link } from "react-router-dom";
+import { providerRoutes } from "../../routes/routeConfig";
 
+function ProviderSidebar() {
   return (
-    <div className="w-64 bg-white shadow-lg p-5">
-      <h2 className="text-2xl font-bold text-blue-600 mb-8">
-        ServDial Provider
+    <div className="w-64 bg-gray-900 text-white min-h-screen p-4">
+
+      <h2 className="text-xl font-bold mb-6">
+        Provider Panel
       </h2>
 
-      <ul className="space-y-4">
-        {menuItems.map((item) => (
-          <li
-            key={item.id}
-            onClick={() => setActiveTab(item.id)}
-            className={`cursor-pointer px-4 py-2 rounded-lg transition ${
-              activeTab === item.id
-                ? "bg-blue-600 text-white"
-                : "hover:bg-gray-200"
-            }`}
-          >
-            {item.label}
+      <ul className="space-y-3">
+
+        {providerRoutes.map((route) => (
+          <li key={route.path}>
+            <Link
+              to={route.path}
+              className="block p-2 rounded hover:bg-gray-700"
+            >
+              {route.name}
+            </Link>
           </li>
         ))}
+
       </ul>
+
     </div>
   );
-};
+}
 
 export default ProviderSidebar;

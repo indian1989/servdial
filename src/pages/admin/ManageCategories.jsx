@@ -20,7 +20,7 @@ const ManageCategories = () => {
     setLoading(true);
     try {
       const res = await getAllCategories();
-      setCategories(res.data);
+      setCategories(res.data.categories || []);
     } catch (err) {
       console.error("Failed to fetch categories:", err);
       alert("Failed to fetch categories.");
@@ -80,9 +80,12 @@ const ManageCategories = () => {
   };
 
   // ================= FILTER & PAGINATION =================
-  const filteredCategories = categories.filter((c) =>
-    c.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredCategories = Array.isArray(categories)
+  ? categories.filter((c) =>
+      c.name.toLowerCase().includes(search.toLowerCase())
+    )
+  : [];
+  
 
   const totalPages = Math.ceil(filteredCategories.length / PAGE_SIZE);
   const paginatedCategories = filteredCategories.slice(
