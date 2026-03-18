@@ -18,7 +18,6 @@ import BecomeProvider from "../components/home/BecomeProvider";
 import RecommendedBusinesses from "../components/recommendation/RecommendedBusinesses";
 
 const Home = () => {
-
   const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
   const [latestBusinesses, setLatestBusinesses] = useState([]);
   const [topRatedBusinesses, setTopRatedBusinesses] = useState([]);
@@ -35,74 +34,49 @@ const Home = () => {
   });
 
   // ================= Detect Location =================
-
   const detectLocation = () => {
-
     const savedCity = localStorage.getItem("servdial_city");
-
     if (savedCity) {
       setDetectedCity(savedCity);
       return;
     }
-
     if (!navigator.geolocation) return;
 
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
-
         setUserLocation({ lat, lng });
-
         fetchNearbyBusinesses(lat, lng);
-
       },
       () => console.log("Location permission denied")
     );
   };
 
   // ================= Nearby Businesses =================
-
   const fetchNearbyBusinesses = async (lat, lng) => {
-
     if (!lat || !lng) return;
-
     try {
-
       const res = await API.get(
         `/business/nearby?lat=${lat}&lng=${lng}&limit=8`
       );
-
       const businesses = res?.data?.businesses || [];
-
       setNearbyBusinesses(businesses);
 
       if (res?.data?.city) {
-
         setDetectedCity(res.data.city);
-
         localStorage.setItem("servdial_city", res.data.city);
-
       }
-
     } catch (err) {
-
       console.log("Nearby fetch failed", err);
-
     }
   };
 
   // ================= Homepage Data =================
-
   const fetchHomepageData = async () => {
-
     try {
-
       setLoading(true);
-
       const res = await API.get("/homepage");
-
       const data = res.data || {};
 
       setFeaturedBusinesses(data.featuredBusinesses || []);
@@ -110,29 +84,20 @@ const Home = () => {
       setTopRatedBusinesses(data.topRatedBusinesses || []);
       setCategories(data.categories || []);
       setCities(data.cities || []);
-
     } catch (err) {
-
       console.error("Homepage load error", err);
-
     } finally {
-
       setLoading(false);
-
     }
   };
 
   // ================= Load Data =================
-
   useEffect(() => {
-
     detectLocation();
     fetchHomepageData();
-
   }, []);
 
   // ================= Loading UI =================
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen text-gray-600 text-lg">
@@ -142,11 +107,8 @@ const Home = () => {
   }
 
   // ================= Render =================
-
   return (
-
     <div className="bg-gray-50 min-h-screen">
-
       <HeroSearch city={detectedCity} />
 
       {Array.isArray(categories) && categories.length > 0 && (
@@ -157,40 +119,24 @@ const Home = () => {
       )}
 
       {featuredBusinesses.length > 0 && (
-        <FeaturedBusinesses
-          businesses={featuredBusinesses}
-          loading={loading}
-        />
+        <FeaturedBusinesses businesses={featuredBusinesses} loading={loading} />
       )}
 
       {latestBusinesses.length > 0 && (
-        <PopularBusinesses
-          businesses={latestBusinesses}
-          loading={loading}
-        />
+        <PopularBusinesses businesses={latestBusinesses} loading={loading} />
       )}
 
-      {/*{topRatedBusinesses.length > 0 && (
-        <TopRatedBusinesses
-          businesses={topRatedBusinesses}
-          loading={loading}
-        />
-      )}*/}
+      {/* {topRatedBusinesses.length > 0 && (
+        <TopRatedBusinesses businesses={topRatedBusinesses} loading={loading} />
+      )} */}
 
       {nearbyBusinesses.length > 0 && (
-        <NearbyBusinesses
-          businesses={nearbyBusinesses}
-          userLocation={userLocation}
-        />
+        <NearbyBusinesses businesses={nearbyBusinesses} userLocation={userLocation} />
       )}
 
-      {detectedCity && (
-        <RecommendedBusinesses city={detectedCity} />
-      )}
+      {detectedCity && <RecommendedBusinesses city={detectedCity} />}
 
-      {cities.length > 0 && (
-        <FeaturedCities cities={cities} />
-      )}
+      {cities.length > 0 && <FeaturedCities cities={cities} />}
 
       <PopularSearches />
 
@@ -201,9 +147,7 @@ const Home = () => {
       <DownloadApp />
 
       <BecomeProvider />
-
     </div>
-
   );
 };
 
