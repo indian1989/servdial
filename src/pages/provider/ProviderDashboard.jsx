@@ -96,12 +96,6 @@ const ProviderDashboard = () => {
   return (
     <div className="flex min-h-screen bg-gray-100">
       
-      {/* SIDEBAR */}
-      <ProviderSidebar
-        sidebarOpen={sidebarOpen}
-        onClose={() => setSidebarOpen(false)}
-      />
-
       {/* MAIN CONTENT */}
       <div className="flex-1 p-4 md:p-6">
         {/* Mobile hamburger */}
