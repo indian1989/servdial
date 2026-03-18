@@ -59,12 +59,12 @@ const Footer = () => {
 
             <div className="flex items-center gap-2">
               <Mail size={16} />
-              support@servdial.com
+              support.servdial@gmail.com
             </div>
 
             <div className="flex items-center gap-2">
               <Phone size={16} />
-              +91 9000000000
+              +91 6200152506
             </div>
 
           </div>
@@ -86,7 +86,7 @@ const Footer = () => {
 
             <li>
               <Link to="/contact" className="hover:text-white">
-                Contact
+                Contact Us
               </Link>
             </li>
 
