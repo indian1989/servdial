@@ -5,14 +5,11 @@ import ProviderHeader from "../components/provider/ProviderHeader";   // optiona
 const ProviderLayout = () => {
   return (
     <div className="flex min-h-screen">
-      {/* Optional Sidebar */}
-      {Sidebar && <ProviderSidebar />}
+      <ProviderSidebar />
 
       <div className="flex-1 flex flex-col">
-        {/* Optional Header */}
-        {Header && <ProviderHeader />}
+        <ProviderHeader />
 
-        {/* Nested routes will render here */}
         <main className="p-6">
           <Outlet />
         </main>
