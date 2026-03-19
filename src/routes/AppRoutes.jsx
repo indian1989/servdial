@@ -33,8 +33,6 @@ function AppRoutes() {
         {/* PROVIDER */}
         {ProviderRoutes()}
 
-        <Route path="/:city/:category/:slug" element={<BusinessPage />}
-/>
         <Route path="/unauthorized" element={<Unauthorized />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/about" element={<About />} />
