@@ -1,5 +1,5 @@
 import React from "react";
-import StaticPageLayout from "../../components/layout/StaticPageLayout";
+import StaticPageLayout from "../../layout/StaticPageLayout";
 
 const Contact = () => {
   return (
