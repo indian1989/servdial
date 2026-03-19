@@ -3,17 +3,19 @@ import StaticPageLayout from "../../layouts/StaticPageLayout";
 
 const Advertise = () => {
   return (
-    <StaticPageLayout title="Advertise With Us">
+    <StaticPageLayout
+      title="Advertise With Us"
+      subtitle="Promote your business and reach more customers on ServDial"
+    >
 
       <p>
         Grow your business with <strong>ServDial</strong>. Our platform connects
-        thousands of users with trusted local service providers every day.
-        Advertising on ServDial helps your business reach customers who are
-        actively searching for services in their city.
+        users with trusted local service providers every day. Advertising on
+        ServDial helps your business reach customers who are actively searching
+        for services in their city.
       </p>
 
       <h2>Why Advertise on ServDial?</h2>
-
       <ul>
         <li>Reach customers actively searching for services</li>
         <li>Increase your business visibility online</li>
@@ -22,7 +24,6 @@ const Advertise = () => {
       </ul>
 
       <h2>Advertising Opportunities</h2>
-
       <ul>
         <li>Featured business listings</li>
         <li>Top placement in search results</li>
@@ -31,18 +32,15 @@ const Advertise = () => {
       </ul>
 
       <h2>Who Can Advertise?</h2>
-
       <p>
-        Any local business or service provider can promote their services
-        on ServDial, including electricians, plumbers, AC repair services,
-        salons, cleaning services, appliance repair businesses, and many more.
+        Local businesses and service providers such as electricians, plumbers,
+        AC repair technicians, salons, cleaning services, and appliance repair
+        professionals can promote their services on ServDial.
       </p>
 
       <h2>Get Started</h2>
-
       <p>
-        If you want to promote your business on ServDial and reach more
-        customers, please contact our team.
+        If you want to promote your business and reach more customers, contact us:
       </p>
 
       <p>

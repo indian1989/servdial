@@ -1,75 +1,60 @@
 import React from "react";
+import StaticPageLayout from "../../layouts/StaticPageLayout";
 
 const PrivacyPolicy = () => {
   return (
-    <div style={{ maxWidth: "1000px", margin: "auto", padding: "40px 20px", lineHeight: "1.7" }}>
-
-      <h1>Privacy Policy</h1>
+    <StaticPageLayout
+      title="Privacy Policy"
+      subtitle="How ServDial collects, uses, and protects your information"
+    >
 
       <p>
         At <strong>ServDial</strong>, we respect your privacy and are committed
-        to protecting your personal information. This Privacy Policy explains
-        how we collect, use, and safeguard your data when you use our platform.
+        to protecting your personal information.
       </p>
 
       <h2>Information We Collect</h2>
-      <p>We may collect the following information:</p>
-
       <ul>
-        <li>Name and contact information</li>
+        <li>Name and contact details</li>
         <li>Email address</li>
-        <li>Business details submitted by service providers</li>
-        <li>Usage data such as pages visited and search queries</li>
+        <li>Business information submitted by service providers</li>
+        <li>Usage data such as search queries and visited pages</li>
       </ul>
 
       <h2>How We Use Your Information</h2>
-      <p>Your information may be used to:</p>
-
       <ul>
         <li>Provide and improve our services</li>
         <li>Connect users with service providers</li>
         <li>Respond to inquiries and support requests</li>
-        <li>Improve platform functionality and user experience</li>
+        <li>Improve platform functionality</li>
       </ul>
 
       <h2>Information Sharing</h2>
       <p>
-        ServDial does not sell or rent personal information to third parties.
-        Business information submitted by providers may be displayed publicly
-        as part of business listings.
+        ServDial does not sell or rent personal data. Business information
+        submitted by providers may be displayed publicly as part of listings.
       </p>
 
       <h2>Cookies</h2>
       <p>
-        We may use cookies and similar technologies to enhance your browsing
-        experience and analyze website usage.
+        We may use cookies to enhance user experience and analyze website usage.
       </p>
 
       <h2>Data Security</h2>
       <p>
-        We implement appropriate security measures to protect your information
-        from unauthorized access, alteration, or disclosure.
+        We implement appropriate security measures to protect your data.
       </p>
 
-      <h2>Third-Party Links</h2>
+      <h2>Contact</h2>
       <p>
-        ServDial may contain links to third-party websites. We are not responsible
-        for the privacy practices or content of those websites.
+        For questions regarding this policy:
       </p>
 
-      <h2>Changes to This Policy</h2>
       <p>
-        We may update this Privacy Policy from time to time. Any updates will be
-        posted on this page.
+        <strong>Email:</strong> support.servdial@gmail.com
       </p>
 
-      <h2>Contact Us</h2>
-      <p>
-        If you have any questions about this Privacy Policy, please contact us
-        at: support.servdial@gmail.com
-      </p>
-
-    </div>
+    </StaticPageLayout>
   );
 };
 
