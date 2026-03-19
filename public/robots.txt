@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin
+Disallow: /provider
+Disallow: /login
+Disallow: /register
+Disallow: /*?page=
+Disallow: /*?sort=
+Disallow: /*?filter=
+
+Sitemap: https://servdial.com/sitemap.xml

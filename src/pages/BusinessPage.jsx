@@ -4,7 +4,6 @@ import API from "../api/axios";
 import { Helmet } from "react-helmet-async";
 import { Link } from "react-router-dom";
 
-
 const BusinessPage = () => {
   const { id } = useParams();
 
@@ -45,6 +44,34 @@ const BusinessPage = () => {
   const title = `${business.name} - ${business.category} in ${business.city} | ServDial`;
 
   const description = `${business.name} is one of the best ${business.category} services in ${business.city}. Contact details, address and ratings available on ServDial.`;
+  
+  const url = `https://servdial.com/${business.city}/${business.category}/${business.slug}`;
+  const image = business.image || "https://servdial.com/default-business.jpg";
+
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: business.name,
+    image: image,
+    description: description,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: business.address || "",
+      addressLocality: business.city || "",
+      addressCountry: "IN"
+    },
+    telephone: business.phone || "",
+    url: url,
+    aggregateRating: business.rating
+      ? {
+          "@type": "AggregateRating",
+          ratingValue: business.rating,
+          bestRating: "5",
+          worstRating: "1",
+          ratingCount: "1"
+        }
+      : undefined
+  };
 
   return (
     <>
@@ -53,14 +80,29 @@ const BusinessPage = () => {
 
         <meta name="description" content={description} />
 
-        <link
-          rel="canonical"
-          href={`https://servdial.com/business/${business._id}`}
-        />
+        {/* Canonical */}
+        <link rel="canonical" href={url} />
+
+        {/* Open Graph */}
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={image} />
+        <meta property="og:url" content={url} />
+        <meta property="og:type" content="business.business" />
+
+        {/* Twitter */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={title} />
+        <meta name="twitter:description" content={description} />
+        <meta name="twitter:image" content={image} />
+
+        {/* Schema */}
+        <script type="application/ld+json">
+          {JSON.stringify(schema)}
+        </script>
       </Helmet>
 
       <div className="min-h-screen bg-gray-50 py-10 px-5">
-
         <div className="max-w-4xl mx-auto bg-white shadow rounded-lg p-8">
 
           {business.image && (
@@ -111,7 +153,7 @@ const BusinessPage = () => {
 
               <Link
                 to={`/claim-business/${business._id}`}
-                className="bg-green-600 text-white px-4 py-2"
+                className="bg-green-600 text-white px-4 py-2 rounded"
               >
                 Claim This Business
               </Link>
@@ -119,7 +161,6 @@ const BusinessPage = () => {
           )}
 
         </div>
-
       </div>
     </>
   );
