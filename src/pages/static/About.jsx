@@ -2,88 +2,91 @@ import React from "react";
 
 const About = () => {
   return (
-    <div className="container" style={{ maxWidth: "1000px", margin: "auto", padding: "40px 20px", lineHeight: "1.7" }}>
-      
-      <h1>About ServDial</h1>
+    <div className="max-w-6xl mx-auto px-6 py-12">
 
-      <h2>Your Trusted Local Service Directory</h2>
-      <p>
-        Welcome to <strong>ServDial</strong>, a modern platform designed to help people
-        discover reliable local service providers quickly and easily. Our goal is to
-        simplify the way people search for services by connecting customers with
-        trusted businesses in their city.
+      <h1 className="text-4xl font-bold text-gray-800 mb-6">
+        About ServDial
+      </h1>
+
+      <p className="text-lg text-gray-600 mb-8">
+        ServDial is a modern platform designed to help people discover reliable
+        local service providers quickly and easily.
       </p>
 
-      <p>
-        Whether you are looking for AC repair, electricians, plumbers, home cleaning,
-        salons, appliance repair, or other professional services, ServDial helps you
-        find the right service provider near you.
-      </p>
+      <div className="space-y-10">
 
-      <p>
-        ServDial works as a smart digital business directory where users can explore
-        verified businesses, compare services, and directly connect with professionals.
-      </p>
+        <section>
+          <h2 className="text-2xl font-semibold mb-3">Your Trusted Local Service Directory</h2>
+          <p className="text-gray-600 leading-relaxed">
+            Whether you are looking for AC repair, electricians, plumbers,
+            home cleaning, salons, appliance repair, or other professional
+            services, ServDial helps you find the right service provider
+            near you.
+          </p>
+        </section>
 
-      <h2>Our Mission</h2>
-      <p>
-        At ServDial, our mission is to make local service discovery simple, fast,
-        and trustworthy.
-      </p>
+        <section>
+          <h2 className="text-2xl font-semibold mb-3">Our Mission</h2>
+          <p className="text-gray-600 mb-4">
+            Our mission is to make local service discovery simple, fast,
+            and trustworthy.
+          </p>
 
-      <p>We aim to build a platform where:</p>
-      <ul>
-        <li>Customers can easily find trusted service providers</li>
-        <li>Local businesses can grow their online presence</li>
-        <li>Communities can connect with reliable professionals nearby</li>
-      </ul>
+          <ul className="list-disc ml-6 text-gray-600 space-y-2">
+            <li>Customers can easily find trusted service providers</li>
+            <li>Local businesses can grow their online presence</li>
+            <li>Communities connect with reliable professionals</li>
+          </ul>
+        </section>
 
-      <h2>What ServDial Offers</h2>
+        <section>
+          <h2 className="text-2xl font-semibold mb-3">What ServDial Offers</h2>
 
-      <h3>For Customers</h3>
-      <ul>
-        <li>Search for local services near you</li>
-        <li>Browse services by category and city</li>
-        <li>View business profiles and contact information</li>
-        <li>Discover trusted professionals quickly</li>
-        <li>Connect with service providers directly</li>
-      </ul>
+          <div className="grid md:grid-cols-2 gap-6">
 
-      <h3>For Businesses</h3>
-      <ul>
-        <li>Online business listings</li>
-        <li>Increased visibility in local search</li>
-        <li>Reach more customers</li>
-        <li>Showcase services and expertise</li>
-        <li>Easy business management dashboard</li>
-      </ul>
+            <div className="bg-gray-50 p-6 rounded-xl shadow-sm">
+              <h3 className="font-semibold text-lg mb-3">For Customers</h3>
+              <ul className="list-disc ml-5 text-gray-600 space-y-1">
+                <li>Search services near you</li>
+                <li>Browse by category and city</li>
+                <li>View business profiles</li>
+                <li>Connect with service providers</li>
+              </ul>
+            </div>
 
-      <h2>Why Choose ServDial?</h2>
-      <ul>
-        <li>Easy service search</li>
-        <li>City-based service listings</li>
-        <li>Trusted local businesses</li>
-        <li>Simple and user-friendly platform</li>
-        <li>Better visibility for local service providers</li>
-      </ul>
+            <div className="bg-gray-50 p-6 rounded-xl shadow-sm">
+              <h3 className="font-semibold text-lg mb-3">For Businesses</h3>
+              <ul className="list-disc ml-5 text-gray-600 space-y-1">
+                <li>Online business listings</li>
+                <li>Reach more customers</li>
+                <li>Showcase services</li>
+                <li>Business management dashboard</li>
+              </ul>
+            </div>
 
-      <h2>Our Vision</h2>
-      <p>
-        The vision of ServDial is to become one of the most trusted local service
-        discovery platforms, helping millions of users find services and enabling
-        businesses to grow in the digital world.
-      </p>
+          </div>
+        </section>
 
-      <h2>Connecting Local Communities</h2>
-      <p>
-        ServDial is more than just a business directory. It is a platform that connects
-        people, services, and communities.
-      </p>
+        <section>
+          <h2 className="text-2xl font-semibold mb-3">Why Choose ServDial?</h2>
+          <ul className="list-disc ml-6 text-gray-600 space-y-2">
+            <li>Easy service search</li>
+            <li>City-based listings</li>
+            <li>Trusted local businesses</li>
+            <li>User-friendly platform</li>
+          </ul>
+        </section>
 
-      <p>
-        Whether you need a professional service or want to grow your business,
-        ServDial makes the connection simple.
-      </p>
+        <section>
+          <h2 className="text-2xl font-semibold mb-3">Our Vision</h2>
+          <p className="text-gray-600">
+            Our vision is to become one of the most trusted local service
+            discovery platforms helping millions of users find services
+            and enabling businesses to grow digitally.
+          </p>
+        </section>
+
+      </div>
 
     </div>
   );
