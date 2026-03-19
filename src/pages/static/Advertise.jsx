@@ -1,10 +1,9 @@
 import React from "react";
+import StaticPageLayout from "../../layouts/StaticPageLayout";
 
 const Advertise = () => {
   return (
-    <div style={{ maxWidth: "1000px", margin: "auto", padding: "40px 20px", lineHeight: "1.7" }}>
-
-      <h1>Advertise With Us</h1>
+    <StaticPageLayout title="Advertise With Us">
 
       <p>
         Grow your business with <strong>ServDial</strong>. Our platform connects
@@ -50,7 +49,7 @@ const Advertise = () => {
         <strong>Email:</strong> business.servdial@gmail.com
       </p>
 
-    </div>
+    </StaticPageLayout>
   );
 };
 
