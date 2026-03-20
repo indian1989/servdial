@@ -12,7 +12,7 @@ const CategoryDetails = () => {
     const fetchCategory = async () => {
       try {
         const res = await API.get(`/categories/slug/${slug}`);
-        setCategory(res.data.category);
+        setCategory(res.data?.category || res.data || null);
       } catch (err) {
         console.error(err);
       } finally {

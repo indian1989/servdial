@@ -4,7 +4,7 @@ import axios from "axios";
 const API = axios.create({
   baseURL:
     import.meta.env.VITE_API_BASE_URL ||
-    "https://servdial-backend.onrender.com/api", // ✅ FIXED
+    "https://servdial-backend.onrender.com/api",
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",
@@ -27,7 +27,6 @@ API.interceptors.request.use(
   (config) => {
     const user = getStoredUser();
 
-    // ✅ ONLY attach token for protected routes
     if (
       user?.token &&
       (
