@@ -12,6 +12,8 @@ import PrivacyPolicy from "../pages/static/PrivacyPolicy";
 import Terms from "../pages/static/Terms";
 import Disclaimer from "../pages/static/Disclaimer";
 import Advertise from "../pages/static/Advertise";
+import FAQ from "../pages/static/FAQ";
+import AddBusiness from "../pages/provider/AddBusiness";
 
 const Unauthorized = lazy(() => import("../pages/Unauthorized"));
 const NotFound = lazy(() => import("../pages/NotFound"));
@@ -41,6 +43,8 @@ function AppRoutes() {
         <Route path="/terms" element={<Terms />} />
         <Route path="/disclaimer" element={<Disclaimer />} />
         <Route path="/advertise" element={<Advertise />} />
+        <Route path="/faq" element={<FAQ />} />
+        <Route path="/add-business" element={<AddBusiness />} />
 
 
       </Routes>

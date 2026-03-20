@@ -8,11 +8,11 @@ import SearchResults from "../pages/SearchResults";
 import LatestBusinesses from "../pages/LatestBusinesses";
 import BusinessPage from "../pages/BusinessPage";
 import CategoryPage from "../pages/CategoryPage";
+import CategoryDetails from "../pages/CategoryDetails";
 import CityCategoryPage from "../pages/CityCategoryPage";
-import CityPage from "../pages/CityPage"; // NEW
+import CityPage from "../pages/CityPage";
 import SEOLandingPage from "../pages/seo/SEOLandingPage";
 import ClaimBusiness from "../pages/ClaimBusiness";
-
 const PublicRoutes = () => {
   return (
     <>
@@ -31,7 +31,8 @@ const PublicRoutes = () => {
       <Route path="/business/:id" element={<BusinessPage />} />
 
       {/* Category Overview */}
-      <Route path="/category/:category" element={<CategoryPage />} />
+      <Route path="/categories" element={<CategoryPage />} />
+<Route path="/category/:slug" element={<CategoryDetails />} />
 
       {/* City Overview */}
       <Route path="/city/:city" element={<CityPage />} /> {/* NEW */}

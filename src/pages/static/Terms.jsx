@@ -1,51 +1,66 @@
 import React from "react";
 import StaticPageLayout from "../../layouts/StaticPageLayout";
+import Section from "../../components/common/Section";
+import { FileText, AlertCircle } from "lucide-react";
 
 const Terms = () => {
   return (
     <StaticPageLayout
-      title="Terms and Conditions"
-      subtitle="Rules and guidelines for using ServDial"
+      title="Terms & Conditions"
+      subtitle="Please read these terms carefully before using our platform."
+      cta={{
+        title: "Have questions about these terms?",
+        subtitle: "Contact our support team for clarification or concerns.",
+        actions: [
+          { label: "Email Support", link: "mailto:support.servdial@gmail.com", primary: true },
+          { label: "Browse Services", link: "/", primary: false },
+        ],
+      }}
     >
 
-      <p>
-        By accessing or using <strong>ServDial</strong>, you agree to follow
-        these Terms and Conditions.
-      </p>
+      {/* ACCEPTANCE OF TERMS */}
+      <Section title="Acceptance of Terms">
+        <div className="bg-gray-50 p-6 rounded-xl shadow-sm mt-4 flex items-start gap-4">
+          <AlertCircle className="text-gray-700 mt-1" />
+          <p className="text-gray-700 text-sm">
+            By using <strong>ServDial</strong>, you agree to comply with our terms and conditions.
+            Please review them carefully before using our platform.
+          </p>
+        </div>
+      </Section>
 
-      <h2>Use of the Platform</h2>
-      <p>
-        ServDial helps users discover local service providers. We do not
-        directly provide services listed on the platform.
-      </p>
+      {/* USER RESPONSIBILITIES */}
+      <Section title="User Responsibilities">
+        <div className="bg-gray-50 p-6 rounded-xl shadow-sm mt-4 text-gray-700 text-sm">
+          <ul className="space-y-2">
+            <li>Provide accurate and up-to-date information.</li>
+            <li>Use the platform responsibly and ethically.</li>
+            <li>Comply with applicable laws while interacting with service providers.</li>
+          </ul>
+        </div>
+      </Section>
 
-      <h2>User Responsibilities</h2>
-      <ul>
-        <li>Provide accurate information</li>
-        <li>Use the platform for lawful purposes</li>
-        <li>Respect other users and businesses</li>
-      </ul>
+      {/* SERVICE USAGE */}
+      <Section title="Service Usage">
+        <div className="bg-gray-50 p-6 rounded-xl shadow-sm mt-4 flex items-start gap-4">
+          <FileText className="text-gray-700 mt-1" />
+          <p className="text-gray-700 text-sm">
+            ServDial provides a platform connecting users with local service providers.
+            We are not directly responsible for any services offered or performed by these providers.
+          </p>
+        </div>
+      </Section>
 
-      <h2>Business Listings</h2>
-      <p>
-        Businesses may submit listings on ServDial. We reserve the right to
-        approve, modify, or remove listings.
-      </p>
-
-      <h2>Limitation of Liability</h2>
-      <p>
-        ServDial is not responsible for the performance or reliability of
-        services offered by listed businesses.
-      </p>
-
-      <h2>Contact</h2>
-      <p>
-        For questions regarding these terms:
-      </p>
-
-      <p>
-        <strong>Email:</strong> support.servdial@gmail.com
-      </p>
+      {/* CHANGES TO TERMS */}
+      <Section title="Changes to Terms">
+        <div className="bg-gray-50 p-6 rounded-xl shadow-sm mt-4 text-gray-700 text-sm">
+          <ul className="space-y-2">
+            <li>We may update these terms periodically to reflect changes in our platform or policies.</li>
+            <li>Continued use of the platform after updates constitutes acceptance of the new terms.</li>
+            <li>Users are encouraged to review the terms regularly.</li>
+          </ul>
+        </div>
+      </Section>
 
     </StaticPageLayout>
   );

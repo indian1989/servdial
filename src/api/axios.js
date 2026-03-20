@@ -4,20 +4,19 @@ import axios from "axios";
 const API = axios.create({
   baseURL:
     import.meta.env.VITE_API_BASE_URL ||
-    "https://https://servdial-backend.onrender.com//api",
+    "https://servdial-backend.onrender.com/api", // ✅ FIXED
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// ================= HELPER: GET STORED USER =================
+// ================= HELPER =================
 const getStoredUser = () => {
   try {
     const stored = localStorage.getItem("servdial_user");
     return stored ? JSON.parse(stored) : null;
-  } catch (error) {
-    console.error("Invalid user data in localStorage");
+  } catch {
     localStorage.removeItem("servdial_user");
     return null;
   }
@@ -28,11 +27,17 @@ API.interceptors.request.use(
   (config) => {
     const user = getStoredUser();
 
-    if (user?.token) {
+    // ✅ ONLY attach token for protected routes
+    if (
+      user?.token &&
+      (
+        config.url.includes("/provider") ||
+        config.url.includes("/admin")
+      )
+    ) {
       config.headers.Authorization = `Bearer ${user.token}`;
     }
 
-    // Optional: Add request id for debugging production logs
     config.headers["x-request-id"] = Date.now();
 
     return config;
@@ -46,37 +51,30 @@ API.interceptors.response.use(
 
   (error) => {
     if (!error.response) {
-      console.error("Network error:", error.message);
-      alert("Network error. Please check your internet connection.");
+      alert("Network error. Check your connection.");
       return Promise.reject(error);
     }
 
     const { status, data } = error.response;
 
-    // ================= 401 UNAUTHORIZED =================
     if (status === 401) {
       const user = getStoredUser();
-
       if (user) {
-        console.warn("Session expired. Redirecting to login...");
         localStorage.removeItem("servdial_user");
         window.location.href = "/login";
       }
     }
 
-    // ================= 403 FORBIDDEN =================
     if (status === 403) {
       console.warn("Access denied:", data?.message);
     }
 
-    // ================= 404 NOT FOUND =================
     if (status === 404) {
-      console.warn("API route not found:", error.config?.url);
+      console.warn("API not found:", error.config?.url);
     }
 
-    // ================= SERVER ERROR =================
     if (status >= 500) {
-      console.error("Server error:", data?.message || "Internal server error");
+      console.error("Server error:", data?.message);
     }
 
     return Promise.reject(error);

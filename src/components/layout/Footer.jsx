@@ -91,7 +91,7 @@ const Footer = () => {
             </li>
 
             <li>
-              <Link to="/privacy" className="hover:text-white">
+              <Link to="/privacy-policy" className="hover:text-white">
                 Privacy Policy
               </Link>
             </li>
@@ -101,6 +101,25 @@ const Footer = () => {
                 Terms of Service
               </Link>
             </li>
+
+            <li>
+              <Link to="/advertise" className="hover:text-white">
+                Advertise Wth Us
+              </Link>
+            </li>
+
+             <li>
+              <Link to="/disclaimer" className="hover:text-white">
+                Disclaimer
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/faq" className="hover:text-white">
+                FAQ's
+              </Link>
+            </li>
+
 
           </ul>
         </div>

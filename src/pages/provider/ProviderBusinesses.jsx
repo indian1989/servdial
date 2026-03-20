@@ -11,7 +11,7 @@ const ProviderBusinesses = () => {
 
   const fetchBusinesses = async () => {
     try {
-      const res = await API.get("/api/business/provider");
+      const res = await API.get("/business/provider");
       setBusinesses(res.data?.data || res.data || []);
     } catch (err) {
       console.error("Error loading businesses:", err);
@@ -27,7 +27,7 @@ const ProviderBusinesses = () => {
     if (!window.confirm("Delete this business?")) return;
 
     try {
-      await API.delete(`/api/business/${id}`);
+      await API.delete(`/business/${id}`);
       fetchBusinesses();
     } catch (err) {
       alert("Error deleting business");

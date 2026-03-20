@@ -5,6 +5,7 @@ import API from "../../api/axios";
 import { MapPin, Menu, X } from "lucide-react";
 
 import logo from "../../assets/ServDial.png";
+import AddBusiness from "../../pages/provider/AddBusiness";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -118,17 +119,24 @@ const Header = () => {
             </Link>
 
             <Link
-              to="/categories"
+              to="/about"
               className="hover:text-blue-600"
             >
-              Categories
+              About Us
             </Link>
 
             <Link
-              to="/cities"
+              to="provider/add-business"
               className="hover:text-blue-600"
             >
-              Cities
+              List Your Business
+            </Link>
+
+            <Link
+              to="/business-list-page"
+              className="hover:text-blue-600"
+            >
+              Business List
             </Link>
 
           </nav>

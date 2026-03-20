@@ -10,7 +10,7 @@ const fetchLeads = async ()=>{
 
 try{
 
-const res = await API.get("/leads/provider");
+const res = await API.get("/provider/leads");
 
 setLeads(res.data || []);
 
