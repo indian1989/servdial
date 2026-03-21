@@ -157,7 +157,6 @@ const AdminAddBusiness = () => {
           value={businessData.district}
           onChange={handleChange}
           className="border px-3 py-2 rounded"
-          readOnly
         />
 
         {/* State */}
