@@ -356,16 +356,18 @@ const AddBusiness = () => {
           name="district"
           value={form.district}
           onChange={(e) => setForm({ ...form, district: e.target.value })}
-          placeholder="District * (auto or type manually)"
+          placeholder="District"
           className="w-full border p-2"
         />
 
+         {/* State */}
         <input
           name="state"
           value={form.state}
-          readOnly
-          placeholder="State (auto)"
-          className="w-full border p-2 bg-gray-100"
+          onChange={(e) => setForm({ ...form, state: e.target.value })}
+          placeholder="Select State"
+          isSearchable
+          className="w-full border p-2"
         />
 
         <input

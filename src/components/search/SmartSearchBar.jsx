@@ -1,42 +1,66 @@
-import { useNavigate } from "react-router-dom";
+import { useRef } from "react";
+import { X } from "lucide-react";
 
 const SmartSearchBar = ({
   query,
   setQuery,
-  onSearch
+  onSearch,
 }) => {
+  const inputRef = useRef();
 
-const navigate = useNavigate();
+  // -----------------------------
+  // SUBMIT
+  // -----------------------------
+  const submitSearch = (e) => {
+    e.preventDefault();
+    if (!query.trim()) return;
+    onSearch(query.trim());
+  };
 
-const submitSearch = (e)=>{
+  // -----------------------------
+  // CLEAR INPUT
+  // -----------------------------
+  const clearInput = () => {
+    setQuery("");
+    inputRef.current?.focus();
+  };
 
-e.preventDefault();
+  // -----------------------------
+  // KEYBOARD HANDLING
+  // -----------------------------
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      submitSearch(e);
+    }
+  };
 
-if(!query) return;
+  return (
+    <div className="relative w-full">
+      <form onSubmit={submitSearch} className="flex items-center">
 
-onSearch(query);
+        {/* INPUT */}
+        <input
+          ref={inputRef}
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={handleKeyDown}
+          placeholder="Search for services, businesses..."
+          className="w-full outline-none text-sm md:text-base placeholder-gray-400"
+        />
 
-};
-
-return(
-
-<div className="relative w-full">
-
-<form onSubmit={submitSearch}>
-
-<input
-value={query}
-onChange={(e)=>setQuery(e.target.value)}
-placeholder="Search for services, businesses..."
-className="w-full outline-none"
-/>
-
-</form>
-
-</div>
-
-);
-
+        {/* CLEAR BUTTON */}
+        {query && (
+          <button
+            type="button"
+            onClick={clearInput}
+            className="text-gray-400 hover:text-gray-600 mr-2"
+          >
+            <X size={16} />
+          </button>
+        )}
+      </form>
+    </div>
+  );
 };
 
 export default SmartSearchBar;

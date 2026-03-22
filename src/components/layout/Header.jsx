@@ -1,82 +1,20 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useCity } from "../../context/CityContext";
 import { Link, useNavigate } from "react-router-dom";
-import API from "../../api/axios";
 import { MapPin, Menu, X } from "lucide-react";
+import CitySelector from "../common/CitySelector";
 
 import logo from "../../assets/ServDial.png";
-import AddBusiness from "../../pages/provider/AddBusiness";
 
 const Header = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { city } = useCity();
 
-  const [city, setCity] = useState("Detecting...");
   const [menuOpen, setMenuOpen] = useState(false);
 
-  const { user } = useAuth();
-
-  // ===============================
-  // Detect City using GPS (with caching)
-  // ===============================
-  useEffect(() => {
-
-    const savedCity = localStorage.getItem("servdial_city");
-
-    // Use cached city if available
-    if (savedCity) {
-      setCity(savedCity);
-      return;
-    }
-
-    if (!navigator.geolocation) {
-      setCity("India");
-      localStorage.setItem("servdial_city", "India");
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const { latitude, longitude } = pos.coords;
-
-        try {
-          const res = await API.get(
-            "https://nominatim.openstreetmap.org/reverse",
-            {
-              params: {
-                lat: latitude,
-                lon: longitude,
-                format: "json",
-              },
-            }
-          );
-
-          const detectedCity =
-            res.data?.address?.city ||
-            res.data?.address?.town ||
-            res.data?.address?.state ||
-            "India";
-
-          setCity(detectedCity);
-
-          // Cache city
-          localStorage.setItem("servdial_city", detectedCity);
-
-        } catch {
-          setCity("India");
-          localStorage.setItem("servdial_city", "India");
-        }
-      },
-      () => {
-        setCity("India");
-        localStorage.setItem("servdial_city", "India");
-      }
-    );
-
-  }, []);
-
-  // ===============================
-  // Logout
-  // ===============================
+  // ================= LOGOUT =================
   const handleLogout = () => {
     localStorage.removeItem("servdial_user");
     navigate("/");
@@ -85,90 +23,45 @@ const Header = () => {
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-50">
-
       <div className="max-w-7xl mx-auto px-4">
-
         <div className="flex items-center justify-between h-16">
 
-          {/* ================= Logo ================= */}
+          {/* LOGO */}
           <Link to="/" className="flex items-center gap-2">
-
-            <img
-              src={logo}
-              alt="ServDial"
-              className="h-10 w-auto"
-            />
-
+            <img src={logo} alt="ServDial" className="h-10 w-auto" />
           </Link>
 
-          {/* ================= Desktop Nav ================= */}
+          {/* NAV */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
-
-            <Link
-              to="/"
-              className="hover:text-blue-600"
-            >
-              Home
-            </Link>
-
-            <Link
-              to="/latest-businesses"
-              className="hover:text-blue-600"
-            >
-              Latest Businesses
-            </Link>
-
-            <Link
-              to="/about"
-              className="hover:text-blue-600"
-            >
-              About Us
-            </Link>
-
-            <Link
-              to="provider/add-business"
-              className="hover:text-blue-600"
-            >
-              List Your Business
-            </Link>
-
-            <Link
-              to="/business-list-page"
-              className="hover:text-blue-600"
-            >
-              Business List
-            </Link>
-
+            <Link to="/" className="hover:text-blue-600">Home</Link>
+            <Link to="/latest-businesses" className="hover:text-blue-600">Latest Businesses</Link>
+            <Link to="/about" className="hover:text-blue-600">About Us</Link>
+            <Link to="/provider/add-business" className="hover:text-blue-600">List Your Business</Link>
           </nav>
 
-          {/* ================= Right Side ================= */}
+          {/* RIGHT */}
           <div className="flex items-center gap-4">
 
-            {/* City */}
-            <div className="hidden md:flex items-center text-sm text-gray-600 gap-1">
-
-              <MapPin size={16} />
-
-              <span>{city}</span>
-
+            {/* ✅ CITY SELECTOR */}
+            <div className="hidden md:flex items-center">
+              <CitySelector />
             </div>
 
-            {/* Logged User */}
+            {/* USER */}
             {user ? (
               <div className="flex items-center gap-3">
-
                 <Link
-  to={
-    user?.role === "provider"
-      ? "/provider/dashboard"
-      : user?.role === "admin" || user?.role === "superadmin"
-      ? "/admin/dashboard"
-      : "/"
-  }
-  className="text-sm font-medium hover:text-blue-600"
->
-  Dashboard
-</Link>
+                  to={
+                    user?.role === "provider"
+                      ? "/provider/dashboard"
+                      : user?.role === "admin" || user?.role === "superadmin"
+                      ? "/admin/dashboard"
+                      : "/"
+                  }
+                  className="text-sm hover:text-blue-600"
+                >
+                  Dashboard
+                </Link>
 
                 <button
                   onClick={handleLogout}
@@ -176,128 +69,40 @@ const Header = () => {
                 >
                   Logout
                 </button>
-
               </div>
             ) : (
               <div className="hidden md:flex gap-3">
-
-                <Link
-                  to="/login"
-                  className="text-sm font-medium hover:text-blue-600"
-                >
-                  Login
-                </Link>
-
-                <Link
-                  to="/register"
-                  className="bg-blue-600 text-white px-3 py-1 rounded text-sm"
-                >
-                  Register
-                </Link>
-
+                <Link to="/login" className="text-sm hover:text-blue-600">Login</Link>
+                <Link to="/register" className="bg-blue-600 text-white px-3 py-1 rounded text-sm">Register</Link>
               </div>
             )}
 
-            {/* Mobile menu button */}
-            <button
-              className="md:hidden"
-              onClick={() => setMenuOpen(!menuOpen)}
-            >
+            {/* MOBILE */}
+            <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
               {menuOpen ? <X /> : <Menu />}
             </button>
 
           </div>
-
         </div>
-
       </div>
 
-      {/* ================= Mobile Menu ================= */}
+      {/* MOBILE MENU */}
       {menuOpen && (
-
         <div className="md:hidden border-t bg-white">
-
           <div className="flex flex-col p-4 gap-4 text-sm">
 
-            <Link to="/" onClick={() => setMenuOpen(false)}>
-              Home
-            </Link>
+            <Link to="/">Home</Link>
+            <Link to="/latest-businesses">Latest Businesses</Link>
 
-            <Link
-              to="/latest-businesses"
-              onClick={() => setMenuOpen(false)}
-            >
-              Latest Businesses
-            </Link>
-
-            <Link
-              to="/categories"
-              onClick={() => setMenuOpen(false)}
-            >
-              Categories
-            </Link>
-
-            <Link
-              to="/cities"
-              onClick={() => setMenuOpen(false)}
-            >
-              Cities
-            </Link>
-
-            <div className="flex items-center gap-2 text-gray-600">
-
+            {/* MOBILE CITY */}
+            <div className="flex items-center gap-2">
               <MapPin size={16} />
-
-              <span>{city}</span>
-
+              <span>{city || "Select City"}</span>
             </div>
 
-            {user ? (
-              <>
-                <Link
-  to={
-    user?.role === "provider"
-      ? "/provider/dashboard"
-      : user?.role === "admin" || user?.role === "superadmin"
-      ? "/admin/dashboard"
-      : "/"
-  }
-  onClick={() => setMenuOpen(false)}
->
-  Dashboard
-</Link>
-
-                <button
-                  onClick={handleLogout}
-                  className="bg-red-500 text-white px-3 py-1 rounded text-sm"
-                >
-                  Logout
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Login
-                </Link>
-
-                <Link
-                  to="/register"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Register
-                </Link>
-              </>
-            )}
-
           </div>
-
         </div>
-
       )}
-
     </header>
   );
 };
