@@ -6,7 +6,7 @@
   "scripts": {
     "preinstall": "npm config set legacy-peer-deps true",
     "dev": "vite",
-    "build": "vite build && copy public\\_redirects dist\\_redirects",
+    "build": "vite build && cp public/_redirects dist/_redirects",
     "lint": "eslint .",
     "preview": "vite preview"
   },
