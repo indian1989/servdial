@@ -1,47 +1,53 @@
+// src/components/home/NearbyBusinesses.jsx
+import { useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 import BusinessCard from "../business/BusinessCard";
 
-const NearbyBusinesses = ({ businesses = [], loading }) => {
-  return (
-    <section className="bg-white py-14">
-      <div className="max-w-7xl mx-auto px-4">
+const NearbyBusinesses = ({ businesses = [], userLocation, loading = false }) => {
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+  const isAdmin = ["admin", "superadmin"].includes(user?.role);
 
-        {/* HEADER */}
-        <div className="flex items-center justify-between mb-8">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
-            Nearby Businesses
-          </h2>
-        </div>
-
-        {/* LOADING */}
-        {loading && (
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {[...Array(4)].map((_, i) => (
-              <div
-                key={i}
-                className="h-60 bg-gray-100 animate-pulse rounded-xl"
-              />
-            ))}
-          </div>
-        )}
-
-        {/* EMPTY */}
-        {!loading && businesses.length === 0 && (
-          <p className="text-gray-500">
-            No nearby businesses found in your area.
-          </p>
-        )}
-
-        {/* GRID */}
-        {!loading && businesses.length > 0 && (
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {businesses.map((biz) => (
-              <BusinessCard key={biz._id} business={biz} />
-            ))}
-          </div>
-        )}
-
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={i}
+            className="h-60 sm:h-64 md:h-72 bg-gray-200 animate-pulse rounded-xl shadow"
+          />
+        ))}
       </div>
-    </section>
+    );
+  }
+
+  if (!businesses.length) {
+    return (
+      <p className="text-gray-500 text-center">
+        No nearby businesses found. Make sure location is enabled.
+      </p>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+      {businesses.map((b) => (
+        <BusinessCard
+          key={b._id}
+          business={b}
+          onClick={() => navigate(`/business/${b._id}`)}
+          showCallButton
+          userLocation={userLocation}
+        />
+      ))}
+
+      {isAdmin && (
+        <p className="mt-4 text-xs text-gray-400 italic col-span-full">
+          Admin view
+        </p>
+      )}
+    </div>
   );
 };
 

@@ -1,129 +1,41 @@
 // src/pages/Home.jsx
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import API from "../api/axios";
 import { useCity } from "../context/CityContext";
+import API from "../api/axios";
 
 // Sections
 import HeroSearch from "../components/home/HeroSearch";
 import CategoriesGrid from "../components/home/CategoriesGrid";
-import PopularBusinesses from "../components/home/PopularBusinesses";
 import FeaturedBusinesses from "../components/home/FeaturedBusinesses";
+import PopularBusinesses from "../components/home/PopularBusinesses";
 import NearbyBusinesses from "../components/home/NearbyBusinesses";
-import PopularSearches from "../components/home/PopularSearches";
+import RecommendedBusinesses from "../components/recommendation/RecommendedBusinesses";
 import FeaturedCities from "../components/home/FeaturedCities";
+import PopularSearches from "../components/home/PopularSearches";
 import WhyChooseServDial from "../components/home/WhyChooseServDial";
 import Testimonials from "../components/home/Testimonials";
 import DownloadApp from "../components/home/DownloadApp";
 import BecomeProvider from "../components/home/BecomeProvider";
-import RecommendedBusinesses from "../components/recommendation/RecommendedBusinesses";
 
 const Home = () => {
-  const { city, setCity } = useCity();
+  const { city, loadingCity } = useCity();
 
   const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
   const [latestBusinesses, setLatestBusinesses] = useState([]);
   const [nearbyBusinesses, setNearbyBusinesses] = useState([]);
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
-  const [detectedCity, setDetectedCity] = useState(null);
-
-  const [loading, setLoading] = useState(false);
-  const [locationLoading, setLocationLoading] = useState(true);
   const [userLocation, setUserLocation] = useState({ lat: null, lng: null });
 
-  // =================== Nearby Businesses ===================
-  const fetchNearbyBusinesses = async (lat, lng) => {
-    try {
-      const res = await API.get(`/business/nearby?lat=${lat}&lng=${lng}&limit=8`);
-      setNearbyBusinesses(res?.data?.businesses || []);
-
-      if (res?.data?.city) {
-        setDetectedCity(res.data.city);
-        setCity(res.data.city);
-        localStorage.setItem("servdial_city", res.data.city);
-      }
-    } catch (err) {
-      console.log("Nearby fetch failed", err);
-    }
-  };
-
-  // =================== Fallback IP Location ===================
-  const fallbackIP = async () => {
-    try {
-      const res = await API.get("/location/ip");
-      const cityName = res?.data?.city;
-
-      if (cityName && cityName !== "India") {
-        setDetectedCity(cityName);
-        setCity(cityName);
-        localStorage.setItem("servdial_city", cityName);
-      } else {
-        setDetectedCity("India");
-        setCity("India");
-      }
-    } catch {
-      setDetectedCity("India");
-      setCity("India");
-    } finally {
-      setLocationLoading(false);
-    }
-  };
-
-  // =================== Detect User Location ===================
-  const detectLocation = async () => {
-    const savedCity = localStorage.getItem("servdial_city");
-    if (savedCity) {
-      setDetectedCity(savedCity);
-      setCity(savedCity);
-      setLocationLoading(false);
-      return;
-    }
-
-    if (!navigator.geolocation) {
-      fallbackIP();
-      return;
-    }
-
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-
-        setUserLocation({ lat, lng });
-
-        try {
-          const res = await API.get(`/location/reverse?lat=${lat}&lng=${lng}`);
-          const cityName = res?.data?.city;
-
-          if (cityName && cityName !== "India") {
-            setDetectedCity(cityName);
-            setCity(cityName);
-            localStorage.setItem("servdial_city", cityName);
-            fetchNearbyBusinesses(lat, lng);
-          } else {
-            fallbackIP();
-          }
-        } catch {
-          fallbackIP();
-        } finally {
-          setLocationLoading(false);
-        }
-      },
-      () => fallbackIP(),
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  };
+  const [loading, setLoading] = useState(false);
 
   // =================== Fetch Homepage Data ===================
   const fetchHomepageData = async (currentCity) => {
+    if (!currentCity) return;
+    setLoading(true);
     try {
-      setLoading(true);
-      const res = await API.get("/homepage", {
-        params: { city: currentCity || city || detectedCity },
-      });
+      const res = await API.get("/homepage", { params: { city: currentCity } });
       const data = res.data || {};
-
       setFeaturedBusinesses(data.featuredBusinesses || []);
       setLatestBusinesses(data.latestBusinesses || []);
       setCategories(data.categories || []);
@@ -135,72 +47,102 @@ const Home = () => {
     }
   };
 
-  // =================== Load on Mount ===================
+  // =================== Fetch Nearby Businesses ===================
+  const fetchNearbyBusinesses = async (lat, lng) => {
+    try {
+      const res = await API.get(`/business/nearby?lat=${lat}&lng=${lng}&limit=8`);
+      setNearbyBusinesses(res?.data?.businesses || []);
+    } catch (err) {
+      console.error("Nearby fetch failed", err);
+    }
+  };
+
+  // =================== Get User Location ===================
   useEffect(() => {
-    detectLocation();
-    fetchHomepageData();
+    if (!navigator.geolocation) return;
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        setUserLocation({ lat, lng });
+        fetchNearbyBusinesses(lat, lng);
+      },
+      (err) => console.warn("Geolocation error:", err),
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
   }, []);
 
-  // =================== Refetch Featured Businesses on City Change ===================
+  // =================== Refetch Data on City Change ===================
   useEffect(() => {
     if (city) fetchHomepageData(city);
   }, [city]);
 
+  // =================== Initial Load Fallback ===================
+  useEffect(() => {
+    const savedCity = localStorage.getItem("servdial_city") || "India";
+    if (!city) fetchHomepageData(savedCity);
+  }, []);
+
   return (
     <div className="bg-gray-50 min-h-screen">
-
       {/* HERO SEARCH */}
-      <HeroSearch city={city || detectedCity} />
+      <HeroSearch city={city} />
 
-      {/* LOCATION DETECT LOADING */}
-      {locationLoading && (
+      {/* LOADING CITY */}
+      {loadingCity && (
         <div className="px-4 py-4 text-xs text-gray-400 animate-pulse">
           Detecting location...
         </div>
       )}
 
       {/* CATEGORIES */}
-      {categories?.length > 0 && (
-        <CategoriesGrid categories={categories} city={city || detectedCity} />
-      )}
+      <CategoriesGrid categories={categories} city={city} loading={loading || loadingCity} />
 
       {/* FEATURED BUSINESSES */}
       <section className="my-12 max-w-7xl mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 text-center">
-          Featured Businesses in {city || detectedCity}
+          Featured Businesses in {city || "your city"}
         </h2>
-
-        <FeaturedBusinesses
-          businesses={featuredBusinesses}
-          loading={loading}
-        />
+        <FeaturedBusinesses businesses={featuredBusinesses} loading={loading || loadingCity} />
       </section>
 
       {/* LATEST BUSINESSES */}
-      {latestBusinesses?.length > 0 && (
-        <PopularBusinesses businesses={latestBusinesses} loading={loading} />
-      )}
+      <section className="my-12 max-w-7xl mx-auto px-4">
+        <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-6 text-center">
+          Latest Businesses in {city || "your city"}
+        </h2>
+        <PopularBusinesses businesses={latestBusinesses} loading={loading || loadingCity} />
+      </section>
 
       {/* NEARBY BUSINESSES */}
-      {nearbyBusinesses?.length > 0 && (
-        <NearbyBusinesses businesses={nearbyBusinesses} userLocation={userLocation} />
-      )}
+      <section className="my-12 max-w-7xl mx-auto px-4">
+        <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-6 text-center">
+          Businesses Near You
+        </h2>
+        <NearbyBusinesses businesses={nearbyBusinesses} userLocation={userLocation} loading={loading || loadingCity} />
+      </section>
 
-      {/* RECOMMENDED */}
-      {(city || detectedCity) && (
-        <RecommendedBusinesses city={city || detectedCity} />
+      {/* RECOMMENDED BUSINESSES */}
+      {city && (
+        <section className="my-12 max-w-7xl mx-auto px-4">
+          <RecommendedBusinesses city={city} />
+        </section>
       )}
 
       {/* FEATURED CITIES */}
-      {cities?.length > 0 && <FeaturedCities cities={cities} />}
+      <section className="my-12 max-w-7xl mx-auto px-4">
+        <FeaturedCities cities={cities} loading={loading} />
+      </section>
+
+      {/* POPULAR SEARCHES */}
+      <PopularSearches loading={loading} />
 
       {/* OTHER SECTIONS */}
-      <PopularSearches />
       <WhyChooseServDial />
-      <Testimonials />
+      <Testimonials loading={loading} />
       <DownloadApp />
       <BecomeProvider />
-
     </div>
   );
 };
