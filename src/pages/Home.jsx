@@ -1,5 +1,5 @@
 // src/pages/Home.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useCity } from "../context/CityContext";
 import API from "../api/axios";
 
@@ -29,17 +29,28 @@ const Home = () => {
 
   const [loading, setLoading] = useState(false);
 
-  // =================== Fetch Homepage Data ===================
+  // Prevent race conditions
+  const lastFetchedCity = useRef(null);
+
+  // =================== FETCH HOMEPAGE ===================
   const fetchHomepageData = async (currentCity) => {
-    if (!currentCity) return;
+    if (!currentCity || lastFetchedCity.current === currentCity) return;
+
+    lastFetchedCity.current = currentCity;
     setLoading(true);
+
     try {
-      const res = await API.get("/homepage", { params: { city: currentCity } });
+      const res = await API.get("/homepage", {
+        params: { city: currentCity },
+      });
+
       const data = res.data || {};
+
       setFeaturedBusinesses(data.featuredBusinesses || []);
       setLatestBusinesses(data.latestBusinesses || []);
       setCategories(data.categories || []);
       setCities(data.cities || []);
+
     } catch (err) {
       console.error("Homepage load error", err);
     } finally {
@@ -47,17 +58,19 @@ const Home = () => {
     }
   };
 
-  // =================== Fetch Nearby Businesses ===================
+  // =================== FETCH NEARBY ===================
   const fetchNearbyBusinesses = async (lat, lng) => {
     try {
-      const res = await API.get(`/business/nearby?lat=${lat}&lng=${lng}&limit=8`);
+      const res = await API.get(
+        `/business/nearby?lat=${lat}&lng=${lng}&limit=8`
+      );
       setNearbyBusinesses(res?.data?.businesses || []);
     } catch (err) {
       console.error("Nearby fetch failed", err);
     }
   };
 
-  // =================== Get User Location ===================
+  // =================== GET LOCATION ===================
   useEffect(() => {
     if (!navigator.geolocation) return;
 
@@ -65,80 +78,114 @@ const Home = () => {
       (pos) => {
         const lat = pos.coords.latitude;
         const lng = pos.coords.longitude;
+
         setUserLocation({ lat, lng });
         fetchNearbyBusinesses(lat, lng);
       },
-      (err) => console.warn("Geolocation error:", err),
+      () => {},
       { enableHighAccuracy: true, timeout: 8000 }
     );
   }, []);
 
-  // =================== Refetch Data on City Change ===================
+  // =================== CITY CHANGE ===================
   useEffect(() => {
-    if (city) fetchHomepageData(city);
-  }, [city]);
+    if (!loadingCity && city) {
+      fetchHomepageData(city);
+    }
+  }, [city, loadingCity]);
 
-  // =================== Initial Load Fallback ===================
+  // =================== FALLBACK ===================
   useEffect(() => {
-    const savedCity = localStorage.getItem("servdial_city") || "India";
-    if (!city) fetchHomepageData(savedCity);
-  }, []);
+    if (!city && !loadingCity) {
+      const savedCity =
+        localStorage.getItem("servdial_city") || "India";
+      fetchHomepageData(savedCity);
+    }
+  }, [city, loadingCity]);
 
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* HERO SEARCH */}
+
+      {/* HERO */}
       <HeroSearch city={city} />
 
-      {/* LOADING CITY */}
+      {/* LOCATION LOADING */}
       {loadingCity && (
-        <div className="px-4 py-4 text-xs text-gray-400 animate-pulse">
-          Detecting location...
+        <div className="text-center text-sm text-gray-400 py-2 animate-pulse">
+          Detecting your location...
         </div>
       )}
 
       {/* CATEGORIES */}
-      <CategoriesGrid categories={categories} city={city} loading={loading || loadingCity} />
+      <CategoriesGrid
+        categories={categories}
+        city={city}
+        loading={loading || loadingCity}
+      />
 
-      {/* FEATURED BUSINESSES */}
-      <section className="my-12 max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6 text-center">
-          Featured Businesses in {city || "your city"}
-        </h2>
-        <FeaturedBusinesses businesses={featuredBusinesses} loading={loading || loadingCity} />
-      </section>
+      {/* FEATURED */}
+      {!!featuredBusinesses.length && (
+        <section className="my-14 max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center">
+            Top Rated Businesses in {city || "your area"}
+          </h2>
 
-      {/* LATEST BUSINESSES */}
-      <section className="my-12 max-w-7xl mx-auto px-4">
-        <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-6 text-center">
-          Latest Businesses in {city || "your city"}
-        </h2>
-        <PopularBusinesses businesses={latestBusinesses} loading={loading || loadingCity} />
-      </section>
+          <FeaturedBusinesses
+            businesses={featuredBusinesses}
+            loading={loading || loadingCity}
+          />
+        </section>
+      )}
 
-      {/* NEARBY BUSINESSES */}
-      <section className="my-12 max-w-7xl mx-auto px-4">
-        <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-6 text-center">
-          Businesses Near You
-        </h2>
-        <NearbyBusinesses businesses={nearbyBusinesses} userLocation={userLocation} loading={loading || loadingCity} />
-      </section>
+      {/* LATEST */}
+      {!!latestBusinesses.length && (
+        <section className="my-14 max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-8 text-center">
+            Newly Added in {city || "your area"}
+          </h2>
 
-      {/* RECOMMENDED BUSINESSES */}
+          <PopularBusinesses
+            businesses={latestBusinesses}
+            loading={loading || loadingCity}
+          />
+        </section>
+      )}
+
+      {/* NEARBY */}
+      {!!nearbyBusinesses.length && (
+        <section className="my-14 max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-8 text-center">
+            Businesses Near You
+          </h2>
+
+          <NearbyBusinesses
+            businesses={nearbyBusinesses}
+            userLocation={userLocation}
+            loading={loading || loadingCity}
+          />
+        </section>
+      )}
+
+      {/* RECOMMENDED */}
       {city && (
-        <section className="my-12 max-w-7xl mx-auto px-4">
+        <section className="my-14 max-w-7xl mx-auto px-4">
           <RecommendedBusinesses city={city} />
         </section>
       )}
 
       {/* FEATURED CITIES */}
-      <section className="my-12 max-w-7xl mx-auto px-4">
-        <FeaturedCities cities={cities} loading={loading} />
-      </section>
+      {!!cities.length && (
+        <section className="my-14 max-w-7xl mx-auto px-4">
+          <FeaturedCities cities={cities} loading={loading} />
+        </section>
+      )}
 
       {/* POPULAR SEARCHES */}
-      <PopularSearches loading={loading} />
+      <section className="my-14">
+        <PopularSearches loading={loading} />
+      </section>
 
-      {/* OTHER SECTIONS */}
+      {/* TRUST + CTA */}
       <WhyChooseServDial />
       <Testimonials loading={loading} />
       <DownloadApp />

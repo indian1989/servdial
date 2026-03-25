@@ -24,7 +24,9 @@
     "react-router-dom": "^7.13.1",
     "react-select": "^5.10.2",
     "react-toastify": "^11.0.5",
+    "react-virtualized": "^9.22.6",
     "recharts": "^3.7.0",
+    "slugify": "^1.6.8",
     "yet-another-react-lightbox": "^3.29.1"
   },
   "devDependencies": {

@@ -46,23 +46,27 @@ export const updateCity = (id, data) =>
 export const deleteCity = (id) =>
   API.delete(`/admin/city/${id}`);
 
-
 // ==================== Categories ====================
+
+// ✅ ADMIN (used in admin panel)
 export const getAllCategories = () =>
   API.get("/admin/categories");
 
-export const getCategories = () =>
-  API.get("/admin/categories"); // alias for components expecting getCategories
+export const getCategories = getAllCategories; // alias
 
 export const addCategory = (data) =>
-  API.post("/admin/category", data);
+  API.post("/admin/categories", data);
 
 export const updateCategory = (id, data) =>
-  API.put(`/admin/category/${id}`, data);
+  API.put(`/admin/categories/${id}`, data);
 
 export const deleteCategory = (id) =>
-  API.delete(`/admin/category/${id}`);
+  API.delete(`/admin/categories/${id}`);
 
+
+// ✅ PUBLIC (used in user/provider/homepage)
+export const fetchCategories = () =>
+  API.get("/categories");
 
 // ==================== Banner Ads ====================
 export const getAllBanners = () =>

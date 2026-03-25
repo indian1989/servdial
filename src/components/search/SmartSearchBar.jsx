@@ -44,7 +44,7 @@ const SmartSearchBar = ({
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder="Search for services, businesses..."
+          placeholder={`Search for local services, e.g. plumbers, electricians, hotels in your city...`}
           className="w-full outline-none text-sm md:text-base placeholder-gray-400"
         />
 

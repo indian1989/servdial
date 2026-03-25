@@ -2,77 +2,110 @@ import { Link } from "react-router-dom";
 import { Phone, MapPin, Star } from "lucide-react";
 
 const BusinessCard = ({ business }) => {
+  if (!business) return null;
+
+  const {
+    _id,
+    name,
+    image,
+    category,
+    city,
+    rating,
+    reviewCount,
+    phone,
+    isFeatured,
+    isVerified,
+    distance,
+  } = business;
+
+  const displayRating = rating ? rating.toFixed(1) : null;
+
   return (
     <Link
-      to={`/business/${business._id}`}
-      className="group bg-white rounded-2xl overflow-hidden border hover:shadow-xl transition-all duration-300"
+      to={`/business/${_id}`}
+      className="group bg-white rounded-2xl overflow-hidden border hover:shadow-xl transition-all duration-300 flex flex-col"
     >
       {/* IMAGE */}
       <div className="relative h-44 overflow-hidden">
         <img
-          src={
-            business.image ||
-            "https://via.placeholder.com/400x250?text=ServDial"
-          }
-          alt={business.name}
+          src={image || "https://via.placeholder.com/400x250?text=ServDial"}
+          alt={name}
           className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
         />
 
-        {/* OVERLAY BADGES */}
+        {/* GRADIENT OVERLAY */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+
+        {/* BADGES */}
         <div className="absolute top-2 left-2 flex gap-2">
-          {business.isFeatured && (
-            <span className="bg-yellow-400 text-xs px-2 py-1 rounded-full font-medium">
-              Featured
+          {isFeatured && (
+            <span className="bg-yellow-400 text-xs px-2 py-1 rounded-full font-semibold shadow">
+              ⭐ Featured
             </span>
           )}
-          {business.isVerified && (
-            <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full">
-              Verified
+          {isVerified && (
+            <span className="bg-green-500 text-white text-xs px-2 py-1 rounded-full shadow">
+              ✔ Verified
             </span>
           )}
         </div>
       </div>
 
       {/* CONTENT */}
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-1">
         {/* NAME */}
         <h2 className="text-md font-semibold text-gray-800 line-clamp-1">
-          {business.name}
+          {name || "Unnamed Business"}
         </h2>
 
         {/* CATEGORY */}
-        <p className="text-sm text-gray-500">
-          {business.category}
+        <p className="text-sm text-gray-500 line-clamp-1">
+          {typeof category === "object" ? category?.name : category}
         </p>
 
         {/* LOCATION */}
         <div className="flex items-center text-xs text-gray-400 mt-1">
           <MapPin size={14} className="mr-1" />
-          {business.city}
+          {city || "Unknown location"}
         </div>
 
-        {/* RATING */}
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center text-sm font-medium">
+        {/* RATING + DISTANCE */}
+        <div className="flex items-center justify-between mt-3">
+          <div className="flex items-center text-sm font-medium text-gray-700">
             <Star size={14} className="text-yellow-500 mr-1" />
-            {business.rating || "New"}
+
+            {displayRating ? (
+              <>
+                {displayRating}
+                {reviewCount ? (
+                  <span className="text-gray-400 text-xs ml-1">
+                    ({reviewCount})
+                  </span>
+                ) : null}
+              </>
+            ) : (
+              <span className="text-gray-400 text-xs">New</span>
+            )}
           </div>
 
           {/* DISTANCE */}
-          {business.distance && (
+          {distance && (
             <span className="text-xs text-gray-400">
-              {business.distance} km
+              {distance.toFixed(1)} km
             </span>
           )}
         </div>
 
+        {/* SPACER */}
+        <div className="flex-grow" />
+
         {/* CTA */}
         <div className="flex gap-2 mt-4">
-          {business.phone && (
+          {phone && (
             <a
-              href={`tel:${business.phone}`}
+              href={`tel:${phone}`}
               onClick={(e) => e.stopPropagation()}
-              className="flex-1 flex items-center justify-center gap-1 text-sm bg-blue-600 text-white py-1.5 rounded-lg hover:bg-blue-700 transition"
+              className="flex-1 flex items-center justify-center gap-1 text-sm bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
             >
               <Phone size={14} />
               Call
@@ -81,9 +114,9 @@ const BusinessCard = ({ business }) => {
 
           <button
             onClick={(e) => e.stopPropagation()}
-            className="flex-1 text-sm border py-1.5 rounded-lg hover:bg-gray-100 transition"
+            className="flex-1 text-sm border py-2 rounded-lg hover:bg-gray-100 transition"
           >
-            View
+            View Details
           </button>
         </div>
       </div>
