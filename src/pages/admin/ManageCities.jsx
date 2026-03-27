@@ -3,22 +3,28 @@ import {
   getAllCities,
   addCity,
   updateCity,
-  deleteCity
+  deleteCity,
+  bulkUploadCities
 } from "../../api/adminAPI";
+
 import Loader from "../../components/common/Loader";
 import { FaTrash, FaEdit } from "react-icons/fa";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 15;
 
 const ManageCities = () => {
   const [cities, setCities] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
 
   const [newCity, setNewCity] = useState("");
   const [newDistrict, setNewDistrict] = useState("");
   const [newState, setNewState] = useState("");
+
+  const [formError, setFormError] = useState(false);
 
   const [editingCityId, setEditingCityId] = useState(null);
   const [editingData, setEditingData] = useState({
@@ -47,18 +53,20 @@ const ManageCities = () => {
 
   // ================= ADD =================
   const handleAddCity = async () => {
-    if (!newCity || !newDistrict || !newState) {
-      return alert("All fields are required.");
+    const city = newCity.trim();
+    const district = newDistrict.trim();
+    const state = newState.trim();
+
+    if (!city || !district || !state) {
+      setFormError(true);
+      return alert("City, District and State are mandatory.");
     }
 
+    setFormError(false);
     setLoading(true);
 
     try {
-      await addCity({
-        name: newCity,
-        district: newDistrict,
-        state: newState
-      });
+      await addCity({ name: city, district, state });
 
       setNewCity("");
       setNewDistrict("");
@@ -67,7 +75,7 @@ const ManageCities = () => {
       fetchCities();
     } catch (err) {
       console.error(err);
-      alert("Failed to add city.");
+      alert(err?.response?.data?.message || "Failed to add city.");
     } finally {
       setLoading(false);
     }
@@ -75,14 +83,18 @@ const ManageCities = () => {
 
   // ================= UPDATE =================
   const handleUpdateCity = async (id) => {
-    if (!editingData.name || !editingData.district || !editingData.state) {
-      return alert("All fields required.");
+    const city = editingData.name.trim();
+    const district = editingData.district.trim();
+    const state = editingData.state.trim();
+
+    if (!city || !district || !state) {
+      return alert("City, District and State are mandatory.");
     }
 
     setLoading(true);
 
     try {
-      await updateCity(id, editingData);
+      await updateCity(id, { name: city, district, state });
 
       setEditingCityId(null);
       setEditingData({ name: "", district: "", state: "" });
@@ -90,7 +102,7 @@ const ManageCities = () => {
       fetchCities();
     } catch (err) {
       console.error(err);
-      alert("Failed to update city.");
+      alert(err?.response?.data?.message || "Failed to update city.");
     } finally {
       setLoading(false);
     }
@@ -113,14 +125,69 @@ const ManageCities = () => {
     }
   };
 
+  // ================= BULK UPLOAD =================
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+
+    try {
+      const text = await file.text();
+
+      const rows = text
+        .split("\n")
+        .map((r) => r.trim())
+        .filter((r) => r !== "");
+
+      if (rows.length <= 1) {
+        alert("CSV file is empty or invalid.");
+        return;
+      }
+
+      const cities = rows.slice(1).map((row, index) => {
+        const cols = row.split(",");
+
+        return {
+          name: cols[0]?.trim(),
+          district: cols[1]?.trim(),
+          state: cols[2]?.trim()
+        };
+      });
+
+      const validCities = cities.filter(
+        (c) => c.name && c.district && c.state
+      );
+
+      if (validCities.length === 0) {
+        alert("No valid rows found.");
+        return;
+      }
+
+      const res = await bulkUploadCities({ cities: validCities });
+
+      alert(`
+✅ Inserted: ${res.data.inserted}
+⏭ Skipped: ${res.data.skipped}
+❌ Failed: ${res.data.failedCount}
+      `);
+
+      fetchCities();
+
+    } catch (err) {
+      console.error(err);
+      alert("Bulk upload failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   // ================= FILTER =================
-  const filteredCities = Array.isArray(cities)
-    ? cities.filter((c) =>
-        `${c.name} ${c.district} ${c.state}`
-          .toLowerCase()
-          .includes(search.toLowerCase())
-      )
-    : [];
+  const filteredCities = cities.filter((c) =>
+    `${c.name} ${c.district} ${c.state}`
+      .toLowerCase()
+      .includes(search.toLowerCase())
+  );
 
   const totalPages = Math.ceil(filteredCities.length / PAGE_SIZE);
 
@@ -129,7 +196,6 @@ const ManageCities = () => {
     currentPage * PAGE_SIZE
   );
 
-  // reset page on search
   useEffect(() => {
     setCurrentPage(1);
   }, [search]);
@@ -147,26 +213,32 @@ const ManageCities = () => {
 
         <input
           type="text"
-          placeholder="City"
+          placeholder="City *"
           value={newCity}
           onChange={(e) => setNewCity(e.target.value)}
-          className="border px-3 py-2 rounded flex-1 min-w-[150px]"
+          className={`border px-3 py-2 rounded flex-1 min-w-[150px] ${
+            formError && !newCity.trim() ? "border-red-500" : ""
+          }`}
         />
 
         <input
           type="text"
-          placeholder="District"
+          placeholder="District *"
           value={newDistrict}
           onChange={(e) => setNewDistrict(e.target.value)}
-          className="border px-3 py-2 rounded flex-1 min-w-[150px]"
+          className={`border px-3 py-2 rounded flex-1 min-w-[150px] ${
+            formError && !newDistrict.trim() ? "border-red-500" : ""
+          }`}
         />
 
         <input
           type="text"
-          placeholder="State"
+          placeholder="State *"
           value={newState}
           onChange={(e) => setNewState(e.target.value)}
-          className="border px-3 py-2 rounded flex-1 min-w-[150px]"
+          className={`border px-3 py-2 rounded flex-1 min-w-[150px] ${
+            formError && !newState.trim() ? "border-red-500" : ""
+          }`}
         />
 
         <button
@@ -176,6 +248,21 @@ const ManageCities = () => {
           Add City
         </button>
 
+      </div>
+
+      {/* BULK UPLOAD */}
+      <div className="mb-4 flex items-center gap-3">
+        <input
+          type="file"
+          accept=".csv"
+          onChange={handleFileUpload}
+          className="border px-3 py-2 rounded"
+        />
+        {uploading && (
+          <span className="text-blue-500 font-medium">
+            Uploading...
+          </span>
+        )}
       </div>
 
       {/* SEARCH */}
@@ -189,7 +276,7 @@ const ManageCities = () => {
 
       {/* TABLE */}
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse border border-gray-200">
+        <table className="w-full border border-gray-200">
 
           <thead className="bg-gray-100">
             <tr className="text-center">
@@ -204,7 +291,6 @@ const ManageCities = () => {
             {paginatedCities.map((city) => (
               <tr key={city._id} className="text-center">
 
-                {/* NAME */}
                 <td className="border px-3 py-2">
                   {editingCityId === city._id ? (
                     <input
@@ -214,12 +300,9 @@ const ManageCities = () => {
                       }
                       className="border px-2 py-1 rounded w-full"
                     />
-                  ) : (
-                    city.name
-                  )}
+                  ) : city.name}
                 </td>
 
-                {/* DISTRICT */}
                 <td className="border px-3 py-2">
                   {editingCityId === city._id ? (
                     <input
@@ -229,12 +312,9 @@ const ManageCities = () => {
                       }
                       className="border px-2 py-1 rounded w-full"
                     />
-                  ) : (
-                    city.district
-                  )}
+                  ) : city.district}
                 </td>
 
-                {/* STATE */}
                 <td className="border px-3 py-2">
                   {editingCityId === city._id ? (
                     <input
@@ -244,35 +324,41 @@ const ManageCities = () => {
                       }
                       className="border px-2 py-1 rounded w-full"
                     />
-                  ) : (
-                    city.state
-                  )}
+                  ) : city.state}
                 </td>
 
-                {/* ACTIONS */}
                 <td className="border px-3 py-2 flex justify-center gap-2 flex-wrap">
 
-                  {editingCityId === city._id ? (
-                    <button
-                      onClick={() => handleUpdateCity(city._id)}
-                      className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                    >
-                      Save
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setEditingCityId(city._id);
-                        setEditingData({
-                          name: city.name,
-                          district: city.district,
-                          state: city.state
-                        });
-                      }}
-                      className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 flex items-center gap-1"
-                    >
-                      <FaEdit /> Edit
-                    </button>
+                  <button
+                    onClick={() => {
+                      setEditingCityId(city._id);
+                      setEditingData({
+                        name: city.name,
+                        district: city.district,
+                        state: city.state
+                      });
+                    }}
+                    className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 flex items-center gap-1"
+                  >
+                    <FaEdit /> Edit
+                  </button>
+
+                  {editingCityId === city._id && (
+                    <>
+                      <button
+                        onClick={() => handleUpdateCity(city._id)}
+                        className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                      >
+                        Save
+                      </button>
+
+                      <button
+                        onClick={() => setEditingCityId(null)}
+                        className="bg-gray-400 text-white px-2 py-1 rounded"
+                      >
+                        Cancel
+                      </button>
+                    </>
                   )}
 
                   <button

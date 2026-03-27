@@ -27,7 +27,7 @@ const flattenCategories = (tree, prefix = "") => {
   return result;
 };
 
-// 🎨 Premium styling
+// 🎨 Styling
 const customStyles = {
   control: (base) => ({
     ...base,
@@ -53,6 +53,8 @@ const AdminAddBusiness = () => {
     city: "",
     district: "",
     state: "",
+    stateSlug: "",
+    districtSlug: "",
     phone: "",
     whatsapp: "",
     website: "",
@@ -70,14 +72,19 @@ const AdminAddBusiness = () => {
           API.get("/admin/cities"),
         ]);
 
+        // ✅ CATEGORY TREE
         const tree = catRes.data.categories || [];
         setCategoryOptions(flattenCategories(tree));
 
+        // ✅ CITY OPTIONS (UPDATED STRUCTURE)
         const cityOptions = (cityRes.data.cities || []).map((c) => ({
-          value: c.name,
+          value: c._id,
           label: `${c.name} (${c.state})`,
+          name: c.name,
           district: c.district || "",
           state: c.state || "",
+          districtSlug: c.districtSlug || "",
+          stateSlug: c.stateSlug || "",
         }));
 
         setCities(cityOptions);
@@ -106,16 +113,20 @@ const AdminAddBusiness = () => {
       }));
     }
 
+    // ✅ CITY SELECT FIX (IMPORTANT)
     if (field === "city") {
       setBusinessData((prev) => ({
         ...prev,
-        city: selected.value,
+        city: selected.name,
         district: selected.district,
         state: selected.state,
+        districtSlug: selected.districtSlug,
+        stateSlug: selected.stateSlug,
       }));
       return;
     }
 
+    // CATEGORY
     setBusinessData((prev) => ({
       ...prev,
       [field]: selected.value,
@@ -152,7 +163,7 @@ const AdminAddBusiness = () => {
     try {
       await addBusiness({
         ...businessData,
-        categoryId: businessData.category, // ✅ FIX
+        categoryId: businessData.category, // ✅ keep same
       });
 
       alert("Business added successfully!");
@@ -164,6 +175,8 @@ const AdminAddBusiness = () => {
         city: "",
         district: "",
         state: "",
+        stateSlug: "",
+        districtSlug: "",
         phone: "",
         whatsapp: "",
         website: "",
@@ -228,7 +241,9 @@ const AdminAddBusiness = () => {
         <Select
           placeholder="Select City *"
           options={cities}
-          value={cities.find((c) => c.value === businessData.city) || null}
+          value={
+            cities.find((c) => c.name === businessData.city) || null
+          }
           onChange={(val) => handleSelect("city", val)}
           styles={customStyles}
           isSearchable
