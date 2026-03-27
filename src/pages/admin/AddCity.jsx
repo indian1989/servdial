@@ -65,11 +65,11 @@ const AddCity = () => {
 
       fetchCities();
     } catch (err) {
-      console.error("Add city error:", err?.response?.data || err.message);
-      alert("Failed to add city.");
-    } finally {
-      setLoading(false);
-    }
+  console.error("FULL ERROR:", err);
+  console.error("BACKEND ERROR:", err?.response?.data);
+
+  alert(err?.response?.data?.message || "Failed to add city");
+}
   };
 
   // ================= DELETE =================
