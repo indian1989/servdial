@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   getAllCategories,
   addCategory,
@@ -14,16 +14,27 @@ import {
   FaSearch,
 } from "react-icons/fa";
 
+import {
+  toTitleCase,
+  buildCategoryTree,
+} from "../../utils/adminUtils";
+
 const PAGE_SIZE = 10;
 
 const ManageCategories = () => {
   const [categories, setCategories] = useState([]);
   const [flatCategories, setFlatCategories] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
+
   const [search, setSearch] = useState("");
   const [dropdownSearch, setDropdownSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
   const [currentPage, setCurrentPage] = useState(1);
   const [showDropdown, setShowDropdown] = useState(false);
+
+  const dropdownRef = useRef();
 
   const [newCategory, setNewCategory] = useState({
     name: "",
@@ -41,65 +52,35 @@ const ManageCategories = () => {
 
   const [collapsed, setCollapsed] = useState({});
 
-  const toTitleCase = (str) =>
-    str.replace(/\w\S*/g, (t) =>
-      t.charAt(0).toUpperCase() + t.slice(1).toLowerCase()
-    );
-
-  const normalize = (cats) =>
-    cats.map((c) => ({
-      ...c,
-      name: toTitleCase(c.name || ""),
-      order: Number(c.order) || 0,
-      status: c.status || "active",
-    }));
-
-  const buildTree = (cats) => {
-    const map = {};
-    const roots = [];
-
-    cats.forEach((c) => {
-      map[c._id] = { ...c, subcategories: [] };
-    });
-
-    cats.forEach((c) => {
-      const parentId =
-        c.parentCategory && typeof c.parentCategory === "object"
-          ? c.parentCategory._id
-          : c.parentCategory || null;
-
-      if (parentId && map[parentId]) {
-        map[parentId].subcategories.push(map[c._id]);
-      } else {
-        roots.push(map[c._id]);
+  // ================= OUTSIDE CLICK =================
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
       }
-    });
-
-    const sortTree = (nodes) => {
-      nodes.sort(
-        (a, b) =>
-          Number(a.order || 0) - Number(b.order || 0) ||
-          a.name.localeCompare(b.name)
-      );
-      nodes.forEach((n) => sortTree(n.subcategories));
     };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-    sortTree(roots);
-    return roots;
-  };
+  // ================= DEBOUNCE =================
+  useEffect(() => {
+    const t = setTimeout(() => setDebouncedSearch(dropdownSearch), 300);
+    return () => clearTimeout(t);
+  }, [dropdownSearch]);
 
+  // ================= FETCH =================
   const fetchCategories = async () => {
     setLoading(true);
     try {
       const res = await getAllCategories();
-      const raw = res?.data?.categories || [];
-      const normalized = normalize(raw);
+      const cats = res.data.categories || [];
 
-      setFlatCategories(normalized);
-      setCategories(buildTree(normalized));
+      setFlatCategories(cats);
+      setCategories(buildCategoryTree(cats));
       setCurrentPage(1);
     } catch {
-      alert("Fetch failed");
+      alert("Failed to fetch categories");
     } finally {
       setLoading(false);
     }
@@ -109,37 +90,69 @@ const ManageCategories = () => {
     fetchCategories();
   }, []);
 
+  // ================= ADD =================
   const handleAddCategory = async () => {
     if (!newCategory.name.trim()) return alert("Name required");
 
-    await addCategory({
-      ...newCategory,
-      name: toTitleCase(newCategory.name),
-      order: Number(newCategory.order),
-      parentCategory: newCategory.parentCategory || null,
-    });
+    const exists = flatCategories.some(
+      (c) => c.name.toLowerCase() === newCategory.name.toLowerCase()
+    );
+    if (exists) return alert("Category already exists");
 
-    setNewCategory({ name: "", description: "", order: 0, parentCategory: "" });
-    setDropdownSearch("");
-    fetchCategories();
+    setActionLoading(true);
+    try {
+      await addCategory({
+        ...newCategory,
+        name: toTitleCase(newCategory.name),
+        order: Number(newCategory.order),
+        parentCategory: newCategory.parentCategory || null,
+      });
+
+      setNewCategory({
+        name: "",
+        description: "",
+        order: 0,
+        parentCategory: "",
+      });
+
+      setDropdownSearch("");
+      fetchCategories();
+    } finally {
+      setActionLoading(false);
+    }
   };
 
+  // ================= UPDATE =================
   const handleUpdateCategory = async (id) => {
-    await updateCategory(id, {
-      ...editingCategoryData,
-      name: toTitleCase(editingCategoryData.name),
-      order: Number(editingCategoryData.order),
-    });
-    setEditingCategoryId(null);
-    fetchCategories();
+    setActionLoading(true);
+    try {
+      await updateCategory(id, {
+        ...editingCategoryData,
+        name: toTitleCase(editingCategoryData.name),
+        order: Number(editingCategoryData.order),
+      });
+
+      setEditingCategoryId(null);
+      fetchCategories();
+    } finally {
+      setActionLoading(false);
+    }
   };
 
+  // ================= DELETE =================
   const handleDeleteCategory = async (id) => {
     if (!window.confirm("Delete?")) return;
-    await deleteCategory(id);
-    fetchCategories();
+
+    setActionLoading(true);
+    try {
+      await deleteCategory(id);
+      fetchCategories();
+    } finally {
+      setActionLoading(false);
+    }
   };
 
+  // ================= STATUS =================
   const toggleStatus = async (cat) => {
     await updateCategory(cat._id, {
       status: cat.status === "active" ? "inactive" : "active",
@@ -147,6 +160,7 @@ const ManageCategories = () => {
     fetchCategories();
   };
 
+  // ================= FILTER =================
   const filteredTree = useMemo(() => {
     if (!search) return categories;
 
@@ -162,17 +176,13 @@ const ManageCategories = () => {
     return filter(categories);
   }, [search, categories]);
 
-  const topLevel = filteredTree;
-  const current = topLevel.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
-  );
-  const totalPages = Math.ceil(topLevel.length / PAGE_SIZE);
+  const filteredDropdown = useMemo(() => {
+    return flatCategories.filter((c) =>
+      c.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+    );
+  }, [flatCategories, debouncedSearch]);
 
-  const filteredDropdown = flatCategories.filter((c) =>
-    c.name.toLowerCase().includes(dropdownSearch.toLowerCase())
-  );
-
+  // ================= RENDER =================
   const renderRow = (cat, level = 0) => {
     const isCollapsed = collapsed[cat._id];
 
@@ -297,9 +307,12 @@ const ManageCategories = () => {
     );
   };
 
+  // ================= UI =================
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <h2 className="text-2xl font-bold mb-4">Manage Categories</h2>
+
+      {(loading || actionLoading) && <Loader />}
 
       {/* ADD */}
       <div className="grid md:grid-cols-5 gap-3 mb-6">
@@ -331,8 +344,8 @@ const ManageCategories = () => {
           }
         />
 
-        {/* SEARCHABLE DROPDOWN */}
-        <div className="relative">
+        {/* DROPDOWN */}
+        <div className="relative" ref={dropdownRef}>
           <input
             className="border px-3 py-2 rounded w-full"
             placeholder="Search parent..."
@@ -393,38 +406,20 @@ const ManageCategories = () => {
         />
       </div>
 
-      {loading ? (
-        <Loader />
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full border">
-            <thead className="bg-gray-100">
-              <tr className="text-center">
-                <th className="border px-3 py-2 text-left">Name</th>
-                <th className="border px-3 py-2">Description</th>
-                <th className="border px-3 py-2">Order</th>
-                <th className="border px-3 py-2">Status</th>
-                <th className="border px-3 py-2">Actions</th>
-              </tr>
-            </thead>
-            <tbody>{current.map((c) => renderRow(c))}</tbody>
-          </table>
-        </div>
-      )}
-
-      {/* PAGINATION */}
-      <div className="flex justify-center mt-4 gap-2">
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentPage(i + 1)}
-            className={`px-3 py-1 border rounded ${
-              currentPage === i + 1 ? "bg-blue-500 text-white" : ""
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
+      {/* TABLE */}
+      <div className="overflow-x-auto">
+        <table className="w-full border">
+          <thead className="bg-gray-100">
+            <tr className="text-center">
+              <th className="border px-3 py-2 text-left">Name</th>
+              <th className="border px-3 py-2">Description</th>
+              <th className="border px-3 py-2">Order</th>
+              <th className="border px-3 py-2">Status</th>
+              <th className="border px-3 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>{filteredTree.map((c) => renderRow(c))}</tbody>
+        </table>
       </div>
     </div>
   );

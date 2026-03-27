@@ -5,7 +5,7 @@ import AdminLayout from "../layouts/AdminLayout";
 
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import ManageBusinesses from "../pages/admin/ManageBusinesses";
-import AddBusiness from "../pages/admin/AddBusiness";
+import AdminAddBusiness from "../pages/admin/AdminAddBusiness";
 import ManageCities from "../pages/admin/ManageCities";
 import AddCity from "../pages/admin/AddCity";
 import ManageCategories from "../pages/admin/ManageCategories";
@@ -33,7 +33,7 @@ const AdminRoutes = () => {
       <Route index element={<AdminDashboard />} />
       <Route path="dashboard" element={<AdminDashboard />} />
       <Route path="businesses" element={<ManageBusinesses />} />
-      <Route path="businesses/add" element={<AddBusiness />} />
+      <Route path="businesses/add" element={<AdminAddBusiness />} />
       <Route path="cities" element={<ManageCities />} />
       <Route path="cities/add" element={<AddCity />} />
       <Route path="categories" element={<ManageCategories />} />

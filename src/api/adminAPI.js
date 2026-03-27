@@ -38,13 +38,13 @@ export const getCities = () =>
   API.get("/admin/cities"); // alias for components expecting getCities
 
 export const addCity = (data) =>
-  API.post("/admin/city", data);
+  API.post("/admin/cities", data);
 
 export const updateCity = (id, data) =>
-  API.put(`/admin/city/${id}`, data);
+  API.put(`/admin/cities/${id}`, data);
 
 export const deleteCity = (id) =>
-  API.delete(`/admin/city/${id}`);
+  API.delete(`/admin/cities/${id}`);
 
 // ==================== Categories ====================
 

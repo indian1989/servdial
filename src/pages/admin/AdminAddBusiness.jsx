@@ -1,12 +1,49 @@
 import React, { useEffect, useState } from "react";
 import Select from "react-select";
-import { addBusiness } from "../../api/adminAPI";
+import { addBusiness, getAllCategories } from "../../api/adminAPI";
 import API from "../../api/axios";
 import Loader from "../../components/common/Loader";
 
+// 🔥 Flatten category tree
+const flattenCategories = (tree, prefix = "") => {
+  let result = [];
+
+  tree.forEach((cat) => {
+    const label = prefix ? `${prefix} › ${cat.name}` : cat.name;
+
+    result.push({
+      value: cat._id,
+      label,
+      parent: cat.parentCategory || null,
+    });
+
+    if (cat.subcategories?.length) {
+      result = result.concat(
+        flattenCategories(cat.subcategories, label)
+      );
+    }
+  });
+
+  return result;
+};
+
+// 🎨 Premium styling
+const customStyles = {
+  control: (base) => ({
+    ...base,
+    padding: "4px",
+    borderRadius: "10px",
+    borderColor: "#d1d5db",
+    boxShadow: "none",
+    "&:hover": {
+      borderColor: "#2563eb",
+    },
+  }),
+};
+
 const AdminAddBusiness = () => {
   const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState([]);
+  const [categoryOptions, setCategoryOptions] = useState([]);
   const [cities, setCities] = useState([]);
 
   const [businessData, setBusinessData] = useState({
@@ -22,69 +59,104 @@ const AdminAddBusiness = () => {
     description: "",
   });
 
-  // ================= LOAD CATEGORIES & CITIES =================
+  const [error, setError] = useState("");
+
+  // ================= LOAD =================
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [catRes, cityRes] = await Promise.all([
-          API.get("/admin/categories"),
+          getAllCategories(),
           API.get("/admin/cities"),
         ]);
 
-        const categoryOptions = (catRes.data.categories || []).map((cat) => ({
-          value: cat._id,
-          label: cat.name.charAt(0).toUpperCase() + cat.name.slice(1),
-        }));
+        const tree = catRes.data.categories || [];
+        setCategoryOptions(flattenCategories(tree));
 
         const cityOptions = (cityRes.data.cities || []).map((c) => ({
           value: c.name,
-          label: c.name,
+          label: `${c.name} (${c.state})`,
           district: c.district || "",
           state: c.state || "",
         }));
 
-        setCategories(categoryOptions);
         setCities(cityOptions);
+
       } catch (err) {
-        console.error("Failed to load categories or cities", err);
+        console.error(err);
+        setError("Failed to load data");
       }
     };
+
     fetchData();
   }, []);
 
-  // ================= HANDLE INPUT =================
+  // ================= INPUT =================
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setBusinessData({ ...businessData, [name]: value });
+    setBusinessData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // ================= SELECT =================
   const handleSelect = (field, selected) => {
-    if (!selected) return setBusinessData({ ...businessData, [field]: "" });
+    if (!selected) {
+      return setBusinessData((prev) => ({
+        ...prev,
+        [field]: "",
+      }));
+    }
+
     if (field === "city") {
-      setBusinessData({
-        ...businessData,
+      setBusinessData((prev) => ({
+        ...prev,
         city: selected.value,
         district: selected.district,
         state: selected.state,
-      });
-    } else {
-      setBusinessData({ ...businessData, [field]: selected.value });
+      }));
+      return;
     }
+
+    setBusinessData((prev) => ({
+      ...prev,
+      [field]: selected.value,
+    }));
   };
 
-  // ================= SUBMIT BUSINESS =================
+  // ================= VALIDATION =================
+  const validate = () => {
+    const { name, category, city, district, state, phone } = businessData;
+
+    if (!name || !category || !city || !district || !state || !phone) {
+      return "Please fill all required fields";
+    }
+
+    if (phone.length < 10) {
+      return "Invalid phone number";
+    }
+
+    return "";
+  };
+
+  // ================= SUBMIT =================
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { name, category, city, district, state, phone } = businessData;
-    if (!name || !category || !city || !district || !state || !phone) {
-      return alert("Please fill all required fields.");
+    const validationError = validate();
+    if (validationError) {
+      return setError(validationError);
     }
 
+    setError("");
     setLoading(true);
+
     try {
-      await addBusiness(businessData);
+      await addBusiness({
+        ...businessData,
+        categoryId: businessData.category, // ✅ FIX
+      });
+
       alert("Business added successfully!");
+
       setBusinessData({
         name: "",
         category: "",
@@ -97,23 +169,29 @@ const AdminAddBusiness = () => {
         website: "",
         description: "",
       });
+
     } catch (err) {
       console.error(err);
-      alert("Failed to add business");
+      setError("Failed to add business");
     } finally {
       setLoading(false);
     }
   };
 
+  // ================= UI =================
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <h2 className="text-2xl font-bold mb-6">Add Business</h2>
 
       {loading && <Loader />}
+      {error && (
+        <div className="bg-red-100 text-red-600 p-2 rounded mb-4">
+          {error}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} className="grid gap-4">
 
-        {/* Business Name */}
         <input
           type="text"
           name="name"
@@ -123,15 +201,20 @@ const AdminAddBusiness = () => {
           className="border px-3 py-2 rounded"
         />
 
-        {/* Category */}
+        {/* CATEGORY */}
         <Select
-          placeholder="Select Category *"
-          options={categories}
-          value={categories.find(c => c.value === businessData.category) || null}
+          placeholder="🔍 Search category"
+          options={categoryOptions}
+          value={
+            categoryOptions.find(
+              (c) => c.value === businessData.category
+            ) || null
+          }
           onChange={(val) => handleSelect("category", val)}
+          styles={customStyles}
+          isSearchable
         />
 
-        {/* Address */}
         <input
           type="text"
           name="address"
@@ -141,15 +224,16 @@ const AdminAddBusiness = () => {
           className="border px-3 py-2 rounded"
         />
 
-        {/* City */}
+        {/* CITY */}
         <Select
           placeholder="Select City *"
           options={cities}
-          value={cities.find(c => c.value === businessData.city) || null}
+          value={cities.find((c) => c.value === businessData.city) || null}
           onChange={(val) => handleSelect("city", val)}
+          styles={customStyles}
+          isSearchable
         />
 
-        {/* District */}
         <input
           type="text"
           name="district"
@@ -159,18 +243,15 @@ const AdminAddBusiness = () => {
           className="border px-3 py-2 rounded"
         />
 
-        {/* State */}
         <input
           type="text"
           name="state"
           placeholder="State *"
           value={businessData.state}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
           readOnly
+          className="border px-3 py-2 rounded bg-gray-100"
         />
 
-        {/* Phone */}
         <input
           type="text"
           name="phone"
@@ -180,7 +261,6 @@ const AdminAddBusiness = () => {
           className="border px-3 py-2 rounded"
         />
 
-        {/* WhatsApp */}
         <input
           type="text"
           name="whatsapp"
@@ -190,7 +270,6 @@ const AdminAddBusiness = () => {
           className="border px-3 py-2 rounded"
         />
 
-        {/* Website */}
         <input
           type="text"
           name="website"
@@ -200,7 +279,6 @@ const AdminAddBusiness = () => {
           className="border px-3 py-2 rounded"
         />
 
-        {/* Description */}
         <textarea
           name="description"
           placeholder="Description"
