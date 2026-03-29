@@ -1,15 +1,20 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Phone, MapPin, Star } from "lucide-react";
+import API from "../../api/axios";
+import { useCity } from "../../context/CityContext";
 
 const BusinessCard = ({ business }) => {
   if (!business) return null;
+
+  const location = useLocation();
+  const { city } = useCity();
 
   const {
     _id,
     name,
     image,
     category,
-    city,
+    city: businessCity,
     rating,
     reviewCount,
     phone,
@@ -20,9 +25,31 @@ const BusinessCard = ({ business }) => {
 
   const displayRating = rating ? rating.toFixed(1) : null;
 
+  // ================= EXTRACT SEARCH KEYWORD =================
+  const getKeywordFromURL = () => {
+    const params = new URLSearchParams(location.search);
+    return params.get("q") || "";
+  };
+
+  // ================= TRACK CLICK =================
+  const handleBusinessClick = async () => {
+    try {
+      const keyword = getKeywordFromURL();
+
+      await API.post(`/business/${_id}/click`, {
+        keyword,
+        city: city || businessCity || null,
+      });
+    } catch (err) {
+      // silent fail (no UX break)
+      console.log("Click tracking failed");
+    }
+  };
+
   return (
     <Link
       to={`/business/${_id}`}
+      onClick={handleBusinessClick} // 🔥 AI CLICK TRACKING
       className="group bg-white rounded-2xl overflow-hidden border hover:shadow-xl transition-all duration-300 flex flex-col"
     >
       {/* IMAGE */}
@@ -66,7 +93,7 @@ const BusinessCard = ({ business }) => {
         {/* LOCATION */}
         <div className="flex items-center text-xs text-gray-400 mt-1">
           <MapPin size={14} className="mr-1" />
-          {city || "Unknown location"}
+          {businessCity || "Unknown location"}
         </div>
 
         {/* RATING + DISTANCE */}

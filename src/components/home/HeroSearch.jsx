@@ -65,7 +65,7 @@ const HeroSearch = ({ city }) => {
           `/search/suggestions?q=${query}&city=${currentCity}`
         );
 
-        setSuggestions(res?.data || []);
+        setSuggestions(res?.data?.suggestions || []);
       } catch {
         setSuggestions([]);
       } finally {

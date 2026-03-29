@@ -21,7 +21,7 @@ function ClaimBusiness() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    await fetch("/api/claims", {
+    await fetch("/claims", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
