@@ -41,15 +41,20 @@ const BusinessCard = ({ business }) => {
         city: city || businessCity || null,
       });
     } catch (err) {
-      // silent fail (no UX break)
       console.log("Click tracking failed");
     }
+  };
+
+  // ================= CALL HANDLER (FIXED) =================
+  const handleCall = (e) => {
+    e.stopPropagation();
+    window.location.href = `tel:${phone}`;
   };
 
   return (
     <Link
       to={`/business/${_id}`}
-      onClick={handleBusinessClick} // 🔥 AI CLICK TRACKING
+      onClick={handleBusinessClick}
       className="group bg-white rounded-2xl overflow-hidden border hover:shadow-xl transition-all duration-300 flex flex-col"
     >
       {/* IMAGE */}
@@ -60,10 +65,8 @@ const BusinessCard = ({ business }) => {
           className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
         />
 
-        {/* GRADIENT OVERLAY */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
 
-        {/* BADGES */}
         <div className="absolute top-2 left-2 flex gap-2">
           {isFeatured && (
             <span className="bg-yellow-400 text-xs px-2 py-1 rounded-full font-semibold shadow">
@@ -80,23 +83,19 @@ const BusinessCard = ({ business }) => {
 
       {/* CONTENT */}
       <div className="p-4 flex flex-col flex-1">
-        {/* NAME */}
         <h2 className="text-md font-semibold text-gray-800 line-clamp-1">
           {name || "Unnamed Business"}
         </h2>
 
-        {/* CATEGORY */}
         <p className="text-sm text-gray-500 line-clamp-1">
           {typeof category === "object" ? category?.name : category}
         </p>
 
-        {/* LOCATION */}
         <div className="flex items-center text-xs text-gray-400 mt-1">
           <MapPin size={14} className="mr-1" />
           {businessCity || "Unknown location"}
         </div>
 
-        {/* RATING + DISTANCE */}
         <div className="flex items-center justify-between mt-3">
           <div className="flex items-center text-sm font-medium text-gray-700">
             <Star size={14} className="text-yellow-500 mr-1" />
@@ -115,7 +114,6 @@ const BusinessCard = ({ business }) => {
             )}
           </div>
 
-          {/* DISTANCE */}
           {distance && (
             <span className="text-xs text-gray-400">
               {distance.toFixed(1)} km
@@ -123,20 +121,18 @@ const BusinessCard = ({ business }) => {
           )}
         </div>
 
-        {/* SPACER */}
         <div className="flex-grow" />
 
         {/* CTA */}
         <div className="flex gap-2 mt-4">
           {phone && (
-            <a
-              href={`tel:${phone}`}
-              onClick={(e) => e.stopPropagation()}
+            <button
+              onClick={handleCall}
               className="flex-1 flex items-center justify-center gap-1 text-sm bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
             >
               <Phone size={14} />
               Call
-            </a>
+            </button>
           )}
 
           <button
