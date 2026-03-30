@@ -32,7 +32,7 @@ const LatestBusinesses = () => {
   useEffect(() => {
     const fetchBusinesses = async () => {
       try {
-        const res = await API.get("/businesses/latest");
+        const res = await API.get("/business/latest");
         setBusinesses(res?.data?.businesses || []);
       } catch {
         setBusinesses([]);
