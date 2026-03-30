@@ -7,7 +7,6 @@ const RecommendedBusinesses = ({ city }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // ================= FETCH RECOMMENDATIONS =================
   const fetchRecommendations = async () => {
     if (!city) return;
 
@@ -19,7 +18,8 @@ const RecommendedBusinesses = ({ city }) => {
         params: { city },
       });
 
-      setBusinesses(res?.data || []);
+      // ✅ FIX: API RETURNS ARRAY NOW
+      setBusinesses(res.data || []);
     } catch (err) {
       console.error("🔥 Recommendation error:", err);
       setError("Failed to load recommendations");
@@ -29,26 +29,20 @@ const RecommendedBusinesses = ({ city }) => {
     }
   };
 
-  // ================= LOAD =================
   useEffect(() => {
     fetchRecommendations();
   }, [city]);
 
-  // ================= EMPTY STATE =================
   if (!loading && businesses.length === 0) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-10 text-center">
         <h2 className="text-xl font-semibold text-gray-600">
           No recommendations available
         </h2>
-        <p className="text-sm text-gray-400 mt-1">
-          Try exploring more businesses in your city
-        </p>
       </div>
     );
   }
 
-  // ================= ERROR STATE =================
   if (error) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-10 text-center">
@@ -57,14 +51,12 @@ const RecommendedBusinesses = ({ city }) => {
     );
   }
 
-  // ================= UI =================
   return (
     <div className="max-w-7xl mx-auto px-4 py-12">
       <h2 className="text-2xl font-bold mb-6 text-center">
         Recommended for You
       </h2>
 
-      {/* LOADING */}
       {loading ? (
         <div className="grid md:grid-cols-4 gap-6">
           {[...Array(8)].map((_, i) => (
@@ -75,7 +67,6 @@ const RecommendedBusinesses = ({ city }) => {
           ))}
         </div>
       ) : (
-        // ================= BUSINESS GRID =================
         <div className="grid md:grid-cols-4 gap-6">
           {businesses.map((biz) => (
             <BusinessCard key={biz._id} business={biz} />
