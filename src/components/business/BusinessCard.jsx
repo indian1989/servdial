@@ -14,8 +14,12 @@ const BusinessCard = ({ business }) => {
 
   const b = normalizeBusiness(business);
 
+  console.log("BUSINESS:", business);
+  console.log("NORMALIZED:", b);
+
   const {
     _id,
+    slug,
     name,
     image,
     category,
@@ -28,6 +32,12 @@ const BusinessCard = ({ business }) => {
     distance,
     isNew,
   } = b;
+
+  // ✅ SAFE SLUG (CRITICAL FIX)
+  const safeSlug = slug || _id;
+
+  // ❌ If still missing → don't render
+  if (!safeSlug) return null;
 
   const getKeywordFromURL = () => {
     const params = new URLSearchParams(location.search);
@@ -42,7 +52,9 @@ const BusinessCard = ({ business }) => {
         keyword,
         city: city || businessCity || null,
       });
-    } catch {}
+    } catch (err) {
+      console.error("Click tracking failed:", err);
+    }
   };
 
   const handleCall = (e) => {
@@ -55,9 +67,14 @@ const BusinessCard = ({ business }) => {
     window.open(`https://wa.me/${phone}`, "_blank");
   };
 
+  const handleView = (e) => {
+    e.stopPropagation();
+    window.location.href = `/business/${safeSlug}`;
+  };
+
   return (
     <Link
-      to={`/business/${_id}`}
+      to={`/business/${safeSlug}`}
       onClick={handleBusinessClick}
       className="group bg-white rounded-2xl overflow-hidden border hover:shadow-xl transition-all duration-300 flex flex-col"
     >
@@ -138,7 +155,7 @@ const BusinessCard = ({ business }) => {
 
         <div className="flex-grow" />
 
-        {/* ACTION BUTTONS (ALWAYS SAME) */}
+        {/* ACTION BUTTONS */}
         <div className="flex gap-2 mt-4">
           {phone && (
             <button
@@ -161,8 +178,8 @@ const BusinessCard = ({ business }) => {
           )}
 
           <button
-            onClick={(e) => e.stopPropagation()}
-            className="flex-1 text-sm border py-2 rounded-lg hover:bg-gray-100"
+            onClick={handleView}
+            className="flex-1 text-sm border py-2 rounded-lg hover:bg-gray-100 text-center"
           >
             View
           </button>

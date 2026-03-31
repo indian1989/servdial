@@ -1,40 +1,50 @@
 export const normalizeBusiness = (b = {}) => {
-  return {
-    _id: b._id,
+  try {
+    return {
+      _id: b?._id || null,
 
-    name: b.name || "Unnamed Business",
+      // ✅ ALWAYS SAFE SLUG
+      slug: b?.slug || b?._id || "",
 
-    image:
-      (b.images && b.images.length > 0 && b.images[0]) ||
-      b.logo ||
-      "https://via.placeholder.com/400x250?text=ServDial",
+      name: b?.name || "Unnamed Business",
 
-    category:
-      typeof b.category === "object"
-        ? b.category?.name
-        : b.category || "General",
+      image:
+        (Array.isArray(b?.images) && b.images.length > 0 && b.images[0]) ||
+        b?.logo ||
+        "https://via.placeholder.com/400x250?text=ServDial",
 
-    city: b.city || "Unknown",
+      category:
+        typeof b?.category === "object"
+          ? b?.category?.name
+          : b?.category || "General",
 
-    rating: b.averageRating || b.rating || 0,
+      city: b?.city || "Unknown",
 
-    reviewCount: b.totalReviews || b.reviewCount || 0,
+      rating: b?.averageRating || b?.rating || 0,
 
-    // 🔥 CRITICAL FIX
-    phone:
-      b.phone ||
-      b.mobile ||
-      b.contactNumber ||
-      null,
+      reviewCount: b?.totalReviews || b?.reviewCount || 0,
 
-    isFeatured: b.isFeatured || false,
+      phone:
+        b?.phone ||
+        b?.mobile ||
+        b?.contactNumber ||
+        null,
 
-    isVerified: b.isVerified || false,
+      isFeatured: b?.isFeatured || false,
 
-    distance: b.distance ?? null,
+      isVerified: b?.isVerified || false,
 
-    isNew: b.createdAt
-      ? (Date.now() - new Date(b.createdAt)) / (1000 * 60 * 60 * 24) < 7
-      : false,
-  };
+      distance: b?.distance ?? null,
+
+      isNew:
+        b?.createdAt
+          ? (Date.now() - new Date(b.createdAt).getTime()) /
+              (1000 * 60 * 60 * 24) <
+            7
+          : false,
+    };
+  } catch (err) {
+    console.error("NORMALIZE ERROR:", err, b);
+    return {};
+  }
 };

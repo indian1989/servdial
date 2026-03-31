@@ -28,7 +28,7 @@ const PublicRoutes = () => {
       <Route path="/latest-businesses" element={<LatestBusinesses />} />
 
       {/* Business Details */}
-      <Route path="/business/:id" element={<BusinessPage />} />
+      <Route path="/business/:slug" element={<BusinessPage />} />
 
       {/* Category Overview */}
       <Route path="/categories" element={<CategoryPage />} />
