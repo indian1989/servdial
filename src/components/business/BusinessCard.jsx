@@ -14,9 +14,6 @@ const BusinessCard = ({ business }) => {
 
   const b = normalizeBusiness(business);
 
-  console.log("BUSINESS:", business);
-  console.log("NORMALIZED:", b);
-
   const {
     _id,
     slug,
@@ -33,17 +30,19 @@ const BusinessCard = ({ business }) => {
     isNew,
   } = b;
 
-  // ✅ SAFE SLUG (CRITICAL FIX)
+  // ✅ SAFE SLUG
   const safeSlug = slug || _id;
-
-  // ❌ If still missing → don't render
   if (!safeSlug) return null;
+
+  // ✅ WHATSAPP NUMBER FIX (IMPORTANT)
+  const whatsappNumber = (business.whatsapp || phone)?.replace(/\D/g, "");
 
   const getKeywordFromURL = () => {
     const params = new URLSearchParams(location.search);
     return params.get("q") || "";
   };
 
+  // ================= TRACK CLICK =================
   const handleBusinessClick = async () => {
     try {
       const keyword = getKeywordFromURL();
@@ -57,19 +56,26 @@ const BusinessCard = ({ business }) => {
     }
   };
 
+  // ================= CALL =================
   const handleCall = (e) => {
+    e.preventDefault();
     e.stopPropagation();
+
+    if (!phone) return;
+
     window.location.href = `tel:${phone}`;
+    API.put(`/business/${_id}/phone`).catch(() => {});
   };
 
+  // ================= WHATSAPP =================
   const handleWhatsApp = (e) => {
+    e.preventDefault();
     e.stopPropagation();
-    window.open(`https://wa.me/${phone}`, "_blank");
-  };
 
-  const handleView = (e) => {
-    e.stopPropagation();
-    window.location.href = `/business/${safeSlug}`;
+    if (!whatsappNumber) return;
+
+    window.open(`https://wa.me/91${whatsappNumber}`, "_blank");
+    API.put(`/business/${_id}/whatsapp`).catch(() => {});
   };
 
   return (
@@ -78,7 +84,7 @@ const BusinessCard = ({ business }) => {
       onClick={handleBusinessClick}
       className="group bg-white rounded-2xl overflow-hidden border hover:shadow-xl transition-all duration-300 flex flex-col"
     >
-      {/* IMAGE */}
+      {/* ================= IMAGE ================= */}
       <div className="relative h-44 overflow-hidden">
         <img
           src={image || "https://via.placeholder.com/400x250?text=ServDial"}
@@ -88,6 +94,7 @@ const BusinessCard = ({ business }) => {
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
 
+        {/* BADGES */}
         <div className="absolute top-2 left-2 flex gap-2 flex-wrap">
           {isFeatured && (
             <span className="bg-yellow-400 text-xs px-2 py-1 rounded-full font-semibold shadow">
@@ -109,8 +116,9 @@ const BusinessCard = ({ business }) => {
         </div>
       </div>
 
-      {/* CONTENT */}
+      {/* ================= CONTENT ================= */}
       <div className="p-4 flex flex-col flex-1">
+
         <h2 className="text-md font-semibold text-gray-800 line-clamp-1">
           {name}
         </h2>
@@ -122,6 +130,7 @@ const BusinessCard = ({ business }) => {
           {businessCity}
         </div>
 
+        {/* ================= RATING ================= */}
         <div className="flex items-center justify-between mt-3">
           <div className="flex items-center text-sm font-medium text-gray-700">
             <Star size={14} className="text-yellow-500 mr-1" />
@@ -155,35 +164,31 @@ const BusinessCard = ({ business }) => {
 
         <div className="flex-grow" />
 
-        {/* ACTION BUTTONS */}
+        {/* ================= ACTION BUTTONS ================= */}
         <div className="flex gap-2 mt-4">
+
+          {/* CALL */}
           {phone && (
             <button
               onClick={handleCall}
-              className="flex-1 flex items-center justify-center gap-1 text-sm bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+              className="flex-1 flex items-center justify-center gap-1 bg-blue-600 text-white text-sm py-2 rounded-lg hover:bg-blue-700 transition"
             >
-              <Phone size={14} />
-              Call
+              <Phone size={16} /> Call
             </button>
           )}
 
-          {phone && (
+          {/* WHATSAPP */}
+          {whatsappNumber && (
             <button
               onClick={handleWhatsApp}
-              className="flex-1 flex items-center justify-center gap-1 text-sm bg-green-600 text-white py-2 rounded-lg hover:bg-green-700"
+              className="flex-1 flex items-center justify-center gap-1 bg-green-600 text-white text-sm py-2 rounded-lg hover:bg-green-700 transition"
             >
-              <MessageCircle size={14} />
-              WhatsApp
+              <MessageCircle size={16} /> WhatsApp
             </button>
           )}
 
-          <button
-            onClick={handleView}
-            className="flex-1 text-sm border py-2 rounded-lg hover:bg-gray-100 text-center"
-          >
-            View
-          </button>
         </div>
+
       </div>
     </Link>
   );

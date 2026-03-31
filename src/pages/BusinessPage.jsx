@@ -18,7 +18,7 @@ const BusinessPage = () => {
   // ================= FETCH BUSINESS =================
   const fetchBusiness = async () => {
     try {
-      const res = await API.get(`/business/slug/${slug}`);
+      const res = await API.get(`/business/${slug}`);
 
       const biz = res.data.business;
 

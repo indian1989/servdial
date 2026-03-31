@@ -1,5 +1,7 @@
 // frontend/src/pages/BusinessDetails.jsx
 
+import { useState } from "react";
+import { Link } from "react-router-dom";
 import TrackBusinessView from "../components/analytics/TrackBusinessView";
 import ReviewForm from "../components/reviews/ReviewForm";
 import ReviewsList from "../components/reviews/ReviewsList";
@@ -26,148 +28,112 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
   const user = JSON.parse(localStorage.getItem("servdial_user"));
 
+  const [showPopup, setShowPopup] = useState(false);
+  const [leadData, setLeadData] = useState({ name: "", phone: "" });
+
   const lat = business?.location?.coordinates?.[1];
   const lng = business?.location?.coordinates?.[0];
 
+  // ✅ WHATSAPP FIX (GLOBAL)
+  const whatsappNumber = (business.whatsapp || business.phone)?.replace(/\D/g, "");
+
   // ================= TRACKING =================
   const handleCallClick = () => {
-    API.post(`/business/${business._id}/call`).catch(() => {});
+    API.put(`/business/${business._id}/phone`).catch(() => {});
   };
 
   const handleWhatsappClick = () => {
-    API.post(`/business/${business._id}/whatsapp`).catch(() => {});
+    API.put(`/business/${business._id}/whatsapp`).catch(() => {});
+  };
+
+  // ================= LEAD =================
+  const handleLeadSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!leadData.name || !leadData.phone) {
+      alert("Please fill all fields");
+      return;
+    }
+
+    try {
+      await API.post("/leads", {
+        businessId: business._id,
+        ...leadData
+      });
+
+      alert("Request sent!");
+      setShowPopup(false);
+      setLeadData({ name: "", phone: "" });
+
+    } catch {
+      alert("Error submitting request");
+    }
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-24">
+    <div className="bg-gray-50 min-h-screen pb-28">
 
-      {/* ✅ FIXED TRACKING */}
       <TrackBusinessView businessId={business._id} />
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
+      {/* ================= HERO ================= */}
+      <div className="relative h-64 md:h-96 mb-6">
+        <img
+          src={business.images?.[0] || "/no-image.png"}
+          alt={business.name}
+          className="w-full h-full object-cover"
+        />
 
-        {/* ================= BREADCRUMB ================= */}
-        <div className="text-sm text-gray-500 mb-4">
-          Home / {business.city} / {business.categoryId?.name || business.category || "General"} / {business.name}
-        </div>
+        <div className="absolute inset-0 bg-black/50" />
 
-        {/* ================= HEADER ================= */}
-        <div className="grid md:grid-cols-3 gap-6 mb-10 bg-white p-6 rounded-xl shadow">
+        <div className="absolute bottom-4 left-4 text-white">
+          <h1 className="text-2xl md:text-4xl font-bold">{business.name}</h1>
 
-          {/* IMAGE */}
-          <div className="relative">
-            <img
-              src={business.images?.[0] || "/no-image.png"}
-              alt={business.name}
-              className="w-full h-64 object-cover rounded-xl"
-            />
+          <p className="text-sm mt-1">
+            {business.categoryId?.name || business.category || "General"} • {business.city}
+          </p>
+
+          <div className="flex gap-2 mt-2">
+            <span className="bg-yellow-400 text-black px-2 py-1 rounded text-xs">
+              ⭐ {business.averageRating || "New"}
+            </span>
 
             {business.isVerified && (
-              <span className="absolute top-2 left-2 bg-green-500 text-white text-xs px-2 py-1 rounded">
+              <span className="bg-green-500 text-xs px-2 py-1 rounded">
                 ✔ Verified
               </span>
             )}
-
-            {business.isFeatured && (
-              <span className="absolute top-2 right-2 bg-yellow-400 text-xs px-2 py-1 rounded">
-                ⭐ Featured
-              </span>
-            )}
           </div>
+        </div>
+      </div>
 
-          {/* INFO */}
-          <div className="md:col-span-2">
+      <div className="max-w-7xl mx-auto px-4">
 
-            <h1 className="text-3xl font-bold mb-2">{business.name}</h1>
+        {/* ================= CLAIM ================= */}
+        {!business.isClaimed && user && (
+          <Link
+            to={`/claim-business/${business._id}`}
+            className="block mb-4 bg-yellow-400 text-black text-center py-2 rounded-lg font-semibold"
+          >
+            Claim This Business
+          </Link>
+        )}
 
-            <p className="text-gray-500 mb-2">
-              {business.categoryId?.name || business.category || "General"}
-            </p>
-
-            {/* ⭐ RATING */}
-            <p className="text-yellow-500 font-medium mb-2">
-              ⭐ {business.averageRating || "New"}
-              {business.totalReviews > 0 && (
-                <span className="text-gray-400 text-sm ml-2">
-                  ({business.totalReviews} reviews)
-                </span>
-              )}
-            </p>
-
-            {/* 📍 ADDRESS */}
-            <p className="text-gray-600 mb-3">
-              📍 {business.address || business.city}
-            </p>
-
-            {/* 🔥 TRUST BADGES */}
-            <div className="flex gap-2 flex-wrap mb-4">
-              {business.isVerified && (
-                <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded">
-                  Verified Business
-                </span>
-              )}
-              <span className="bg-gray-100 text-xs px-2 py-1 rounded">
-                Fast Response
-              </span>
-            </div>
-
-            {/* ================= CTA ================= */}
-            <div className="flex gap-3 flex-wrap">
-
-              {business.phone && (
-                <a
-                  href={`tel:${business.phone}`}
-                  onClick={handleCallClick}
-                  className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700"
-                >
-                  📞 Call Now
-                </a>
-              )}
-
-              {business.whatsapp && (
-                <a
-                  href={`https://wa.me/${business.whatsapp}`}
-                  onClick={handleWhatsappClick}
-                  className="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700"
-                >
-                  💬 WhatsApp
-                </a>
-              )}
-
-              <button className="bg-black text-white px-5 py-2 rounded-lg">
-                Get Best Deal
-              </button>
-            </div>
-
-          </div>
+        {/* ================= ADDRESS ================= */}
+        <div className="bg-white p-4 rounded-xl shadow mb-6 text-sm">
+          📍 {business.address || business.city}
         </div>
 
         {/* ================= DESCRIPTION ================= */}
         {business.description && (
-          <div className="bg-white p-6 rounded-xl shadow mb-8">
-            <h2 className="text-xl font-semibold mb-3">About</h2>
-            <p className="text-gray-600">{business.description}</p>
-          </div>
-        )}
-
-        {/* ================= SERVICES ================= */}
-        {business.services?.length > 0 && (
-          <div className="bg-white p-6 rounded-xl shadow mb-8">
-            <h2 className="text-xl font-semibold mb-3">Services</h2>
-
-            <div className="flex flex-wrap gap-2">
-              {business.services.map((s, i) => (
-                <span key={i} className="bg-gray-100 px-3 py-1 rounded-full text-sm">
-                  {s}
-                </span>
-              ))}
-            </div>
+          <div className="bg-white p-4 rounded-xl shadow mb-6">
+            <h2 className="font-semibold mb-2">About</h2>
+            <p className="text-gray-600 text-sm">{business.description}</p>
           </div>
         )}
 
         {/* ================= MAP ================= */}
         {lat && lng && (
-          <div className="h-80 rounded overflow-hidden mb-10">
+          <div className="h-72 rounded overflow-hidden mb-8">
             <MapContainer center={[lat, lng]} zoom={15} style={{ height: "100%" }}>
               <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
               <Marker position={[lat, lng]} icon={markerIcon}>
@@ -178,53 +144,90 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
         )}
 
         {/* ================= REVIEWS ================= */}
-        <div className="grid md:grid-cols-3 gap-8 mt-10">
+        <div className="grid md:grid-cols-3 gap-6">
           <RatingBreakdown reviews={reviews} />
 
           <div className="md:col-span-2">
             <ReviewsList reviews={reviews} refresh={refresh} />
-
-            {user && (
-              <ReviewForm businessId={business._id} refresh={refresh} />
-            )}
+            {user && <ReviewForm businessId={business._id} refresh={refresh} />}
           </div>
         </div>
 
         {/* ================= SIMILAR ================= */}
         {similar.length > 0 && (
-          <div className="mt-12">
-            <h2 className="text-xl font-semibold mb-4">
-              Similar Businesses
-            </h2>
-
-            <div className="grid md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="mt-10">
+            <h2 className="text-lg font-semibold mb-3">Similar Businesses</h2>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {similar.map((biz) => (
                 <BusinessCard key={biz._id} business={biz} />
               ))}
             </div>
-            </div>
+          </div>
         )}
+      </div>
+
+      {/* ================= MOBILE STICKY CTA ================= */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-2 flex gap-2 z-50">
+
+        {business.phone && (
+          <a
+            href={`tel:${business.phone}`}
+            onClick={handleCallClick}
+            className="flex-1 bg-blue-600 text-white py-2 rounded text-center text-sm"
+          >
+            📞 Call
+          </a>
+        )}
+
+        {whatsappNumber && (
+          <a
+            href={`https://wa.me/91${whatsappNumber}`}
+            onClick={handleWhatsappClick}
+            className="flex-1 bg-green-600 text-white py-2 rounded text-center text-sm"
+          >
+            💬 WhatsApp
+          </a>
+        )}
+
+        <button
+          onClick={() => setShowPopup(true)}
+          className="flex-1 bg-black text-white py-2 rounded text-sm"
+        >
+          Get Deal
+        </button>
 
       </div>
 
-      {/* ================= MOBILE CTA ================= */}
-      {business.phone && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 flex gap-3 z-50 md:hidden">
-          <a
-            href={`tel:${business.phone}`}
-            className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-center"
-          >
-            Call Now
-          </a>
+      {/* ================= POPUP ================= */}
+      {showPopup && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <form onSubmit={handleLeadSubmit} className="bg-white p-5 rounded-xl w-80 space-y-3">
+            <h2 className="font-semibold">Get Best Deal</h2>
 
-          {business.whatsapp && (
-            <a
-              href={`https://wa.me/${business.whatsapp}`}
-              className="flex-1 bg-green-600 text-white py-2 rounded-lg text-center"
-            >
-              WhatsApp
-            </a>
-          )}
+            <input
+              type="text"
+              placeholder="Your Name"
+              className="w-full border p-2 rounded"
+              value={leadData.name}
+              onChange={(e) => setLeadData({ ...leadData, name: e.target.value })}
+            />
+
+            <input
+              type="tel"
+              placeholder="Phone"
+              className="w-full border p-2 rounded"
+              value={leadData.phone}
+              onChange={(e) => setLeadData({ ...leadData, phone: e.target.value })}
+            />
+
+            <button className="bg-black text-white w-full py-2 rounded">
+              Submit
+            </button>
+
+            <button type="button" onClick={() => setShowPopup(false)} className="text-xs">
+              Cancel
+            </button>
+          </form>
         </div>
       )}
 
