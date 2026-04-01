@@ -1,26 +1,39 @@
+// src/pages/SearchResults.jsx
+
 import { useEffect, useState, useRef } from "react";
 import API from "../api/axios";
 
 import BusinessCard from "../components/business/BusinessCard";
 import SmartSearchBar from "../components/search/SmartSearchBar";
-import FiltersSidebar from "../components/filters/FiltersSidebar";
-import FilterChips from "../components/filters/FilterChips";
-import MobileFilters from "../components/filters/MobileFilters";
 
 import useFilters from "../hooks/useFilters";
 import { useCity } from "../context/CityContext";
 
+import { MapContainer, TileLayer, Marker } from "react-leaflet";
+import L from "leaflet";
+import { Phone, MessageCircle, X } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+
+const markerIcon = new L.Icon({
+  iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+});
+
 const SearchResults = () => {
   const { filters, updateFilter } = useFilters();
   const { city, loadingCity } = useCity();
+  const navigate = useNavigate();
 
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [totalPages, setTotalPages] = useState(1);
+
+  const [viewMode, setViewMode] = useState("list"); // list | map
+  const [selectedBusiness, setSelectedBusiness] = useState(null);
 
   const syncedCity = useRef(false);
 
-  // ================= SYNC CITY (FIXED) =================
+  // ================= CITY SYNC =================
   useEffect(() => {
     if (!syncedCity.current && city) {
       updateFilter("city", city);
@@ -28,7 +41,7 @@ const SearchResults = () => {
     }
   }, [city]);
 
-  // ================= FETCH USER LOCATION =================
+  // ================= GEO LOCATION =================
   useEffect(() => {
     if (!filters.lat && !filters.lng) {
       navigator.geolocation.getCurrentPosition(
@@ -36,12 +49,14 @@ const SearchResults = () => {
           updateFilter("lat", pos.coords.latitude);
           updateFilter("lng", pos.coords.longitude);
         },
-        () => {}
+        (err) => {
+          console.warn("Location denied, using fallback");
+        }
       );
     }
   }, []);
 
-  // ================= FETCH BUSINESSES =================
+  // ================= FETCH =================
   useEffect(() => {
     if (loadingCity) return;
 
@@ -63,7 +78,6 @@ const SearchResults = () => {
         const res = await API.get("/business/search", { params });
 
         setBusinesses(res.data.businesses || []);
-        setTotalPages(res.data.pages || 1);
       } catch (err) {
         console.error(err);
       } finally {
@@ -74,120 +88,151 @@ const SearchResults = () => {
     fetchBusinesses();
   }, [filters, loadingCity]);
 
+  // ================= ACTIONS =================
+  const handleCall = (phone) => {
+    if (!phone) return;
+    window.location.href = `tel:${phone}`;
+  };
+
+  const handleWhatsApp = (b) => {
+    const num = (b.whatsapp || b.phone || "").replace(/\D/g, "");
+    if (num) window.open(`https://wa.me/91${num}`, "_blank");
+  };
+
+  const handleView = (b) => {
+    navigate(`/business/${b.slug || b._id}`);
+  };
+
+  // ================= MAP CENTER FIX =================
+  const mapCenter =
+    filters.lat && filters.lng
+      ? [filters.lat, filters.lng]
+      : [28.61, 77.2]; // fallback only
+
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 min-h-screen pb-24">
 
-      {/* MOBILE FILTER */}
-      <MobileFilters filters={filters} updateFilter={updateFilter} />
+      {/* ================= SEARCH BAR ================= */}
+      <div className="bg-white sticky top-0 z-50 px-3 py-3 shadow-sm">
 
-      {/* SEARCH BAR */}
-      <div className="bg-white p-4 shadow-sm sticky top-0 z-40">
-        <div className="max-w-4xl mx-auto">
-          <SmartSearchBar
-            query={filters.q}
-            setQuery={(v) => updateFilter("q", v)}
-            onSearch={(v) => updateFilter("q", v)}
-          />
+        <SmartSearchBar
+          query={filters.q}
+          setQuery={(v) => updateFilter("q", v)}
+          onSearch={(v) => updateFilter("q", v)}
+        />
 
-          {/* SUBTEXT */}
-          <p className="text-xs text-gray-400 mt-1">
-            Showing results in {filters.city || "your area"}
+        <div className="flex justify-between items-center mt-2">
+          <p className="text-xs text-gray-500">
+            📍 {filters.city || "Detecting location..."}
           </p>
+
+          <button
+            onClick={() =>
+              setViewMode(viewMode === "list" ? "map" : "list")
+            }
+            className="text-xs px-3 py-1 bg-blue-600 text-white rounded-full"
+          >
+            {viewMode === "list" ? "Map View" : "List View"}
+          </button>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 py-6 flex gap-6">
+      {/* ================= CONTENT ================= */}
+      <div className="max-w-7xl mx-auto px-3 py-4">
 
-        {/* SIDEBAR */}
-        <div className="hidden md:block w-64">
-          <FiltersSidebar filters={filters} updateFilter={updateFilter} />
-        </div>
+        {/* LIST */}
+        {viewMode === "list" && (
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-4">
+            {businesses.map((biz) => (
+              <BusinessCard key={biz._id} business={biz} />
+            ))}
+          </div>
+        )}
 
-        {/* MAIN */}
-        <div className="flex-1">
+        {/* MAP */}
+        {viewMode === "map" && (
+          <div className="h-[75vh] mt-4 rounded-xl overflow-hidden">
+
+            <MapContainer
+              center={mapCenter}
+              zoom={filters.lat && filters.lng ? 14 : 11}
+              key={`${mapCenter[0]}-${mapCenter[1]}`} // force refresh fix
+              style={{ height: "100%", width: "100%" }}
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+
+              {businesses.map((b) => {
+                const lat = b.location?.coordinates?.[1];
+                const lng = b.location?.coordinates?.[0];
+
+                if (!lat || !lng) return null;
+
+                return (
+                  <Marker
+                    key={b._id}
+                    position={[lat, lng]}
+                    icon={markerIcon}
+                    eventHandlers={{
+                      click: () => setSelectedBusiness(b),
+                    }}
+                  />
+                );
+              })}
+            </MapContainer>
+
+          </div>
+        )}
+      </div>
+
+      {/* ================= BOTTOM SHEET ================= */}
+      {selectedBusiness && (
+        <div className="fixed bottom-0 left-0 right-0 bg-white shadow-2xl rounded-t-2xl p-4 z-50">
 
           {/* HEADER */}
-          <div className="mb-6">
-            <h1 className="text-xl md:text-2xl font-semibold text-gray-800">
-              {filters.q || filters.category || "Businesses"} in{" "}
-              <span className="text-blue-600">
-                {filters.city || "India"}
-              </span>
-            </h1>
+          <div className="flex justify-between items-center mb-2">
+            <h3 className="font-semibold text-gray-800">
+              {selectedBusiness.name}
+            </h3>
 
-            {!loading && (
-              <p className="text-sm text-gray-500 mt-1">
-                {businesses.length} results found
-              </p>
-            )}
+            <button onClick={() => setSelectedBusiness(null)}>
+              <X size={18} />
+            </button>
           </div>
 
-          {/* ACTIVE FILTERS */}
-          <FilterChips filters={filters} updateFilter={updateFilter} />
+          {/* INFO */}
+          <p className="text-xs text-gray-500 mb-3">
+            {selectedBusiness.address || selectedBusiness.city}
+          </p>
 
-          {/* RESULTS */}
-          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 mt-6">
+          {/* ACTIONS */}
+          <div className="flex gap-2">
 
-            {/* LOADING */}
-            {loading &&
-              [...Array(8)].map((_, i) => (
-                <div
-                  key={i}
-                  className="h-60 bg-gray-200 animate-pulse rounded-xl"
-                />
-              ))}
+            <button
+              onClick={() => handleCall(selectedBusiness.phone)}
+              className="flex-1 bg-blue-600 text-white py-2 rounded-lg text-sm flex items-center justify-center gap-1"
+            >
+              <Phone size={16} /> Call
+            </button>
 
-            {/* EMPTY */}
-            {!loading && businesses.length === 0 && (
-              <div className="col-span-full text-center mt-12">
-                <p className="text-lg font-semibold text-gray-700">
-                  No results found
-                </p>
-
-                <p className="text-sm text-gray-500 mt-2">
-                  Try different keywords or remove some filters
-                </p>
-
-                <button
-                  onClick={() => updateFilter("q", "")}
-                  className="mt-4 px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-                >
-                  Clear Search
-                </button>
-              </div>
-            )}
-
-            {/* DATA */}
-            {!loading &&
-              businesses.map((biz) => (
-                <BusinessCard key={biz._id} business={biz} />
-              ))}
+            <button
+              onClick={() => handleWhatsApp(selectedBusiness)}
+              className="flex-1 bg-green-600 text-white py-2 rounded-lg text-sm flex items-center justify-center gap-1"
+            >
+              <MessageCircle size={16} /> WhatsApp
+            </button>
 
           </div>
 
-          {/* PAGINATION */}
-          {totalPages > 1 && (
-            <div className="flex gap-2 mt-10 flex-wrap justify-center">
-
-              {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => updateFilter("page", i + 1)}
-                  className={`px-3 py-1.5 text-sm rounded-lg border transition ${
-                    filters.page === i + 1
-                      ? "bg-blue-600 text-white"
-                      : "hover:bg-gray-100"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-
-            </div>
-          )}
+          <button
+            onClick={() => handleView(selectedBusiness)}
+            className="w-full mt-2 text-sm text-blue-600"
+          >
+            View Full Details →
+          </button>
 
         </div>
-      </div>
+      )}
+
     </div>
   );
 };

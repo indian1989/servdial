@@ -1,77 +1,66 @@
+// src/components/reviews/ReviewForm.jsx
+
 import { useState } from "react";
-import API from "../../api/axios";
-import StarRating from "./StarRating";
 
-const ReviewForm = ({ businessId, refresh }) => {
+const ReviewForm = ({ user, onSubmitAttempt }) => {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
 
-const [rating,setRating] = useState(5);
-const [comment,setComment] = useState("");
-const [loading,setLoading] = useState(false);
+  const handleSubmit = (e) => {
+    e.preventDefault();
 
-const submitReview = async (e)=>{
+    if (!rating) {
+      alert("Please select rating");
+      return;
+    }
 
-e.preventDefault();
+    const reviewData = {
+      rating,
+      comment
+    };
 
-setLoading(true);
+    // 🚀 ONLY HAND OFF TO PARENT (NO API, NO AUTH LOGIC HERE)
+    onSubmitAttempt(reviewData);
+  };
 
-try{
+  return (
+    <div className="bg-white p-4 rounded-xl shadow mt-6">
+      <h2 className="font-semibold mb-3">Write a Review</h2>
 
-await API.post(`/reviews/${businessId}`,{
-rating,
-comment
-});
+      <form onSubmit={handleSubmit} className="space-y-3">
 
-setComment("");
-setRating(5);
+        {/* STAR RATING */}
+        <div className="flex gap-2 text-2xl">
+          {[1, 2, 3, 4, 5].map((star) => (
+            <button
+              type="button"
+              key={star}
+              onClick={() => setRating(star)}
+              className={star <= rating ? "text-yellow-400" : "text-gray-300"}
+            >
+              ★
+            </button>
+          ))}
+        </div>
 
-refresh();
+        {/* COMMENT */}
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="Share your experience..."
+          className="w-full border p-2 rounded h-24"
+        />
 
-}catch(err){
-
-alert("Login required to submit review");
-
-}
-
-setLoading(false);
-
-};
-
-return(
-
-<form
-onSubmit={submitReview}
-className="border p-4 rounded mt-6"
->
-
-<h3 className="font-semibold mb-2">
-Write a Review
-</h3>
-
-<StarRating
-rating={rating}
-setRating={setRating}
-/>
-
-<textarea
-value={comment}
-onChange={(e)=>setComment(e.target.value)}
-placeholder="Share your experience..."
-className="w-full border p-2 mt-3"
-/>
-
-<button
-disabled={loading}
-className="bg-blue-600 text-white px-4 py-2 mt-3 rounded"
->
-
-{loading ? "Submitting..." : "Submit Review"}
-
-</button>
-
-</form>
-
-);
-
+        {/* SUBMIT */}
+        <button
+          type="submit"
+          className="bg-black text-white w-full py-2 rounded"
+        >
+          Submit Review
+        </button>
+      </form>
+    </div>
+  );
 };
 
 export default ReviewForm;
