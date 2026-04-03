@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import API from "../api/axios";
+import { useRef } from "react";
 
 import TrackBusinessView from "../components/analytics/TrackBusinessView";
 import ReviewsList from "../components/reviews/ReviewsList";
@@ -22,7 +23,12 @@ import {
   Share2,
   Navigation,
   Phone,
-  MessageCircle
+  MessageCircle,
+  Copy,
+  Facebook,
+  Twitter,
+  Mail,
+  MessageSquare
 } from "lucide-react";
 
 const markerIcon = new L.Icon({
@@ -41,6 +47,7 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showToast, setShowToast] = useState("");
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [loadingLead, setLoadingLead] = useState(false);
   const [categoryCount, setCategoryCount] = useState(null);
 
@@ -52,6 +59,11 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [pendingReview, setPendingReview] = useState(null);
+
+  const shareRef = useRef(null);
+
+  // ================ Live Viewers ==============
+  const [liveViewers, setLiveViewers] = useState(0);
 
   // ================= SAFE DATA =================
   const images = useMemo(() => {
@@ -70,7 +82,7 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
   const services = useMemo(() => {
     if (business?.tags?.length) return business.tags;
     if (business?.keywords?.length) return business.keywords;
-    return [business?.category];
+    return [business?.categoryId?.name || business?.category || "General"];
   }, [business]);
 
   // ================= INSIGHTS =================
@@ -87,6 +99,9 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
     if (!business?.views) return null;
     return Math.floor(business.views * 0.6);
   }, [business]);
+
+  // ================ Sticky Lead ========
+const [showStickyLead, setShowStickyLead] = useState(false);
 
   // ================= AI SUMMARY =================
   const aiSummary = useMemo(() => {
@@ -107,20 +122,74 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
   // ================= ANALYTICS =================
   const trackEvent = useCallback((type) => {
-    API.post("/analytics/event", {
-      businessId: business._id,
-      type
-    }).catch(() => {});
-  }, [business]);
+  if (!business?._id) return;
+
+  API.post(`/business/analytics/${business._id}`, {
+    type
+  }).catch(() => {});
+}, [business]);
 
   // ================= CATEGORY COUNT =================
   useEffect(() => {
-    if (!business?.category) return;
+    if (!business?.category && !business?.categoryId) return;
 
-    API.get(`/business/count?category=${business.categoryId?.name || business.category || "General"}&city=${business.city}`)
+    API.get(`/business/count?category=${business.categoryId || business.category}&city=${business.city}`)
       .then(res => setCategoryCount(res.data.count))
       .catch(() => {});
   }, [business]);
+
+  // ============ Share Popup Use Effect ==========
+  useEffect(() => {
+  const handleClickOutside = (e) => {
+    if (shareRef.current && !shareRef.current.contains(e.target)) {
+      setShowShareMenu(false);
+    }
+  };
+
+  if (showShareMenu) {
+    document.addEventListener("mousedown", handleClickOutside);
+  }
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, [showShareMenu]);
+
+// ============ Sticky Lead Use Effect ============
+useEffect(() => {
+  const handleScroll = () => {
+    if (window.scrollY > 500) {
+      setShowStickyLead(true);
+    }
+  };
+
+  window.addEventListener("scroll", handleScroll);
+  return () => window.removeEventListener("scroll", handleScroll);
+}, []);
+
+// ============ LIVE VIEWERS USE EFFECT ==============
+useEffect(() => {
+  // base viewers from traffic (views)
+  let base = Math.floor((business?.views || 50) / 15);
+
+  if (base < 3) base = 3;
+
+  setLiveViewers(base + Math.floor(Math.random() * 5));
+
+  const interval = setInterval(() => {
+    setLiveViewers((prev) => {
+      const change = Math.random() > 0.5 ? 1 : -1;
+      let next = prev + change;
+
+      if (next < 2) next = 2;
+      if (next > 15) next = 15;
+
+      return next;
+    });
+  }, 4000); // changes every 4 sec
+
+  return () => clearInterval(interval);
+}, [business]);
 
   // ================= TOAST =================
   const showToastMsg = useCallback((msg) => {
@@ -130,9 +199,21 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
   // ================= ACTIONS =================
   const handleCall = () => {
-    trackEvent("call");
-    if (business.phone) window.location.href = `tel:${business.phone}`;
-  };
+  trackEvent("call");
+
+  if (!phoneRevealed) {
+    setPhoneRevealed(true);
+    showToastMsg("Number revealed 👇");
+    return;
+  }
+
+  if (business.phone) {
+    showToastMsg("Connecting...");
+    setTimeout(() => {
+      window.location.href = `tel:${business.phone}`;
+    }, 500);
+  }
+};
 
   const handleWhatsApp = () => {
     trackEvent("whatsapp");
@@ -218,7 +299,9 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
     return () => window.removeEventListener("keydown", handleKey);
   }, [showGallery]);
 
-  if (!business) return <div className="p-6 text-center">Loading...</div>;
+  if (!business?._id) {
+  return <div className="p-6 text-center">Loading...</div>;
+}
 
   return (
     <div className="bg-gray-50 min-h-screen pb-32">
@@ -253,6 +336,47 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
             <span className="text-gray-300">
               ({business.totalReviews || 0})
             </span>
+
+            {/* TRUST CHIPS */}
+<div className="flex flex-wrap gap-2 mt-2 text-xs">
+
+  {business.isVerified && (
+    <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">
+      ✔ Verified
+    </span>
+  )}
+
+  {customersServed && (
+    <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
+      👥 {customersServed}+ customers served
+    </span>
+  )}
+
+  {business.averageRating >= 4.5 && (
+    <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
+      ⭐ Top Rated
+    </span>
+  )}
+
+  <span className="bg-green-50 text-green-600 px-2 py-1 rounded-full">
+  ⚡ Responds quickly
+</span>
+
+  <span className="inline-block bg-red-600 text-white text-xs px-2 py-1 rounded mt-1">
+  Limited Time Offer
+</span>
+
+{/* 👀 LIVE VIEWERS */}
+<div className="text-xs bg-black/60 px-2 py-1 rounded inline-block mt-1">
+  👀 {liveViewers} people viewing right now
+</div>
+
+  {/* 🔥 URGENCY SIGNAL */}
+<div className="bg-red-50 border border-red-200 text-red-600 text-sm p-1 rounded-xl">
+  🔥 {Math.floor(Math.random() * 5) + 3} people contacted in last 24 hours
+</div>
+
+</div>
           </div>
         </div>
       </div>
@@ -289,11 +413,40 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
 </div>
 
+
+{/* CLAIM BANNER */}
+{!business.isClaimed && user && (
+  <div className="bg-yellow-100 border border-yellow-300 p-3 rounded-xl text-sm flex justify-between items-center">
+    <span>
+      Own this business? Claim it now and manage your profile.
+    </span>
+
+    <button
+      onClick={() => navigate(`/claim-business/${business._id}`)}
+      className="bg-black text-white px-3 py-1 rounded"
+    >
+      Claim
+    </button>
+  </div>
+)}
+
         {/* AI SUMMARY */}
         <div className="bg-white p-4 rounded-xl shadow">
           <h2 className="font-semibold mb-2">AI Summary</h2>
           <p className="text-sm text-gray-600">{aiSummary}</p>
         </div>
+
+        {/* SERVICES */}
+<div className="bg-white p-4 rounded-xl shadow">
+  <h2 className="font-semibold mb-2">Services</h2>
+  <div className="flex flex-wrap gap-2">
+    {services.map((s, i) => (
+      <span key={i} className="bg-blue-50 text-blue-600 px-3 py-1 text-xs rounded-full">
+        {s}
+      </span>
+    ))}
+  </div>
+</div>
 
         {/* ADDRESS */}
         <div className="bg-white p-4 rounded-xl shadow flex gap-2 text-sm">
@@ -325,29 +478,6 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
           </div>
         </div>
 
-        {/* TRUST CHIPS */}
-<div className="flex flex-wrap gap-2 mt-2 text-xs">
-
-  {business.isVerified && (
-    <span className="bg-green-100 text-green-700 px-2 py-1 rounded-full">
-      ✔ Verified
-    </span>
-  )}
-
-  {customersServed && (
-    <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
-      👥 {customersServed}+ customers served
-    </span>
-  )}
-
-  {business.averageRating >= 4.5 && (
-    <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
-      ⭐ Top Rated
-    </span>
-  )}
-
-</div>
-
         {/* SIMILAR */}
         {similar.length > 0 && (
           <div>
@@ -373,16 +503,42 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
       {/* PREMIUM CTA */}
       <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 flex gap-2 z-50">
 
-        <button onClick={handleCall} className="flex-1 bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center gap-1">
-          <Phone size={16}/> Call
+        <button onClick={() => {handleCall(); }} className="relative flex-1 bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center gap-1">
+          <Phone size={16}/>
+{phoneRevealed
+  ? business.phone
+  : business.phone
+    ? business.phone.slice(0, 5) + "XXXXX"
+    : "Call"}
+
+    <span className="absolute -top-2 right-2 bg-yellow-400 text-xs px-1 rounded">
+  Recommended
+</span>
         </button>
 
-        <button onClick={handleWhatsApp} className="flex-1 bg-green-600 text-white py-2 rounded-lg flex items-center justify-center gap-1">
+        <button onClick={() => {handleWhatsApp(); }} className="flex-1 bg-green-600 animate-pulse text-white py-2 rounded-lg flex items-center justify-center gap-1">
           <MessageCircle size={16}/> WhatsApp
         </button>
 
         {/* GET DEAL POPUP */}
-{showPopup && (
+
+<button
+  onClick={() => setShowPopup(true)}
+  className="flex-1 bg-black text-white py-2 rounded-lg flex items-center justify-center gap-1"
+>
+  💰 Get Deal
+</button>
+
+ <button onClick={() => { trackEvent("direction"); handleDirections(); }} className="flex-1 bg-gray-800 text-white py-2 rounded-lg flex items-center justify-center gap-1">
+          <Navigation size={16}/> Directions
+        </button>
+
+        <button onClick={() => setShowShareMenu(!showShareMenu)} className="flex-1 bg-black text-white py-2 rounded-lg flex items-center justify-center gap-1">
+          <Share2 size={16}/> Share
+        </button>
+      </div>
+
+      {showPopup && (
   <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
     <div className="bg-white rounded-xl p-6 w-full max-w-md space-y-4">
       
@@ -433,35 +589,43 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
   </div>
 )}
 
-<button
-  onClick={() => setShowPopup(true)}
-  className="flex-1 bg-black text-white py-2 rounded-lg flex items-center justify-center gap-1"
->
-  💰 Get Deal
-</button>
-
-
-        <button onClick={handleDirections} className="flex-1 bg-gray-800 text-white py-2 rounded-lg flex items-center justify-center gap-1">
-          <Navigation size={16}/> Directions
-        </button>
-
-        <button onClick={() => setShowShareMenu(!showShareMenu)} className="flex-1 bg-black text-white py-2 rounded-lg flex items-center justify-center gap-1">
-          <Share2 size={16}/> Share
-        </button>
-      </div>
-
       {/* SHARE MENU */}
       {showShareMenu && (
-        <div className="fixed bottom-16 right-4 bg-white shadow-lg rounded-lg p-3 space-y-2 z-50">
-          <button onClick={() => handleShareOption("copy")} className="block w-full text-left">Copy Link</button>
-          <button onClick={() => handleShareOption("whatsapp")} className="block w-full text-left">WhatsApp</button>
-          <button onClick={() => handleShareOption("facebook")} className="block w-full text-left">Facebook</button>
-          <button onClick={() => handleShareOption("twitter")} className="block w-full text-left">Twitter</button>
-          <button onClick={() => handleShareOption("gmail")} className="block w-full text-left">Gmail</button>
-        </div>
-      )}
+  <div
+  ref={shareRef}
+  className="fixed bottom-20 right-1 bg-white shadow-xl rounded-xl p-4 space-y-3 z-50 w-56"
+>
 
+    <button onClick={() => handleShareOption("copy")} className="flex items-center gap-2 w-full text-left hover:bg-gray-100 p-2 rounded">
+      <Copy size={16}/> Copy Link
+    </button>
 
+    <button onClick={() => handleShareOption("whatsapp")} className="flex items-center gap-2 w-full text-left hover:bg-gray-100 p-2 rounded">
+      <MessageCircle size={16}/> WhatsApp
+    </button>
+
+    <button onClick={() => handleShareOption("facebook")} className="flex items-center gap-2 w-full text-left hover:bg-gray-100 p-2 rounded">
+      <Facebook size={16}/> Facebook
+    </button>
+
+    <button onClick={() => handleShareOption("twitter")} className="flex items-center gap-2 w-full text-left hover:bg-gray-100 p-2 rounded">
+      <Twitter size={16}/> Twitter
+    </button>
+
+    <button onClick={() => handleShareOption("gmail")} className="flex items-center gap-2 w-full text-left hover:bg-gray-100 p-2 rounded">
+      <Mail size={16}/> Gmail
+    </button>
+
+  </div>
+)}
+
+   {/* STICKY LEAD */}
+   {showStickyLead && (
+  <div className="fixed bottom-24 right-4 bg-black text-white px-4 py-2 rounded-full shadow-lg z-50 animate-bounce cursor-pointer"
+       onClick={() => setShowPopup(true)}>
+    💬 Get Best Deal
+  </div>
+)}
       {/* TOAST */}
       {showToast && (
         <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 bg-black text-white px-4 py-2 rounded">
