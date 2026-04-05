@@ -66,16 +66,17 @@ const SearchResults = () => {
 
         const params = {
           ...filters,
-          ...(filters.distance && filters.lat && filters.lng
-            ? {
-                lat: filters.lat,
-                lng: filters.lng,
-                distance: filters.distance,
-              }
-            : {}),
+          ...(filters.lat && filters.lng
+  ? {
+      lat: filters.lat,
+      lng: filters.lng,
+      distance: filters.distance || 10, // ✅ default 10km
+    }
+  : {}),
         };
 
         const res = await API.get("/business/search", { params });
+        console.log("Businesses:", res.data.businesses);
 
         setBusinesses(res.data.businesses || []);
       } catch (err) {
@@ -99,9 +100,18 @@ const SearchResults = () => {
     if (num) window.open(`https://wa.me/91${num}`, "_blank");
   };
 
-  const handleView = (b) => {
-    navigate(`/business/${b.slug || b._id}`);
-  };
+  const handleView = async (b) => {
+  try {
+    await API.post(`/business/${b._id}/click`, {
+      keyword: filters.q || "",
+      city: filters.city || ""
+    });
+  } catch (err) {
+    console.warn("Click tracking failed");
+  }
+
+  navigate(`/business/${b.slug || b._id}`);
+};
 
   // ================= MAP CENTER FIX =================
   const mapCenter =
@@ -149,7 +159,7 @@ const SearchResults = () => {
           </div>
         )}
 
-        {/* MAP */}
+        {/* MAP VIEW */}
         {viewMode === "map" && (
           <div className="h-[75vh] mt-4 rounded-xl overflow-hidden">
 
@@ -173,7 +183,16 @@ const SearchResults = () => {
                     position={[lat, lng]}
                     icon={markerIcon}
                     eventHandlers={{
-                      click: () => setSelectedBusiness(b),
+                      click: async () => {
+  try {
+    await API.post(`/business/${b._id}/click`, {
+      keyword: filters.q || "",
+      city: filters.city || ""
+    });
+  } catch (err) {}
+
+  setSelectedBusiness(b);
+},
                     }}
                   />
                 );

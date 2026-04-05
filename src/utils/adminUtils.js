@@ -1,3 +1,4 @@
+// frontend/src/utils/adminUtils.js
 import slugify from "slugify";
 
 export const toTitleCase = (str) =>

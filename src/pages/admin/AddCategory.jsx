@@ -1,3 +1,4 @@
+// frontend/src/pages/admin/AddCategory.jsx
 import React, { useState, useEffect } from "react";
 import {
   getAllCategories,
@@ -5,33 +6,23 @@ import {
   updateCategory,
   deleteCategory,
 } from "../../api/adminAPI";
+import { buildCategoryTree } from "../../utils/adminUtils";
+
 import Loader from "../../components/common/Loader";
-import {
-  FaTrash,
-  FaChevronDown,
-  FaChevronRight,
-  FaEdit,
-} from "react-icons/fa";
+import { FaTrash, FaEdit } from "react-icons/fa";
 
-import {
-  toTitleCase,
-  buildCategoryTree,
-} from "../../utils/adminUtils";
-
-const PAGE_SIZE = 10;
 
 const AddCategory = () => {
   const [categories, setCategories] = useState([]);
   const [flatCategories, setFlatCategories] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const [categoryName, setCategoryName] = useState("");
-  const [description, setDescription] = useState("");
-  const [selectedParent, setSelectedParent] = useState("");
-  const [order, setOrder] = useState(0);
-
-  const [collapsed, setCollapsed] = useState({});
-  const [currentPage, setCurrentPage] = useState(1);
+  const [form, setForm] = useState({
+    name: "",
+    description: "",
+    parentCategory: "",
+    order: 0,
+  });
 
   const [editingId, setEditingId] = useState(null);
   const [editingData, setEditingData] = useState({
@@ -45,10 +36,11 @@ const AddCategory = () => {
     setLoading(true);
     try {
       const res = await getAllCategories();
-      const cats = res?.data?.categories || [];
-      setFlatCategories(cats);
-      setCategories(buildCategoryTree(cats));
-      setCurrentPage(1);
+
+      const flat = res.data.flatCategories || res.data.categories || [];
+
+setFlatCategories(flat);
+setCategories(buildCategoryTree(flat));
     } catch (err) {
       console.error(err);
       alert("Failed to fetch categories");
@@ -61,41 +53,65 @@ const AddCategory = () => {
     fetchCategories();
   }, []);
 
+  // ================= HELPERS =================
+  const generateSlug = (name) =>
+    name.toLowerCase().trim().replace(/\s+/g, "-");
+
+  const generateKeywords = (name) =>
+    name.toLowerCase().split(" ");
+
   // ================= ADD =================
-  const handleAddCategory = async () => {
-    if (!categoryName.trim()) return alert("Category name required");
+  const handleAdd = async () => {
+  if (!form.name.trim()) return alert("Category name required");
 
-    const exists = flatCategories.some(
-      (c) => c.name.toLowerCase() === categoryName.toLowerCase()
-    );
-    if (exists) return alert("Category already exists");
+  const exists = flatCategories.some(
+    (c) => c.name.toLowerCase() === form.name.toLowerCase()
+  );
 
-    try {
-      await addCategory({
-        name: toTitleCase(categoryName.trim()),
-        description,
-        order: Number(order),
-        parentCategory: selectedParent || null,
-      });
+  if (exists) return alert("Category already exists");
 
-      setCategoryName("");
-      setDescription("");
-      setSelectedParent("");
-      setOrder(0);
+  try {
+    await addCategory({
+      name: form.name.trim(),
+      description: form.description,
+      order: Number(form.order),
 
-      fetchCategories();
-    } catch {
-      alert("Failed to add category");
-    }
-  };
+      // ✅ SAFE FIELDS
+      slug: generateSlug(form.name),
+      keywords: generateKeywords(form.name),
+      status: "active",
+
+      // ✅ FIXED parent handling
+      parentCategory:
+  form.parentCategory && form.parentCategory !== ""
+    ? form.parentCategory
+    : null,
+    });
+
+    setForm({
+      name: "",
+      description: "",
+      parentCategory: "",
+      order: 0,
+    });
+
+    fetchCategories();
+  } catch (err) {
+    console.error(err);
+    alert("Failed to add category");
+  }
+};
 
   // ================= UPDATE =================
   const handleUpdate = async (id) => {
     try {
       await updateCategory(id, {
-        name: toTitleCase(editingData.name),
+        name: editingData.name,
         description: editingData.description,
         order: Number(editingData.order),
+
+        slug: generateSlug(editingData.name),
+        keywords: generateKeywords(editingData.name),
       });
 
       setEditingId(null);
@@ -106,8 +122,9 @@ const AddCategory = () => {
   };
 
   // ================= DELETE =================
-  const handleDeleteCategory = async (id) => {
+  const handleDelete = async (id) => {
     if (!window.confirm("Delete this category?")) return;
+
     try {
       await deleteCategory(id);
       fetchCategories();
@@ -116,84 +133,38 @@ const AddCategory = () => {
     }
   };
 
-  // ================= STATUS =================
-  const toggleActive = async (cat) => {
-    try {
-      await updateCategory(cat._id, {
-        status: cat.status === "active" ? "inactive" : "active",
-      });
-      fetchCategories();
-    } catch {
-      alert("Status update failed");
-    }
-  };
-
-  // ================= FIX PAGINATION (NO UI CHANGE) =================
-  const flattenTree = (nodes, level = 0) => {
-    let arr = [];
-    nodes.forEach((n) => {
-      arr.push({ ...n, level });
-      arr = arr.concat(flattenTree(n.subcategories, level + 1));
-    });
-    return arr;
-  };
-
-  const flatTree = flattenTree(categories);
-
-  const indexOfLast = currentPage * PAGE_SIZE;
-  const indexOfFirst = indexOfLast - PAGE_SIZE;
-  const paginated = flatTree.slice(indexOfFirst, indexOfLast);
-
-  const totalPages = Math.ceil(flatTree.length / PAGE_SIZE);
-
   // ================= DROPDOWN =================
-  const renderDropdownOptions = (cats, level = 0) =>
-    cats.flatMap((cat) => [
+  const renderOptions = (nodes, level = 0) =>
+    nodes.flatMap((cat) => [
       <option key={cat._id} value={cat._id}>
-        {"—".repeat(level) + " " + cat.name}
+        {"—".repeat(level)} {cat.name}
       </option>,
-      ...renderDropdownOptions(cat.subcategories, level + 1),
+      ...(cat.subcategories ? renderOptions(cat.subcategories, level + 1) : []),
     ]);
 
   // ================= RENDER =================
-  const renderRow = (cat) => {
-    const isCollapsed = collapsed[cat._id];
-
-    return (
+  const renderTree = (nodes, level = 0) =>
+    nodes.map((cat) => (
       <React.Fragment key={cat._id}>
-        <tr className="text-center">
+        <tr>
           <td
-            className="border px-2 py-2 text-left"
-            style={{ paddingLeft: `${cat.level * 20}px` }}
+            className="border px-3 py-2"
+            style={{ paddingLeft: level * 20 }}
           >
-            {cat.subcategories.length > 0 && (
-              <button
-                onClick={() =>
-                  setCollapsed((prev) => ({
-                    ...prev,
-                    [cat._id]: !isCollapsed,
-                  }))
-                }
-                className="mr-1"
-              >
-                {isCollapsed ? <FaChevronRight /> : <FaChevronDown />}
-              </button>
-            )}
-
             {editingId === cat._id ? (
               <input
                 value={editingData.name}
                 onChange={(e) =>
                   setEditingData({ ...editingData, name: e.target.value })
                 }
-                className="border px-2 py-1 rounded w-full"
+                className="border px-2 py-1 w-full"
               />
             ) : (
               cat.name
             )}
           </td>
 
-          <td className="border px-2 py-2">
+          <td className="border px-3 py-2">
             {editingId === cat._id ? (
               <input
                 value={editingData.description}
@@ -203,42 +174,32 @@ const AddCategory = () => {
                     description: e.target.value,
                   })
                 }
-                className="border px-2 py-1 rounded w-full"
+                className="border px-2 py-1 w-full"
               />
             ) : (
               cat.description || "-"
             )}
           </td>
 
-          <td className="border px-2 py-2">
+          <td className="border px-3 py-2">
             {editingId === cat._id ? (
               <input
                 type="number"
                 value={editingData.order}
                 onChange={(e) =>
-                  setEditingData({ ...editingData, order: e.target.value })
+                  setEditingData({
+                    ...editingData,
+                    order: e.target.value,
+                  })
                 }
-                className="border px-2 py-1 rounded w-full"
+                className="border px-2 py-1 w-full"
               />
             ) : (
               cat.order
             )}
           </td>
 
-          <td className="border px-2 py-2">
-            <button
-              onClick={() => toggleActive(cat)}
-              className={`px-2 py-1 rounded text-xs ${
-                cat.status === "active"
-                  ? "bg-green-500 text-white"
-                  : "bg-gray-400 text-white"
-              }`}
-            >
-              {cat.status}
-            </button>
-          </td>
-
-          <td className="border px-2 py-2 flex gap-2 justify-center">
+          <td className="border px-3 py-2 flex gap-2 justify-center">
             {editingId === cat._id ? (
               <button
                 onClick={() => handleUpdate(cat._id)}
@@ -252,7 +213,7 @@ const AddCategory = () => {
                   setEditingId(cat._id);
                   setEditingData({
                     name: cat.name,
-                    description: cat.description,
+                    description: cat.description || "",
                     order: cat.order,
                   });
                 }}
@@ -263,84 +224,89 @@ const AddCategory = () => {
             )}
 
             <button
-              onClick={() => handleDeleteCategory(cat._id)}
+              onClick={() => handleDelete(cat._id)}
               className="bg-red-500 text-white px-2 py-1 rounded"
             >
               <FaTrash />
             </button>
           </td>
         </tr>
+
+        {cat.subcategories &&
+          renderTree(cat.subcategories, level + 1)}
       </React.Fragment>
-    );
-  };
+    ));
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Category Manager</h2>
+      <h2 className="text-2xl font-bold mb-6">
+        Category Manager (Hierarchical)
+      </h2>
 
       {loading && <Loader />}
 
-      {/* FORM */}
+      {/* ================= FORM ================= */}
       <div className="grid md:grid-cols-5 gap-3 mb-6">
         <input
           placeholder="Category Name"
-          value={categoryName}
-          onChange={(e) => setCategoryName(e.target.value)}
+          value={form.name}
+          onChange={(e) =>
+            setForm({ ...form, name: e.target.value })
+          }
           className="border px-3 py-2 rounded"
         />
 
         <input
           placeholder="Description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
+          value={form.description}
+          onChange={(e) =>
+            setForm({ ...form, description: e.target.value })
+          }
           className="border px-3 py-2 rounded"
         />
 
         <input
           type="number"
           placeholder="Order"
-          value={order}
-          onChange={(e) => setOrder(e.target.value)}
+          value={form.order}
+          onChange={(e) =>
+            setForm({ ...form, order: e.target.value })
+          }
           className="border px-3 py-2 rounded"
         />
 
         <select
-          value={selectedParent}
-          onChange={(e) => setSelectedParent(e.target.value)}
+          value={form.parentCategory}
+          onChange={(e) =>
+            setForm({ ...form, parentCategory: e.target.value })
+          }
           className="border px-3 py-2 rounded"
         >
-          <option value="">No Parent</option>
-          {renderDropdownOptions(categories)}
+          <option value="">No Parent (Root)</option>
+          {renderOptions(categories)}
         </select>
 
         <button
-          onClick={handleAddCategory}
+          onClick={handleAdd}
           className="bg-blue-600 text-white rounded px-4 py-2"
         >
-          Add
+          Add Category
         </button>
       </div>
 
-      {/* TABLE */}
+      {/* ================= TABLE ================= */}
       <div className="overflow-x-auto">
         <table className="w-full border">
-          <tbody>{paginated.map((c) => renderRow(c))}</tbody>
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="border px-3 py-2 text-left">Name</th>
+              <th className="border px-3 py-2">Description</th>
+              <th className="border px-3 py-2">Order</th>
+              <th className="border px-3 py-2">Actions</th>
+            </tr>
+          </thead>
+          <tbody>{renderTree(categories)}</tbody>
         </table>
-      </div>
-
-      {/* PAGINATION */}
-      <div className="flex justify-center mt-4 gap-2">
-        {Array.from({ length: totalPages }, (_, i) => (
-          <button
-            key={i}
-            onClick={() => setCurrentPage(i + 1)}
-            className={`px-3 py-1 border rounded ${
-              currentPage === i + 1 ? "bg-blue-500 text-white" : ""
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
       </div>
     </div>
   );

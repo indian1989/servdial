@@ -70,25 +70,61 @@ const ManageCategories = () => {
   }, [dropdownSearch]);
 
   // ================= FETCH =================
-  const fetchCategories = async () => {
-    setLoading(true);
-    try {
-      const res = await getAllCategories();
-      const cats = res.data.categories || [];
+const fetchCategories = async () => {
+  setLoading(true);
+  try {
+    const res = await getAllCategories();
 
-      setFlatCategories(cats);
-      setCategories(buildCategoryTree(cats));
-      setCurrentPage(1);
-    } catch {
-      alert("Failed to fetch categories");
-    } finally {
-      setLoading(false);
-    }
-  };
+    const flat = res?.data?.flatCategories || [];
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
+    setFlatCategories(flat);
+    setCategories(buildCategoryTree(flat));
+
+    setCurrentPage(1);
+
+  } catch (err) {
+    console.error(err);
+    alert("Failed to fetch categories");
+  } finally {
+    setLoading(false);
+  }
+};
+
+useEffect(() => {
+  fetchCategories();
+}, []);
+
+  // ================= AUTO EXPAND ON SEARCH =================
+useEffect(() => {
+  if (search) {
+    const expandAll = {};
+
+    flatCategories.forEach((c) => {
+      expandAll[c._id] = false;
+    });
+
+    setCollapsed(expandAll);
+  }
+}, [search, flatCategories]);
+
+  // ================= FILTER =================
+const filteredTree = useMemo(() => {
+  if (!search) return categories;
+
+  const filter = (nodes = []) =>
+    nodes
+      .map((n) => ({
+        ...n,
+        subcategories: filter(n.subcategories || []), // ✅ SAFE
+      }))
+      .filter(
+        (n) =>
+          n.name.toLowerCase().includes(search.toLowerCase()) ||
+          (n.subcategories && n.subcategories.length > 0)
+      );
+
+  return filter(categories || []);
+}, [search, categories]);
 
   // ================= ADD =================
   const handleAddCategory = async () => {
@@ -152,30 +188,43 @@ const ManageCategories = () => {
     }
   };
 
-  // ================= STATUS =================
+  // ================= TOGGLE STATUS =================
   const toggleStatus = async (cat) => {
+  if (!cat?._id) return;
+
+  const newStatus = cat.status === "active" ? "inactive" : "active";
+
+  try {
+    setActionLoading(true);
+
     await updateCategory(cat._id, {
-      status: cat.status === "active" ? "inactive" : "active",
+      status: newStatus,
     });
-    fetchCategories();
-  };
+
+    // 🔥 Optimistic UI update (instant feel)
+    setFlatCategories((prev) =>
+      prev.map((c) =>
+        c._id === cat._id ? { ...c, status: newStatus } : c
+      )
+    );
+
+    // 🔥 Rebuild tree instantly (no lag UI)
+    setCategories((prev) => {
+      const updated = flatCategories.map((c) =>
+        c._id === cat._id ? { ...c, status: newStatus } : c
+      );
+      return buildCategoryTree(updated);
+    });
+
+  } catch (err) {
+    console.error("Toggle status error:", err);
+    alert("Failed to update status");
+  } finally {
+    setActionLoading(false);
+  }
+};
 
   // ================= FILTER =================
-  const filteredTree = useMemo(() => {
-    if (!search) return categories;
-
-    const filter = (nodes) =>
-      nodes
-        .map((n) => ({ ...n, subcategories: filter(n.subcategories) }))
-        .filter(
-          (n) =>
-            n.name.toLowerCase().includes(search.toLowerCase()) ||
-            n.subcategories.length
-        );
-
-    return filter(categories);
-  }, [search, categories]);
-
   const filteredDropdown = useMemo(() => {
     return flatCategories.filter((c) =>
       c.name.toLowerCase().includes(debouncedSearch.toLowerCase())
@@ -367,22 +416,29 @@ const ManageCategories = () => {
                 No Parent
               </div>
 
-              {filteredDropdown.map((c) => (
-                <div
-                  key={c._id}
-                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => {
-                    setNewCategory({
-                      ...newCategory,
-                      parentCategory: c._id,
-                    });
-                    setDropdownSearch(c.name);
-                    setShowDropdown(false);
-                  }}
-                >
-                  {c.name}
-                </div>
-              ))}
+              {/* FilteredDropdown */}
+  {filteredDropdown
+  .filter(c => c._id !== newCategory._id)
+  .map((c) => (
+    <div
+      key={c._id}
+      className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+      onClick={() => {
+        // 🚫 prevent selecting same parent again
+        if (c._id === newCategory.parentCategory) return;
+
+        setNewCategory((prev) => ({
+          ...prev,
+          parentCategory: c._id,
+        }));
+
+        setDropdownSearch(c.name);
+        setShowDropdown(false);
+      }}
+    >
+      {c.name}
+    </div>
+))}
             </div>
           )}
         </div>

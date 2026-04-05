@@ -1,3 +1,4 @@
+// frontend/src/utils/normalizeBusiness.js
 export const normalizeBusiness = (b = {}) => {
   try {
     return {

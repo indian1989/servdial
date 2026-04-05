@@ -1,3 +1,4 @@
+// frontend/src/api/adminAPI.js
 import API from "./axios";
 
 // ==================== Businesses ====================
