@@ -7,31 +7,31 @@ import Loader from "../../components/common/Loader";
 import { buildCategoryTree } from "../../utils/adminUtils";
 
 // 🔥 Flatten category tree
-const flattenCategories = (tree, prefix = "") => {
+const flattenCategories = (tree = [], parentName = "") => {
   let result = [];
 
   tree.forEach((cat) => {
-    const label = prefix ? `${prefix} › ${cat.name}` : cat.name;
-    const hasChildren = cat.subcategories?.length > 0;
+    const hasChildren = (cat.subcategories || []).length > 0;
 
-    // ✅ ONLY ADD IF LEAF NODE
     if (!hasChildren) {
       result.push({
         value: cat._id,
-        label,
+        label: parentName
+          ? `${cat.name} (${parentName})` // ✅ CLEAN CONTEXT
+          : cat.name,
       });
     }
 
-    // 🔁 ALWAYS TRAVERSE
     if (hasChildren) {
       result = result.concat(
-        flattenCategories(cat.subcategories, label)
+        flattenCategories(cat.subcategories, cat.name)
       );
     }
   });
 
   return result;
 };
+
 
 // 🎨 Styling
 const customStyles = {
@@ -57,11 +57,11 @@ const AdminAddBusiness = () => {
   categoryId: "",
   address: "",
   city: "",
-  cityId: "",
   district: "",
   state: "",
   stateSlug: "",
   districtSlug: "",
+  pincode: "",
   phone: "",
   whatsapp: "",
   website: "",
@@ -69,6 +69,22 @@ const AdminAddBusiness = () => {
 });
 
   const [error, setError] = useState("");
+
+  const categoryMap = React.useMemo(() => {
+  const map = {};
+  categoryOptions.forEach(c => {
+    map[c.value] = c;
+  });
+  return map;
+}, [categoryOptions]);
+
+const cityMap = React.useMemo(() => {
+  const map = {};
+  cities.forEach(c => {
+    map[c.value] = c;
+  });
+  return map;
+}, [cities]);
 
   // ================= LOAD =================
   useEffect(() => {
@@ -115,10 +131,10 @@ console.log(flat.filter(c => c.parentCategory));
   const handleChange = (e) => {
   const { name, value } = e.target;
 
-  if (name === "phone" || name === "whatsapp") {
-    const clean = value.replace(/\D/g, "").slice(0, 10);
-    return setBusinessData((prev) => ({ ...prev, [name]: clean }));
-  }
+  if (name === "phone" || name === "whatsapp" || name === "pincode") {
+  const clean = value.replace(/\D/g, "").slice(0, name === "pincode" ? 6 : 10);
+  return setBusinessData((prev) => ({ ...prev, [name]: clean }));
+}
 
   setBusinessData((prev) => ({ ...prev, [name]: value }));
 };
@@ -136,8 +152,7 @@ console.log(flat.filter(c => c.parentCategory));
   if (field === "city") {
     setBusinessData((prev) => ({
       ...prev,
-      city: selected.name,
-      cityId: selected.value,
+      city: selected.value,
       district: selected.district,
       state: selected.state,
       districtSlug: selected.districtSlug,
@@ -157,9 +172,9 @@ console.log(flat.filter(c => c.parentCategory));
 
   // ================= VALIDATION =================
   const validate = () => {
-  const { name, categoryId, city, district, state, phone } = businessData;
+  const { name, categoryId, city, phone, pincode } = businessData;
 
-  if (!name || !categoryId || !city || !district || !state || !phone) {
+  if (!name || !categoryId || !city || !phone) {
     return "Please fill all required fields";
   }
 
@@ -167,51 +182,86 @@ console.log(flat.filter(c => c.parentCategory));
     return "Phone must be 10 digits";
   }
 
+  if (pincode && pincode.length !== 6) {
+  return "Pincode must be 6 digits";
+}
+
   return "";
 };
 
   // ================= SUBMIT =================
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    const validationError = validate();
-    if (validationError) {
-      return setError(validationError);
-    }
+  const validationError = validate();
+  if (validationError) {
+    return setError(validationError);
+  }
 
-    setError("");
-    setLoading(true);
+  if (!businessData.categoryId) {
+  return setError("Category is required");
+}
 
-    try {
-      await addBusiness({
-        ...businessData,
-      });
+  setError("");
+  setLoading(true);
 
-      alert("Business added successfully!");
+  try {
+    await addBusiness({
+      ...businessData,
+      categoryId: businessData.categoryId,
+      city: businessData.city,
+      phone: businessData.phone.trim(),
+      whatsapp: businessData.whatsapp || businessData.phone,
+    });
 
-      setBusinessData({
-  name: "",
-  categoryId: "",
-  address: "",
-  city: "",
-  cityId: "",
-  district: "",
-  state: "",
-  stateSlug: "",
-  districtSlug: "",
-  phone: "",
-  whatsapp: "",
-  website: "",
-  description: "",
-});
+    alert("Business added successfully!");
 
-    } catch (err) {
-      console.error(err);
-      setError("Failed to add business");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setBusinessData({
+      name: "",
+      categoryId: "",
+      address: "",
+      city: "",
+      district: "",
+      state: "",
+      stateSlug: "",
+      districtSlug: "",
+      pincode: "",
+      phone: "",
+      whatsapp: "",
+      website: "",
+      description: "",
+    });
+
+  } catch (err) {
+  console.log("AXIOS ERROR OBJECT:", err);
+
+  if (err.response) {
+    console.log("STATUS:", err.response.status);
+    console.log("DATA:", err.response.data);
+    console.log("SENDING PAYLOAD:", businessData);
+    console.log("ERROR FULL:", err.response);
+    console.log("BODY:", businessData);
+console.log("city field:", businessData.city);
+console.log("cityId field:", businessData.cityId);
+const sanitized = sanitizeBusinessInput(req.body, req.user);
+
+console.log("RAW BODY:", req.body);
+console.log("SANITIZED OUTPUT:", sanitized);
+  } else if (err.request) {
+    console.log("NO RESPONSE RECEIVED:", err.request);
+  } else {
+    console.log("ERROR MESSAGE:", err.message);
+  }
+
+  setError(
+    err.response?.data?.message ||
+    err.response?.data?.error ||
+    "Failed to add business"
+  );
+} finally {
+    setLoading(false);
+  }
+};
 
   // ================= UI =================
   return (
@@ -241,13 +291,14 @@ console.log(flat.filter(c => c.parentCategory));
   placeholder="🔍 Select category (leaf only)"
   options={categoryOptions}
   value={
-    categoryOptions.find(
-      (c) => c.value === businessData.categoryId
-    ) || null
-  }
+  categoryOptions.find(c => c.value === businessData.categoryId) || null
+}
   onChange={(val) => handleSelect("categoryId", val)}
   styles={customStyles}
   isSearchable
+  filterOption={(option, input) =>
+  option.label.toLowerCase().includes(input.toLowerCase())
+}
 />
 
         {/* Address*/}
@@ -265,30 +316,38 @@ console.log(flat.filter(c => c.parentCategory));
   placeholder="Select City *"
   options={cities}
   value={
-    cities.find((c) => c.value === businessData.cityId) || null
-  }
+  cities.find(c => c.value === businessData.city) || null
+}
   onChange={(val) => handleSelect("city", val)}
   styles={customStyles}
   isSearchable
 />
 
-        <input
-          type="text"
-          name="district"
-          placeholder="District *"
-          value={businessData.district}
-          onChange={handleChange}
-          className="border px-3 py-2 rounded"
-        />
+        {/* SYSTEM-DRIVEN LOCATION (NOT EDITABLE) */}
+<div className="grid grid-cols-2 gap-2">
+  <input
+    value={businessData.district}
+    readOnly
+    className="border px-3 py-2 rounded bg-gray-100"
+    placeholder="District (auto)"
+  />
+
+  <input
+    value={businessData.state}
+    readOnly
+    className="border px-3 py-2 rounded bg-gray-100"
+    placeholder="State (auto)"
+  />
+</div>
 
         <input
-          type="text"
-          name="state"
-          placeholder="State *"
-          value={businessData.state}
-          readOnly
-          className="border px-3 py-2 rounded bg-gray-100"
-        />
+  type="text"
+  name="pincode"
+  placeholder="Pincode (6 digits)"
+  value={businessData.pincode}
+  onChange={handleChange}
+  className="border px-3 py-2 rounded"
+/>
 
         <input
           type="text"

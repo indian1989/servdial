@@ -1,3 +1,4 @@
+// frontend/src/pages/admin/ManageCategories.jsx
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import {
   getAllCategories,
