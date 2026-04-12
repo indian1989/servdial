@@ -1,3 +1,4 @@
+// frontend/src/components/home/PopularSearches.jsx
 import { useNavigate } from "react-router-dom";
 
 const PopularSearches = ({ searches = [], loading = false }) => {

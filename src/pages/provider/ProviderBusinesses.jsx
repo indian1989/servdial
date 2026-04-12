@@ -11,7 +11,7 @@ const ProviderBusinesses = () => {
 
   const fetchBusinesses = async () => {
     try {
-      const res = await API.get("/business/provider");
+      const res = await API.get("/provider/businesses");
       setBusinesses(res.data?.data || res.data || []);
     } catch (err) {
       console.error("Error loading businesses:", err);

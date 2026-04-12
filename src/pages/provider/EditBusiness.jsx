@@ -1,15 +1,26 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import API from "../../api/axios";
-import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
+import Select from "react-select";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMapEvents,
+} from "react-leaflet";
 import L from "leaflet";
 
+import BusinessMediaManager from "../../components/BusinessMediaManager";
+import BusinessHoursManager from "../../components/BusinessHoursManager";
+
+// ================= ICON FIX =================
 const markerIcon = new L.Icon({
   iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
 });
 
+// ================= MAP PICKER =================
 const LocationPicker = ({ setLocation }) => {
   useMapEvents({
     click(e) {
@@ -28,162 +39,260 @@ const EditBusiness = () => {
 
   const [logo, setLogo] = useState("");
   const [images, setImages] = useState([]);
+  const [businessHours, setBusinessHours] = useState(null);
 
-  const [location, setLocation] = useState([20.5937, 78.9629]);
+  const [location, setLocation] = useState([26.1209, 85.3647]);
 
   const [form, setForm] = useState({
     name: "",
     description: "",
-    category: "",
-    city: "",
+    categoryId: null,
+    cityId: null,
     address: "",
     phone: "",
     whatsapp: "",
     website: "",
-    openingHours: "",
   });
 
-  const fetchData = async () => {
-    try {
-      const cat = await API.get("/categories");
-      const cit = await API.get("/cities");
-      const biz = await API.get(`/business/${id}`);
+  const user = JSON.parse(localStorage.getItem("servdial_user"));
 
-      setCategories(cat.data || []);
-      setCities(cit.data || []);
-
-      const b = biz.data.business;
-
-      setForm({
-        name: b.name || "",
-        description: b.description || "",
-        category: b.category?._id || "",
-        city: b.city || "",
-        address: b.address || "",
-        phone: b.phone || "",
-        whatsapp: b.whatsapp || "",
-        website: b.website || "",
-        openingHours: b.openingHours || "",
-      });
-
-      setLogo(b.logo || "");
-      setImages(b.images || []);
-
-      if (b.location) {
-        setLocation([b.location.coordinates[1], b.location.coordinates[0]]);
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
+  // ================= FETCH DATA =================
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [catRes, cityRes, bizRes] = await Promise.all([
+          API.get("/categories"),
+          API.get("/cities"),
+          API.get(`/business/${id}`),
+        ]);
+
+        setCategories(
+          (catRes.data.categories || []).map((c) => ({
+            value: c._id,
+            label: c.name,
+          }))
+        );
+
+        setCities(
+          (cityRes.data.cities || []).map((c) => ({
+            value: c._id,
+            label: `${c.name} (${c.state})`,
+            district: c.district,
+            state: c.state,
+          }))
+        );
+
+        const b = bizRes.data.business;
+
+        setForm({
+          name: b.name || "",
+          description: b.description || "",
+          categoryId: b.categoryId
+            ? { value: b.categoryId._id, label: b.categoryId.name }
+            : null,
+          cityId: b.cityId
+            ? { value: b.cityId._id, label: b.cityId.name }
+            : null,
+          address: b.address || "",
+          phone: b.phone || "",
+          whatsapp: b.whatsapp || "",
+          website: b.website || "",
+        });
+
+        setLogo(b.logo || "");
+        setImages(b.images || []);
+        setBusinessHours(b.businessHours || null);
+
+        if (b.location?.coordinates) {
+          setLocation([
+            b.location.coordinates[1],
+            b.location.coordinates[0],
+          ]);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
     fetchData();
   }, [id]);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const uploadImage = async (file) => {
-    const data = new FormData();
-    data.append("file", file);
-    data.append("upload_preset", "servdial");
-
-    const res = await fetch("https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload", {
-      method: "POST",
-      body: data,
-    });
-
-    const json = await res.json();
-    return json.secure_url;
-  };
-
-  const handleLogoUpload = async (e) => {
-    const url = await uploadImage(e.target.files[0]);
-    setLogo(url);
-  };
-
-  const handleImagesUpload = async (e) => {
-    const files = Array.from(e.target.files);
-    let uploaded = [];
-    for (let file of files) {
-      const url = await uploadImage(file);
-      uploaded.push(url);
-    }
-    setImages(uploaded);
-  };
-
+  // ================= SUBMIT =================
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       await API.put(`/business/${id}`, {
         ...form,
+        categoryId: form.categoryId?.value,
+        cityId: form.cityId?.value,
         logo,
         images,
-        location: { type: "Point", coordinates: [location[1], location[0]] },
+        businessHours,
+        location: {
+          type: "Point",
+          coordinates: [location[1], location[0]],
+        },
         status: "pending",
       });
-      alert("Business updated and sent for approval");
+
+      alert("Business updated successfully!");
       navigate("/provider/dashboard");
     } catch (err) {
-      alert("Error updating business");
+      console.error(err);
+      alert("Update failed");
     }
   };
 
+  // ================= UI =================
   return (
-    <div className="max-w-5xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Edit Business</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <input name="name" value={form.name} onChange={handleChange} placeholder="Business Name" className="w-full border p-2" />
-        <textarea name="description" value={form.description} onChange={handleChange} placeholder="Business Description" className="w-full border p-2" />
-        <select name="category" value={form.category} onChange={handleChange} className="w-full border p-2">
-          <option>Select Category</option>
-          {categories.map((c) => (
-            <option key={c._id} value={c._id}>{c.name}</option>
-          ))}
-        </select>
-        <select name="city" value={form.city} onChange={handleChange} className="w-full border p-2">
-          <option>Select City</option>
-          {cities.map((c) => (
-            <option key={c._id} value={c.name}>{c.name}</option>
-          ))}
-        </select>
-        <input name="address" value={form.address} onChange={handleChange} placeholder="Address" className="w-full border p-2" />
-        <input name="phone" value={form.phone} onChange={handleChange} placeholder="Phone" className="w-full border p-2" />
-        <input name="whatsapp" value={form.whatsapp} onChange={handleChange} placeholder="WhatsApp" className="w-full border p-2" />
-        <input name="website" value={form.website} onChange={handleChange} placeholder="Website" className="w-full border p-2" />
-        <input name="openingHours" value={form.openingHours} onChange={handleChange} placeholder="Opening Hours" className="w-full border p-2" />
+    <div className="max-w-7xl mx-auto p-6 md:flex gap-6">
 
-        <div>
-          <label className="font-semibold">Business Logo</label>
-          <input type="file" onChange={handleLogoUpload} />
-          {logo && <img src={logo} className="h-20 mt-2" />}
+      {/* ================= FORM ================= */}
+      <form onSubmit={handleSubmit} className="space-y-4 md:w-1/2">
+
+        <input
+          className="border p-2 w-full"
+          placeholder="Business Name"
+          value={form.name}
+          onChange={(e) =>
+            setForm({ ...form, name: e.target.value })
+          }
+        />
+
+        <textarea
+          className="border p-2 w-full"
+          placeholder="Description"
+          value={form.description}
+          onChange={(e) =>
+            setForm({ ...form, description: e.target.value })
+          }
+        />
+
+        {/* CATEGORY */}
+        <Select
+          options={categories}
+          value={form.categoryId}
+          onChange={(v) =>
+            setForm({ ...form, categoryId: v })
+          }
+        />
+
+        {/* CITY */}
+        <Select
+          options={cities}
+          value={form.cityId}
+          onChange={(v) =>
+            setForm({ ...form, cityId: v })
+          }
+        />
+
+        <input
+          className="border p-2 w-full"
+          placeholder="Address"
+          value={form.address}
+          onChange={(e) =>
+            setForm({ ...form, address: e.target.value })
+          }
+        />
+
+        <input
+          className="border p-2 w-full"
+          placeholder="Phone"
+          value={form.phone}
+          onChange={(e) =>
+            setForm({ ...form, phone: e.target.value })
+          }
+        />
+
+        <input
+          className="border p-2 w-full"
+          placeholder="WhatsApp"
+          value={form.whatsapp}
+          onChange={(e) =>
+            setForm({ ...form, whatsapp: e.target.value })
+          }
+        />
+
+        <input
+          className="border p-2 w-full"
+          placeholder="Website"
+          value={form.website}
+          onChange={(e) =>
+            setForm({ ...form, website: e.target.value })
+          }
+        />
+
+        {/* HOURS */}
+        <BusinessHoursManager
+          value={businessHours}
+          onChange={setBusinessHours}
+        />
+
+        {/* MEDIA (REUSABLE COMPONENT) */}
+        <BusinessMediaManager
+          value={images}
+          onChange={setImages}
+        />
+
+        {/* LOGO (simple version retained) */}
+        <input
+          type="file"
+          onChange={async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const data = new FormData();
+            data.append("file", file);
+            data.append("upload_preset", "servdial");
+
+            const res = await fetch(
+              "https://api.cloudinary.com/v1_1/dkz4ihfuv/image/upload",
+              { method: "POST", body: data }
+            );
+
+            const json = await res.json();
+            setLogo(json.secure_url);
+          }}
+        />
+
+        {logo && (
+          <img src={logo} className="h-20 mt-2 rounded" />
+        )}
+
+        {/* MAP */}
+        <div className="h-64">
+          <MapContainer center={location} zoom={13} style={{ height: "100%" }}>
+            <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <Marker position={location} icon={markerIcon} />
+            <LocationPicker setLocation={setLocation} />
+          </MapContainer>
         </div>
 
-        <div>
-          <label className="font-semibold">Business Images</label>
-          <input type="file" multiple onChange={handleImagesUpload} />
-          <div className="grid grid-cols-4 gap-2 mt-2">
-            {images.map((img, i) => (
-              <img key={i} src={img} className="h-20 object-cover" />
-            ))}
-          </div>
-        </div>
-
-        <div>
-          <label className="font-semibold">Update Location</label>
-          <div className="h-80 mt-2">
-            <MapContainer center={location} zoom={13} style={{ height: "100%", width: "100%" }}>
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <Marker position={location} icon={markerIcon} />
-              <LocationPicker setLocation={setLocation} />
-            </MapContainer>
-          </div>
-        </div>
-
-        <button className="bg-blue-600 text-white px-6 py-2 rounded">Update Business</button>
+        <button className="bg-blue-600 text-white px-4 py-2 rounded w-full">
+          Update Business
+        </button>
       </form>
+
+      {/* ================= PREVIEW ================= */}
+      <div className="md:w-1/2 bg-white p-4 rounded shadow sticky top-4 h-fit">
+        <h2 className="font-bold text-lg">{form.name}</h2>
+        <p className="text-sm">{form.description}</p>
+        <p className="text-sm mt-2">{form.address}</p>
+        <p className="text-sm">{form.phone}</p>
+
+        {logo && <img src={logo} className="w-20 h-20 mt-2 rounded" />}
+
+        <div className="flex gap-2 mt-2 flex-wrap">
+          {images.map((img, i) => (
+            <img
+              key={i}
+              src={img}
+              className="w-16 h-16 rounded object-cover"
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };

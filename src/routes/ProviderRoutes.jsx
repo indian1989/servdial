@@ -17,10 +17,6 @@ import ProviderNotifications from "../pages/provider/ProviderNotifications";
 import ProviderSubscription from "../pages/provider/ProviderSubscription";
 import ProviderProfile from "../pages/provider/ProviderProfile";
 
-/* Business management pages */
-import BusinessMediaManager from "../pages/provider/BusinessMediaManager";
-import BusinessHoursManager from "../pages/provider/BusinessHoursManager";
-
 import { providerRoutes } from "./routeConfig";
 
 const components = {
@@ -72,10 +68,6 @@ function ProviderRoutes() {
       <Route path="edit-business/:id" element={<EditBusiness />} />
 
       <Route path="track-business/:id" element={<TrackBusinessView />} />
-
-      <Route path="business/:id/media" element={<BusinessMediaManager />} />
-
-      <Route path="business/:id/hours" element={<BusinessHoursManager />} />
 
     </Route>
     </>

@@ -1,3 +1,4 @@
+// frontend/src/context/authContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 import API from "../api/axios";
 
@@ -27,9 +28,19 @@ export const AuthProvider = ({ children }) => {
   try {
     const { data } = await API.post("/auth/login", credentials);
 
-    const userData = { ...data.user, token: data.token };
+// 🔥 ADD THIS LINE
+console.log("LOGIN RESPONSE:", data);
 
+    // ✅ CREATE CLEAN USER OBJECT
+    const userData = {
+      ...data.user,
+      token: data.token,
+    };
+
+    // ✅ STORE IN LOCALSTORAGE
     localStorage.setItem("servdial_user", JSON.stringify(userData));
+
+    // ✅ UPDATE STATE
     setUser(userData);
 
     return { success: true, user: userData };

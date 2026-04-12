@@ -188,7 +188,7 @@ console.log(flat.filter(c => c.parentCategory));
 
   return "";
 };
-
+const sanitizeBusinessInput = (data) => data;
   // ================= SUBMIT =================
 const handleSubmit = async (e) => {
   e.preventDefault();
@@ -243,6 +243,7 @@ const handleSubmit = async (e) => {
     console.log("BODY:", businessData);
 console.log("city field:", businessData.city);
 console.log("cityId field:", businessData.cityId);
+console.log("AXIOS BASE URL:", API.defaults.baseURL);
 const sanitized = sanitizeBusinessInput(req.body, req.user);
 
 console.log("RAW BODY:", req.body);

@@ -2,22 +2,26 @@
 import API from "./axios";
 
 // ==================== Businesses ====================
-export const getAllBusinesses = () => API.get("/admin/businesses");
+
+// ✅ FIXED
+export const getAllBusinesses = () => 
+  API.get("/admin/businesses");
 
 export const addBusiness = (data) =>
-  API.post("/admin/business", data);
+  API.post("/admin/businesses", data);
 
+// ✅ FIXED PARAM ORDER
 export const approveBusiness = (id) =>
-  API.put(`/admin/business/approve/${id}`);
+  API.put(`/admin/businesses/${id}/approve`);
 
 export const rejectBusiness = (id) =>
-  API.put(`/admin/business/reject/${id}`);
+  API.put(`/admin/businesses/${id}/reject`);
 
 export const toggleFeatured = (id) =>
-  API.put(`/admin/business/feature/${id}`);
+  API.put(`/admin/businesses/${id}/feature`);
 
 export const deleteBusiness = (id) =>
-  API.delete(`/admin/business/${id}`);
+  API.delete(`/admin/businesses/${id}`);
 
 
 // ==================== Users ====================
@@ -25,10 +29,10 @@ export const getAllUsers = () =>
   API.get("/admin/users");
 
 export const toggleUserStatus = (id) =>
-  API.put(`/admin/user/status/${id}`);
+  API.put(`/admin/users/${id}/status`);
 
 export const deleteUser = (id) =>
-  API.delete(`/admin/user/${id}`);
+  API.delete(`/admin/users/${id}`);
 
 
 // ==================== Cities ====================
@@ -84,13 +88,13 @@ export const getAllBanners = () =>
   API.get("/admin/banners");
 
 export const addBanner = (data) =>
-  API.post("/admin/banner", data);
+  API.post("/admin/banners", data);
 
 export const updateBanner = (id, data) =>
-  API.put(`/admin/banner/${id}`, data);
+  API.put(`/admin/banners/${id}`, data);
 
 export const deleteBanner = (id) =>
-  API.delete(`/admin/banner/${id}`);
+  API.delete(`/admin/banners/${id}`);
 
 
 // ==================== Admins ====================
@@ -98,10 +102,10 @@ export const getAllAdmins = () =>
   API.get("/admin/admins");
 
 export const addAdmin = (data) =>
-  API.post("/admin/admin", data);
+  API.post("/admin/admins", data);
 
 export const updateAdmin = (id, data) =>
-  API.put(`/admin/admin/${id}`, data);
+  API.put(`/admin/admins/${id}`, data);
 
 export const deleteAdmin = (id) =>
-  API.delete(`/admin/admin/${id}`);
+  API.delete(`/admin/admins/${id}`);

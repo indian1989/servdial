@@ -1,3 +1,4 @@
+// frontend/src/pages/provider/ProviderDashboard.jsx
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import API from "../../api/axios";
@@ -68,7 +69,7 @@ const ProviderDashboard = () => {
 
   const fetchBusinesses = async () => {
     try {
-      const res = await API.get("/business/provider");
+      const res = await API.get("/provider/businesses");
       setBusinesses(res.data.businesses || []);
     } catch (err) {
       console.error(err);
@@ -155,10 +156,13 @@ const ProviderDashboard = () => {
                 />
                 <div className="p-4">
                   <h3 className="font-semibold text-lg">{biz.name}</h3>
-                  <p className="text-sm text-gray-500">{biz.city}</p>
                   <p className="text-sm text-gray-500">
-                    Category: {biz.categoryName}
-                  </p>
+                   {biz.cityId?.name || "City"}
+                   </p>
+
+                  <p className="text-sm text-gray-500">
+                    Category: {biz.categoryId?.name || "Category"}
+                    </p>
 
                   <div className="mt-2">
                     <span

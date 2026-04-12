@@ -65,7 +65,6 @@ const SearchResults = () => {
         setLoading(true);
 
         const params = {
-          ...filters,
           ...(filters.lat && filters.lng
   ? {
       lat: filters.lat,

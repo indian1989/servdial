@@ -1,3 +1,4 @@
+// frontend/src/axios.js
 import axios from "axios";
 
 // ================= BASE API INSTANCE =================
