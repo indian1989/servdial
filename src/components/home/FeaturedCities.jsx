@@ -5,18 +5,18 @@ const FeaturedCities = ({ cities = [], loading = false }) => {
 
   // Fallback hardcoded cities if no data passed
   const defaultCities = [
-    { name: "Delhi", image: "https://images.unsplash.com/photo-1587474260584-136574528ed5" },
-    { name: "Mumbai", image: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66" },
-    { name: "Bangalore", image: "https://images.unsplash.com/photo-1596176530529-78163a4c76c6" },
-    { name: "Hyderabad", image: "https://images.unsplash.com/photo-1625123009804-3f3c3f5a5d6c" },
-    { name: "Chennai", image: "https://images.unsplash.com/photo-1599661046289-e31897846e41" },
-    { name: "Kolkata", image: "https://images.unsplash.com/photo-1558431382-27e303142255" }
-  ];
+  { name: "Delhi", slug: "delhi", image: "https://images.unsplash.com/photo-1587474260584-136574528ed5" },
+  { name: "Mumbai", slug: "mumbai", image: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66" },
+  { name: "Bangalore", slug: "bangalore", image: "https://images.unsplash.com/photo-1596176530529-78163a4c76c6" },
+  { name: "Hyderabad", slug: "hyderabad", image: "https://images.unsplash.com/photo-1625123009804-3f3c3f5a5d6c" },
+  { name: "Chennai", slug: "chennai", image: "https://images.unsplash.com/photo-1599661046289-e31897846e41" },
+  { name: "Kolkata", slug: "kolkata", image: "https://images.unsplash.com/photo-1558431382-27e303142255" }
+];
 
   const list = cities.length ? cities : defaultCities;
 
   const openCity = (city) => {
-    navigate(`/search?city=${city}`);
+    navigate(`/${city?.slug}/all`);
   };
 
   return (
@@ -35,8 +35,8 @@ const FeaturedCities = ({ cities = [], loading = false }) => {
             ))
           : list.map((city, i) => (
               <div
-                key={i}
-                onClick={() => openCity(city.name)}
+                key={city.slug}
+                onClick={() => openCity(city)}
                 className="relative rounded-xl overflow-hidden cursor-pointer group"
               >
                 <img

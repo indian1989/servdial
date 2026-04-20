@@ -45,7 +45,7 @@ const SEOLandingPage = () => {
       setLoading(true);
 
       const res = await API.get(
-        `/business?category=${category}&city=${city}`
+        `/business?category=${category?.slug}&city=${city?.slug}`
       );
 
       setBusinesses(res.data.businesses || []);
@@ -84,7 +84,7 @@ const SEOLandingPage = () => {
 
         <h1 className="text-3xl font-bold mb-6 capitalize">
 
-          {category.replaceAll("-", " ")} in {city} | ServDial
+          {category.replaceAll("-", " ")} in {city?.name} | ServDial
 
         </h1>
 

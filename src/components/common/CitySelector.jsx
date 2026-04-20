@@ -18,7 +18,7 @@ const CitySelector = () => {
     const fetchCities = async () => {
       try {
         setLoading(true);
-        const res = await API.get("/cities");
+        const res = await API.get("/cities?dropdown=true");
         setCities(res.data.cities || []);
       } catch {
         setCities([]);
@@ -50,12 +50,16 @@ const CitySelector = () => {
   );
 
   // ================= SELECT =================
-  const handleSelect = (cityName) => {
-    setCity(cityName);
-    localStorage.setItem("servdial_city", cityName);
-    setShow(false);
-    setSearch("");
+  const handleSelect = (cityObj) => {
+  const formatted = {
+    name: cityObj.name,
+    slug: cityObj.slug,
   };
+
+  setCity(formatted);
+  setShow(false);
+  setSearch("");
+};
 
   return (
     <div className="relative" ref={ref}>
@@ -68,7 +72,9 @@ const CitySelector = () => {
         <MapPin size={16} className="text-blue-500" />
 
         <span className="text-sm font-medium">
-          {loadingCity ? "Detecting..." : city || "Select City"}
+          {loadingCity
+  ? "Detecting..."
+  : city?.name || "Select City"}
         </span>
 
         <ChevronDown size={14} />
@@ -112,9 +118,9 @@ const CitySelector = () => {
               filtered.map((c) => (
                 <div
                   key={c._id}
-                  onClick={() => handleSelect(c.name)}
+                  onClick={() => handleSelect(c)}
                   className={`p-3 cursor-pointer text-sm hover:bg-gray-100 ${
-                    city === c.name ? "bg-blue-50 font-medium" : ""
+                    city?.slug === c.slug ? "bg-blue-50 font-medium" : ""
                   }`}
                 >
                   {c.name}

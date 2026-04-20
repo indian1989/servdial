@@ -97,7 +97,7 @@ const Header = () => {
             {/* MOBILE CITY */}
             <div className="flex items-center gap-2">
               <MapPin size={16} />
-              <span>{city || "Select City"}</span>
+              <span>{city?.name || "Select City"}</span>
             </div>
 
           </div>

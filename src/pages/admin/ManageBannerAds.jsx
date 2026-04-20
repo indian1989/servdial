@@ -20,14 +20,14 @@ const ManageBannerAds = () => {
   const [newBanner, setNewBanner] = useState({
     image: "",
     link: "",
-    status: "active",
+    isActive: true / false,
   });
 
   const [editingBannerId, setEditingBannerId] = useState(null);
   const [editingBannerData, setEditingBannerData] = useState({
     image: "",
     link: "",
-    status: "active",
+    isActive: true / false,
   });
 
   // ================= FETCH BANNERS =================
@@ -35,7 +35,7 @@ const ManageBannerAds = () => {
     setLoading(true);
     try {
       const res = await getAllBanners();
-      setBanners(res.data.banners);
+      setBanners(res.data.data);
     } catch (err) {
       console.error("Failed to fetch banners:", err);
       alert("Failed to fetch banners.");
@@ -133,37 +133,6 @@ const ManageBannerAds = () => {
     <div className="p-6 max-w-6xl mx-auto">
       <h2 className="text-2xl font-bold mb-4">Manage Banner Ads</h2>
 
-      {/* Add Banner */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4">
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => handleImageUpload(e)}
-          className="border px-3 py-2 rounded w-full"
-        />
-        <input
-          type="text"
-          placeholder="Banner Link"
-          value={newBanner.link}
-          onChange={(e) => setNewBanner({ ...newBanner, link: e.target.value })}
-          className="border px-3 py-2 rounded w-full"
-        />
-        <select
-          value={newBanner.status}
-          onChange={(e) => setNewBanner({ ...newBanner, status: e.target.value })}
-          className="border px-3 py-2 rounded w-full"
-        >
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-        <button
-          onClick={handleAddBanner}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-        >
-          Add Banner
-        </button>
-      </div>
-
       {/* Search */}
       <input
         type="text"
@@ -225,15 +194,17 @@ const ManageBannerAds = () => {
                   <td className="border px-3 py-2">
                     {editingBannerId === banner._id ? (
                       <select
-                        value={editingBannerData.status}
-                        onChange={(e) =>
-                          setEditingBannerData({ ...editingBannerData, status: e.target.value })
-                        }
-                        className="border px-2 py-1 rounded w-full"
-                      >
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
+  value={newBanner.isActive}
+  onChange={(e) =>
+    setNewBanner({
+      ...newBanner,
+      isActive: e.target.value === "true",
+    })
+  }
+>
+  <option value="true">Active</option>
+  <option value="false">Inactive</option>
+</select>
                     ) : (
                       <span
                         className={`px-2 py-1 rounded ${

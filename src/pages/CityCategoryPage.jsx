@@ -18,7 +18,7 @@ const CityCategoryPage = () => {
     const fetchBusinesses = async () => {
       try {
         const { data } = await API.get(
-          `/business/search?city=${city}&category=${category}`
+          `/business/search?city=${city?.slug}&category=${category?.slug}`
         );
 
         setBusinesses(data.businesses || []);
@@ -59,7 +59,7 @@ const CityCategoryPage = () => {
 
   const description = `Find the best ${formattedCategory} services in ${formattedCity}. Contact numbers, address, ratings and reviews on ServDial.`;
 
-  const canonicalUrl = `https://servdial.com/${city}/${category}`;
+  const canonicalUrl = `https://servdial.com/${city?.slug}/${category?.slug}`;
 
   const itemListSchema = {
     "@context": "https://schema.org",
@@ -87,7 +87,7 @@ const CityCategoryPage = () => {
         "@type": "ListItem",
         position: 2,
         name: formattedCity,
-        item: `https://servdial.com/city/${city}`,
+        item: `https://servdial.com/city/${city?.slug}`,
       },
       {
         "@type": "ListItem",
@@ -146,7 +146,7 @@ const CityCategoryPage = () => {
 
           <div className="text-sm text-gray-500 mb-4">
             <Link to="/">Home</Link> /{" "}
-            <Link to={`/city/${city}`}>{formattedCity}</Link> /{" "}
+            <Link to={`/city/${city?.slug}`}>{formattedCity}</Link> /{" "}
             {formattedCategory}
           </div>
 
@@ -209,21 +209,17 @@ const CityCategoryPage = () => {
               <div className="grid md:grid-cols-4 gap-4">
 
                 {categories
-                  .filter((cat) => cat.slug !== category)
-                  .slice(0, 12)
-                  .map((cat) => (
-
-                    <Link
-                      key={cat._id}
-                      to={`/${city}/${cat.slug}`}
-                      className="bg-white border rounded p-4 hover:shadow text-center"
-                    >
-
-                      {cat.name} in {formattedCity}
-
-                    </Link>
-
-                  ))}
+  .filter((cat) => cat.slug !== category?.slug)
+  .slice(0, 12)
+  .map((cat) => (
+    <Link
+      key={cat._id}
+      to={`/${city?.slug}/${cat.slug}`}
+      className="bg-white border rounded p-4 hover:shadow text-center"
+    >
+      {cat.name} in {city?.name}
+    </Link>
+  ))}
 
               </div>
 

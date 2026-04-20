@@ -8,7 +8,7 @@ import { Helmet } from "react-helmet-async";
 import BusinessDetails from "./BusinessDetails";
 
 const BusinessPage = () => {
-  const { slug } = useParams();
+  const { citySlug, categorySlug, businessSlug } = useParams();
 
   const [business, setBusiness] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -18,7 +18,7 @@ const BusinessPage = () => {
   // ================= FETCH BUSINESS =================
   const fetchBusiness = async () => {
     try {
-      const res = await API.get(`/business/${slug}`);
+      const res = await API.get(`/${citySlug}/${categorySlug}/${businessSlug}`);
 
       const biz = res.data.business;
 
@@ -48,8 +48,10 @@ const BusinessPage = () => {
   };
 
   useEffect(() => {
-    if (slug) fetchBusiness();
-  }, [slug]);
+  if (citySlug && categorySlug && businessSlug) {
+    fetchBusiness();
+  }
+}, [citySlug, categorySlug, businessSlug]);
 
   // ================= LOADING =================
   if (loading) {
@@ -73,7 +75,7 @@ const BusinessPage = () => {
 
   const description = `${business.name} is a top ${business.categoryId?.name || business.category || "General"} service in ${business.city}. Contact details, reviews, and more on ServDial.`;
 
-  const url = `https://servdial.com/business/${business.slug}`;
+  const url = `https://servdial.com/${business.citySlug}/${business.categorySlug}/${business.slug}`;
 
   const image = business.images?.[0] || "https://servdial.com/default-business.jpg";
 

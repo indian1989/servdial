@@ -51,8 +51,9 @@ const CategoriesGrid = ({ categories = [], city, loading = false }) => {
   const navigate = useNavigate();
 
   const handleCategoryClick = (category) => {
-    if (!city) return;
-    navigate(`/search?q=${category.name}&city=${city}`);
+    if (!city?.slug) return;
+
+navigate(`/search?q=${category.slug}&city=${city.slug}`);
   };
 
   // ✅ ONLY ACTIVE + TOP 20

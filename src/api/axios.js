@@ -28,15 +28,9 @@ API.interceptors.request.use(
   (config) => {
     const user = getStoredUser();
 
-    if (
-      user?.token &&
-      (
-        config.url.includes("/provider") ||
-        config.url.includes("/admin")
-      )
-    ) {
-      config.headers.Authorization = `Bearer ${user.token}`;
-    }
+    if (user?.token) {
+  config.headers.Authorization = `Bearer ${user.token}`;
+}
 
     config.headers["x-request-id"] = Date.now();
 

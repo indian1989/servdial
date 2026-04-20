@@ -11,7 +11,7 @@ import AddCity from "../pages/admin/AddCity";
 import ManageCategories from "../pages/admin/ManageCategories";
 import AddCategory from "../pages/admin/AddCategory";
 import ManageBannerAds from "../pages/admin/ManageBannerAds";
-import AddBanner from "../pages/admin/AddBanner";
+import AdminAddBanner from "../pages/admin/AdminAddBanner";
 import ManageUsers from "../pages/admin/ManageUsers";
 import ManageAdmins from "../pages/admin/ManageAdmins";
 
@@ -39,7 +39,7 @@ const AdminRoutes = () => {
       <Route path="categories" element={<ManageCategories />} />
       <Route path="categories/add" element={<AddCategory />} />
       <Route path="banners" element={<ManageBannerAds />} />
-      <Route path="banners/add" element={<AddBanner />} />
+      <Route path="banners/add" element={<AdminAddBanner />} />
       <Route path="users" element={<ManageUsers />} />
       <Route path="admins" element={<ManageAdmins />} />
       <Route path="analytics" element={<Analytics />} />

@@ -8,7 +8,7 @@ const TopRatedBusinesses = ({ city }) => {
   useEffect(() => {
     const fetchBusinesses = async () => {
       try {
-        const res = await API.get(`/businesses/top-rated?city=${city}`);
+        const res = await API.get(`/businesses/top-rated?city=${city?.slug}`);
         setBusinesses(res?.data?.businesses || []);
       } catch {
         setBusinesses([]);
@@ -25,7 +25,7 @@ const TopRatedBusinesses = ({ city }) => {
           Top Rated Businesses
         </h2>
         <p className="text-gray-500 text-sm">
-          Best reviewed services in {city}
+          Best reviewed services in {city?.name}
         </p>
       </div>
 

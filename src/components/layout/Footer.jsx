@@ -157,10 +157,10 @@ const Footer = () => {
             {cities.map((city, i) => (
               <li key={i}>
                 <Link
-                  to={`/search?city=${city}`}
+                  to={`/search?city=${city?.name}`}
                   className="hover:text-white"
                 >
-                  {city}
+                  {city?.name}
                 </Link>
               </li>
             ))}

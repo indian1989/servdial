@@ -18,7 +18,12 @@ const HeroSearch = ({ city }) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
-  const currentCity = globalCity || city;
+  const currentCity =
+  globalCity?.slug
+    ? globalCity
+    : city?.slug
+    ? city
+    : null;
 
   // ================= CLOSE DROPDOWN =================
   useEffect(() => {
@@ -62,8 +67,8 @@ const HeroSearch = ({ city }) => {
         setLoadingSuggestions(true);
 
         const res = await API.get(
-          `/search/suggestions?q=${query}&city=${currentCity}`
-        );
+  `/search/suggestions?q=${query}&city=${currentCity?.slug}`
+);
 
         setSuggestions(res?.data?.suggestions || []);
       } catch {
@@ -88,7 +93,7 @@ const HeroSearch = ({ city }) => {
     if (!value || !currentCity) return;
 
     saveRecent(value);
-    navigate(`/search?q=${value}&city=${currentCity}`);
+    navigate(`/search?q=${value}&city=${currentCity?.slug}`);
     setShowSuggestions(false);
   };
 
@@ -106,9 +111,16 @@ const HeroSearch = ({ city }) => {
           const detected = res?.data?.city;
 
           if (detected) {
-            setCity(detected);
-            localStorage.setItem("servdial_city", detected);
-          }
+  const resCity = await API.get(`/cities?search=${detected}`);
+  const match = resCity.data?.cities?.[0];
+
+  if (match) {
+    setCity({
+      name: match.name,
+      slug: match.slug,
+    });
+  }
+}
         } catch {}
       },
       () => {}
@@ -121,9 +133,9 @@ const HeroSearch = ({ city }) => {
       <div className="max-w-4xl mx-auto text-center mb-8">
         <h1 className="text-3xl md:text-5xl font-bold text-gray-800 leading-tight">
           Find Trusted Services in{" "}
-          <span className="text-blue-600">
-            {currentCity || "your city"}
-          </span>
+            <span className="text-blue-600">
+         {currentCity?.name || "your city"}
+        </span>
         </h1>
 
         <p className="text-gray-500 mt-3 text-sm md:text-base">

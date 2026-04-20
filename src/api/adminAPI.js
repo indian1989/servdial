@@ -23,7 +23,9 @@ export const toggleFeatured = (id) =>
 export const deleteBusiness = (id) =>
   API.delete(`/admin/businesses/${id}`);
 
-
+// ==================== BUSINESS STATS ====================
+// export const getBusinessStats = () =>
+ //  API.get("/admin/businesses/business-stats");
 // ==================== Users ====================
 export const getAllUsers = () =>
   API.get("/admin/users");
@@ -88,15 +90,39 @@ export const getAllBanners = () =>
   API.get("/admin/banners");
 
 export const addBanner = (data) =>
-  API.post("/admin/banners", data);
+  API.post("/admin/banners", {
+    ...data,
+    status: undefined,
+    paymentStatus: undefined,
+    approvedBy: undefined,
+    approvedAt: undefined,
+  });
 
 export const updateBanner = (id, data) =>
-  API.put(`/admin/banners/${id}`, data);
+  API.put(`/admin/banners/${id}`, {
+    title: data.title,
+    link: data.link,
+    image: data.image,
+    placement: data.placement,
+    cityId: data.cityId,
+    categoryId: data.categoryId,
+    isActive: data.isActive,
+  });
 
 export const deleteBanner = (id) =>
   API.delete(`/admin/banners/${id}`);
 
+export const approveBanner = (id) =>
+  API.put(`/admin/banners/${id}/approve`);
 
+export const rejectBanner = (id) =>
+  API.put(`/admin/banners/${id}/reject`);
+
+export const markBannerPaid = (id, paymentId) =>
+  API.put(`/admin/banners/${id}/payment`, {
+    paymentStatus: "paid",
+    paymentId,
+  });
 // ==================== Admins ====================
 export const getAllAdmins = () =>
   API.get("/admin/admins");

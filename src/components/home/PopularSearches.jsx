@@ -16,7 +16,7 @@ const PopularSearches = ({ searches = [], loading = false }) => {
   const list = searches.length ? searches : defaultSearches;
 
   const handleSearch = (category, city) => {
-    navigate(`/search?q=${category}&city=${city}`);
+    navigate(`/search?q=${category}&city=${city?.name}`);
   };
 
   return (

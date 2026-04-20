@@ -1,19 +1,20 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import API from "../api/axios";
 
-const CityContext = createContext();
+export const CityContext = createContext();
 
 export const CityProvider = ({ children }) => {
-  const [city, setCityState] = useState(null);
+const [city, setCityState] = useState(null); 
+// but city = { name, slug }
   const [loadingCity, setLoadingCity] = useState(true);
 
   // ================= SET CITY =================
-  const setCity = (newCity) => {
-    if (!newCity) return;
+  const setCity = (cityObj) => {
+  if (!cityObj || !cityObj.slug) return;
 
-    localStorage.setItem("servdial_city", newCity);
-    setCityState(newCity);
-  };
+  localStorage.setItem("servdial_city", JSON.stringify(cityObj));
+  setCityState(cityObj);
+};
 
   // ================= DETECT LOCATION =================
   const detectLocation = () => {
@@ -29,10 +30,22 @@ export const CityProvider = ({ children }) => {
             `/location/reverse?lat=${pos.coords.latitude}&lng=${pos.coords.longitude}`
           );
 
-          const detected = res?.data?.city || null;
+          const detectedName = res?.data?.city;
 
-          if (detected) {
-            setCity(detected);
+if (detectedName) {
+  const resCity = await API.get(`/cities?search=${detectedName}`);
+  const match = resCity.data?.cities?.[0];
+
+  if (match) {
+  setCity({
+    name: match.name,
+    slug: match.slug,
+  });
+  setLoadingCity(false); // ✅ FIX
+} else {
+  fallbackIP();
+}
+
           } else {
             fallbackIP();
           }
@@ -48,39 +61,67 @@ export const CityProvider = ({ children }) => {
 
   // ================= FALLBACK =================
   const fallbackIP = async () => {
-    try {
-      const res = await API.get("/location/ip");
-      const detected = res?.data?.city || "India";
+  try {
+    const res = await API.get("/location/ip");
+    const detectedName = res?.data?.city;
 
-      setCity(detected);
+    if (detectedName) {
+      const resCity = await API.get(`/cities?search=${detectedName}`);
+      const match = resCity.data?.cities?.[0];
 
-    } catch {
-      setCity("India");
-    } finally {
-      setLoadingCity(false);
+      if (match) {
+        setCity({
+          name: match.name,
+          slug: match.slug,
+        });
+      } else {
+        setCity({
+          name: "India",
+          slug: "india",
+        });
+      }
+    } else {
+      setCity({
+        name: "India",
+        slug: "india",
+      });
     }
-  };
+
+  } catch {
+    setCity({
+      name: "India",
+      slug: "india",
+    });
+  } finally {
+    setLoadingCity(false);
+  }
+};
 
   // ================= INIT =================
   useEffect(() => {
     const savedCity = localStorage.getItem("servdial_city");
 
-    if (savedCity) {
-      setCityState(savedCity);
-      setLoadingCity(false);
-    } else {
-      detectLocation();
+if (savedCity) {
+  try {
+    const parsed = JSON.parse(savedCity);
+    if (parsed?.slug) {
+      setCityState(parsed);
     }
+  } catch {}
+  setLoadingCity(false);
+} else {
+  detectLocation();
+}
   }, []);
 
   return (
     <CityContext.Provider
       value={{
-        city,
-        setCity,
-        detectLocation,
-        loadingCity
-      }}
+  selectedCity: city,
+  setCity,
+  detectLocation,
+  loadingCity
+}}
     >
       {children}
     </CityContext.Provider>

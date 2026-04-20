@@ -3,91 +3,100 @@
 import { Link, useLocation } from "react-router-dom";
 import { Phone, MapPin, Star, MessageCircle } from "lucide-react";
 import API from "../../api/axios";
-import { useCity } from "../../context/CityContext";
-import { normalizeBusiness } from "../../utils/normalizeBusiness";
+import { toBusinessDTO } from "../../dto/businessDTO";
 
 const BusinessCard = ({ business }) => {
   if (!business) return null;
 
   const location = useLocation();
-  const { city } = useCity();
 
-  const b = normalizeBusiness(business);
+  // ✅ SAFE NORMALIZATION LAYER (CRITICAL)
+  const b = toBusinessDTO(business);
 
   const {
     _id,
     slug,
     name,
     image,
-    category,
-    city: businessCity,
+    categoryName,
+    cityName,
+    citySlug,
+    categorySlug,
     rating,
     reviewCount,
     phone,
+    whatsapp,
     isFeatured,
     isVerified,
     distance,
-    isNew,
+    views,
+    phoneClicks,
+    whatsappClicks,
   } = b;
 
-  // ✅ SAFE SLUG
-  const safeSlug = slug || _id;
-  if (!safeSlug) return null;
+  if (!_id || !slug) return null;
 
-  // ✅ WHATSAPP NUMBER FIX (IMPORTANT)
-  const whatsappNumber = (business.whatsapp || phone)?.replace(/\D/g, "");
+  const whatsappNumber = (whatsapp || phone || "").replace(/\D/g, "");
 
-  const getKeywordFromURL = () => {
-    const params = new URLSearchParams(location.search);
-    return params.get("q") || "";
-  };
-
-  // ================= TRACK CLICK =================
+  // ================= CLICK TRACKING =================
   const handleBusinessClick = async () => {
     try {
-      const keyword = getKeywordFromURL();
+      const keyword =
+        new URLSearchParams(location.search).get("q") || "";
 
       await API.post(`/business/${_id}/click`, {
         keyword,
-        city: city || businessCity || null,
       });
     } catch (err) {
-      console.error("Click tracking failed:", err);
+      console.warn("Click tracking failed");
     }
   };
 
   // ================= CALL =================
-  const handleCall = (e) => {
+  const handleCall = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
     if (!phone) return;
 
     window.location.href = `tel:${phone}`;
-    API.put(`/business/${_id}/phone`).catch(() => {});
+
+    try {
+      await API.put(`/business/${_id}/phone`);
+    } catch {}
   };
 
   // ================= WHATSAPP =================
-  const handleWhatsApp = (e) => {
+  const handleWhatsApp = async (e) => {
     e.preventDefault();
     e.stopPropagation();
 
     if (!whatsappNumber) return;
 
     window.open(`https://wa.me/91${whatsappNumber}`, "_blank");
-    API.put(`/business/${_id}/whatsapp`).catch(() => {});
+
+    try {
+      await API.put(`/business/${_id}/whatsapp`);
+    } catch {}
   };
+
+  // ================= ROUTING SAFETY =================
+  const safeCitySlug = citySlug || "city";
+  const safeCategorySlug = categorySlug || "category";
 
   return (
     <Link
-      to={`/business/${safeSlug}`}
+      to={`/${safeCitySlug}/${safeCategorySlug}/${slug}`}
       onClick={handleBusinessClick}
       className="group bg-white rounded-2xl overflow-hidden border hover:shadow-xl transition-all duration-300 flex flex-col"
     >
       {/* ================= IMAGE ================= */}
       <div className="relative h-44 overflow-hidden">
         <img
-          src={image || "https://via.placeholder.com/400x250?text=ServDial"}
+          src={
+            image ||
+            "https://via.placeholder.com/400x250?text=ServDial"
+          }
           alt={name}
           className="w-full h-full object-cover group-hover:scale-105 transition duration-300"
         />
@@ -108,9 +117,9 @@ const BusinessCard = ({ business }) => {
             </span>
           )}
 
-          {isNew && (
-            <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full shadow">
-              New
+          {distance !== null && distance !== undefined && (
+            <span className="bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+              {distance} km
             </span>
           )}
         </div>
@@ -118,16 +127,15 @@ const BusinessCard = ({ business }) => {
 
       {/* ================= CONTENT ================= */}
       <div className="p-4 flex flex-col flex-1">
-
         <h2 className="text-md font-semibold text-gray-800 line-clamp-1">
           {name}
         </h2>
 
-        <p className="text-sm text-gray-500">{category}</p>
+        <p className="text-sm text-gray-500">{categoryName}</p>
 
         <div className="flex items-center text-xs text-gray-400 mt-1">
           <MapPin size={14} className="mr-1" />
-          {businessCity}
+          {cityName}
         </div>
 
         {/* ================= RATING ================= */}
@@ -144,30 +152,25 @@ const BusinessCard = ({ business }) => {
                   </span>
                 )}
               </>
-            ) : isNew ? (
-              <span className="text-blue-500 text-xs font-semibold">
-                New
-              </span>
             ) : (
               <span className="text-gray-400 text-xs">
                 No ratings
               </span>
             )}
           </div>
+        </div>
 
-          {distance !== null && (
-            <span className="text-xs text-gray-400">
-              {distance} km
-            </span>
-          )}
+        {/* ================= INTELLIGENCE (OPTIONAL BUT USEFUL) ================= */}
+        <div className="text-xs text-gray-400 mt-1 flex gap-3">
+          <span>👁 {views}</span>
+          <span>📞 {phoneClicks}</span>
+          <span>💬 {whatsappClicks}</span>
         </div>
 
         <div className="flex-grow" />
 
-        {/* ================= ACTION BUTTONS ================= */}
+        {/* ================= ACTIONS ================= */}
         <div className="flex gap-2 mt-4">
-
-          {/* CALL */}
           {phone && (
             <button
               onClick={handleCall}
@@ -177,7 +180,6 @@ const BusinessCard = ({ business }) => {
             </button>
           )}
 
-          {/* WHATSAPP */}
           {whatsappNumber && (
             <button
               onClick={handleWhatsApp}
@@ -186,9 +188,7 @@ const BusinessCard = ({ business }) => {
               <MessageCircle size={16} /> WhatsApp
             </button>
           )}
-
         </div>
-
       </div>
     </Link>
   );

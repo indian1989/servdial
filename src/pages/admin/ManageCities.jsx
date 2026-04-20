@@ -53,9 +53,9 @@ const ManageCities = () => {
 
   // ================= ADD =================
   const handleAddCity = async () => {
-    const city = newCity.trim();
-    const district = newDistrict.trim();
-    const state = newState.trim();
+    const city = newCity.trim().replace(/\b\w/g, l => l.toUpperCase());
+const district = newDistrict.trim().replace(/\b\w/g, l => l.toUpperCase());
+const state = newState.trim().replace(/\b\w/g, l => l.toUpperCase());
 
     if (!city || !district || !state) {
       setFormError(true);
@@ -149,9 +149,9 @@ const ManageCities = () => {
         const cols = row.split(",");
 
         return {
-          name: cols[0]?.trim(),
-          district: cols[1]?.trim(),
-          state: cols[2]?.trim()
+          name: cols[0]?.trim().replace(/\b\w/g, l => l.toUpperCase()),
+district: cols[1]?.trim().replace(/\b\w/g, l => l.toUpperCase()),
+state: cols[2]?.trim().replace(/\b\w/g, l => l.toUpperCase()),
         };
       });
 
@@ -283,6 +283,7 @@ const ManageCities = () => {
               <th className="border px-3 py-2">City</th>
               <th className="border px-3 py-2">District</th>
               <th className="border px-3 py-2">State</th>
+              <th className="border px-3 py-2">Slug</th>
               <th className="border px-3 py-2">Actions</th>
             </tr>
           </thead>
@@ -326,6 +327,8 @@ const ManageCities = () => {
                     />
                   ) : city.state}
                 </td>
+
+                <td className="border px-3 py-2">{city.slug}</td>
 
                 <td className="border px-3 py-2 flex justify-center gap-2 flex-wrap">
 

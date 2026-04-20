@@ -9,7 +9,7 @@ const LatestBusinesses = () => {
     const fetchBusinesses = async () => {
       try {
         const res = await API.get("/business/latest");
-        setBusinesses(res?.data?.businesses || []);
+        setBusinesses(res?.data?.data || res?.data?.businesses || []);
       } catch {
         setBusinesses([]);
       }

@@ -26,7 +26,7 @@ const MapSection = ({ businesses }) => {
           <Popup>
             <div className="font-semibold">{b.name}</div>
             <div>{b.category}</div>
-            <div>{b.city}</div>
+            <div>{b.city?.name}</div>
           </Popup>
         </Marker>
       ))}

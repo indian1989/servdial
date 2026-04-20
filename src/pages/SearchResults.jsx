@@ -75,9 +75,11 @@ const SearchResults = () => {
         };
 
         const res = await API.get("/business/search", { params });
-        console.log("Businesses:", res.data.businesses);
 
-        setBusinesses(res.data.businesses || []);
+console.log("FULL RESPONSE:", res);
+console.log("res.data:", res.data);
+console.log("🔥 SEARCH API HIT");
+setBusinesses(res.data.data || res.data.businesses || []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -153,7 +155,7 @@ const SearchResults = () => {
         {viewMode === "list" && (
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-4">
             {businesses.map((biz) => (
-              <BusinessCard key={biz._id} business={biz} />
+              <BusinessCard key={biz._id || biz.id} business={biz} />
             ))}
           </div>
         )}

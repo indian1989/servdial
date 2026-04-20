@@ -79,9 +79,15 @@ const AddCity = () => {
 
   // ================= ADD =================
   const handleAddCity = async () => {
-    const city = cityName.trim();
-    const dist = district.trim();
-    const st = state.trim();
+    const city = cityName?.trim() || "";
+const dist = district?.trim() || "";
+const st = state?.trim() || "";
+
+console.log("🔥 FINAL PAYLOAD:", {
+  name: city,
+  district: dist,
+  state: st,
+});
 
     if (!city || !dist || !st) {
       setFormError(true);
@@ -198,49 +204,53 @@ const AddCity = () => {
 
         {/* CITY */}
         <CreatableSelect
-          placeholder="City *"
-          options={cityOptions}
-          value={cityName ? { label: cityName, value: cityName } : null}
-          onChange={(val) => {
-            setCityName(val?.value || "");
-            if (val?.district) setDistrict(val.district);
-            if (val?.state) setState(val.state);
-          }}
-          onInputChange={(inputValue, actionMeta) => {
-            if (actionMeta.action === "input-change") {
-              setCityName(inputValue);
-            }
-          }}
-          isClearable
-        />
+  placeholder="City *"
+  options={cityOptions}
+  value={cityName ? { label: cityName, value: cityName } : null}
+  onChange={(val) => {
+    if (val) {
+      setCityName(val.value);
+      if (val.district) setDistrict(val.district);
+      if (val.state) setState(val.state);
+    } else {
+      setCityName("");
+    }
+  }}
+  onCreateOption={(inputValue) => {
+    setCityName(inputValue);
+  }}
+  isClearable
+/>
 
         {/* DISTRICT */}
         <CreatableSelect
-          placeholder="District *"
-          options={districtOptions}
-          value={district ? { label: district, value: district } : null}
-          onChange={(val) => setDistrict(val?.value || "")}
-          onInputChange={(inputValue, actionMeta) => {
-            if (actionMeta.action === "input-change") {
-              setDistrict(inputValue);
-            }
-          }}
-          isClearable
-        />
+  placeholder="District *"
+  options={districtOptions}
+  value={district ? { label: district, value: district } : null}
+  onChange={(val) => {
+    if (val) setDistrict(val.value);
+    else setDistrict("");
+  }}
+  onCreateOption={(inputValue) => {
+    setDistrict(inputValue);
+  }}
+  isClearable
+/>
 
         {/* STATE */}
         <CreatableSelect
-          placeholder="State *"
-          options={stateOptions}
-          value={state ? { label: state, value: state } : null}
-          onChange={(val) => setState(val?.value || "")}
-          onInputChange={(inputValue, actionMeta) => {
-            if (actionMeta.action === "input-change") {
-              setState(inputValue);
-            }
-          }}
-          isClearable
-        />
+  placeholder="State *"
+  options={stateOptions}
+  value={state ? { label: state, value: state } : null}
+  onChange={(val) => {
+    if (val) setState(val.value);
+    else setState("");
+  }}
+  onCreateOption={(inputValue) => {
+    setState(inputValue);
+  }}
+  isClearable
+/>
 
         <button
           onClick={handleAddCity}

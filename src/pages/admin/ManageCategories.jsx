@@ -1,5 +1,5 @@
 // frontend/src/pages/admin/ManageCategories.jsx
-import React, { useState, useEffect, useMemo, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   getAllCategories,
   addCategory,
@@ -8,26 +8,40 @@ import {
 } from "../../api/adminAPI";
 
 import Loader from "../../components/common/Loader";
-import { FaTrash, FaEdit, FaChevronDown, FaChevronRight, FaSearch } from "react-icons/fa";
+import {
+  FaTrash,
+  FaEdit,
+  FaChevronDown,
+  FaChevronRight,
+  FaSearch,
+} from "react-icons/fa";
 
-import { toTitleCase, buildCategoryTree } from "../../utils/adminUtils";
+import { toTitleCase } from "../../utils/adminUtils";
 
-const PAGE_SIZE = 15;
+/* ================= TREE BUILDER ================= */
+const buildTree = (categories, parentId = null) => {
+  return categories
+    .filter((cat) =>
+      parentId === null
+        ? !cat.parentCategory
+        : String(cat.parentCategory) === String(parentId)
+    )
+    .map((cat) => ({
+      ...cat,
+      children: buildTree(categories, cat._id),
+    }));
+};
 
 const ManageCategories = () => {
-  const [categories, setCategories] = useState([]);
   const [flatCategories, setFlatCategories] = useState([]);
+  const [tree, setTree] = useState([]);
 
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+
   const [search, setSearch] = useState("");
 
-const [rootCategories, setRootCategories] = useState([]);
-const [childrenCache, setChildrenCache] = useState({});
-  const [dropdownSearch, setDropdownSearch] = useState("");
-  const [showDropdown, setShowDropdown] = useState(false);
-
-  const dropdownRef = useRef();
+  const [expanded, setExpanded] = useState({});
 
   const [newCategory, setNewCategory] = useState({
     name: "",
@@ -36,130 +50,76 @@ const [childrenCache, setChildrenCache] = useState({});
     parentCategory: "",
   });
 
-  const [editingCategoryId, setEditingCategoryId] = useState(null);
-  const [editingCategoryData, setEditingCategoryData] = useState({
+  const [editingId, setEditingId] = useState(null);
+  const [editingData, setEditingData] = useState({
     name: "",
     description: "",
     order: 0,
+    isTrending: false,
   });
 
-  const [collapsed, setCollapsed] = useState({});
-  const [page, setPage] = useState(1);
-const [totalPages, setTotalPages] = useState(1);
+  /* ================= FETCH ================= */
+  const fetchCategories = async () => {
+    setLoading(true);
+    try {
+      const res = await getAllCategories();
 
-  // ================= OUTSIDE CLICK =================
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
-        setShowDropdown(false);
-      }
-    };
+      const flat = res?.data?.data || res?.data?.flatCategories || [];
 
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  // ================= FETCH =================
-  const fetchCategories = async (pageNumber = 1) => {
-  setLoading(true);
-
-  try {
-    const res = await getAllCategories({
-      parent: null,
-      page: pageNumber,
-      limit: PAGE_SIZE,
-    });
-
-    const flat = res?.data?.flatCategories || [];
-
-    setFlatCategories(flat);
-    setCategories(buildCategoryTree(flat));
-
-    setPage(res?.data?.page || pageNumber);
-    setTotalPages(res?.data?.pages || 1);
-  } catch (err) {
-    console.error(err);
-    alert("Failed to fetch categories");
-  } finally {
-    setLoading(false);
-  }
-};
-
-// HANDLE PAGE CHANGE
-
-const handlePageChange = (newPage) => {
-  if (newPage < 1 || newPage > totalPages) return;
-  fetchCategories(newPage);
-};
-
-// LAZY LOAD
-const loadChildren = async (parentId) => {
-  try {
-    const res = await getAllCategories({
-      parent: parentId,
-    });
-
-    const children = res?.data?.flatCategories || [];
-
-    setFlatCategories((prev) => {
-      const updated = [...prev, ...children];
-      setCategories(buildCategoryTree(updated));
-      return updated;
-    });
-  } catch (err) {
-    console.error("Failed to load children", err);
-  }
-};
+      setFlatCategories(flat);
+      setTree(buildTree(flat));
+      setExpanded({});
+    } catch (err) {
+      console.error(err);
+      alert("Failed to fetch categories");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  // ================= FILTER TREE =================
+  /* ================= FILTER TREE ================= */
   const filteredTree = useMemo(() => {
-    if (!search) return categories;
+    if (!search) return tree;
 
-    const query = search.toLowerCase();
+    const q = search.toLowerCase();
 
-    const filterNodes = (nodes = []) => {
-      return nodes
+    const filterNodes = (nodes = []) =>
+      nodes
         .map((node) => {
-          const children = filterNodes(node.subcategories ?? []);
-
+          const children = filterNodes(node.children || []);
           const match =
-            node.name.toLowerCase().includes(query) || children.length > 0;
+            node.name.toLowerCase().includes(q) || children.length > 0;
 
-          return match ? { ...node, subcategories: children } : null;
+          return match ? { ...node, children } : null;
         })
         .filter(Boolean);
-    };
 
-    return filterNodes(categories);
-  }, [search, categories]);
+    return filterNodes(tree);
+  }, [search, tree]);
 
-  // ================= DROPDOWN FILTER =================
-  const filteredDropdown = useMemo(() => {
-    const q = dropdownSearch.toLowerCase();
-    return flatCategories.filter((c) => c.name.toLowerCase().includes(q));
-  }, [flatCategories, dropdownSearch]);
-
-  // ================= ADD CATEGORY =================
-  const handleAddCategory = async () => {
+  /* ================= ADD CATEGORY ================= */
+  const handleAdd = async () => {
     if (!newCategory.name.trim()) return alert("Name required");
 
-    const exists = flatCategories.some(
-      (c) => c.name.toLowerCase() === newCategory.name.toLowerCase()
-    );
-
-    if (exists) return alert("Category already exists");
+    const orderValue =
+    newCategory.order === "" || newCategory.order === null
+      ? 0
+      : Number(newCategory.order);
 
     setActionLoading(true);
 
     try {
       await addCategory({
-        ...newCategory,
         name: toTitleCase(newCategory.name),
-        order: Number(newCategory.order),
+        description: newCategory.description,
+        order:
+  newCategory.order === "" || newCategory.order === null
+    ? 0
+    : Number(newCategory.order),
         parentCategory: newCategory.parentCategory || null,
       });
 
@@ -170,7 +130,6 @@ const loadChildren = async (parentId) => {
         parentCategory: "",
       });
 
-      setDropdownSearch("");
       fetchCategories();
     } catch (err) {
       console.error(err);
@@ -179,18 +138,19 @@ const loadChildren = async (parentId) => {
     }
   };
 
-  // ================= UPDATE =================
-  const handleUpdateCategory = async (id) => {
+  /* ================= UPDATE ================= */
+  const handleUpdate = async (id) => {
     setActionLoading(true);
 
     try {
       await updateCategory(id, {
-        ...editingCategoryData,
-        name: toTitleCase(editingCategoryData.name),
-        order: Number(editingCategoryData.order),
+        name: toTitleCase(editingData.name),
+        description: editingData.description,
+        order: Number(editingData.order),
+        isTrending: editingData.isTrending,
       });
 
-      setEditingCategoryId(null);
+      setEditingId(null);
       fetchCategories();
     } catch (err) {
       console.error(err);
@@ -199,15 +159,18 @@ const loadChildren = async (parentId) => {
     }
   };
 
-  // ================= DELETE =================
-  const handleDeleteCategory = async (id) => {
+  /* ================= DELETE ================= */
+  const handleDelete = async (id) => {
     if (!window.confirm("Delete this category?")) return;
 
     setActionLoading(true);
 
     try {
       await deleteCategory(id);
-      fetchCategories();
+
+      const updated = flatCategories.filter((c) => c._id !== id);
+      setFlatCategories(updated);
+      setTree(buildTree(updated));
     } catch (err) {
       console.error(err);
     } finally {
@@ -215,119 +178,120 @@ const loadChildren = async (parentId) => {
     }
   };
 
-  // ================= TOGGLE STATUS (FIXED) =================
-  const toggleStatus = async (cat) => {
-    if (!cat?._id) return;
+  /* ================= TOGGLE STATUS + TRENDING ================= */
+  const toggleField = async (cat, field) => {
+  try {
+    let newValue;
 
-    const newStatus = cat.status === "active" ? "inactive" : "active";
-
-    setActionLoading(true);
-
-    try {
-      await updateCategory(cat._id, { status: newStatus });
-
-      setFlatCategories((prevFlat) => {
-        const updated = prevFlat.map((c) =>
-          c._id === cat._id ? { ...c, status: newStatus } : c
-        );
-
-        setCategories(buildCategoryTree(updated));
-        return updated;
-      });
-    } catch (err) {
-      console.error("Status update failed", err);
-      alert("Failed to update status");
-    } finally {
-      setActionLoading(false);
+    // ✅ FIX STATUS ENUM (CRITICAL)
+    if (field === "status") {
+      newValue = cat.status === "active" ? "inactive" : "active";
+    } else {
+      newValue = !cat[field];
     }
-  };
 
-  // ================= RENDER ROW =================
+    await updateCategory(cat._id, {
+      [field]: newValue,
+    });
+
+    const updated = flatCategories.map((c) =>
+      c._id === cat._id ? { ...c, [field]: newValue } : c
+    );
+
+    setFlatCategories(updated);
+    setTree(buildTree(updated));
+  } catch (err) {
+    console.error("Toggle failed:", err);
+  }
+};
+
+  /* ================= RENDER ROW ================= */
   const renderRow = (cat, level = 0) => {
-    const isCollapsed = collapsed[cat._id];
+    const isOpen = expanded[cat._id];
 
     return (
       <React.Fragment key={cat._id}>
         <tr className="text-center hover:bg-gray-50">
+          {/* NAME */}
           <td
             className="border px-3 py-2 text-left"
             style={{ paddingLeft: level * 20 }}
           >
-            {cat.subcategories?.length > 0 && (
+            {cat.children?.length > 0 && (
               <button
-                onClick={() => {
-  const isExpanding = collapsed[cat._id];
-
-  setCollapsed((prev) => ({
-    ...prev,
-    [cat._id]: !isExpanding,
-  }));
-
-  // 👉 LOAD CHILDREN ONLY WHEN EXPANDING FIRST TIME
-  if (isExpanding) {
-    loadChildren(cat._id);
-  }
-}}
+                onClick={() =>
+                  setExpanded((prev) => ({
+                    ...prev,
+                    [cat._id]: !prev[cat._id],
+                  }))
+                }
                 className="mr-2"
               >
-                {isCollapsed ? <FaChevronRight /> : <FaChevronDown />}
+                {isOpen ? (
+                  <FaChevronDown />
+                ) : (
+                  <FaChevronRight />
+                )}
               </button>
             )}
 
-            {editingCategoryId === cat._id ? (
+            {editingId === cat._id ? (
               <input
-                className="border px-2 py-1 rounded w-full"
-                value={editingCategoryData.name}
+                value={editingData.name}
                 onChange={(e) =>
-                  setEditingCategoryData((p) => ({
-                    ...p,
+                  setEditingData({
+                    ...editingData,
                     name: e.target.value,
-                  }))
+                  })
                 }
+                className="border px-2 py-1 w-full"
               />
             ) : (
               cat.name
             )}
           </td>
 
+          {/* DESCRIPTION */}
           <td className="border px-3 py-2">
-            {editingCategoryId === cat._id ? (
+            {editingId === cat._id ? (
               <input
-                className="border px-2 py-1 rounded w-full"
-                value={editingCategoryData.description}
+                value={editingData.description}
                 onChange={(e) =>
-                  setEditingCategoryData((p) => ({
-                    ...p,
+                  setEditingData({
+                    ...editingData,
                     description: e.target.value,
-                  }))
+                  })
                 }
+                className="border px-2 py-1 w-full"
               />
             ) : (
               cat.description || "-"
             )}
           </td>
 
+          {/* ORDER */}
           <td className="border px-3 py-2">
-            {editingCategoryId === cat._id ? (
+            {editingId === cat._id ? (
               <input
                 type="number"
-                className="border px-2 py-1 rounded w-full"
-                value={editingCategoryData.order}
+                value={editingData.order}
                 onChange={(e) =>
-                  setEditingCategoryData((p) => ({
-                    ...p,
+                  setEditingData({
+                    ...editingData,
                     order: Number(e.target.value),
-                  }))
+                  })
                 }
+                className="border px-2 py-1 w-full"
               />
             ) : (
               cat.order
             )}
           </td>
 
+          {/* STATUS */}
           <td className="border px-3 py-2">
             <button
-              onClick={() => toggleStatus(cat)}
+              onClick={() => toggleField(cat, "status")}
               className={`px-2 py-1 rounded text-xs ${
                 cat.status === "active"
                   ? "bg-green-500 text-white"
@@ -336,40 +300,46 @@ const loadChildren = async (parentId) => {
             >
               {cat.status}
             </button>
+
+            <button
+              onClick={() => toggleField(cat, "isTrending")}
+              className={`ml-2 px-2 py-1 rounded text-xs ${
+                cat.isTrending
+                  ? "bg-yellow-500 text-white"
+                  : "bg-gray-300"
+              }`}
+            >
+              Trending
+            </button>
           </td>
 
+          {/* ACTIONS */}
           <td className="border px-3 py-2 flex justify-center gap-2">
-            {editingCategoryId === cat._id ? (
-  <div className="flex gap-2 justify-center">
-    <button
-      onClick={() => handleUpdateCategory(cat._id)}
-      className="bg-green-500 text-white px-2 py-1 rounded"
-    >
-      Save
-    </button>
+            {editingId === cat._id ? (
+              <>
+                <button
+                  onClick={() => handleUpdate(cat._id)}
+                  className="bg-green-500 text-white px-2 py-1 rounded"
+                >
+                  Save
+                </button>
 
-    <button
-      onClick={() => {
-        setEditingCategoryId(null);
-        setEditingCategoryData({
-          name: "",
-          description: "",
-          order: 0,
-        });
-      }}
-      className="bg-gray-400 text-white px-2 py-1 rounded"
-    >
-      Cancel
-    </button>
-  </div>
-) : (
+                <button
+                  onClick={() => setEditingId(null)}
+                  className="bg-gray-400 text-white px-2 py-1 rounded"
+                >
+                  Cancel
+                </button>
+              </>
+            ) : (
               <button
                 onClick={() => {
-                  setEditingCategoryId(cat._id);
-                  setEditingCategoryData({
+                  setEditingId(cat._id);
+                  setEditingData({
                     name: cat.name,
                     description: cat.description || "",
                     order: cat.order,
+                    isTrending: cat.isTrending || false,
                   });
                 }}
                 className="bg-yellow-500 text-white px-2 py-1 rounded"
@@ -379,7 +349,7 @@ const loadChildren = async (parentId) => {
             )}
 
             <button
-              onClick={() => handleDeleteCategory(cat._id)}
+              onClick={() => handleDelete(cat._id)}
               className="bg-red-500 text-white px-2 py-1 rounded"
             >
               <FaTrash />
@@ -387,27 +357,34 @@ const loadChildren = async (parentId) => {
           </td>
         </tr>
 
-        {!isCollapsed &&
-          cat.subcategories?.map((sub) => renderRow(sub, level + 1))}
+        {isOpen &&
+          cat.children?.map((child) =>
+            renderRow(child, level + 1)
+          )}
       </React.Fragment>
     );
   };
 
-  // ================= UI =================
+  /* ================= UI ================= */
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <h2 className="text-2xl font-bold mb-4">Manage Categories</h2>
+      <h2 className="text-2xl font-bold mb-4">
+        Manage Categories
+      </h2>
 
       {(loading || actionLoading) && <Loader />}
 
-      {/* ADD CATEGORY */}
+      {/* ADD */}
       <div className="grid md:grid-cols-5 gap-3 mb-6">
         <input
           className="border px-3 py-2 rounded"
           placeholder="Name"
           value={newCategory.name}
           onChange={(e) =>
-            setNewCategory((p) => ({ ...p, name: e.target.value }))
+            setNewCategory((p) => ({
+              ...p,
+              name: e.target.value,
+            }))
           }
         />
 
@@ -416,7 +393,10 @@ const loadChildren = async (parentId) => {
           placeholder="Description"
           value={newCategory.description}
           onChange={(e) =>
-            setNewCategory((p) => ({ ...p, description: e.target.value }))
+            setNewCategory((p) => ({
+              ...p,
+              description: e.target.value,
+            }))
           }
         />
 
@@ -426,111 +406,75 @@ const loadChildren = async (parentId) => {
           placeholder="Order"
           value={newCategory.order}
           onChange={(e) =>
-            setNewCategory((p) => ({ ...p, order: Number(e.target.value) }))
-          }
+  setNewCategory((p) => ({
+    ...p,
+    order: e.target.value === "" ? "" : Number(e.target.value),
+  }))
+}
         />
 
-        {/* PARENT DROPDOWN */}
-        <div className="relative" ref={dropdownRef}>
-          <input
-            className="border px-3 py-2 rounded w-full"
-            placeholder="Search parent..."
-            value={dropdownSearch}
-            onFocus={() => setShowDropdown(true)}
-            onChange={(e) => setDropdownSearch(e.target.value)}
-          />
+        <select
+  className="border px-3 py-2 rounded"
+  value={newCategory.parentCategory}
+  onChange={(e) =>
+    setNewCategory((p) => ({
+      ...p,
+      parentCategory: e.target.value,
+    }))
+  }
+>
+  <option value="">No Parent</option>
 
-          {showDropdown && (
-            <div className="absolute bg-white border w-full max-h-40 overflow-y-auto z-10">
-              <div
-                className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                onClick={() => {
-                  setNewCategory((p) => ({ ...p, parentCategory: "" }));
-                  setDropdownSearch("");
-                  setShowDropdown(false);
-                }}
-              >
-                No Parent
-              </div>
-
-              {filteredDropdown.map((c) => (
-                <div
-                  key={c._id}
-                  className="px-3 py-2 hover:bg-gray-100 cursor-pointer"
-                  onClick={() => {
-                    setNewCategory((p) => ({
-                      ...p,
-                      parentCategory: c._id,
-                    }));
-                    setDropdownSearch(c.name);
-                    setShowDropdown(false);
-                  }}
-                >
-                  {c.name}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+  {flatCategories
+    .filter((c) => !c.parentCategory)
+    .map((cat) => (
+      <option key={cat._id} value={cat._id}>
+        {cat.name}
+      </option>
+    ))}
+</select>
 
         <button
-          onClick={handleAddCategory}
+          onClick={handleAdd}
           className="bg-blue-600 text-white rounded px-4 py-2"
         >
           Add
         </button>
       </div>
 
-      {/* SEARCH */}
       <div className="flex items-center gap-2 mb-4">
-        <FaSearch />
-        <input
-          className="border px-3 py-2 rounded w-full"
-          placeholder="Search..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
+  <FaSearch />
+  <input
+    className="border px-3 py-2 rounded w-full"
+    placeholder="Search categories..."
+    value={search}
+    onChange={(e) => setSearch(e.target.value)}
+  />
+</div>
+
 
       {/* TABLE */}
       <div className="overflow-x-auto">
         <table className="w-full border">
           <thead className="bg-gray-100">
-            <tr className="text-center">
-              <th className="border px-3 py-2 text-left">Name</th>
-              <th className="border px-3 py-2">Description</th>
+            <tr>
+              <th className="border px-3 py-2 text-left">
+                Name
+              </th>
+              <th className="border px-3 py-2">
+                Description
+              </th>
               <th className="border px-3 py-2">Order</th>
               <th className="border px-3 py-2">Status</th>
               <th className="border px-3 py-2">Actions</th>
             </tr>
           </thead>
 
-          <tbody>{filteredTree.map((c) => renderRow(c))}</tbody>
+          <tbody>
+            {filteredTree.map((c) => renderRow(c))}
+          </tbody>
         </table>
       </div>
-
-      {/* PAGINATION */}
-      <div className="flex justify-center items-center gap-3 mt-4">
-  <button
-    disabled={page <= 1}
-    onClick={() => handlePageChange(page - 1)}
-    className="px-3 py-1 border rounded disabled:opacity-50"
-  >
-    Prev
-  </button>
-
-  <span>
-    Page {page} / {totalPages}
-  </span>
-
-  <button
-    disabled={page >= totalPages}
-    onClick={() => handlePageChange(page + 1)}
-    className="px-3 py-1 border rounded disabled:opacity-50"
-  >
-    Next
-  </button>
-</div>
     </div>
   );
 };

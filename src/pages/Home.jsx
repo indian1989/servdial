@@ -35,23 +35,23 @@ const Home = () => {
     if (!currentCity) return;
 
     // 🔥 Prevent duplicate fetch
-    if (lastFetchedCity.current === currentCity) return;
+    if (lastFetchedCity.current === currentCity?.slug) return;
 
-    lastFetchedCity.current = currentCity;
+lastFetchedCity.current = currentCity?.slug;
     setLoading(true);
 
     try {
       const res = await API.get("/homepage", {
-        params: { city: currentCity },
+        params: { city: currentCity?.slug },
       });
 
-      const data = res?.data || {};
+      const data = res?.data?.data || res?.data || {};
 
       // ✅ SAFE ASSIGN (NO UI BREAK)
-      setFeaturedBusinesses(Array.isArray(data.featuredBusinesses) ? data.featuredBusinesses : []);
-      setLatestBusinesses(Array.isArray(data.latestBusinesses) ? data.latestBusinesses : []);
-      setCategories(Array.isArray(data.categories) ? data.categories : []);
-      setCities(Array.isArray(data.cities) ? data.cities : []);
+      setFeaturedBusinesses(data.featuredBusinesses || []);
+setLatestBusinesses(data.latestBusinesses || []);
+setCategories(data.categories || []);
+setCities(data.cities || []);
 
     } catch (err) {
       console.error("❌ Homepage load error:", err);
@@ -115,10 +115,18 @@ const Home = () => {
   // ================= FALLBACK (FIRST LOAD) =================
   useEffect(() => {
     if (!city && !loadingCity) {
-      const savedCity =
-        localStorage.getItem("servdial_city") || "India";
+      const savedCity = localStorage.getItem("servdial_city");
 
-      fetchHomepageData(savedCity);
+if (savedCity) {
+  try {
+    const parsed = JSON.parse(savedCity);
+    fetchHomepageData(parsed);
+  } catch {
+    fetchHomepageData({ name: "India", slug: "india" });
+  }
+} else {
+  fetchHomepageData({ name: "India", slug: "india" });
+}
     }
   }, [city, loadingCity]);
 
@@ -145,7 +153,7 @@ const Home = () => {
       {/* ================= FEATURED ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center">
-          Featured Businesses in {city || "your area"}
+          Featured Businesses in {city?.name || "your area"}
         </h2>
 
         <FeaturedBusinesses
@@ -157,7 +165,7 @@ const Home = () => {
       {/* ================= LATEST ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">
         <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center">
-          Newly Added Businesses in {city || "your area"}
+          Newly Added Businesses in {city?.name || "your area"}
         </h2>
 
         <PopularBusinesses
@@ -181,7 +189,7 @@ const Home = () => {
 
       {/* ================= RECOMMENDED ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">
-        <RecommendedBusinesses city={city} />
+        <RecommendedBusinesses city={city?.slug} />
       </section>
 
       {/* ================= FEATURED CITIES ================= */}

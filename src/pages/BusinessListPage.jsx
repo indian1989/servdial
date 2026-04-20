@@ -40,7 +40,7 @@ const BusinessListPage = () => {
 
 <h1 className="text-2xl font-bold mb-6 capitalize">
         <h1 className="text-2xl font-bold mb-6 capitalize">
-Best {category} services in {city}
+Best {category?.name} services in {city?.name}
 </h1>
       </h1>
 
