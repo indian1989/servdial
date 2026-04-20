@@ -71,9 +71,10 @@ if (detectedName) {
 
       if (match) {
         setCity({
-          name: match.name,
-          slug: match.slug,
-        });
+  _id: match._id,
+  name: match.name,
+  slug: match.slug,
+});
       } else {
         setCity({
           name: "India",
@@ -117,7 +118,7 @@ if (savedCity) {
   return (
     <CityContext.Provider
       value={{
-  selectedCity: city,
+  city,
   setCity,
   detectLocation,
   loadingCity
