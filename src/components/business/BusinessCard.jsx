@@ -44,7 +44,7 @@ const BusinessCard = ({ business }) => {
       const keyword =
         new URLSearchParams(location.search).get("q") || "";
 
-      await API.post(`/business/${_id}/click`, {
+      await API.post(`/businesses/${_id}/click`, {
         keyword,
       });
     } catch (err) {
@@ -62,7 +62,7 @@ const BusinessCard = ({ business }) => {
     window.location.href = `tel:${phone}`;
 
     try {
-      await API.put(`/business/${_id}/phone`);
+      await API.put(`/businesses/${_id}/phone`);
     } catch {}
   };
 
@@ -76,7 +76,7 @@ const BusinessCard = ({ business }) => {
     window.open(`https://wa.me/91${whatsappNumber}`, "_blank");
 
     try {
-      await API.put(`/business/${_id}/whatsapp`);
+      await API.put(`/businesses/${_id}/whatsapp`);
     } catch {}
   };
 

@@ -36,7 +36,7 @@ const NearbyBusinesses = ({ businesses = [], userLocation, loading = false }) =>
         <BusinessCard
           key={b._id}
           business={b}
-          onClick={() => navigate(`/business/${b._id}`)}
+          onClick={() => navigate(`/businesses/${b.slug}`)}
           showCallButton
           userLocation={userLocation}
         />

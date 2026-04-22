@@ -38,7 +38,7 @@ const FeaturedBusinesses = ({ businesses = [], loading = false }) => {
         <BusinessCard
           key={b._id}
           business={b}
-          onClick={() => navigate(`/business/${b.slug}`)}
+          onClick={() => navigate(`/businesses/${b.slug}`)}
           showCallButton
         />
       ))}

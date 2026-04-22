@@ -20,6 +20,7 @@ const Home = () => {
   const { city, loadingCity } = useCity();
 
   const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
+  const [topRatedBusinesses, setTopRatedBusinesses] = useState([]);
   const [latestBusinesses, setLatestBusinesses] = useState([]);
   const [nearbyBusinesses, setNearbyBusinesses] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -32,59 +33,68 @@ const Home = () => {
 
   // ================= FETCH HOMEPAGE =================
   const fetchHomepageData = async (currentCity) => {
-    if (!currentCity) return;
+  if (!currentCity) return;
 
-    // 🔥 Prevent duplicate fetch
-    if (lastFetchedCity.current === currentCity?.slug) return;
+  if (lastFetchedCity.current === currentCity?.slug) return;
 
-lastFetchedCity.current = currentCity?.slug;
-    setLoading(true);
+  lastFetchedCity.current = currentCity?.slug;
+  setLoading(true);
 
-    try {
-      const res = await API.get("/homepage", {
-        params: { city: currentCity?.slug },
-      });
+  try {
+    const res = await API.get("/homepage", {
+      params: { city: currentCity?.slug },
+    });
 
-      const data = res?.data?.data || res?.data || {};
+    const data = res?.data || {};
 
-      // ✅ SAFE ASSIGN (NO UI BREAK)
-      setFeaturedBusinesses(data.featuredBusinesses || []);
-setLatestBusinesses(data.latestBusinesses || []);
-setCategories(data.categories || []);
-setCities(data.cities || []);
+    setFeaturedBusinesses(data.featuredBusinesses || []);
+    setLatestBusinesses(data.latestBusinesses || []);
+    setTopRatedBusinesses(data.topRatedBusinesses || []);
+    setCategories(data.categories || []);
+    setCities(data.cities || []);
 
-    } catch (err) {
-      console.error("❌ Homepage load error:", err);
+  } catch (err) {
+    console.error("❌ Homepage load error:", err);
 
-      // ✅ FAIL SAFE
-      setFeaturedBusinesses([]);
-      setLatestBusinesses([]);
-      setCategories([]);
-      setCities([]);
+    setFeaturedBusinesses([]);
+    setLatestBusinesses([]);
+    setTopRatedBusinesses([]);
+    setCategories([]);
+    setCities([]);
 
-    } finally {
-      setLoading(false);
-    }
-  };
+  } finally {
+    setLoading(false);
+  }
+};
+
+// ================= FETCH TOP RATED =================
+const fetchTopRated = async () => {
+  try {
+    const res = await API.get("/businesses/top-rated");
+    setTopRatedBusinesses(res?.data?.data || []);
+  } catch {
+    setTopRatedBusinesses([]);
+  }
+};
 
   // ================= FETCH NEARBY =================
   const fetchNearbyBusinesses = async (lat, lng) => {
-    try {
-      const res = await API.get(
-        `/business/nearby?lat=${lat}&lng=${lng}&limit=8`
-      );
+  try {
+    const res = await API.get("/businesses/nearby", {
+      params: { lat, lng, limit: 8 },
+    });
 
-      setNearbyBusinesses(
-        Array.isArray(res?.data?.businesses)
-          ? res.data.businesses
-          : []
-      );
+    setNearbyBusinesses(
+      Array.isArray(res?.data?.data)
+        ? res.data.data
+        : []
+    );
 
-    } catch (err) {
-      console.error("❌ Nearby fetch failed:", err);
-      setNearbyBusinesses([]);
-    }
-  };
+  } catch (err) {
+    console.error("❌ Nearby fetch failed:", err);
+    setNearbyBusinesses([]);
+  }
+};
 
   // ================= GET USER LOCATION =================
   useEffect(() => {
@@ -104,6 +114,10 @@ setCities(data.cities || []);
       { enableHighAccuracy: true, timeout: 8000 }
     );
   }, []);
+
+  useEffect(() => {
+  fetchTopRated();
+}, []);
 
   // ================= CITY CHANGE =================
   useEffect(() => {
@@ -161,6 +175,18 @@ if (savedCity) {
           loading={loading || loadingCity}
         />
       </section>
+
+      {/* ================= TOP RATED ================= */}
+<section className="my-14 max-w-7xl mx-auto px-4">
+  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center">
+    Top Rated Businesses in {city?.name || "your area"}
+  </h2>
+
+  <PopularBusinesses
+    businesses={topRatedBusinesses}
+    loading={loading || loadingCity}
+  />
+</section>
 
       {/* ================= LATEST ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">

@@ -56,7 +56,7 @@ const TopRatedBusinesses = ({ city }) => {
 
           <Link
             key={biz._id}
-            to={`/business/${biz._id}`}
+            to={`/businesses/${biz._id}`}
             className="border rounded-lg overflow-hidden hover:shadow-md transition"
           >
 

@@ -5,7 +5,7 @@ const TrackBusinessView = ({ businessId }) => {
   useEffect(() => {
     if (!businessId) return;
 
-    API.post(`/business/${businessId}/view`)
+    API.post(`/businesses/${businessId}/view`)
       .catch(() => {});
   }, [businessId]);
 

@@ -24,4 +24,4 @@ export const getFeaturedBusinesses = () =>
 
 // Recommendations
 export const getRecommendedBusinesses = () =>
-  API.get("/recommendations");
+  API.get("/businesses/recommended");

@@ -13,7 +13,7 @@ export const BusinessProvider = ({ children }) => {
   const fetchBusinesses = async () => {
     setLoading(true);
     try {
-      const { data } = await API.get("/business");
+      const { data } = await API.get("/businesses");
 
       if (Array.isArray(data)) {
         setBusinesses(data);

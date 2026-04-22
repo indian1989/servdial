@@ -36,7 +36,7 @@ const PopularBusinesses = ({ businesses = [], loading = false }) => {
         <BusinessCard
           key={b._id}
           business={b}
-          onClick={() => navigate(`/business/${b._id}`)}
+          onClick={() => navigate(`/businesses/${b._id}`)}
           showCallButton
         />
       ))}
