@@ -38,8 +38,9 @@ if (detectedName) {
 
   if (match) {
   setCity({
-    name: match.name,
-    slug: match.slug,
+    _id: match._id,
+  name: match.name,
+  slug: match.slug,
   });
   setLoadingCity(false); // ✅ FIX
 } else {
@@ -67,7 +68,9 @@ if (detectedName) {
 
     if (detectedName) {
       const resCity = await API.get(`/cities?search=${detectedName}`);
-      const match = resCity.data?.cities?.[0];
+      const match = resCity.data?.cities?.find(
+  c => c.name.toLowerCase() === detectedName.toLowerCase()
+);
 
       if (match) {
         setCity({
@@ -105,9 +108,12 @@ if (detectedName) {
 if (savedCity) {
   try {
     const parsed = JSON.parse(savedCity);
-    if (parsed?.slug) {
-      setCityState(parsed);
-    }
+    if (parsed?.slug && parsed?._id) {
+  setCityState(parsed);
+} else {
+  localStorage.removeItem("servdial_city");
+  detectLocation();
+}
   } catch {}
   setLoadingCity(false);
 } else {

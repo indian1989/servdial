@@ -29,7 +29,7 @@ export const providerRoutes = [
   {
     path: "/provider/add-business",
     name: "Add Business",
-    element: "AddBusiness",
+    element: "ProviderAddBusiness",
     icon: FaPlusCircle,
   },
   {

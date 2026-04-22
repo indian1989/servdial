@@ -16,6 +16,7 @@ const AddCity = () => {
   const [uploading, setUploading] = useState(false);
 
   const [cityName, setCityName] = useState("");
+  const [citySlug, setCitySlug] = useState("");
   const [district, setDistrict] = useState("");
   const [state, setState] = useState("");
 
@@ -37,13 +38,13 @@ const AddCity = () => {
 
       // 🔥 City Options
       setCityOptions(
-        data.map((c) => ({
-          value: c.name,
-          label: `${c.name} (${c.state})`,
-          district: c.district,
-          state: c.state,
-        }))
-      );
+  data.map((c) => ({
+    value: c.slug,
+    label: `${c.name} (${c.state})`,
+    district: c.district,
+    state: c.state,
+  }))
+);
 
       // 🔥 Unique Districts
       setDistrictOptions([
@@ -99,10 +100,11 @@ console.log("🔥 FINAL PAYLOAD:", {
 
     try {
       await addCity({
-        name: city,
-        district: dist,
-        state: st,
-      });
+  name: city,
+  slug: citySlug,
+  district: dist,
+  state: st,
+});
 
       setCityName("");
       setDistrict("");
@@ -208,14 +210,16 @@ console.log("🔥 FINAL PAYLOAD:", {
   options={cityOptions}
   value={cityName ? { label: cityName, value: cityName } : null}
   onChange={(val) => {
-    if (val) {
-      setCityName(val.value);
-      if (val.district) setDistrict(val.district);
-      if (val.state) setState(val.state);
-    } else {
-      setCityName("");
-    }
-  }}
+  if (val) {
+    setCityName(val.label);   // display only
+    setCitySlug(val.value);   // REAL IDENTITY
+    if (val.district) setDistrict(val.district);
+    if (val.state) setState(val.state);
+  } else {
+    setCityName("");
+    setCitySlug("");
+  }
+}}
   onCreateOption={(inputValue) => {
     setCityName(inputValue);
   }}

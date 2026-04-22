@@ -8,7 +8,7 @@ import ProviderLeads from "../pages/provider/ProviderLeads";
 import ProviderReviews from "../pages/provider/ProviderReviews";
 import ProviderSettings from "../pages/provider/ProviderSettings";
 import ProviderAnalytics from "../pages/provider/ProviderAnalytics";
-import AddBusiness from "../pages/provider/AddBusiness";
+import ProviderAddBusiness from "../pages/provider/ProviderAddBusiness";
 import EditBusiness from "../pages/provider/EditBusiness";
 import TrackBusinessView from "../pages/provider/TrackBusinessView";
 import ProviderOffers from "../pages/provider/ProviderOffers";
@@ -26,7 +26,7 @@ const components = {
   ProviderReviews,
   ProviderSettings,
   ProviderAnalytics,
-  AddBusiness,
+  ProviderAddBusiness,
   ProviderOffers,
   ProviderMessages,
   ProviderNotifications,
@@ -36,7 +36,6 @@ const components = {
 
 function ProviderRoutes() {
   return (
-    <>
     <Route
       path="/provider/*"
       element={
@@ -49,10 +48,14 @@ function ProviderRoutes() {
       {providerRoutes.map((route) => {
   const Component = components[route.element];
 
-  if (!Component) {
-    console.warn("Missing component for route:", route);
-    return null;
-  }
+if (!Component) {
+  console.error(
+    "❌ Provider route component missing:",
+    route.element,
+    "Check routeConfig.js mapping"
+  );
+  return null;
+}
 
   return (
     <Route
@@ -70,7 +73,6 @@ function ProviderRoutes() {
       <Route path="track-business/:id" element={<TrackBusinessView />} />
 
     </Route>
-    </>
   );
 }
 

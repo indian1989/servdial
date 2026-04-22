@@ -1,11 +1,11 @@
-// frontend/src/axios.js
+// frontend/src/api/axios.js
 import axios from "axios";
 
 // ================= BASE API INSTANCE =================
 const API = axios.create({
   baseURL:
     import.meta.env.VITE_API_BASE_URL ||
-    "https://servdial-backend.onrender.com/api",
+    "http://localhost:5000/api",
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",

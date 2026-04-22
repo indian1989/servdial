@@ -22,12 +22,13 @@ const CityPage = () => {
     fetchCategories();
   }, []);
 
-  const formattedCity = city.charAt(0).toUpperCase() + city.slice(1);
+  const formattedCity =
+  city ? city.charAt(0).toUpperCase() + city.slice(1) : "City";
 
   const title = `All Services in ${formattedCity} | ServDial`;
   const description = `Find all service categories in ${formattedCity}. Connect with top professionals in your city on ServDial.`;
 
-  const url = `https://servdial.com/city/${city?.slug}`;
+  const url = `https://servdial.com/city/${city}`;
 
   const schema = {
     "@context": "https://schema.org",
@@ -37,7 +38,7 @@ const CityPage = () => {
       "@type": "ListItem",
       position: index + 1,
       name: `${cat.name} in ${formattedCity}`,
-      url: `https://servdial.com/${city?.slug}/${cat.slug}`
+      url: `https://servdial.com/${city}/${cat.slug}`
     }))
   };
 
@@ -80,7 +81,7 @@ const CityPage = () => {
             {categories.map((cat) => (
               <Link
                 key={cat._id}
-                to={`/${city?.slug}/${cat.slug}`}
+                to={`/${city}/${cat.slug}`}
                 className="bg-white shadow rounded p-6 text-center hover:shadow-lg"
               >
                 {cat.name} in {formattedCity}

@@ -20,7 +20,7 @@ export const getNearbyBusinesses = (lat, lng) =>
 
 // Featured
 export const getFeaturedBusinesses = () =>
-  API.get("/featured");
+  API.get("/business/featured");
 
 // Recommendations
 export const getRecommendedBusinesses = () =>
