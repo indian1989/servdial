@@ -3,7 +3,7 @@ import API from "../../api/axios";
 import BusinessForm from "../../components/business/BusinessForm";
 import BusinessHoursManager from "../../components/BusinessHoursManager";
 import BusinessMediaManager from "../../components/BusinessMediaManager";
-import { normalizeBusinessPayload } from "../../components/business/businessMapper";
+import { normalizeBusinessPayload } from "../../components/business/BusinessMapper";
 
 const ProviderAddBusiness = () => {
   const [hours, setHours] = useState({});

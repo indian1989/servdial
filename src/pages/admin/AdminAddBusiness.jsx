@@ -1,6 +1,6 @@
 import BusinessForm from "../../components/business/BusinessForm";
 import { addBusiness } from "../../api/adminAPI";
-import { normalizeBusinessPayload } from "../../components/business/businessMapper";
+import { normalizeBusinessPayload } from "../../components/business/BusinessMapper";
 
 const AdminAddBusiness = () => {
   return (
