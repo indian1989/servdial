@@ -5,7 +5,7 @@ import axios from "axios";
 const API = axios.create({
   baseURL:
     import.meta.env.VITE_API_BASE_URL ||
-    "http://localhost:5000/api",
+    "https://servdial-backend.onrender.com/api",
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",
