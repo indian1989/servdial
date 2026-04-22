@@ -6,21 +6,21 @@ import API from "./axios";
 
 // Search / listing
 export const getBusinesses = (params) =>
-  API.get("/business", { params });
+  API.get("/businesses", { params });
 
 // Single business
 export const getBusinessBySlug = (slug) =>
-  API.get(`/business/${slug}`);
+  API.get(`/businesses/${slug}`);
 
 // Nearby businesses
 export const getNearbyBusinesses = (lat, lng) =>
-  API.get("/business/nearby", {
+  API.get("/businesses/nearby", {
     params: { lat, lng },
   });
 
 // Featured
 export const getFeaturedBusinesses = () =>
-  API.get("/business/featured");
+  API.get("/businesses/featured");
 
 // Recommendations
 export const getRecommendedBusinesses = () =>
