@@ -15,9 +15,12 @@ const CategoryDetails = () => {
 
         const res = await API.get(`/categories/${slug}`);
 
-        const data = res.data?.category || null;
+        // 🔥 IMPORTANT FIX: correct extraction
+        const data = res.data?.category;
 
-        setCategory(data);
+        console.log("CATEGORY RESPONSE:", data);
+
+        setCategory(data || null);
 
       } catch (err) {
         console.error("Category fetch error:", err);
@@ -34,37 +37,41 @@ const CategoryDetails = () => {
   }
 
   if (!category) {
-    return <div className="p-6">Category not found</div>;
+    return <div className="p-6 text-red-500">Category not found</div>;
   }
 
   return (
     <div className="max-w-6xl mx-auto p-6">
 
       {/* TITLE */}
-      <h1 className="text-3xl font-bold mb-6">
+      <h1 className="text-3xl font-bold mb-2">
         {category.name}
       </h1>
 
-      {/* CHILD CATEGORIES */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <p className="text-gray-500 mb-6">
+        Explore sub categories
+      </p>
 
-        {category.children && category.children.length > 0 ? (
-          category.children.map((child) => (
+      {/* CHILDREN */}
+      {category.children && category.children.length > 0 ? (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+
+          {category.children.map((child) => (
             <Link
               key={child._id}
-              to={`/${child.slug}`} 
-              className="bg-white shadow rounded p-4 text-center hover:shadow-lg"
+              to={`/category/${child.slug}`}
+              className="bg-white shadow rounded p-5 text-center hover:shadow-lg transition"
             >
               {child.name}
             </Link>
-          ))
-        ) : (
-          <p className="text-gray-500 col-span-full">
-            No subcategories found
-          </p>
-        )}
+          ))}
 
-      </div>
+        </div>
+      ) : (
+        <div className="text-gray-400">
+          No sub categories found
+        </div>
+      )}
 
     </div>
   );
