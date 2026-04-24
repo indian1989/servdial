@@ -1,3 +1,4 @@
+// frontend/src/components/business/TopRatedBusinesses.jsx
 import { useEffect, useState } from "react";
 import API from "../../api/axios";
 import { Link } from "react-router-dom";
@@ -56,7 +57,7 @@ const TopRatedBusinesses = ({ city }) => {
 
           <Link
             key={biz._id}
-            to={`/businesses/${biz._id}`}
+            to={`/businesses/top-rated${biz._id}`}
             className="border rounded-lg overflow-hidden hover:shadow-md transition"
           >
 

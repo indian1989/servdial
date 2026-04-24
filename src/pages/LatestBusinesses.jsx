@@ -8,7 +8,7 @@ const LatestBusinesses = () => {
   useEffect(() => {
     const fetchBusinesses = async () => {
       try {
-        const res = await API.get("/business/latest");
+        const res = await API.get("/businesses/latest");
         setBusinesses(res?.data?.data || res?.data?.businesses || []);
       } catch {
         setBusinesses([]);

@@ -1,3 +1,4 @@
+// frontend/src/components/home/TopRatedBusinesses.jsx
 import { useEffect, useState } from "react";
 import API from "../../api/axios";
 import BusinessCard from "../business/BusinessCard";
@@ -9,7 +10,7 @@ const TopRatedBusinesses = ({ city }) => {
     const fetchBusinesses = async () => {
       try {
         const res = await API.get(`/businesses/top-rated?city=${city?.slug}`);
-        setBusinesses(res?.data?.businesses || []);
+        setBusinesses(res?.data?.data || []);
       } catch {
         setBusinesses([]);
       }

@@ -24,8 +24,8 @@ export const deleteBusiness = (id) =>
   API.delete(`/admin-businesses/${id}`);
 
 // ==================== BUSINESS STATS ====================
-// export const getBusinessStats = () =>
- //  API.get("/admin/businesses/business-stats");
+export const getBusinessStats = () =>
+   API.get("/admin/businesses/business-stats");
 // ==================== Users ====================
 export const getAllUsers = () =>
   API.get("/admin/users");

@@ -36,7 +36,7 @@ const SearchResults = () => {
   // ================= CITY SYNC =================
   useEffect(() => {
     if (!syncedCity.current && city) {
-      updateFilter("city", city);
+      updateFilter("city", city?.slug);
       syncedCity.current = true;
     }
   }, [city]);
@@ -74,7 +74,7 @@ const SearchResults = () => {
   : {}),
         };
 
-        const res = await API.get("/business/search", { params });
+        const res = await API.get("/", { params });
 
 console.log("FULL RESPONSE:", res);
 console.log("res.data:", res.data);
@@ -134,8 +134,10 @@ setBusinesses(res.data.data || res.data.businesses || []);
 
         <div className="flex justify-between items-center mt-2">
           <p className="text-xs text-gray-500">
-            📍 {filters.city || "Detecting location..."}
-          </p>
+  📍 {typeof filters.city === "object"
+      ? filters.city?.name
+      : filters.city || "Detecting location..."}
+</p>
 
           <button
             onClick={() =>

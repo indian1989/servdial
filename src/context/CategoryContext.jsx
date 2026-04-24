@@ -8,16 +8,24 @@ export const CategoryProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
 
   const fetchCategories = async () => {
-    try {
-      setLoading(true);
-      const res = await API.get("/categories");
-      setCategories(res.data);
-    } catch (err) {
-      console.error("Error fetching categories", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  try {
+    setLoading(true);
+
+    const res = await API.get("/categories");
+
+    const data =
+      res.data?.categories ||
+      res.data?.data ||
+      [];
+
+    setCategories(data);
+
+  } catch (err) {
+    console.error("Error fetching categories", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchCategories();

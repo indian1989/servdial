@@ -38,7 +38,7 @@ function AdminDashboard() {
 
       const [adminStats, businessStats] = await Promise.all([
         API.get("/admin/dashboard"),
-        API.get("/admin/business-stats")
+        API.get("/admin-businesses")
       ]);
 
       setStats({

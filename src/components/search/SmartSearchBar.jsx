@@ -50,7 +50,7 @@ const SmartSearchBar = ({
 
   const fetchSuggestions = async () => {
     try {
-      const res = await API.get(`/business/suggest?q=${query}`);
+      const res = await API.get(`/businesses/suggest?q=${query}`);
       setSuggestions(res.data?.suggestions || []);
     } catch (err) {}
   };

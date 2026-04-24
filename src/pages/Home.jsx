@@ -45,7 +45,7 @@ const Home = () => {
       params: { city: currentCity?.slug },
     });
 
-    const data = res?.data || {};
+    const data = res?.data?.data || {};
 
     setFeaturedBusinesses(data.featuredBusinesses || []);
     setLatestBusinesses(data.latestBusinesses || []);
@@ -64,16 +64,6 @@ const Home = () => {
 
   } finally {
     setLoading(false);
-  }
-};
-
-// ================= FETCH TOP RATED =================
-const fetchTopRated = async () => {
-  try {
-    const res = await API.get("/businesses/top-rated");
-    setTopRatedBusinesses(res?.data?.data || []);
-  } catch {
-    setTopRatedBusinesses([]);
   }
 };
 
@@ -114,10 +104,6 @@ const fetchTopRated = async () => {
       { enableHighAccuracy: true, timeout: 8000 }
     );
   }, []);
-
-  useEffect(() => {
-  fetchTopRated();
-}, []);
 
   // ================= CITY CHANGE =================
   useEffect(() => {
