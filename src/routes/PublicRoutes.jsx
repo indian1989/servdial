@@ -13,43 +13,43 @@ import CityCategoryPage from "../pages/CityCategoryPage";
 import CityPage from "../pages/CityPage";
 import SEOLandingPage from "../pages/seo/SEOLandingPage";
 import ClaimBusiness from "../pages/ClaimBusiness";
+
 const PublicRoutes = () => {
   return (
-    <>
     <Route element={<PublicLayout />}>
 
-      {/* Home Page */}
+      {/* HOME */}
       <Route path="/" element={<Home />} />
 
-      {/* Search */}
+      {/* SEARCH */}
       <Route path="/search" element={<SearchResults />} />
 
-      {/* Latest Businesses */}
+      {/* LATEST */}
       <Route path="/latest-businesses" element={<LatestBusinesses />} />
 
+      {/* BUSINESS PAGE */}
       <Route
-  path="/:citySlug/:categorySlug/:slug"
-  element={<BusinessPage />}
-/>
+        path="/:citySlug/:categorySlug/:slug"
+        element={<BusinessPage />}
+      />
 
-      {/* Category Overview */}
+      {/* CATEGORY PAGES */}
       <Route path="/categories" element={<CategoryPage />} />
-<Route path="/category/:slug" element={<CategoryDetails />} />
+      <Route path="/category/:slug" element={<CategoryDetails />} />
 
-      {/* City Overview */}
-      <Route path="/city/:city" element={<CityPage />} /> {/* NEW */}
+      {/* CITY PAGE */}
+      <Route path="/city/:city" element={<CityPage />} />
 
-      {/* City + Category */}
+      {/* CITY + CATEGORY */}
       <Route path="/:city/:category" element={<CityCategoryPage />} />
 
-      {/* SEO Landing Pages */}
-      <Route path="/:seoSlug" element={<SEOLandingPage />} />
+      {/* ================= SEO FIXED (IMPORTANT) ================= */}
+      <Route path="/seo/:seoSlug" element={<SEOLandingPage />} />
 
-      {/* Claim Business */}
+      {/* CLAIM BUSINESS */}
       <Route path="/claim-business/:businessId" element={<ClaimBusiness />} />
 
     </Route>
-    </>
   );
 };
 

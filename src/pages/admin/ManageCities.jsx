@@ -24,14 +24,19 @@ const ManageCities = () => {
   const [newDistrict, setNewDistrict] = useState("");
   const [newState, setNewState] = useState("");
 
+  const [newLatitude, setNewLatitude] = useState("");
+const [newLongitude, setNewLongitude] = useState("");
+
   const [formError, setFormError] = useState(false);
 
   const [editingCityId, setEditingCityId] = useState(null);
   const [editingData, setEditingData] = useState({
-    name: "",
-    district: "",
-    state: ""
-  });
+  name: "",
+  district: "",
+  state: "",
+  latitude: "",
+  longitude: ""
+});
 
   // ================= FETCH =================
   const fetchCities = async () => {
@@ -56,8 +61,10 @@ const ManageCities = () => {
     const city = newCity.trim().replace(/\b\w/g, l => l.toUpperCase());
 const district = newDistrict.trim().replace(/\b\w/g, l => l.toUpperCase());
 const state = newState.trim().replace(/\b\w/g, l => l.toUpperCase());
+const lat = Number(newLatitude);
+const lng = Number(newLongitude);
 
-    if (!city || !district || !state) {
+    if (!city || !district || !state || isNaN(Number(newLatitude)) || isNaN(Number(newLongitude))) {
       setFormError(true);
       return alert("City, District and State are mandatory.");
     }
@@ -66,11 +73,23 @@ const state = newState.trim().replace(/\b\w/g, l => l.toUpperCase());
     setLoading(true);
 
     try {
-      await addCity({ name: city, district, state });
+  await addCity({
+  name: city,
+  district,
+  state,
+  country: "India",
+  featured: false,
+  popular: false,
+  status: "active",
+  latitude: lat,
+  longitude: lng,
+});
 
       setNewCity("");
       setNewDistrict("");
       setNewState("");
+      setNewLatitude("");
+      setNewLongitude("");
 
       fetchCities();
     } catch (err) {
@@ -86,18 +105,32 @@ const state = newState.trim().replace(/\b\w/g, l => l.toUpperCase());
     const city = editingData.name.trim();
     const district = editingData.district.trim();
     const state = editingData.state.trim();
+    const lat = Number(editingData.latitude);
+    const lng = Number(editingData.longitude);
 
-    if (!city || !district || !state) {
+    if (!city || !district || !state || isNaN(Number(editingData.latitude)) || isNaN(Number(editingData.longitude))) {
       return alert("City, District and State are mandatory.");
     }
 
     setLoading(true);
 
     try {
-      await updateCity(id, { name: city, district, state });
+await updateCity(id, {
+  name: city,
+  district,
+  state,
+  latitude: lat,
+  longitude: lng,
+});
 
       setEditingCityId(null);
-      setEditingData({ name: "", district: "", state: "" });
+      setEditingData({
+  name: "",
+  district: "",
+  state: "",
+  latitude: "",
+  longitude: ""
+});
 
       fetchCities();
     } catch (err) {
@@ -148,16 +181,26 @@ const state = newState.trim().replace(/\b\w/g, l => l.toUpperCase());
       const cities = rows.slice(1).map((row, index) => {
         const cols = row.split(",");
 
-        return {
-          name: cols[0]?.trim().replace(/\b\w/g, l => l.toUpperCase()),
-district: cols[1]?.trim().replace(/\b\w/g, l => l.toUpperCase()),
-state: cols[2]?.trim().replace(/\b\w/g, l => l.toUpperCase()),
-        };
+        const lat = Number(cols[3]);
+const lng = Number(cols[4]);
+
+return {
+  name: cols[0]?.trim().replace(/\b\w/g, l => l.toUpperCase()),
+  district: cols[1]?.trim().replace(/\b\w/g, l => l.toUpperCase()),
+  state: cols[2]?.trim().replace(/\b\w/g, l => l.toUpperCase()),
+  latitude: lat,
+  longitude: lng,
+};
       });
 
       const validCities = cities.filter(
-        (c) => c.name && c.district && c.state
-      );
+  (c) =>
+    c.name &&
+    c.district &&
+    c.state &&
+    !isNaN(c.latitude) &&
+    !isNaN(c.longitude)
+);
 
       if (validCities.length === 0) {
         alert("No valid rows found.");
@@ -241,6 +284,22 @@ state: cols[2]?.trim().replace(/\b\w/g, l => l.toUpperCase()),
           }`}
         />
 
+        <input
+  type="text"
+  placeholder="Latitude *"
+  value={newLatitude}
+  onChange={(e) => setNewLatitude(e.target.value)}
+  className="border px-3 py-2 rounded flex-1 min-w-[150px]"
+/>
+
+<input
+  type="text"
+  placeholder="Longitude *"
+  value={newLongitude}
+  onChange={(e) => setNewLongitude(e.target.value)}
+  className="border px-3 py-2 rounded flex-1 min-w-[150px]"
+/>
+
         <button
           onClick={handleAddCity}
           className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
@@ -283,7 +342,11 @@ state: cols[2]?.trim().replace(/\b\w/g, l => l.toUpperCase()),
               <th className="border px-3 py-2">City</th>
               <th className="border px-3 py-2">District</th>
               <th className="border px-3 py-2">State</th>
+              <th className="border px-3 py-2">Latitude</th>
+              <th className="border px-3 py-2">Longitude</th>
               <th className="border px-3 py-2">Slug</th>
+              <th className="border px-3 py-2">District Slug</th>
+              <th className="border px-3 py-2">State Slug</th>
               <th className="border px-3 py-2">Actions</th>
             </tr>
           </thead>
@@ -328,18 +391,46 @@ state: cols[2]?.trim().replace(/\b\w/g, l => l.toUpperCase()),
                   ) : city.state}
                 </td>
 
+                <td className="border px-3 py-2">
+  {editingCityId === city._id ? (
+    <input
+      value={editingData.latitude}
+      onChange={(e) =>
+        setEditingData({ ...editingData, latitude: e.target.value })
+      }
+      className="border px-2 py-1 rounded w-full"
+    />
+  ) : city.latitude}
+</td>
+
+<td className="border px-3 py-2">
+  {editingCityId === city._id ? (
+    <input
+      value={editingData.longitude}
+      onChange={(e) =>
+        setEditingData({ ...editingData, longitude: e.target.value })
+      }
+      className="border px-2 py-1 rounded w-full"
+    />
+  ) : city.longitude}
+</td>
+
                 <td className="border px-3 py-2">{city.slug}</td>
+                <td className="border px-3 py-2">{city.districtSlug}</td>
+                <td className="border px-3 py-2">{city.stateSlug}</td>
 
                 <td className="border px-3 py-2 flex justify-center gap-2 flex-wrap">
 
                   <button
                     onClick={() => {
                       setEditingCityId(city._id);
-                      setEditingData({
+                        setEditingData({
                         name: city.name,
                         district: city.district,
-                        state: city.state
-                      });
+                        state: city.state,
+                        latitude: city.latitude || "",
+                        longitude: city.longitude || ""
+                        });
                     }}
                     className="bg-yellow-500 text-white px-2 py-1 rounded hover:bg-yellow-600 flex items-center gap-1"
                   >

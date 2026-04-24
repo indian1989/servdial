@@ -47,15 +47,15 @@ export const getCities = () =>
 export const addCity = (data) =>
   API.post("/admin/cities", data);
 
+// BULK UPLOAD
+export const bulkUploadCities = (data) =>
+  API.post("/admin/cities/bulk", data);
+
 export const getStates = () =>
   API.get("/admin/cities/states");
 
 export const getDistricts = (stateSlug) =>
   API.get(`/admin/cities/districts/${stateSlug}`);
-
-// BULK UPLOAD
-export const bulkUploadCities = (data) =>
-  API.post("/admin/cities/bulk", data);
 
 export const updateCity = (id, data) =>
   API.put(`/admin/cities/${id}`, data);

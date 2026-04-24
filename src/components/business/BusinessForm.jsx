@@ -50,9 +50,10 @@ const BusinessForm = ({
   const [cities, setCities] = useState([]);
 
   const [form, setForm] = useState({
-    name: "",
-    categoryId: "",
-    city: "",
+  name: "",
+  categoryId: "",
+  cityId: "",
+  location: null,
     district: "",
     state: "",
     address: "",
@@ -60,7 +61,7 @@ const BusinessForm = ({
     whatsapp: "",
     website: "",
     description: "",
-    ...initialData,
+    ...(initialData || {}),
   });
 
   // ================= FETCH DATA =================
@@ -80,14 +81,16 @@ const BusinessForm = ({
 
         setCategories(flattenCategories(tree));
 
-        setCities(
-          (cityRes.data.cities || []).map((c) => ({
-            value: c._id,
-            label: `${c.name} (${c.state})`,
-            district: c.district || "",
-            state: c.state || "",
-          }))
-        );
+       setCities(
+  (cityRes.data.cities || []).map((c) => ({
+    value: c._id,
+    label: `${c.name} (${c.state})`,
+    district: c.district || "",
+    state: c.state || "",
+    latitude: c.latitude,
+    longitude: c.longitude,
+  }))
+);
       } catch (err) {
         console.error(err);
       }
@@ -112,13 +115,26 @@ const BusinessForm = ({
   const handleSelect = (field, selected) => {
     if (!selected) return;
 
-    if (field === "city") {
-      setForm((prev) => ({
-        ...prev,
-        city: selected.value,
-        district: selected.district,
-        state: selected.state,
-      }));
+    if (field === "cityId") {
+  setForm((prev) => ({
+    ...prev,
+    cityId: selected.value,
+    district: selected.district,
+    state: selected.state,
+    location:
+  selected.latitude && selected.longitude
+    ? {
+        type: "Point",
+        coordinates: [selected.longitude, selected.latitude],
+      }
+    : {
+        type: "Point",
+        coordinates: [
+  Number(selected.longitude),
+  Number(selected.latitude),
+], // fallback safety
+      },
+  }));
       return;
     }
 
@@ -132,9 +148,13 @@ const BusinessForm = ({
 
   // ================= VALIDATION =================
   const validate = () => {
-    if (!form.name || !form.categoryId || !form.city || !form.phone) {
+    if (!form.name || !form.categoryId || !form.cityId || !form.phone) {
       return "Please fill required fields";
     }
+
+    if (!form.location) {
+  return "Selected city does not have location. Please contact admin.";
+}
 
     if (form.phone.length !== 10) {
       return "Phone must be 10 digits";
@@ -154,6 +174,7 @@ const BusinessForm = ({
     setLoading(true);
 
     try {
+      console.log("Submitting Business Payload:", form);
       await onSubmit(form);
     } catch (e) {
       console.error(e);
@@ -203,10 +224,11 @@ const BusinessForm = ({
         {/* CITY */}
         <Select
           options={cities}
-          value={cities.find(c => c.value === form.city) || null}
-          onChange={(v) => handleSelect("city", v)}
+          value={cities.find(c => c.value === form.cityId) || null}
+          onChange={(v) => handleSelect("cityId", v)}
           styles={customStyles}
           placeholder="City *"
+          isClearable={false}
         />
 
         {/* AUTO LOCATION */}
