@@ -10,6 +10,19 @@ import {
   FaStar
 } from "react-icons/fa";
 
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
+} from "recharts";
+
 function AdminDashboard() {
   const [stats, setStats] = useState({
     users: 0,
@@ -26,29 +39,79 @@ function AdminDashboard() {
 
   useEffect(() => {
     fetchStats();
-
-    // 🔁 Auto refresh every 30 sec
     const interval = setInterval(fetchStats, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const safeNumber = (val) => (typeof val === "number" ? val : 0);
 
   const fetchStats = async () => {
     try {
       setError("");
 
-      const [adminStats, businessStats] = await Promise.all([
+      const [adminRes, businessRes, usersRes] = await Promise.all([
         API.get("/admin/dashboard"),
-        API.get("/admin-businesses")
+        API.get("/admin-businesses"),
+        API.get("/admin/users")
       ]);
 
+      // 🔥 NORMALIZE ADMIN
+      const adminData =
+        adminRes.data?.stats ||
+        adminRes.data ||
+        {};
+
+      // 🔥 NORMALIZE USERS
+      const usersList =
+        usersRes.data?.users ||
+        usersRes.data?.data ||
+        usersRes.data ||
+        [];
+
+      // 🔥 NORMALIZE BUSINESS
+      const businessData =
+        businessRes.data?.stats ||
+        businessRes.data ||
+        {};
+
+      const businessList =
+        businessRes.data?.businesses ||
+        businessRes.data?.data ||
+        [];
+
       setStats({
-        users: adminStats.data?.stats?.users || 0,
-        admins: adminStats.data?.stats?.admins || 0,
-        cities: adminStats.data?.stats?.cities || 0,
-        categories: adminStats.data?.stats?.categories || 0,
-        businesses: businessStats.data?.stats?.total || 0,
-        pending: businessStats.data?.stats?.pending || 0,
-        featured: businessStats.data?.stats?.featured || 0
+        // ✅ USERS FIXED
+        users:
+          safeNumber(adminData.users) ||
+          safeNumber(adminData.totalUsers) ||
+          usersList.length,
+
+        // ✅ ADMINS FIXED
+        admins:
+          safeNumber(adminData.admins) ||
+          safeNumber(adminData.totalAdmins) ||
+          usersList.filter(u => u.role === "admin" || u.role === "superadmin").length,
+
+        cities: safeNumber(adminData.cities),
+        categories: safeNumber(adminData.categories),
+
+        // ✅ BUSINESSES FIXED
+        businesses:
+          safeNumber(businessData.total) ||
+          safeNumber(businessData.count) ||
+          businessList.length,
+
+        // ✅ PENDING FIXED
+        pending:
+          safeNumber(businessData.pending) ||
+          safeNumber(businessData.pendingCount) ||
+          businessList.filter(b => b.status !== "approved").length,
+
+        // ✅ FEATURED FIXED (IMPORTANT)
+        featured:
+          safeNumber(businessData.featured) ||
+          safeNumber(businessData.featuredCount) ||
+          businessList.filter(b => b.isFeatured).length
       });
 
       setLoading(false);
@@ -59,122 +122,139 @@ function AdminDashboard() {
     }
   };
 
-  if (loading) {
-    return <DashboardSkeleton />;
-  }
+  if (loading) return <DashboardSkeleton />;
+  if (error) return <div className="text-red-500">{error}</div>;
 
-  if (error) {
-    return (
-      <div style={{ padding: "20px", color: "red" }}>
-        <h2>{error}</h2>
-      </div>
-    );
-  }
+  // 📊 Derived
+  const totalEntities =
+    stats.users +
+    stats.admins +
+    stats.cities +
+    stats.categories +
+    stats.businesses;
+
+  const barData = [
+    { name: "Users", value: stats.users },
+    { name: "Admins", value: stats.admins },
+    { name: "Cities", value: stats.cities },
+    { name: "Categories", value: stats.categories },
+    { name: "Businesses", value: stats.businesses }
+  ];
+
+  const pieData = [
+    { name: "Pending", value: stats.pending },
+    { name: "Featured", value: stats.featured },
+    {
+      name: "Others",
+      value: Math.max(stats.businesses - stats.pending - stats.featured, 0)
+    }
+  ];
+
+  const COLORS = ["#ef4444", "#22c55e", "#3b82f6"];
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h1 style={{ marginBottom: "25px" }}>
+    <div className="space-y-6">
+
+      <h1 className="text-2xl font-bold">
         🚀 ServDial Admin Dashboard
       </h1>
 
-      <div className="dashboard-grid">
-        <Card title="Total Users" value={stats.users} icon={<FaUsers />} color="#3b82f6" />
-        <Card title="Admins" value={stats.admins} icon={<FaUserShield />} color="#9333ea" />
-        <Card title="Cities" value={stats.cities} icon={<FaCity />} color="#0ea5e9" />
-        <Card title="Categories" value={stats.categories} icon={<FaLayerGroup />} color="#f59e0b" />
-        <Card title="Businesses" value={stats.businesses} icon={<FaStore />} color="#10b981" />
-        <Card title="Pending" value={stats.pending} icon={<FaClock />} color="#ef4444" />
-        <Card title="Featured" value={stats.featured} icon={<FaStar />} color="#f97316" />
+      {/* CARDS */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+        <Card title="Users" value={stats.users} icon={<FaUsers />} color="from-blue-500 to-indigo-600" />
+        <Card title="Admins" value={stats.admins} icon={<FaUserShield />} color="from-purple-500 to-pink-600" />
+        <Card title="Cities" value={stats.cities} icon={<FaCity />} color="from-cyan-500 to-blue-500" />
+        <Card title="Categories" value={stats.categories} icon={<FaLayerGroup />} color="from-yellow-400 to-orange-500" />
+        <Card title="Businesses" value={stats.businesses} icon={<FaStore />} color="from-green-500 to-emerald-600" />
+        <Card title="Pending" value={stats.pending} icon={<FaClock />} color="from-red-500 to-rose-600" />
+        <Card title="Featured" value={stats.featured} icon={<FaStar />} color="from-orange-500 to-amber-500" />
       </div>
 
-      {/* Inline CSS (kept simple, you can move later) */}
-      <style>{`
-        .dashboard-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-          gap: 20px;
-        }
+      {/* KPI */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <KPI title="Total Entities" value={totalEntities} />
+        <KPI title="Active Businesses" value={stats.businesses - stats.pending} />
+        <KPI
+          title="Approval Rate"
+          value={
+            stats.businesses
+              ? Math.round(((stats.businesses - stats.pending) / stats.businesses) * 100) + "%"
+              : "0%"
+          }
+        />
+        <KPI
+          title="Featured Ratio"
+          value={
+            stats.businesses
+              ? Math.round((stats.featured / stats.businesses) * 100) + "%"
+              : "0%"
+          }
+        />
+      </div>
 
-        .card {
-          background: white;
-          padding: 20px;
-          border-radius: 12px;
-          box-shadow: 0 6px 15px rgba(0,0,0,0.06);
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          transition: 0.2s;
-        }
+      {/* CHARTS */}
+      <div className="grid md:grid-cols-2 gap-6">
+        <ChartCard title="System Overview">
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={barData}>
+              <XAxis dataKey="name" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="value" fill="#4f46e5" radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </ChartCard>
 
-        .card:hover {
-          transform: translateY(-5px);
-        }
+        <ChartCard title="Business Distribution">
+          <ResponsiveContainer width="100%" height={300}>
+            <PieChart>
+              <Pie data={pieData} dataKey="value" outerRadius={100} label>
+                {pieData.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i]} />
+                ))}
+              </Pie>
+              <Legend />
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartCard>
+      </div>
 
-        .card-left h3 {
-          margin: 0;
-          font-size: 14px;
-          color: #666;
-        }
-
-        .card-left h1 {
-          margin: 5px 0 0;
-          font-size: 26px;
-        }
-
-        .icon-box {
-          font-size: 24px;
-          padding: 12px;
-          border-radius: 10px;
-          color: white;
-        }
-
-        .skeleton {
-          height: 100px;
-          border-radius: 10px;
-          background: linear-gradient(90deg, #eee, #ddd, #eee);
-          animation: shimmer 1.5s infinite;
-        }
-
-        @keyframes shimmer {
-          0% { background-position: -200px 0; }
-          100% { background-position: 200px 0; }
-        }
-      `}</style>
     </div>
   );
 }
 
-/* ================= CARD ================= */
-function Card({ title, value, icon, color }) {
-  return (
-    <div className="card">
-      <div className="card-left">
-        <h3>{title}</h3>
-        <h1>{value}</h1>
-      </div>
-
-      <div
-        className="icon-box"
-        style={{ background: color }}
-      >
-        {icon}
-      </div>
+/* COMPONENTS */
+const Card = ({ title, value, icon, color }) => (
+  <div className={`bg-gradient-to-r ${color} text-white p-5 rounded-xl shadow flex justify-between`}>
+    <div>
+      <h4 className="text-sm opacity-80">{title}</h4>
+      <h2 className="text-2xl font-bold">{value}</h2>
     </div>
-  );
-}
+    <div className="text-2xl opacity-80">{icon}</div>
+  </div>
+);
 
-/* ================= LOADING ================= */
-function DashboardSkeleton() {
-  return (
-    <div style={{ padding: "20px" }}>
-      <h2>Loading dashboard...</h2>
-      <div className="dashboard-grid">
-        {Array(7).fill().map((_, i) => (
-          <div key={i} className="skeleton"></div>
-        ))}
-      </div>
-    </div>
-  );
-}
+const KPI = ({ title, value }) => (
+  <div className="bg-white p-4 rounded-xl shadow">
+    <p className="text-sm text-gray-500">{title}</p>
+    <h2 className="text-xl font-bold">{value}</h2>
+  </div>
+);
+
+const ChartCard = ({ title, children }) => (
+  <div className="bg-white p-5 rounded-xl shadow">
+    <h3 className="font-semibold mb-3">{title}</h3>
+    {children}
+  </div>
+);
+
+const DashboardSkeleton = () => (
+  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+    {Array(7).fill().map((_, i) => (
+      <div key={i} className="h-24 bg-gray-200 animate-pulse rounded-lg"></div>
+    ))}
+  </div>
+);
 
 export default AdminDashboard;

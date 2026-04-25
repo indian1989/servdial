@@ -1,4 +1,3 @@
-// frontend/src/context/authContext.jsx
 import { createContext, useContext, useState, useEffect } from "react";
 import API from "../api/axios";
 
@@ -8,67 +7,102 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user from localStorage on app start
+  // ✅ LOAD FROM STORAGE (CORRECT STRUCTURE)
   useEffect(() => {
     try {
-      const savedUser = localStorage.getItem("servdial_user");
-      if (savedUser) {
-        setUser(JSON.parse(savedUser));
+      const saved = localStorage.getItem("servdial_user");
+
+      if (saved) {
+        const parsed = JSON.parse(saved);
+
+        // ✅ FIX: ensure structure consistency
+        if (parsed?.user && parsed?.token) {
+          setUser(parsed.user);
+        } else {
+          localStorage.removeItem("servdial_user");
+        }
       }
-    } catch (error) {
-      console.error("Invalid user data in localStorage");
+    } catch {
       localStorage.removeItem("servdial_user");
     } finally {
       setLoading(false);
     }
   }, []);
 
-  // Login via backend
+  // ================= LOGIN =================
   const login = async (credentials) => {
-  try {
-    const { data } = await API.post("/auth/login", credentials);
+    try {
+      const { data } = await API.post("/auth/login", credentials);
 
-// 🔥 ADD THIS LINE
-console.log("LOGIN RESPONSE:", data);
+      console.log("LOGIN RESPONSE:", data);
 
-    // ✅ CREATE CLEAN USER OBJECT
-    const userData = {
-      ...data.user,
-      token: data.token,
-    };
+      const token = data?.token;
+      const userData = data?.user;
 
-    // ✅ STORE IN LOCALSTORAGE
-    localStorage.setItem("servdial_user", JSON.stringify(userData));
+      if (!token || !userData) {
+        return {
+          success: false,
+          message: "Invalid login response",
+        };
+      }
 
-    // ✅ UPDATE STATE
-    setUser(userData);
+      // ✅ STANDARD STRUCTURE
+      const payload = {
+        token,
+        user: userData,
+      };
 
-    return { success: true, user: userData };
-  } catch (error) {
-    return {
-      success: false,
-      message: error.response?.data?.message || "Login failed",
-    };
-  }
-};
+      localStorage.setItem(
+        "servdial_user",
+        JSON.stringify(payload)
+      );
 
-  // Logout
+      setUser(userData);
+
+      return { success: true, user: userData };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Login failed",
+      };
+    }
+  };
+
+  // ================= LOGOUT =================
   const logout = () => {
     localStorage.removeItem("servdial_user");
     setUser(null);
   };
 
-  // Register via backend
+  // ================= REGISTER =================
   const register = async (formData) => {
     try {
       const { data } = await API.post("/auth/register", formData);
-      const userData = { ...data.user, token: data.token };
-      localStorage.setItem("servdial_user", JSON.stringify(userData));
+
+      const token = data?.token;
+      const userData = data?.user;
+
+      const payload = {
+        token,
+        user: userData,
+      };
+
+      localStorage.setItem(
+        "servdial_user",
+        JSON.stringify(payload)
+      );
+
       setUser(userData);
+
       return { success: true };
     } catch (error) {
-      console.error(error.response?.data?.message || error.message);
-      return { success: false, message: error.response?.data?.message || "Registration failed" };
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ||
+          "Registration failed",
+      };
     }
   };
 
@@ -88,5 +122,4 @@ console.log("LOGIN RESPONSE:", data);
   );
 };
 
-// ✅ Add this for named import useAuth
 export const useAuth = () => useContext(AuthContext);
