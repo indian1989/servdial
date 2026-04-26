@@ -20,15 +20,22 @@ const FeaturedBusinesses = ({ businesses = [], loading = false }) => {
     );
   }
 
-  if (!businesses.length) {
+ if (!loading && businesses.length === 0) {
   return (
-    <p className="text-gray-500 text-center">
-      No featured businesses found in{" "}
-      <span className="font-semibold">
-        {selectedCity?.name ?? "this city"}
-      </span>
-      . Try refreshing or selecting another city.
-    </p>
+    <div className="text-center text-gray-500 py-10">
+      <p className="font-medium">
+        No featured businesses available in{" "}
+        <span className="font-semibold">
+          {selectedCity?.name ?? "this city"}
+        </span>
+      </p>
+
+      {isAdmin && (
+        <p className="text-xs mt-2 text-gray-400">
+          Tip: Mark businesses as "Featured" from admin panel
+        </p>
+      )}
+    </div>
   );
 }
 

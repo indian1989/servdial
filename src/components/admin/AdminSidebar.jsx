@@ -1,147 +1,161 @@
-import { Link } from "react-router-dom";
-import { useContext } from "react";
+import { NavLink } from "react-router-dom";
+import { useContext, useState } from "react";
 import { AuthContext } from "../../context/AuthContext";
+import {
+  FaHome,
+  FaStore,
+  FaCity,
+  FaLayerGroup,
+  FaBullhorn,
+  FaUsers,
+  FaUserShield,
+  FaChartBar,
+  FaCog,
+  FaBars,
+  FaTimes
+} from "react-icons/fa";
 
-function AdminSidebar() {
-
+function AdminSidebar({ onClose }) {
   const { user } = useContext(AuthContext);
-
   const role = user?.role;
 
+  const [collapsed, setCollapsed] = useState(false);
+
+  const isMobile = !!onClose;
+
+  const widthClass = collapsed ? "w-20" : "w-64";
+
+  const linkClass = ({ isActive }) =>
+    `flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition
+     ${isActive ? "bg-white text-gray-900 font-medium" : "text-gray-300 hover:bg-gray-800"}`;
+
+  const section = "mt-4 mb-1 text-[11px] text-gray-400 uppercase tracking-wide px-3";
+
   return (
-    <div style={styles.sidebar}>
+    <div
+      className={`
+        bg-gray-900 text-white h-full flex flex-col transition-all duration-300
+        ${widthClass}
+        ${isMobile ? "shadow-xl" : ""}
+      `}
+    >
 
-      <h2 style={styles.logo}>ServDial</h2>
+      {/* HEADER */}
+      <div className="flex items-center justify-between p-4 border-b border-gray-800">
 
-      <nav style={styles.nav}>
+        {/* LOGO */}
+        {!collapsed && (
+          <h1 className="text-lg font-bold">🚀 ServDial</h1>
+        )}
 
-        <Link style={styles.link} to="/admin/dashboard">
-          Dashboard
-        </Link>
+        <div className="flex items-center gap-2">
 
-        {/* BUSINESSES */}
-        <p style={styles.section}>Businesses</p>
+          {/* COLLAPSE BUTTON */}
+          <button
+            onClick={() => setCollapsed((prev) => !prev)}
+            className="text-gray-300 hover:text-white"
+            title="Collapse"
+          >
+            <FaBars />
+          </button>
 
-        <Link style={styles.link} to="/admin/businesses">
-          Manage Businesses
-        </Link>
+          {/* MOBILE CLOSE */}
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="text-gray-300 hover:text-white md:hidden"
+              title="Close"
+            >
+              <FaTimes />
+            </button>
+          )}
 
-        <Link style={styles.link} to="/admin/businesses/add">
-          Add Business
-        </Link>
+        </div>
+      </div>
 
-        {/* CITIES */}
-        <p style={styles.section}>Cities</p>
+      {/* NAV */}
+      <nav className="flex-1 overflow-y-auto py-3 space-y-1">
 
-        <Link style={styles.link} to="/admin/cities">
-          Manage Cities
-        </Link>
+        <NavLink to="/admin/dashboard" className={linkClass}>
+          <FaHome /> {!collapsed && "Dashboard"}
+        </NavLink>
 
-        <Link style={styles.link} to="/admin/cities/add">
-          Add City
-        </Link>
+        <p className={section}>{!collapsed && "Business Engine"}</p>
 
-        {/* CATEGORIES */}
-        <p style={styles.section}>Categories</p>
+        <NavLink to="/admin/businesses" className={linkClass}>
+          <FaStore /> {!collapsed && "Businesses"}
+        </NavLink>
 
-        <Link style={styles.link} to="/admin/categories">
-          Manage Categories
-        </Link>
+        <NavLink to="/admin/businesses/add" className={linkClass}>
+          <FaStore /> {!collapsed && "Add Business"}
+        </NavLink>
 
-        <Link style={styles.link} to="/admin/categories/add">
-          Add Category
-        </Link>
+        <p className={section}>{!collapsed && "Location Engine"}</p>
 
-        {/* BANNERS */}
-        <p style={styles.section}>Banner Ads</p>
+        <NavLink to="/admin/cities" className={linkClass}>
+          <FaCity /> {!collapsed && "Cities"}
+        </NavLink>
 
-        <Link style={styles.link} to="/admin/banners">
-          Manage Banner Ads
-        </Link>
+        <NavLink to="/admin/cities/add" className={linkClass}>
+          <FaCity /> {!collapsed && "Add City"}
+        </NavLink>
 
-        <Link style={styles.link} to="/admin/banners/add">
-          Add Banner
-        </Link>
+        <p className={section}>{!collapsed && "Category Engine"}</p>
 
-        {/* USERS */}
-        <p style={styles.section}>Users</p>
+        <NavLink to="/admin/categories" className={linkClass}>
+          <FaLayerGroup /> {!collapsed && "Categories"}
+        </NavLink>
 
-        <Link style={styles.link} to="/admin/users">
-          Manage Users
-        </Link>
+        <NavLink to="/admin/categories/add" className={linkClass}>
+          <FaLayerGroup /> {!collapsed && "Add Category"}
+        </NavLink>
+
+        <p className={section}>{!collapsed && "Monetization"}</p>
+
+        <NavLink to="/admin/banners" className={linkClass}>
+          <FaBullhorn /> {!collapsed && "Banner Ads"}
+        </NavLink>
+
+        <NavLink to="/admin/banners/add" className={linkClass}>
+          <FaBullhorn /> {!collapsed && "Add Banner"}
+        </NavLink>
+
+        <p className={section}>{!collapsed && "Users"}</p>
+
+        <NavLink to="/admin/users" className={linkClass}>
+          <FaUsers /> {!collapsed && "Users"}
+        </NavLink>
 
         {/* SUPERADMIN ONLY */}
         {role === "superadmin" && (
           <>
-            <p style={styles.section}>Admins</p>
+            <p className={section}>{!collapsed && "System Control"}</p>
 
-            <Link style={styles.link} to="/admin/admins">
-              Manage Admins
-            </Link>
+            <NavLink to="/admin/admins" className={linkClass}>
+              <FaUserShield /> {!collapsed && "Admins"}
+            </NavLink>
 
-            <Link style={styles.link} to="/admin/admins/add">
-              Add Admin
-            </Link>
+            <NavLink to="/admin/analytics" className={linkClass}>
+              <FaChartBar /> {!collapsed && "Analytics"}
+            </NavLink>
 
-            <p style={styles.section}>System</p>
-
-            <Link style={styles.link} to="/admin/analytics">
-              Analytics
-            </Link>
-
-            <Link style={styles.link} to="/admin/reports">
-              Reports
-            </Link>
-
-            <Link style={styles.link} to="/admin/settings">
-              System Settings
-            </Link>
-
-            <Link style={styles.link} to="/admin/logs">
-              Activity Logs
-            </Link>
-
+            <NavLink to="/admin/settings" className={linkClass}>
+              <FaCog /> {!collapsed && "Settings"}
+            </NavLink>
           </>
         )}
 
       </nav>
 
+      {/* FOOTER */}
+      {!collapsed && (
+        <div className="p-3 text-xs text-gray-500 border-t border-gray-800">
+          ServDial Admin Panel
+        </div>
+      )}
+
     </div>
   );
 }
-
-const styles = {
-  sidebar: {
-    width: "260px",
-    background: "#111827",
-    color: "white",
-    padding: "20px",
-    overflowY: "auto"
-  },
-
-  logo: {
-    marginBottom: "20px"
-  },
-
-  nav: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px"
-  },
-
- link: {
-  color: "white",
-  textDecoration: "none",
-  fontSize: "14px",
-  
-  },
-
-  section: {
-    marginTop: "15px",
-    fontWeight: "bold",
-    fontSize: "13px",
-    color: "#9ca3af"
-  }
-};
 
 export default AdminSidebar;
