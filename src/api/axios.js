@@ -1,4 +1,3 @@
-// frontend/src/api/axios.js
 import axios from "axios";
 
 // ================= BASE API INSTANCE =================
@@ -29,10 +28,13 @@ API.interceptors.request.use(
     const user = getStoredUser();
 
     if (user?.token) {
-  config.headers.Authorization = `Bearer ${user.token}`;
-}
+      config.headers.Authorization = `Bearer ${user.token}`;
+    }
 
     config.headers["x-request-id"] = Date.now();
+
+    // 🔥 DEBUG (IMPORTANT)
+    console.log("🌍 FINAL URL:", (config.baseURL || "") + config.url);
 
     return config;
   },
@@ -64,11 +66,11 @@ API.interceptors.response.use(
     }
 
     if (status === 404) {
-      console.warn("API not found:", error.config?.url);
+      console.warn("❌ 404 API:", (error.config?.baseURL || "") + error.config?.url);
     }
 
     if (status >= 500) {
-      console.error("Server error:", data?.message);
+      console.error("🔥 Server error:", data?.message);
     }
 
     return Promise.reject(error);

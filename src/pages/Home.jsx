@@ -33,58 +33,57 @@ const Home = () => {
 
   // ================= FETCH HOMEPAGE =================
   const fetchHomepageData = async (currentCity) => {
-  if (!currentCity) return;
+    if (!currentCity?.slug) return;
 
-  if (lastFetchedCity.current === currentCity?.slug) return;
+    if (lastFetchedCity.current === currentCity.slug) return;
 
-  lastFetchedCity.current = currentCity?.slug;
-  setLoading(true);
+    lastFetchedCity.current = currentCity.slug;
+    setLoading(true);
 
-  try {
-    const res = await API.get("/homepage", {
-      params: { city: currentCity?.slug },
-    });
+    try {
+      const res = await API.get("/homepage", {
+        params: { city: currentCity.slug },
+      });
 
-    const data = res?.data?.data || {};
+      const data = res?.data?.data || {};
 
-    setFeaturedBusinesses(data.featuredBusinesses || []);
-    setLatestBusinesses(data.latestBusinesses || []);
-    setTopRatedBusinesses(data.topRatedBusinesses || []);
-    setCategories(data.categories || []);
-    setCities(data.cities || []);
+      // 🔥 SAFE NORMALIZATION
+      setCategories(Array.isArray(data.categories) ? data.categories : []);
+      setFeaturedBusinesses(Array.isArray(data.featuredBusinesses) ? data.featuredBusinesses : []);
+      setTopRatedBusinesses(Array.isArray(data.topRatedBusinesses) ? data.topRatedBusinesses : []);
+      setLatestBusinesses(Array.isArray(data.latestBusinesses) ? data.latestBusinesses : []);
+      setNearbyBusinesses(Array.isArray(data.nearbyBusinesses) ? data.nearbyBusinesses : []);
+      setCities(Array.isArray(data.cities) ? data.cities : []);
 
-  } catch (err) {
-    console.error("❌ Homepage load error:", err);
+    } catch (err) {
+      console.error("❌ Homepage load error:", err);
 
-    setFeaturedBusinesses([]);
-    setLatestBusinesses([]);
-    setTopRatedBusinesses([]);
-    setCategories([]);
-    setCities([]);
+      setCategories([]);
+      setFeaturedBusinesses([]);
+      setTopRatedBusinesses([]);
+      setLatestBusinesses([]);
+      setNearbyBusinesses([]);
+      setCities([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  } finally {
-    setLoading(false);
-  }
-};
-
-  // ================= FETCH NEARBY =================
+  // ================= FETCH NEARBY (GPS) =================
   const fetchNearbyBusinesses = async (lat, lng) => {
-  try {
-    const res = await API.get("/businesses/nearby", {
-      params: { lat, lng, limit: 8 },
-    });
+    try {
+      const res = await API.get("/businesses/nearby", {
+        params: { lat, lng, limit: 8 },
+      });
 
-    setNearbyBusinesses(
-      Array.isArray(res?.data?.data)
-        ? res.data.data
-        : []
-    );
-
-  } catch (err) {
-    console.error("❌ Nearby fetch failed:", err);
-    setNearbyBusinesses([]);
-  }
-};
+      setNearbyBusinesses(
+        Array.isArray(res?.data?.data) ? res.data.data : []
+      );
+    } catch (err) {
+      console.error("❌ Nearby fetch failed:", err);
+      setNearbyBusinesses([]);
+    }
+  };
 
   // ================= GET USER LOCATION =================
   useEffect(() => {
@@ -98,37 +97,17 @@ const Home = () => {
         setUserLocation({ lat, lng });
         fetchNearbyBusinesses(lat, lng);
       },
-      () => {
-        console.log("Location permission denied");
-      },
+      () => {},
       { enableHighAccuracy: true, timeout: 8000 }
     );
   }, []);
 
   // ================= CITY CHANGE =================
   useEffect(() => {
-    if (!loadingCity && city) {
+    if (!loadingCity && city?.slug) {
       fetchHomepageData(city);
     }
-  }, [city, loadingCity]);
-
-  // ================= FALLBACK (FIRST LOAD) =================
-  useEffect(() => {
-    if (!city && !loadingCity) {
-      const savedCity = localStorage.getItem("servdial_city");
-
-if (savedCity) {
-  try {
-    const parsed = JSON.parse(savedCity);
-    fetchHomepageData(parsed);
-  } catch {
-    fetchHomepageData({ name: "India", slug: "india" });
-  }
-} else {
-  fetchHomepageData({ name: "India", slug: "india" });
-}
-    }
-  }, [city, loadingCity]);
+  }, [city?.slug, loadingCity]);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -136,85 +115,84 @@ if (savedCity) {
       {/* HERO */}
       <HeroSearch city={city} />
 
-      {/* LOCATION LOADING */}
-      {loadingCity && (
-        <div className="text-center text-sm text-gray-400 py-2 animate-pulse">
-          Detecting your location...
-        </div>
-      )}
-
-      {/* ================= CATEGORIES ================= */}
+      {/* CATEGORIES */}
       <CategoriesGrid
         categories={categories}
         city={city}
         loading={loading || loadingCity}
       />
 
-      {/* ================= FEATURED ================= */}
-      <section className="my-14 max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center">
-          Featured Businesses in {city?.name || "your area"}
-        </h2>
+      {/* FEATURED */}
+      {featuredBusinesses.length > 0 && (
+        <section className="my-14 max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-8">
+            Featured Businesses in {city?.name || "your area"}
+          </h2>
 
-        <FeaturedBusinesses
-          businesses={featuredBusinesses}
-          loading={loading || loadingCity}
-        />
-      </section>
+          <FeaturedBusinesses
+            businesses={featuredBusinesses}
+            loading={loading || loadingCity}
+          />
+        </section>
+      )}
 
-      {/* ================= TOP RATED ================= */}
-<section className="my-14 max-w-7xl mx-auto px-4">
-  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center">
-    Top Rated Businesses in {city?.name || "your area"}
-  </h2>
+      {/* TOP RATED */}
+      {topRatedBusinesses.length > 0 && (
+        <section className="my-14 max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-8">
+            Top Rated Businesses in {city?.name || "your area"}
+          </h2>
 
-  <PopularBusinesses
-    businesses={topRatedBusinesses}
-    loading={loading || loadingCity}
-  />
-</section>
+          <PopularBusinesses
+            businesses={topRatedBusinesses}
+            loading={loading || loadingCity}
+          />
+        </section>
+      )}
 
-      {/* ================= LATEST ================= */}
-      <section className="my-14 max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center">
-          Newly Added Businesses in {city?.name || "your area"}
-        </h2>
+      {/* LATEST */}
+      {latestBusinesses.length > 0 && (
+        <section className="my-14 max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-center mb-8">
+            Newly Added Businesses in {city?.name || "your area"}
+          </h2>
 
-        <PopularBusinesses
-          businesses={latestBusinesses}
-          loading={loading || loadingCity}
-        />
-      </section>
+          <PopularBusinesses
+            businesses={latestBusinesses}
+            loading={loading || loadingCity}
+          />
+        </section>
+      )}
 
-      {/* ================= NEARBY ================= */}
-      <section className="my-14 max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-8 text-center">
-          Businesses Near You
-        </h2>
+      {/* NEARBY */}
+      {nearbyBusinesses.length > 0 && (
+        <section className="my-14 max-w-7xl mx-auto px-4">
+          <h2 className="text-2xl font-semibold text-center mb-8">
+            Businesses Near You
+          </h2>
 
-        <NearbyBusinesses
-          businesses={nearbyBusinesses}
-          userLocation={userLocation}
-          loading={loading || loadingCity}
-        />
-      </section>
+          <NearbyBusinesses
+            businesses={nearbyBusinesses}
+            userLocation={userLocation}
+            loading={loading || loadingCity}
+          />
+        </section>
+      )}
 
-      {/* ================= RECOMMENDED ================= */}
+      {/* RECOMMENDED */}
       <section className="my-14 max-w-7xl mx-auto px-4">
         <RecommendedBusinesses city={city?.slug} />
       </section>
 
-      {/* ================= FEATURED CITIES ================= */}
-      <section className="my-14 max-w-7xl mx-auto px-4">
-        <FeaturedCities cities={cities} loading={loading} />
-      </section>
+      {/* CITIES */}
+      {cities.length > 0 && (
+        <section className="my-14 max-w-7xl mx-auto px-4">
+          <FeaturedCities cities={cities} loading={loading} />
+        </section>
+      )}
 
-      {/* ================= POPULAR SEARCHES ================= */}
-      <section className="my-14">
-        <PopularSearches loading={loading} />
-      </section>
-
-      {/* ================= TRUST + CTA ================= */}
+      {/* STATIC */}
+      <PopularSearches loading={loading} />
       <WhyChooseServDial />
       <Testimonials loading={loading} />
       <DownloadApp />
