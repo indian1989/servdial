@@ -33,16 +33,23 @@ const ManageBusinesses = () => {
   const [editForm, setEditForm] = useState({ name: "", category: "", city: "" });
 
   const fetchBusinesses = async () => {
-    setLoading(true);
-    try {
-      const res = await getAllBusinesses();
-      const data =
-        res?.data?.businesses || res?.data?.data || res?.data || [];
-      setBusinesses(Array.isArray(data) ? data : []);
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const res = await getAllBusinesses();
+
+    const data =
+      res?.data?.businesses ||
+      res?.data?.data ||
+      [];
+
+    setBusinesses(Array.isArray(data) ? data : []);
+  } catch (err) {
+    console.error("Failed to fetch businesses", err);
+    setBusinesses([]);
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchBusinesses();
@@ -92,9 +99,19 @@ const ManageBusinesses = () => {
   };
 
   const handleFeature = async (id) => {
-    updateLocal(id, (b) => ({ ...b, isFeatured: !b.isFeatured }));
+  const original = businesses.find(b => b._id === id);
+
+  updateLocal(id, (b) => ({ ...b, isFeatured: !b.isFeatured }));
+
+  try {
     await toggleFeatured(id);
-  };
+  } catch (err) {
+    console.error("Feature toggle failed", err);
+
+    // rollback on failure
+    updateLocal(id, () => original);
+  }
+};
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this business?")) return;
@@ -102,34 +119,39 @@ const ManageBusinesses = () => {
     await deleteBusiness(id);
   };
 
-  // ================= FILTER =================
-  const filtered = businesses
-    .filter((b) =>
-      statusFilter === "all" ? true : b.status === statusFilter
-    )
-    .filter((b) =>
-      b.name?.toLowerCase().includes(search.toLowerCase())
-    );
+ // ================= FILTER =================
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+const searchTerm = search.toLowerCase();
 
-  const paginated = filtered.slice(
-    (currentPage - 1) * PAGE_SIZE,
-    currentPage * PAGE_SIZE
+const filtered = businesses
+  .filter((b) =>
+    statusFilter === "all" ? true : b.status === statusFilter
+  )
+  .filter((b) =>
+    (b.name || "").toLowerCase().includes(searchTerm)
   );
+
+const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+
+const paginated = filtered.slice(
+  (currentPage - 1) * PAGE_SIZE,
+  currentPage * PAGE_SIZE
+);
 
   // ================= STATUS =================
   const StatusChip = ({ status }) => {
     const map = {
-      approved: "bg-green-100 text-green-700",
-      pending: "bg-yellow-100 text-yellow-700",
-      rejected: "bg-red-100 text-red-700"
-    };
+  approved: "bg-green-100 text-green-700",
+  pending: "bg-yellow-100 text-yellow-700",
+  rejected: "bg-red-100 text-red-700"
+};
+
+const safeStatus = status || "pending";
 
     return (
-      <span className={`px-2 py-1 text-xs rounded-full ${map[status]}`}>
-        {status}
-      </span>
+      <span className={`px-2 py-1 text-xs rounded-full ${map[safeStatus]}`}>
+  {safeStatus}
+</span>
     );
   };
 

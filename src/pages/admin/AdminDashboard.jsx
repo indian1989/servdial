@@ -44,109 +44,81 @@ function AdminDashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+  fetchStats();
+  const interval = setInterval(() => {
     fetchStats();
-    const interval = setInterval(fetchStats, 30000);
-    return () => clearInterval(interval);
-  }, []);
+  }, 30000);
+
+  return () => {
+    clearInterval(interval);
+  };
+}, []);
 
   const safeNumber = (val) => (typeof val === "number" ? val : 0);
 
   const fetchStats = async () => {
-    
-    try {
-      setError("");
+  try {
+    setError("");
 
-      const [adminRes, businessRes, usersRes, adsRes] = await Promise.all([
-        API.get("/admin/dashboard"),
-        API.get("/admin-businesses"),
-        API.get("/admin/users"),
-        API.get("/admin/banners")
-      ]);
-      console.log("🔥 ADMIN DASHBOARD RAW:", adminRes.data);
+    const [adminRes, businessRes, usersRes, adsRes] = await Promise.all([
+      API.get("/admin/dashboard"),
+      API.get("/admin-businesses"),
+      API.get("/admin/users"),
+      API.get("/admin/banners")
+    ]);
 
-      console.log("USERS API RAW:", usersRes.data);
+    const adminData = adminRes?.data?.stats || adminRes?.data || {};
+    const usersList = usersRes?.data?.users || usersRes?.data?.data || usersRes?.data || [];
+    const businessData = businessRes?.data?.stats || businessRes?.data || {};
+    const businessList = businessRes?.data?.businesses || businessRes?.data?.data || [];
+    const adsData = adsRes?.data?.stats || adsRes?.data || {};
 
-      // 🔥 NORMALIZE ADMIN
-      const adminData =
-        adminRes.data?.stats ||
-        adminRes.data ||
-        {};
+    const safe = (v) => (typeof v === "number" ? v : 0);
 
-        console.log("🔥 FINAL ADMIN DATA:", adminData);
+    setStats({
+      ads: {
+        total: safe(adsData.total),
+        active: safe(adsData.active),
+        expired: safe(adsData.expired),
+        clicks: safe(adsData.clicks)
+      },
 
-      // 🔥 NORMALIZE USERS
-      const usersList =
-        usersRes.data?.users ||
-        usersRes.data?.data ||
-        usersRes.data ||
-        [];
+      users:
+        safe(adminData.users) ||
+        safe(adminData.totalUsers) ||
+        usersList.length,
 
-      // 🔥 NORMALIZE BUSINESS
-      const businessData =
-        businessRes.data?.stats ||
-        businessRes.data ||
-        {};
+      admins:
+        safe(adminData.admins) ||
+        safe(adminData.totalAdmins) ||
+        usersList.filter(u => u.role === "admin" || u.role === "superadmin").length,
 
-      // 🔥 NORMALIZE ADS DATA
-        const adsData =
-        adsRes.data?.stats ||
-        adsRes.data ||
-        {};
+      cities: safe(adminData.cities),
+      categories: safe(adminData.categories),
 
-      const businessList =
-        businessRes.data?.businesses ||
-        businessRes.data?.data ||
-        [];
+      businesses:
+        safe(businessData.total) ||
+        safe(businessData.count) ||
+        businessList.length,
 
-      setStats({
-        // ✅ADS
-        ads: {
-          total: safeNumber(adsData.total),
-          active: safeNumber(adsData.active),
-          expired: safeNumber(adsData.expired),
-          clicks: safeNumber(adsData.clicks),
-        },
-        // ✅ USERS
-        users:
-          safeNumber(adminData.users) ||
-          safeNumber(adminData.totalUsers) ||
-          usersList.length,
+      pending:
+        safe(businessData.pending) ||
+        safe(businessData.pendingCount) ||
+        businessList.filter(b => b.status !== "approved").length,
 
-        // ✅ ADMINS
-        admins:
-          safeNumber(adminData.admins) ||
-          safeNumber(adminData.totalAdmins) ||
-          usersList.filter(u => u.role === "admin" || u.role === "superadmin").length,
+      featured:
+        safe(businessData.featured) ||
+        safe(businessData.featuredCount) ||
+        businessList.filter(b => b.isFeatured).length
+    });
 
-        cities: safeNumber(adminData.cities),
-        categories: safeNumber(adminData.categories),
-
-        // ✅ BUSINESSES
-        businesses:
-          safeNumber(businessData.total) ||
-          safeNumber(businessData.count) ||
-          businessList.length,
-
-        // ✅ PENDING
-        pending:
-          safeNumber(businessData.pending) ||
-          safeNumber(businessData.pendingCount) ||
-          businessList.filter(b => b.status !== "approved").length,
-
-        // ✅ FEATURED
-        featured:
-          safeNumber(businessData.featured) ||
-          safeNumber(businessData.featuredCount) ||
-          businessList.filter(b => b.isFeatured).length
-      });
-
-      setLoading(false);
-    } catch (err) {
-      console.error("Dashboard error", err);
-      setError("Failed to load dashboard data");
-      setLoading(false);
-    }
-  };
+  } catch (err) {
+    console.error("Dashboard error", err);
+    setError("Failed to load dashboard data");
+  } finally {
+    setLoading(false);
+  }
+};
 
   if (loading) return <DashboardSkeleton />;
   if (error) return <div className="text-red-500">{error}</div>;
@@ -231,7 +203,7 @@ function AdminDashboard() {
         <KPI
           title="Approval Rate"
           value={
-            stats.businesses
+            stats.businesses > 0
               ? Math.round(((stats.businesses - stats.pending) / stats.businesses) * 100) + "%"
               : "0%"
           }
@@ -239,7 +211,7 @@ function AdminDashboard() {
         <KPI
           title="Featured Ratio"
           value={
-            stats.businesses
+            stats.businesses > 0
               ? Math.round((stats.featured / stats.businesses) * 100) + "%"
               : "0%"
           }
@@ -251,8 +223,8 @@ function AdminDashboard() {
   <div className="bg-white p-5 rounded-xl shadow">
     <h3 className="font-semibold mb-2">User vs Admin Ratio</h3>
     <p className="text-2xl font-bold">
-      {stats.admins ? Math.round((stats.users / stats.admins)) : 0}:1
-    </p>
+  {stats.admins > 0 ? Math.round(stats.users / stats.admins) : stats.users}:1
+</p>
   </div>
   </div>
 

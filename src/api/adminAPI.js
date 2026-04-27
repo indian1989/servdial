@@ -5,23 +5,23 @@ import API from "./axios";
 
 // ✅ FIXED
 export const getAllBusinesses = () => 
-  API.get("/admin-businesses");
+  API.get("/admin/businesses");
 
 export const addBusiness = (data) =>
-  API.post("/admin-businesses", data);
+  API.post("/admin/businesses", data);
 
 // ✅ FIXED PARAM ORDER
 export const approveBusiness = (id) =>
-  API.put(`/admin-businesses/${id}/approve`);
+  API.put(`/admin/businesses/${id}/approve`);
 
 export const rejectBusiness = (id) =>
-  API.put(`/admin-businesses/${id}/reject`);
+  API.put(`/admin/businesses/${id}/reject`);
 
 export const toggleFeatured = (id) =>
-  API.put(`/admin-businesses/${id}/feature`);
+  API.put(`/admin/businesses/${id}/feature`);
 
 export const deleteBusiness = (id) =>
-  API.delete(`/admin-businesses/${id}`);
+  API.delete(`/admin/businesses/${id}`);
 
 // ==================== BUSINESS STATS ====================
 export const getBusinessStats = () =>
