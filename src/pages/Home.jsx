@@ -41,7 +41,7 @@ const Home = () => {
   setLoading(true);
 
   try {
-    const res = await API.get("/homepage", {
+    const res = await API.get("/", {
       params: { city: currentCity?.slug },
     });
 
