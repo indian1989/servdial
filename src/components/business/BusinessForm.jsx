@@ -70,12 +70,12 @@ const BusinessForm = ({ initialData = {}, onSubmit, children }) => {
         ]);
 
         // ✅ STRICT CATEGORY TREE
-        const raw = catRes?.data?.categories || [];
+        const raw = catRes?.data?.data || [];
         const tree = buildCategoryTree(raw);
         setCategories(flattenCategories(tree));
 
         // ✅ STRICT CITY NORMALIZATION
-        const normalizedCities = (cityRes?.data?.cities || [])
+        const normalizedCities = (cityRes?.data?.data || [])
           .filter((c) => c._id && c.name)
           .map((c) => ({
             value: c._id,

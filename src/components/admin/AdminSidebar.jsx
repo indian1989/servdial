@@ -96,18 +96,10 @@ function AdminSidebar({ onClose }) {
           <FaCity /> {!collapsed && "Cities"}
         </NavLink>
 
-        <NavLink to="/admin/cities/add" className={linkClass}>
-          <FaCity /> {!collapsed && "Add City"}
-        </NavLink>
-
         <p className={section}>{!collapsed && "Category Engine"}</p>
 
         <NavLink to="/admin/categories" className={linkClass}>
           <FaLayerGroup /> {!collapsed && "Categories"}
-        </NavLink>
-
-        <NavLink to="/admin/categories/add" className={linkClass}>
-          <FaLayerGroup /> {!collapsed && "Add Category"}
         </NavLink>
 
         <p className={section}>{!collapsed && "Monetization"}</p>
