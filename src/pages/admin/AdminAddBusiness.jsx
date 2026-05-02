@@ -1,16 +1,16 @@
 import BusinessForm from "../../components/business/BusinessForm";
-import { addBusiness } from "../../api/adminAPI";
-import { normalizeBusinessPayload } from "../../components/business/BusinessMapper";
+import BusinessSubmitter from "../../components/business/BusinessSubmitter";
 
 const AdminAddBusiness = () => {
   return (
-    <BusinessForm
-      mode="admin"
-      onSubmit={async (data) => {
-        await addBusiness(normalizeBusinessPayload(data, "admin"));
-        alert("Business added successfully!");
-      }}
-    />
+    <BusinessSubmitter mode="admin">
+      {(submitBusiness) => (
+        <BusinessForm
+          mode="admin"
+          onSubmit={submitBusiness}
+        />
+      )}
+    </BusinessSubmitter>
   );
 };
 

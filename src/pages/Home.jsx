@@ -19,74 +19,69 @@ import BecomeProvider from "../components/home/BecomeProvider";
 const Home = () => {
   const { city, loadingCity } = useCity();
 
-  const [featuredBusinesses, setFeaturedBusinesses] = useState([]);
-  const [topRatedBusinesses, setTopRatedBusinesses] = useState([]);
-  const [latestBusinesses, setLatestBusinesses] = useState([]);
-  const [nearbyBusinesses, setNearbyBusinesses] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [cities, setCities] = useState([]);
+  const [data, setData] = useState({
+    featured: [],
+    topRated: [],
+    latest: [],
+    nearby: [],
+    categories: [],
+    cities: [],
+  });
 
   const [userLocation, setUserLocation] = useState({ lat: null, lng: null });
   const [loading, setLoading] = useState(false);
 
-  const lastFetchedCity = useRef(null);
+  const lastFetchKey = useRef(null);
 
-  // ================= FETCH HOMEPAGE =================
-  const fetchHomepageData = async (currentCity) => {
-  if (!currentCity?.slug) return;
+  /* ================= FETCH HOMEPAGE ================= */
+  const fetchHomepageData = async ({ citySlug, lat, lng }) => {
+    if (!citySlug) return;
 
-  if (lastFetchedCity.current === currentCity?.slug) return;
+    const key = `${citySlug}_${lat || "0"}_${lng || "0"}`;
 
-  lastFetchedCity.current = currentCity?.slug;
-  setLoading(true);
+    if (lastFetchKey.current === key) return;
+    lastFetchKey.current = key;
 
-  try {
-    const res = await API.get("/homepage", {
-  params: { city: currentCity.slug },
-});
+    setLoading(true);
 
-    const data = res?.data?.data || {};
+    try {
+      const res = await API.get("/homepage", {
+        params: {
+          city: citySlug,
+          lat,
+          lng,
+        },
+      });
 
-    setFeaturedBusinesses(data.featuredBusinesses || []);
-    setLatestBusinesses(data.latestBusinesses || []);
-    setTopRatedBusinesses(data.topRatedBusinesses || []);
-    setCategories(data.categories || []);
-    setCities(data.cities || []);
+      const d = res?.data?.data || {};
 
-  } catch (err) {
-    console.error("❌ Homepage load error:", err);
+      setData({
+        featured: d.featuredBusinesses || [],
+        topRated: d.topRatedBusinesses || [],
+        latest: d.latestBusinesses || [],
+        nearby: d.nearbyBusinesses || [],
+        categories: d.categories || [],
+        cities: d.cities || [],
+      });
 
-    setFeaturedBusinesses([]);
-    setLatestBusinesses([]);
-    setTopRatedBusinesses([]);
-    setCategories([]);
-    setCities([]);
+    } catch (err) {
+      console.error("❌ Homepage error:", err);
 
-  } finally {
-    setLoading(false);
-  }
-};
+      setData({
+        featured: [],
+        topRated: [],
+        latest: [],
+        nearby: [],
+        categories: [],
+        cities: [],
+      });
 
-  // ================= FETCH NEARBY =================
-  const fetchNearbyBusinesses = async (lat, lng) => {
-  try {
-    const res = await API.get("/businesses/nearby", {
-      params: { lat, lng, limit: 8 },
-    });
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    setNearbyBusinesses(
-      Array.isArray(res?.data?.data)
-        ? res.data.data
-        : []
-    );
-
-  } catch (err) {
-    console.error("❌ Nearby fetch failed:", err);
-    setNearbyBusinesses([]);
-  }
-};
-
-  // ================= GET USER LOCATION =================
+  /* ================= GET LOCATION ================= */
   useEffect(() => {
     if (!navigator.geolocation) return;
 
@@ -96,39 +91,31 @@ const Home = () => {
         const lng = pos.coords.longitude;
 
         setUserLocation({ lat, lng });
-        fetchNearbyBusinesses(lat, lng);
       },
       () => {
-        console.log("Location permission denied");
+        console.log("Location denied");
       },
       { enableHighAccuracy: true, timeout: 8000 }
     );
   }, []);
 
-  // ================= CITY CHANGE =================
-  useEffect(() => {
-    if (!loadingCity && city) {
-      fetchHomepageData(city);
-    }
-  }, [city, loadingCity]);
+  // 🔥 ONLY showing changed parts
 
-  // ================= FALLBACK (FIRST LOAD) =================
-  useEffect(() => {
-    if (!city && !loadingCity) {
-      const savedCity = localStorage.getItem("servdial_city");
+/* ================= MAIN FETCH TRIGGER ================= */
+useEffect(() => {
+  if (loadingCity) return;
 
-if (savedCity) {
-  try {
-    const parsed = JSON.parse(savedCity);
-    fetchHomepageData(parsed);
-  } catch {
-    fetchHomepageData({ name: "India", slug: "india" });
-  }
-} else {
-  fetchHomepageData({ name: "India", slug: "india" });
-}
-    }
-  }, [city, loadingCity]);
+  const citySlug = city?.slug || "india";
+
+  fetchHomepageData({
+    citySlug,
+    lat: userLocation.lat || undefined,
+    lng: userLocation.lng || undefined,
+  });
+
+}, [city, loadingCity, userLocation.lat, userLocation.lng]);
+
+const cityName = city?.name || "your area";
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -145,55 +132,60 @@ if (savedCity) {
 
       {/* ================= CATEGORIES ================= */}
       <CategoriesGrid
-        categories={categories}
+        categories={data.categories}
         city={city}
         loading={loading || loadingCity}
       />
 
       {/* ================= FEATURED ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center">
-          Featured Businesses in {city?.name || "your area"}
+        <h2 className="text-3xl font-bold text-center mb-8">
+          Featured Businesses in {cityName}
         </h2>
 
         <FeaturedBusinesses
-          businesses={featuredBusinesses}
-          loading={loading || loadingCity}
-        />
+  businesses={data.featured}
+  loading={loading || loadingCity}
+  city={city}
+/>
       </section>
 
       {/* ================= TOP RATED ================= */}
-<section className="my-14 max-w-7xl mx-auto px-4">
-  <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center">
-    Top Rated Businesses in {city?.name || "your area"}
-  </h2>
-
-  <PopularBusinesses
-    businesses={topRatedBusinesses}
-    loading={loading || loadingCity}
-  />
-</section>
-
-      {/* ================= LATEST ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 text-center">
-          Newly Added Businesses in {city?.name || "your area"}
+        <h2 className="text-3xl font-bold text-center mb-8">
+          Top Rated Businesses in {cityName}
         </h2>
 
         <PopularBusinesses
-          businesses={latestBusinesses}
+          businesses={data.topRated}
           loading={loading || loadingCity}
+          city={city}
+          title="top rated businesses"
         />
+      </section>
+
+      {/* ================= LATEST ================= */}
+      <section className="my-14 max-w-7xl mx-auto px-4">
+        <h2 className="text-3xl font-bold text-center mb-8">
+          Newly Added Businesses in {cityName}
+        </h2>
+
+        <PopularBusinesses
+  businesses={data.latest}
+  loading={loading || loadingCity}
+  city={city}
+  title="new businesses"
+/>
       </section>
 
       {/* ================= NEARBY ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl md:text-4xl font-semibold text-gray-900 mb-8 text-center">
+        <h2 className="text-2xl font-semibold text-center mb-8">
           Businesses Near You
         </h2>
 
         <NearbyBusinesses
-          businesses={nearbyBusinesses}
+          businesses={data.nearby}
           userLocation={userLocation}
           loading={loading || loadingCity}
         />
@@ -204,17 +196,15 @@ if (savedCity) {
         <RecommendedBusinesses city={city?.slug} />
       </section>
 
-      {/* ================= FEATURED CITIES ================= */}
+      {/* ================= CITIES ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">
-        <FeaturedCities cities={cities} loading={loading} />
+        <FeaturedCities cities={data.cities} loading={loading} />
       </section>
 
-      {/* ================= POPULAR SEARCHES ================= */}
       <section className="my-14">
         <PopularSearches loading={loading} />
       </section>
 
-      {/* ================= TRUST + CTA ================= */}
       <WhyChooseServDial />
       <Testimonials loading={loading} />
       <DownloadApp />

@@ -1,11 +1,13 @@
 import { useState } from "react";
+import { useCity } from "../../context/CityContext";
 
 const GPSButton = () => {
   const [loading, setLoading] = useState(false);
+  const { detectLocation } = useCity();
 
-  const detectLocation = () => {
+  const handleDetect = () => {
     if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser.");
+      alert("Geolocation not supported");
       return;
     }
 
@@ -13,42 +15,22 @@ const GPSButton = () => {
 
     navigator.geolocation.getCurrentPosition(
       async (position) => {
-        const { latitude, longitude } = position.coords;
-
         try {
-          // Reverse Geocoding using OpenStreetMap
-          const response = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
-          );
-
-          const data = await response.json();
-
-          const city =
-            data.address.city ||
-            data.address.town ||
-            data.address.village ||
-            data.address.state;
-
-          if (city) {
-            localStorage.setItem("servdial_city", city);
-            window.location.reload(); // reload to reflect city change
-          } else {
-            alert("City not detected. Please select manually.");
-          }
-
-        } catch (error) {
-          alert("Failed to detect city.");
+          await detectLocation(); 
+          alert("Location detected. Please select your city if not auto-selected.");
+        } catch (e) {
+          alert("Failed to detect city");
+        } finally {
+          setLoading(false);
         }
-
-        setLoading(false);
       },
       (error) => {
         setLoading(false);
 
         if (error.code === 1) {
-          alert("Location access denied.");
+          alert("Location permission denied");
         } else {
-          alert("Unable to fetch location.");
+          alert("Unable to fetch location");
         }
       }
     );
@@ -56,12 +38,10 @@ const GPSButton = () => {
 
   return (
     <button
-      onClick={detectLocation}
+      onClick={handleDetect}
       disabled={loading}
       className={`px-3 py-2 rounded-md text-white transition ${
-        loading
-          ? "bg-gray-400 cursor-not-allowed"
-          : "bg-blue-500 hover:bg-blue-600"
+        loading ? "bg-gray-400" : "bg-blue-500 hover:bg-blue-600"
       }`}
     >
       {loading ? "Detecting..." : "📍 GPS"}

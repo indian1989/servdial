@@ -8,7 +8,7 @@ import { Helmet } from "react-helmet-async";
 import BusinessDetails from "./BusinessDetails";
 
 const BusinessPage = () => {
-  const { citySlug, categorySlug, businessSlug } = useParams();
+  const { citySlug, categorySlug, slug } = useParams();
 
   const [business, setBusiness] = useState(null);
   const [reviews, setReviews] = useState([]);
@@ -18,7 +18,7 @@ const BusinessPage = () => {
   // ================= FETCH BUSINESS =================
   const fetchBusiness = async () => {
     try {
-      const res = await API.get(`/${citySlug}/${categorySlug}/${businessSlug}`);
+      const res = await API.get(`/businesses/${slug}`);
 
       const biz = res.data.business;
 
@@ -48,8 +48,8 @@ const BusinessPage = () => {
   };
 
   useEffect(() => {
-  if (citySlug && categorySlug && businessSlug) {
-    fetchBusiness();
+  if (slug) {
+  fetchBusiness();
   }
 }, [citySlug, categorySlug, businessSlug]);
 

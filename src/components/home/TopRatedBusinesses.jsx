@@ -1,23 +1,9 @@
-// frontend/src/components/home/TopRatedBusinesses.jsx
-import { useEffect, useState } from "react";
-import API from "../../api/axios";
+// components/home/TopRatedBusinesses.jsx
+
 import BusinessCard from "../business/BusinessCard";
 
-const TopRatedBusinesses = ({ city }) => {
-  const [businesses, setBusinesses] = useState([]);
-
-  useEffect(() => {
-    const fetchBusinesses = async () => {
-      try {
-        const res = await API.get(`/businesses/top-rated?city=${city?.slug}`);
-        setBusinesses(res?.data?.data || []);
-      } catch {
-        setBusinesses([]);
-      }
-    };
-
-    fetchBusinesses();
-  }, [city]);
+const TopRatedBusinesses = ({ businesses = [], city, loading }) => {
+  if (!loading && businesses.length === 0) return null;
 
   return (
     <section className="max-w-7xl mx-auto px-4 mt-16">
@@ -26,15 +12,21 @@ const TopRatedBusinesses = ({ city }) => {
           Top Rated Businesses
         </h2>
         <p className="text-gray-500 text-sm">
-          Best reviewed services in {city?.name}
+          Best reviewed services in {city?.name || "your area"}
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {businesses.map((biz) => (
-          <BusinessCard key={biz._id} business={biz} />
-        ))}
-      </div>
+      {loading ? (
+        <div className="text-center text-gray-400 py-10 animate-pulse">
+          Loading top rated businesses...
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {businesses.map((biz) => (
+            <BusinessCard key={biz._id} business={biz} />
+          ))}
+        </div>
+      )}
     </section>
   );
 };

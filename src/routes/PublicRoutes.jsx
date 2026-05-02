@@ -18,38 +18,34 @@ const PublicRoutes = () => {
   return (
     <Route element={<PublicLayout />}>
 
-      {/* HOME */}
-      <Route path="/" element={<Home />} />
+  {/* HOME */}
+  <Route path="/" element={<Home />} />
 
-      {/* SEARCH */}
-      <Route path="/search" element={<SearchResults />} />
+  {/* SEARCH */}
+  <Route path="/search" element={<SearchResults />} />
 
-      {/* LATEST */}
-      <Route path="/latest-businesses" element={<LatestBusinesses />} />
+  {/* LATEST */}
+  <Route path="/latest-businesses" element={<LatestBusinesses />} />
 
-      {/* BUSINESS PAGE */}
-      <Route
-        path="/:citySlug/:categorySlug/:slug"
-        element={<BusinessPage />}
-      />
+  {/* BUSINESS (MOST SPECIFIC FIRST) */}
+  <Route path="/:citySlug/:categorySlug/:slug" element={<BusinessPage />} />
 
-      {/* CATEGORY PAGES */}
-      <Route path="/categories" element={<CategoryPage />} />
-      <Route path="/category/:slug" element={<CategoryDetails />} />
+  {/* CITY + CATEGORY */}
+  <Route path="/:citySlug/:categorySlug" element={<CityCategoryPage />} />
 
-      {/* CITY PAGE */}
-      <Route path="/city/:city" element={<CityPage />} />
+  {/* CITY */}
+  <Route path="/city/:citySlug" element={<CityPage />} />
 
-      {/* CITY + CATEGORY */}
-      <Route path="/:city/:category" element={<CityCategoryPage />} />
+  {/* CATEGORIES (GLOBAL) */}
+  <Route path="/categories" element={<CategoryPage />} />
 
-      {/* ================= SEO FIXED (IMPORTANT) ================= */}
-      <Route path="/seo/:seoSlug" element={<SEOLandingPage />} />
+  {/* SEO */}
+  <Route path="/seo/:seoSlug" element={<SEOLandingPage />} />
 
-      {/* CLAIM BUSINESS */}
-      <Route path="/claim-business/:businessId" element={<ClaimBusiness />} />
+  {/* CLAIM */}
+  <Route path="/claim-business/:businessId" element={<ClaimBusiness />} />
 
-    </Route>
+</Route>
   );
 };
 

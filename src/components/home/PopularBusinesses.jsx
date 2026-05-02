@@ -1,14 +1,15 @@
-// src/components/home/PopularBusinesses.jsx
-import { useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
 import BusinessCard from "../business/BusinessCard";
 
-const PopularBusinesses = ({ businesses = [], loading = false }) => {
-  const { user } = useContext(AuthContext);
+const PopularBusinesses = ({
+  businesses = [],
+  loading = false,
+  city = null,
+  title = "businesses",
+}) => {
   const navigate = useNavigate();
-  const isAdmin = ["admin", "superadmin"].includes(user?.role);
 
+  // ================= LOADING =================
   if (loading) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
@@ -22,30 +23,26 @@ const PopularBusinesses = ({ businesses = [], loading = false }) => {
     );
   }
 
+  // ================= EMPTY =================
   if (!businesses.length) {
     return (
-      <p className="text-gray-500 text-center">
-        No businesses found in this category.
-      </p>
+      <div className="text-center text-gray-500 py-10">
+        No {title} found {city?.name ? `in ${city.name}` : ""}
+      </div>
     );
   }
 
+  // ================= DATA =================
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
       {businesses.map((b) => (
         <BusinessCard
           key={b._id}
           business={b}
-          onClick={() => navigate(`/businesses/${b.slug}`)}
+          onClick={() => navigate(`/business/${b.slug}`)} // ✅ FIXED
           showCallButton
         />
       ))}
-
-      {isAdmin && (
-        <p className="mt-4 text-xs text-gray-400 italic col-span-full">
-          Admin view
-        </p>
-      )}
     </div>
   );
 };

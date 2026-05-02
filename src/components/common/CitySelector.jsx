@@ -51,12 +51,16 @@ const CitySelector = () => {
 
   // ================= SELECT =================
   const handleSelect = (cityObj) => {
-  const formatted = {
+  if (!cityObj?._id) return;
+
+  setCity({
+    _id: cityObj._id,
     name: cityObj.name,
     slug: cityObj.slug,
-  };
+    state: cityObj.state,
+    district: cityObj.district,
+  });
 
-  setCity(formatted);
   setShow(false);
   setSearch("");
 };

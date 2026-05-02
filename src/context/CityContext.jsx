@@ -3,29 +3,55 @@ import API from "../api/axios";
 
 export const CityContext = createContext();
 
+const STORAGE_KEY = "servdial_city";
+
 export const CityProvider = ({ children }) => {
   const [city, setCityState] = useState(null);
   const [loadingCity, setLoadingCity] = useState(true);
 
-  // ================= SET CITY =================
+  // ================= SET CITY (STRICT) =================
   const setCity = (cityObj) => {
-    if (!cityObj || !cityObj.slug) return;
+    if (!cityObj?._id || !cityObj?.slug) return;
 
-    localStorage.setItem("servdial_city", JSON.stringify(cityObj));
-    setCityState(cityObj);
+    const safeCity = {
+      _id: cityObj._id,
+      name: cityObj.name,
+      slug: cityObj.slug,
+      state: cityObj.state || "",
+      district: cityObj.district || "",
+    };
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(safeCity));
+    setCityState(safeCity);
   };
 
-  // ================= DETECT LOCATION =================
-  const detectLocation = async () => {
-    // 🔥 HARD STOP — DO NOT RUN if city already exists
-    if (city?.slug) {
-      setLoadingCity(false);
-      return;
-    }
+  // ================= LOAD SAVED CITY =================
+  const loadSavedCity = () => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
 
-    // 🔥 HARD STOP — DO NOT RUN if saved city exists
-    const savedCity = localStorage.getItem("servdial_city");
-    if (savedCity) {
+      if (!saved) return null;
+
+      const parsed = JSON.parse(saved);
+
+      if (parsed?._id && parsed?.slug) {
+        return parsed;
+      }
+
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    } catch {
+      localStorage.removeItem(STORAGE_KEY);
+      return null;
+    }
+  };
+
+  // ================= GEO DETECTION =================
+  const detectLocation = async () => {
+    const saved = loadSavedCity();
+
+    if (saved) {
+      setCityState(saved);
       setLoadingCity(false);
       return;
     }
@@ -44,19 +70,19 @@ export const CityProvider = ({ children }) => {
 
           const detectedName = res?.data?.city;
 
-          if (detectedName) {
-            const resCity = await API.get(`/cities?search=${detectedName}`);
-            const match = resCity.data?.cities?.[0];
+          if (!detectedName) return fallbackIP();
 
-            if (match) {
-              setCity({
-                _id: match._id,
-                name: match.name,
-                slug: match.slug,
-              });
-            } else {
-              fallbackIP();
-            }
+          const cityRes = await API.get(
+            `/cities?search=${detectedName}`
+          );
+
+          const match = cityRes?.data?.cities?.find(
+            (c) =>
+              c.name.toLowerCase() === detectedName.toLowerCase()
+          );
+
+          if (match) {
+            setCity(match);
           } else {
             fallbackIP();
           }
@@ -71,16 +97,12 @@ export const CityProvider = ({ children }) => {
     );
   };
 
-  // ================= FALLBACK =================
+  // ================= IP FALLBACK =================
   const fallbackIP = async () => {
-    // 🔥 ALSO BLOCK HERE
-    if (city?.slug) {
-      setLoadingCity(false);
-      return;
-    }
+    const saved = loadSavedCity();
 
-    const savedCity = localStorage.getItem("servdial_city");
-    if (savedCity) {
+    if (saved) {
+      setCityState(saved);
       setLoadingCity(false);
       return;
     }
@@ -89,26 +111,28 @@ export const CityProvider = ({ children }) => {
       const res = await API.get("/location/ip");
       const detectedName = res?.data?.city;
 
-      if (detectedName) {
-        const resCity = await API.get(`/cities?search=${detectedName}`);
-        const match = resCity.data?.cities?.find(
-          (c) => c.name.toLowerCase() === detectedName.toLowerCase()
-        );
+      if (!detectedName) {
+        setCityState({ _id: "india", name: "India", slug: "india" });
+        setLoadingCity(false);
+        return;
+      }
 
-        if (match) {
-          setCity({
-            _id: match._id,
-            name: match.name,
-            slug: match.slug,
-          });
-        } else {
-          setCity({ name: "India", slug: "india" });
-        }
+      const cityRes = await API.get(
+        `/cities?search=${detectedName}`
+      );
+
+      const match = cityRes?.data?.cities?.find(
+        (c) =>
+          c.name.toLowerCase() === detectedName.toLowerCase()
+      );
+
+      if (match) {
+        setCity(match);
       } else {
-        setCity({ name: "India", slug: "india" });
+        setCityState({ _id: "india", name: "India", slug: "india" });
       }
     } catch {
-      setCity({ name: "India", slug: "india" });
+      setCityState({ _id: "india", name: "India", slug: "india" });
     } finally {
       setLoadingCity(false);
     }
@@ -116,22 +140,12 @@ export const CityProvider = ({ children }) => {
 
   // ================= INIT =================
   useEffect(() => {
-    const savedCity = localStorage.getItem("servdial_city");
+    const saved = loadSavedCity();
 
-    if (savedCity) {
-      try {
-        const parsed = JSON.parse(savedCity);
-
-        if (parsed?.slug && parsed?._id) {
-          setCityState(parsed);
-          setLoadingCity(false);
-          return;
-        } else {
-          localStorage.removeItem("servdial_city");
-        }
-      } catch {
-        localStorage.removeItem("servdial_city");
-      }
+    if (saved) {
+      setCityState(saved);
+      setLoadingCity(false);
+      return;
     }
 
     detectLocation();

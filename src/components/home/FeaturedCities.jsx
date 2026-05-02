@@ -1,54 +1,74 @@
 import { useNavigate } from "react-router-dom";
 
-const FeaturedCities = ({ cities = [], loading = false }) => {
+const FeaturedCities = ({
+  cities = [],
+  loading = false,
+}) => {
   const navigate = useNavigate();
 
-  // Fallback hardcoded cities if no data passed
-  const defaultCities = [
-  { name: "Delhi", slug: "delhi", image: "https://images.unsplash.com/photo-1587474260584-136574528ed5" },
-  { name: "Mumbai", slug: "mumbai", image: "https://images.unsplash.com/photo-1567157577867-05ccb1388e66" },
-  { name: "Bangalore", slug: "bangalore", image: "https://images.unsplash.com/photo-1596176530529-78163a4c76c6" },
-  { name: "Hyderabad", slug: "hyderabad", image: "https://images.unsplash.com/photo-1625123009804-3f3c3f5a5d6c" },
-  { name: "Chennai", slug: "chennai", image: "https://images.unsplash.com/photo-1599661046289-e31897846e41" },
-  { name: "Kolkata", slug: "kolkata", image: "https://images.unsplash.com/photo-1558431382-27e303142255" }
-];
+  // ================= LOADING =================
+  if (loading) {
+    return (
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5">
+        {[...Array(6)].map((_, i) => (
+          <div
+            key={i}
+            className="h-28 bg-gray-200 animate-pulse rounded-xl"
+          />
+        ))}
+      </div>
+    );
+  }
 
-  const list = cities.length ? cities : defaultCities;
+  // ================= EMPTY =================
+  if (!cities.length) {
+    return (
+      <div className="text-center text-gray-500 py-10">
+        No cities available right now
+      </div>
+    );
+  }
 
+  // ================= NAVIGATION =================
   const openCity = (city) => {
-    navigate(`/${city?.slug}/all`);
+    // ✅ Use valid category slug (example: "services")
+    navigate(`/${city.slug}`);
   };
 
+  // ================= UI =================
   return (
     <section className="max-w-7xl mx-auto px-4 mt-16">
       {/* TITLE */}
       <div className="text-center mb-10">
-        <h2 className="text-2xl font-bold">Explore Businesses by City</h2>
-        <p className="text-gray-500 text-sm mt-1">Discover trusted services across major cities</p>
+        <h2 className="text-2xl font-bold">
+          Explore Businesses by City
+        </h2>
+        <p className="text-gray-500 text-sm mt-1">
+          Discover trusted services across cities
+        </p>
       </div>
 
       {/* GRID */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-5">
-        {loading
-          ? [...Array(6)].map((_, i) => (
-              <div key={i} className="h-28 bg-gray-200 animate-pulse rounded-xl" />
-            ))
-          : list.map((city, i) => (
-              <div
-                key={city.slug}
-                onClick={() => openCity(city)}
-                className="relative rounded-xl overflow-hidden cursor-pointer group"
-              >
-                <img
-                  src={city.image}
-                  alt={city.name}
-                  className="h-28 w-full object-cover group-hover:scale-110 transition duration-300"
-                />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <h3 className="text-white font-semibold text-lg">{city.name}</h3>
-                </div>
-              </div>
-            ))}
+        {cities.map((city) => (
+          <div
+            key={city._id}
+            onClick={() => openCity(city)}
+            className="relative rounded-xl overflow-hidden cursor-pointer group"
+          >
+            <img
+              src={city.image || "/no-image.png"} // ✅ safe fallback
+              alt={city.name}
+              className="h-28 w-full object-cover group-hover:scale-110 transition duration-300"
+            />
+
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+              <h3 className="text-white font-semibold text-lg">
+                {city.name}
+              </h3>
+            </div>
+          </div>
+        ))}
       </div>
     </section>
   );

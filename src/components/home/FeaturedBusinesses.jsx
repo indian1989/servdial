@@ -1,60 +1,51 @@
-import { useContext } from "react";
-import { CityContext } from "../../context/CityContext";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../../context/AuthContext";
 import BusinessCard from "../business/BusinessCard";
 
-const FeaturedBusinesses = ({ businesses = [], loading = false }) => {
-  const { user } = useContext(AuthContext);
-  const { selectedCity } = useContext(CityContext);
+const FeaturedBusinesses = ({
+  businesses = [],
+  loading = false,
+  city = null,
+}) => {
   const navigate = useNavigate();
-  const isAdmin = ["admin", "superadmin"].includes(user?.role);
 
+  // ================= LOADING =================
   if (loading) {
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8">
         {[...Array(8)].map((_, i) => (
-          <div key={i} className="h-60 sm:h-64 md:h-72 bg-gray-200 animate-pulse rounded-xl shadow" />
+          <div
+            key={i}
+            className="h-60 sm:h-64 md:h-72 bg-gray-200 animate-pulse rounded-xl shadow"
+          />
         ))}
       </div>
     );
   }
 
- if (!loading && businesses.length === 0) {
-  return (
-    <div className="text-center text-gray-500 py-10">
-      <p className="font-medium">
+  // ================= EMPTY =================
+  if (!businesses.length) {
+    return (
+      <div className="text-center text-gray-500 py-10">
         No featured businesses available in{" "}
         <span className="font-semibold">
-          {selectedCity?.name ?? "this city"}
+          {city?.name || "this area"}
         </span>
-      </p>
+      </div>
+    );
+  }
 
-      {isAdmin && (
-        <p className="text-xs mt-2 text-gray-400">
-          Tip: Mark businesses as "Featured" from admin panel
-        </p>
-      )}
-    </div>
-  );
-}
-
+  // ================= DATA =================
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
       {businesses.map((b) => (
         <BusinessCard
           key={b._id}
           business={b}
-          onClick={() => navigate(`/businesses/${b.slug}`)}
+          onClick={() => navigate(`/business/${b.slug}`)} 
+          // ✅ keep ONE route standard
           showCallButton
         />
       ))}
-
-      {isAdmin && (
-        <p className="mt-4 text-xs text-gray-400 italic col-span-full">
-          Admin view
-        </p>
-      )}
     </div>
   );
 };

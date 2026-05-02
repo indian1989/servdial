@@ -62,7 +62,7 @@ function AdminDashboard() {
 
     const [adminRes, businessRes, usersRes, adsRes] = await Promise.all([
       API.get("/admin/dashboard"),
-      API.get("/admin-businesses"),
+      API.get("/admin/businesses"),
       API.get("/admin/users"),
       API.get("/admin/banners")
     ]);
