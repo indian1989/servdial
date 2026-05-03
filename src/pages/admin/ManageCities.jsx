@@ -11,6 +11,7 @@ import {
 
 import Loader from "../../components/common/Loader";
 import { FaTrash, FaEdit } from "react-icons/fa";
+import CreatableSelect from "react-select/creatable";
 
 const PAGE_SIZE = 15;
 
@@ -43,100 +44,209 @@ const ManageCities = () => {
     longitude: "",
   });
 
+  // ================= DROPDOWN OPTIONS =================
+const getOptions = (key) => {
+  const unique = [...new Set(cities.map((c) => c[key]).filter(Boolean))];
+
+  return unique.map((v) => ({
+    label: v,
+    value: v,
+  }));
+};
+
+// ================= FIND CITY DATA =================
+const getCityDetails = (cityName) => {
+  if (!cityName) return null;
+
+  const normalized = cityName.toLowerCase().trim();
+
+  return cities.find(
+    (c) =>
+      c.name?.toLowerCase().trim() === normalized ||
+      c.name?.toLowerCase().includes(normalized)
+  );
+};
+
   // ================= FETCH =================
   const fetchCities = async () => {
-    setLoading(true);
-    try {
-      const res = await getAllCities();
-      setCities(res.data?.cities || []);
-    } catch (err) {
-      console.error(err);
-      alert("Failed to fetch cities");
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const res = await getAllCities();
+
+    console.log("🔥 FULL RESPONSE:", res);
+    console.log("🔥 DATA:", res.data);
+
+    setCities(res.data?.data || []);
+  } catch (err) {
+    console.error("❌ FETCH ERROR:", err);
+    alert("Failed to fetch cities");
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchCities();
   }, []);
 
-  // ================= ADD CITY =================
-  const handleAddCity = async () => {
-    const name = form.name.trim();
-    const district = form.district.trim();
-    const state = form.state.trim();
-    const lat = Number(form.latitude);
-    const lng = Number(form.longitude);
+  // ================= COORDINATES =================
+  const fetchCoordinates = async (name, district, state) => {
+  try {
+    const query = `${name}, ${district}, ${state}, India`;
 
-    if (!name || !district || !state || isNaN(lat) || isNaN(lng)) {
-      setError("All fields including coordinates are required");
-      return;
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}`
+    );
+
+    const data = await res.json();
+
+    if (data && data.length > 0) {
+      return {
+        lat: parseFloat(data[0].lat),
+        lng: parseFloat(data[0].lon),
+      };
     }
 
-    setError("");
-    setLoading(true);
+    return null;
+  } catch (err) {
+    console.error("Geo error:", err);
+    return null;
+  }
+};
 
-    try {
-      await addCity({
-        name,
-        district,
-        state,
-        country: "India",
-        latitude: lat,
-        longitude: lng,
-      });
+// ================= FETCH CITY DETAILS =================
+const fetchCityMeta = async (name) => {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&q=${encodeURIComponent(name)}`
+    );
 
-      setForm({
-        name: "",
-        district: "",
-        state: "",
-        latitude: "",
-        longitude: "",
-      });
+    const data = await res.json();
 
-      fetchCities();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to add city");
-    } finally {
-      setLoading(false);
+    if (data && data.length > 0) {
+      const addr = data[0].address;
+
+      return {
+        district:
+          addr.state_district ||
+          addr.county ||
+          addr.city_district ||
+          "",
+        state: addr.state || "",
+        lat: parseFloat(data[0].lat),
+        lng: parseFloat(data[0].lon),
+      };
     }
-  };
+
+    return null;
+  } catch (err) {
+    console.error("City meta error:", err);
+    return null;
+  }
+};
+
+// ================= ADD CITY =================
+const handleAddCity = async () => {
+  if (!form.name || !form.district || !form.state) {
+    return setError("City, district, state required");
+  }
+
+  setLoading(true);
+  setError("");
+
+  try {
+    let lat = Number(form.latitude);
+    let lng = Number(form.longitude);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      const coords = await fetchCoordinates(
+        form.name,
+        form.district,
+        form.state
+      );
+
+      if (!coords) {
+        setError("Coordinates not found");
+        setLoading(false);
+        return;
+      }
+
+      lat = coords.lat;
+      lng = coords.lng;
+    }
+
+    await addCity({
+      name: form.name,
+      district: form.district,
+      state: form.state,
+      country: "India",
+      latitude: lat,
+      longitude: lng,
+    });
+
+    setForm({
+      name: "",
+      district: "",
+      state: "",
+      latitude: "",
+      longitude: "",
+    });
+
+    fetchCities();
+  } catch (err) {
+    console.error(err);
+    alert("Add failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ================= UPDATE CITY =================
   const handleUpdateCity = async (id) => {
-    const name = editForm.name.trim();
-    const district = editForm.district.trim();
-    const state = editForm.state.trim();
-    const lat = Number(editForm.latitude);
-    const lng = Number(editForm.longitude);
+  if (!editForm.name || !editForm.district || !editForm.state) {
+    return alert("All fields required");
+  }
 
-    if (!name || !district || !state || isNaN(lat) || isNaN(lng)) {
-      alert("All fields required");
-      return;
+  setLoading(true);
+
+  try {
+    let lat = Number(editForm.latitude);
+    let lng = Number(editForm.longitude);
+
+    if (isNaN(lat) || isNaN(lng)) {
+      const coords = await fetchCoordinates(
+        editForm.name,
+        editForm.district,
+        editForm.state
+      );
+
+      if (!coords) {
+        alert("Coordinates not found");
+        setLoading(false);
+        return;
+      }
+
+      lat = coords.lat;
+      lng = coords.lng;
     }
 
-    setLoading(true);
+    await updateCity(id, {
+      name: editForm.name,
+      district: editForm.district,
+      state: editForm.state,
+      latitude: lat,
+      longitude: lng,
+    });
 
-    try {
-      await updateCity(id, {
-        name,
-        district,
-        state,
-        latitude: lat,
-        longitude: lng,
-      });
-
-      setEditId(null);
-      fetchCities();
-    } catch (err) {
-      console.error(err);
-      alert("Update failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+    setEditId(null);
+    fetchCities();
+  } catch (err) {
+    console.error(err);
+    alert("Update failed");
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ================= DELETE =================
   const handleDelete = async (id) => {
@@ -155,36 +265,53 @@ const ManageCities = () => {
 
   // ================= BULK UPLOAD =================
   const handleBulk = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  const file = e.target.files[0];
+  if (!file) return;
 
-    setUploading(true);
+  setUploading(true);
 
-    try {
-      const text = await file.text();
+  try {
+    const text = await file.text();
 
-      const rows = text.split("\n").slice(1).map((r) => r.split(","));
+    const rows = text.split("\n").slice(1);
 
-      const payload = rows
-        .map((r) => ({
-          name: r[0]?.trim(),
-          district: r[1]?.trim(),
-          state: r[2]?.trim(),
-          latitude: Number(r[3]),
-          longitude: Number(r[4]),
-        }))
-        .filter((c) => c.name && !isNaN(c.latitude) && !isNaN(c.longitude));
+    const processed = [];
 
-      await bulkUploadCities({ cities: payload });
+    for (let row of rows) {
+      const [name, district, state, lat, lng] = row.split(",");
 
-      fetchCities();
-    } catch (err) {
-      console.error(err);
-      alert("Bulk upload failed");
-    } finally {
-      setUploading(false);
+      if (!name || !district || !state) continue;
+
+      let latitude = Number(lat);
+      let longitude = Number(lng);
+
+      if (isNaN(latitude) || isNaN(longitude)) {
+        const coords = await fetchCoordinates(name, district, state);
+        if (!coords) continue;
+
+        latitude = coords.lat;
+        longitude = coords.lng;
+      }
+
+      processed.push({
+        name: name.trim(),
+        district: district.trim(),
+        state: state.trim(),
+        latitude,
+        longitude,
+      });
     }
-  };
+
+    await bulkUploadCities({ cities: processed });
+
+    fetchCities();
+  } catch (err) {
+    console.error(err);
+    alert("Bulk upload failed");
+  } finally {
+    setUploading(false);
+  }
+};
 
   // ================= FILTER =================
   const filtered = cities.filter((c) =>
@@ -209,40 +336,134 @@ const ManageCities = () => {
       {/* ================= ADD ================= */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
 
-        <input
-          placeholder="City"
-          value={form.name}
-          onChange={(e) => setForm({ ...form, name: e.target.value })}
-          className="border p-2 rounded"
-        />
+        <CreatableSelect
+  placeholder="Select or type city"
+  options={getOptions("name")}
+  value={form.name ? { label: form.name, value: form.name } : null}
+  onChange={async (selected) => {
+  const cityName = selected?.value || "";
+
+  // 🔥 1. Try DB first
+  const cityData = getCityDetails(cityName);
+
+  let updatedForm = {
+    ...form,
+    name: cityName,
+    district: cityData?.district || "",
+    state: cityData?.state || "",
+  };
+
+  setForm(updatedForm);
+
+  // 🔥 2. If not found in DB → use geo autofill
+  if (!cityData && cityName) {
+    const meta = await fetchCityMeta(cityName);
+
+    if (meta) {
+      updatedForm = {
+        ...updatedForm,
+        district: meta.district || "",
+        state: meta.state || "",
+        latitude: meta.lat,
+        longitude: meta.lng,
+      };
+
+      setForm(updatedForm);
+      return;
+    }
+  }
+
+  // 🔥 3. fallback → fetch coords
+  if (updatedForm.name && updatedForm.district && updatedForm.state) {
+    const coords = await fetchCoordinates(
+      updatedForm.name,
+      updatedForm.district,
+      updatedForm.state
+    );
+
+    if (coords) {
+      setForm((prev) => ({
+        ...prev,
+        latitude: coords.lat,
+        longitude: coords.lng,
+      }));
+    }
+  }
+}}
+/>
+
+        <CreatableSelect
+  placeholder="Select or type district"
+  options={getOptions("district")}
+  value={
+    form.district ? { label: form.district, value: form.district } : null
+  }
+  onChange={async (selected) => {
+  const district = selected?.value || "";
+
+  const updated = { ...form, district };
+  setForm(updated);
+
+  if (updated.name && district && updated.state) {
+    const coords = await fetchCoordinates(
+      updated.name,
+      district,
+      updated.state
+    );
+
+    if (coords) {
+      setForm((prev) => ({
+        ...prev,
+        latitude: coords.lat,
+        longitude: coords.lng,
+      }));
+    }
+  }
+}}
+/>
+
+        <CreatableSelect
+  placeholder="Select or type state"
+  options={getOptions("state")}
+  value={form.state ? { label: form.state, value: form.state } : null}
+  onChange={async (selected) => {
+    const newState = selected?.value || "";
+
+    const updatedForm = { ...form, state: newState };
+    setForm(updatedForm);
+
+    // 🔥 AUTO COORDINATES
+    if (updatedForm.name && updatedForm.district && newState) {
+      const coords = await fetchCoordinates(
+        updatedForm.name,
+        updatedForm.district,
+        newState
+      );
+
+      if (coords) {
+        setForm((prev) => ({
+          ...prev,
+          latitude: coords.lat,
+          longitude: coords.lng,
+        }));
+      }
+    }
+  }}
+/>
 
         <input
-          placeholder="District"
-          value={form.district}
-          onChange={(e) => setForm({ ...form, district: e.target.value })}
-          className="border p-2 rounded"
-        />
+  placeholder="Lat (auto)"
+  value={form.latitude}
+  disabled
+  className="border p-2 rounded bg-gray-100 cursor-not-allowed"
+/>
 
-        <input
-          placeholder="State"
-          value={form.state}
-          onChange={(e) => setForm({ ...form, state: e.target.value })}
-          className="border p-2 rounded"
-        />
-
-        <input
-          placeholder="Lat"
-          value={form.latitude}
-          onChange={(e) => setForm({ ...form, latitude: e.target.value })}
-          className="border p-2 rounded"
-        />
-
-        <input
-          placeholder="Lng"
-          value={form.longitude}
-          onChange={(e) => setForm({ ...form, longitude: e.target.value })}
-          className="border p-2 rounded"
-        />
+<input
+  placeholder="Lng (auto)"
+  value={form.longitude}
+  disabled
+  className="border p-2 rounded bg-gray-100 cursor-not-allowed"
+/>
 
       </div>
 
@@ -268,67 +489,191 @@ const ManageCities = () => {
       />
 
       {/* ================= TABLE ================= */}
-      <table className="w-full border">
-        <thead>
-          <tr>
-            <th>City</th>
-            <th>District</th>
-            <th>State</th>
-            <th>Lat</th>
-            <th>Lng</th>
-            <th>Action</th>
-          </tr>
-        </thead>
+      <div className="bg-white rounded-xl shadow overflow-hidden">
 
-        <tbody>
-          {paginated.map((c) => (
-            <tr key={c._id} className="text-center">
+  <div className="overflow-x-auto">
+    <table className="w-full text-sm">
 
-              <td>
-                {editId === c._id ? (
-                  <input
-                    value={editForm.name}
-                    onChange={(e) =>
-                      setEditForm({ ...editForm, name: e.target.value })
+      {/* HEADER */}
+      <thead className="bg-gray-100 sticky top-0 z-10">
+        <tr className="text-left text-gray-600 uppercase text-xs tracking-wider">
+          <th className="p-3">City</th>
+          <th className="p-3">District</th>
+          <th className="p-3">State</th>
+          <th className="p-3">Latitude</th>
+          <th className="p-3">Longitude</th>
+          <th className="p-3 text-center">Actions</th>
+        </tr>
+      </thead>
+
+      {/* BODY */}
+      <tbody>
+        {paginated.map((c, index) => (
+          <tr
+            key={c._id}
+            className={`border-t hover:bg-gray-50 ${
+              index % 2 === 0 ? "bg-white" : "bg-gray-50/30"
+            }`}
+          >
+
+            {/* CITY */}
+            <td className="p-3 font-medium">
+              {editId === c._id ? (
+                <input
+                  className="border px-2 py-1 rounded w-full"
+                  value={editForm.name}
+                  onBlur={async () => {
+                    if (!editForm.name) return;
+
+                    const meta = await fetchCityMeta(editForm.name);
+
+                    if (meta) {
+                      setEditForm((prev) => ({
+                        ...prev,
+                        district: meta.district || prev.district,
+                        state: meta.state || prev.state,
+                        latitude: meta.lat,
+                        longitude: meta.lng,
+                      }));
                     }
-                  />
-                ) : (
-                  c.name
-                )}
-              </td>
-
-              <td>{c.district}</td>
-              <td>{c.state}</td>
-              <td>{c.latitude}</td>
-              <td>{c.longitude}</td>
-
-              <td>
-                <button
-                  onClick={() => {
-                    setEditId(c._id);
-                    setEditForm(c);
                   }}
-                >
-                  <FaEdit />
-                </button>
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, name: e.target.value })
+                  }
+                />
+              ) : (
+                c.name
+              )}
+            </td>
 
-                {editId === c._id && (
-                  <button onClick={() => handleUpdateCity(c._id)}>
-                    Save
-                  </button>
+            {/* DISTRICT */}
+            <td className="p-3">
+            {editId === c._id ? (
+              <CreatableSelect
+                options={getOptions("district")}
+                value={
+                  editForm.district
+                    ? { label: editForm.district, value: editForm.district }
+                    : null
+                }
+                onChange={(selected) =>
+                  setEditForm({ ...editForm, district: selected?.value || "" })
+                }
+              />
+            ) : (
+              c.district
+            )}
+          </td>
+
+            {/* STATE */}
+            <td className="p-3">
+            {editId === c._id ? (
+              <CreatableSelect
+                options={getOptions("state")}
+                value={
+                  editForm.state
+                    ? { label: editForm.state, value: editForm.state }
+                    : null
+                }
+                onChange={(selected) =>
+                  setEditForm({ ...editForm, state: selected?.value || "" })
+                }
+              />
+            ) : (
+              c.state
+            )}
+          </td>
+
+            {/* LAT */}
+            <td className="p-3">
+            {editId === c._id ? (
+              <input
+                type="number"
+                className="border px-2 py-1 rounded w-full"
+                value={editForm.latitude}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, latitude: e.target.value })
+                }
+              />
+            ) : (
+              c.latitude
+            )}
+          </td>
+
+            {/* LNG */}
+            <td className="p-3">
+            {editId === c._id ? (
+              <input
+                type="number"
+                className="border px-2 py-1 rounded w-full"
+                value={editForm.longitude}
+                onChange={(e) =>
+                  setEditForm({ ...editForm, longitude: e.target.value })
+                }
+              />
+            ) : (
+              c.longitude
+            )}
+          </td>
+
+            {/* ACTIONS */}
+            <td className="p-3">
+              <div className="flex justify-center gap-2">
+
+                {editId === c._id ? (
+                  <>
+                    <button
+                      onClick={() => handleUpdateCity(c._id)}
+                      className="px-3 py-1 bg-green-600 text-white rounded text-xs hover:bg-green-700"
+                    >
+                      Save
+                    </button>
+
+                    <button
+                      onClick={() => setEditId(null)}
+                      className="px-3 py-1 bg-gray-400 text-white rounded text-xs hover:bg-gray-500"
+                    >
+                      Cancel
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => {
+                        setEditId(c._id);
+                        setEditForm({
+                        ...c,
+                        latitude: c.latitude ?? "",
+                        longitude: c.longitude ?? "",
+                      });
+                      }}
+                      className="flex items-center gap-1 px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700"
+                    >
+                      <FaEdit /> Edit
+                    </button>
+
+                    <button
+                      onClick={() => handleDelete(c._id)}
+                      className="flex items-center gap-1 px-3 py-1 bg-red-600 text-white rounded text-xs hover:bg-red-700"
+                    >
+                      <FaTrash /> Delete
+                    </button>
+                  </>
                 )}
 
-                <button onClick={() => handleDelete(c._id)}>
-                  <FaTrash />
-                </button>
-              </td>
+              </div>
+            </td>
 
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          </tr>
+        ))}
+      </tbody>
 
-    </div>
+    </table>
+  </div>
+
+</div>
+
+</div>
   );
 };
 

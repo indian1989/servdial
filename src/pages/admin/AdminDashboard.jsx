@@ -60,18 +60,41 @@ function AdminDashboard() {
   try {
     setError("");
 
-    const [adminRes, businessRes, usersRes, adsRes] = await Promise.all([
-      API.get("/admin/dashboard"),
-      API.get("/admin/businesses"),
-      API.get("/admin/users"),
-      API.get("/admin/banners")
-    ]);
+    const [adminRes, businessRes, usersRes, adsRes, citiesRes] =
+      await Promise.all([
+        API.get("/admin/dashboard"),
+        API.get("/admin/businesses"),
+        API.get("/admin/users"),
+        API.get("/admin/banners"),
+        API.get("/admin/cities"),
+      ]);
 
-    const adminData = adminRes?.data?.stats || adminRes?.data || {};
-    const usersList = usersRes?.data?.users || usersRes?.data?.data || usersRes?.data || [];
-    const businessData = businessRes?.data?.stats || businessRes?.data || {};
-    const businessList = businessRes?.data?.businesses || businessRes?.data?.data || [];
+    const adminData =
+  adminRes?.data?.data ||   // ✅ YOUR CURRENT API FORMAT
+  adminRes?.data?.stats || // fallback (future safe)
+  adminRes?.data ||
+  {};
+
+    console.log("ADMIN DATA:", adminData);
+
+    const usersList =
+      usersRes?.data?.users ||
+      usersRes?.data?.data ||
+      usersRes?.data ||
+      [];
+
+    const businessData =
+      businessRes?.data?.stats || businessRes?.data || {};
+
+    const businessList =
+      businessRes?.data?.businesses ||
+      businessRes?.data?.data ||
+      [];
+
     const adsData = adsRes?.data?.stats || adsRes?.data || {};
+
+    const citiesList =
+      citiesRes?.data?.data || citiesRes?.data || [];
 
     const safe = (v) => (typeof v === "number" ? v : 0);
 
@@ -80,7 +103,7 @@ function AdminDashboard() {
         total: safe(adsData.total),
         active: safe(adsData.active),
         expired: safe(adsData.expired),
-        clicks: safe(adsData.clicks)
+        clicks: safe(adsData.clicks),
       },
 
       users:
@@ -91,9 +114,14 @@ function AdminDashboard() {
       admins:
         safe(adminData.admins) ||
         safe(adminData.totalAdmins) ||
-        usersList.filter(u => u.role === "admin" || u.role === "superadmin").length,
+        usersList.filter(
+          (u) => u.role === "admin" || u.role === "superadmin"
+        ).length,
 
-      cities: safe(adminData.cities),
+      cities:
+        safe(adminData.cities) ||
+        citiesList.length,
+
       categories: safe(adminData.categories),
 
       businesses:
@@ -103,15 +131,12 @@ function AdminDashboard() {
 
       pending:
         safe(businessData.pending) ||
-        safe(businessData.pendingCount) ||
-        businessList.filter(b => b.status !== "approved").length,
+        businessList.filter((b) => b.status === "pending").length,
 
       featured:
         safe(businessData.featured) ||
-        safe(businessData.featuredCount) ||
-        businessList.filter(b => b.isFeatured).length
+        businessList.filter((b) => b.isFeatured).length,
     });
-
   } catch (err) {
     console.error("Dashboard error", err);
     setError("Failed to load dashboard data");
