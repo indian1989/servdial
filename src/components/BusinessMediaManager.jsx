@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 const BusinessMediaManager = ({ value = [], onChange }) => {
-  const [loading, setLoading] = useState(false);
+  const [uploading, setUploading] = useState([]);
 
   // ================= CLOUDINARY UPLOAD =================
   const uploadFile = async (file) => {
@@ -20,33 +20,61 @@ const BusinessMediaManager = ({ value = [], onChange }) => {
     );
 
     const json = await res.json();
+
+    if (!json.secure_url) {
+      throw new Error("Upload failed");
+    }
+
     return json.secure_url;
   };
 
   // ================= DROP =================
   const onDrop = async (files) => {
     try {
-      setLoading(true);
+      // create temp previews
+      const tempPreviews = files.map((file) => ({
+        file,
+        preview: URL.createObjectURL(file),
+      }));
 
-      const uploaded = await Promise.all(files.map(uploadFile));
+      // show instantly
+      setUploading((prev) => [...prev, ...tempPreviews]);
+
+      // upload in background
+      const uploaded = await Promise.all(
+        tempPreviews.map((item) => uploadFile(item.file))
+      );
+
       const valid = uploaded.filter(Boolean);
 
-      const updated = [...value, ...valid];
+      const MAX_IMAGES = 10;
 
-      // 🔥 controlled component
+      const updated = [...new Set([...value, ...valid])].slice(0, MAX_IMAGES);
+
       onChange(updated);
 
     } catch (err) {
       console.error(err);
       alert("Upload failed");
     } finally {
-      setLoading(false);
+      // cleanup previews
+      setUploading((prev) => {
+        prev.forEach((item) =>
+          URL.revokeObjectURL(item.preview)
+        );
+        return [];
+      });
     }
   };
 
+  // ================= DROPZONE CONFIG =================
   const { getRootProps, getInputProps } = useDropzone({
     onDrop,
     multiple: true,
+    accept: {
+      "image/*": [],
+    },
+    maxSize: 2 * 1024 * 1024, // 2MB
   });
 
   // ================= REMOVE =================
@@ -66,17 +94,34 @@ const BusinessMediaManager = ({ value = [], onChange }) => {
       >
         <input {...getInputProps()} />
         <p className="text-sm text-gray-600">
-          {loading ? "Uploading..." : "Upload images"}
+          {uploading.length > 0 ? "Uploading..." : "Upload images"}
         </p>
       </div>
 
       {/* PREVIEW */}
       <div className="grid grid-cols-3 gap-2">
+
+        {/* 🔥 UPLOADING PREVIEWS */}
+        {uploading.map((item, i) => (
+          <div key={`uploading-${i}`} className="relative">
+            <img
+              src={item.preview}
+              alt="uploading"
+              className="w-full h-24 object-cover rounded opacity-60"
+            />
+            <div className="absolute inset-0 flex items-center justify-center text-xs bg-black/40 text-white rounded">
+              Uploading...
+            </div>
+          </div>
+        ))}
+
+        {/* ✅ FINAL IMAGES */}
         {value.length > 0 ? (
           value.map((img, i) => (
             <div key={i} className="relative group">
               <img
                 src={img}
+                alt={`business-${i}`}
                 className="w-full h-24 object-cover rounded"
               />
 
@@ -89,11 +134,12 @@ const BusinessMediaManager = ({ value = [], onChange }) => {
               </button>
             </div>
           ))
-        ) : (
+        ) : uploading.length === 0 ? (
           <p className="text-xs text-gray-400 col-span-3 text-center">
             No images
           </p>
-        )}
+        ) : null}
+
       </div>
     </div>
   );

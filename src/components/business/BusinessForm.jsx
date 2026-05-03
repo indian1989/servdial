@@ -11,17 +11,25 @@ const flattenCategories = (tree = [], parent = "") => {
   let result = [];
 
   tree.forEach((cat) => {
-    const children = cat.children || [];
+    const children = cat.subcategories || []; // ✅ FIXED
 
-    if (!children.length) {
+    const label = parent
+      ? `${cat.name} (${parent})`
+      : cat.name;
+
+    // ✅ ONLY leaf nodes
+    if (children.length === 0) {
       result.push({
         value: cat._id,
-        label: parent ? `${cat.name} (${parent})` : cat.name,
+        label,
       });
     }
 
-    if (children.length) {
-      result = result.concat(flattenCategories(children, cat.name));
+    // 🔁 traverse children
+    if (children.length > 0) {
+      result = result.concat(
+        flattenCategories(children, cat.name)
+      );
     }
   });
 
@@ -37,7 +45,7 @@ const styles = {
   }),
 };
 
-const BusinessForm = ({ initialData = {}, onSubmit, children }) => {
+const BusinessForm = ({ initialData = {}, onSubmit, onChange, children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -71,8 +79,13 @@ const BusinessForm = ({ initialData = {}, onSubmit, children }) => {
 
         // ✅ STRICT CATEGORY TREE
         const raw = catRes?.data?.data || [];
-        const tree = buildCategoryTree(raw);
-        setCategories(flattenCategories(tree));
+const tree = buildCategoryTree(raw);
+
+// 🔍 DEBUG HERE
+console.log("CATEGORY TREE ↓↓↓");
+console.log(JSON.stringify(tree, null, 2));
+
+setCategories(flattenCategories(tree));
 
         // ✅ STRICT CITY NORMALIZATION
         const normalizedCities = (cityRes?.data?.data || [])
@@ -102,10 +115,18 @@ const BusinessForm = ({ initialData = {}, onSubmit, children }) => {
 
     if (name === "phone" || name === "whatsapp") {
       const clean = value.replace(/\D/g, "").slice(0, 10);
-      return setForm((p) => ({ ...p, [name]: clean }));
+      return setForm((p) => {
+  const updated = { ...p, [name]: clean };
+  onChange?.(updated);
+  return updated;
+});
     }
 
-    setForm((p) => ({ ...p, [name]: value }));
+    setForm((p) => {
+  const updated = { ...p, [name]: value };
+  onChange?.(updated);
+  return updated;
+});
   };
 
   /* ================= SELECT ================= */
@@ -114,37 +135,54 @@ const BusinessForm = ({ initialData = {}, onSubmit, children }) => {
 
     // ✅ CITY SELECT (CRITICAL FIX)
     if (field === "cityId") {
-      const lat = Number(selected.latitude);
-      const lng = Number(selected.longitude);
+  const lat = Number(selected.latitude);
+  const lng = Number(selected.longitude);
 
-      if (isNaN(lat) || isNaN(lng)) {
-        setError("Selected city has invalid coordinates");
-        return;
-      }
+  if (isNaN(lat) || isNaN(lng)) {
+    setError("Selected city has invalid coordinates");
+    return;
+  }
 
-      setForm((p) => ({
-        ...p,
-        cityId: selected.value,
-        district: selected.district,
-        state: selected.state,
-        location: {
-          type: "Point",
-          coordinates: [lng, lat],
-        },
-      }));
+  const updated = {
+    ...form,
+    cityId: selected.value,
+    district: selected.district,
+    state: selected.state,
+    location: {
+      type: "Point",
+      coordinates: [lng, lat],
+    },
+  };
 
-      return;
-    }
+  setForm(updated);
+
+  onChange?.((prev) => ({
+    ...prev,
+    ...updated,
+    cityName: selected.label,
+  }));
+
+  return;
+}
 
     // ✅ CATEGORY SELECT
     if (field === "categoryId") {
-      setForm((p) => ({
-        ...p,
-        categoryId: selected.value,
-      }));
-    }
+  const updated = {
+    ...form,
+    categoryId: selected.value,
   };
 
+  setForm(updated);
+
+  onChange?.((prev) => ({
+    ...prev,
+    ...updated,
+    categoryName: selected.label,
+  }));
+
+  return;
+}
+  };
   /* ================= VALIDATION ================= */
   const validate = () => {
     if (!form.name.trim()) return "Business name required";

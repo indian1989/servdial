@@ -23,7 +23,9 @@ export const normalizeBusinessPayload = (data, mode = "provider") => {
             .filter(Boolean),
 
       boost: data.boost || false,
-      location: data.location || null,
+      location: data.location && data.location.coordinates?.length === 2
+  ? data.location
+  : undefined,
     }),
 
     // admin-only override

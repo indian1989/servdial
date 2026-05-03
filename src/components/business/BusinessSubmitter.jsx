@@ -43,7 +43,7 @@ const BusinessSubmitter = ({
       return res.data;
     } catch (err) {
       console.error("Business submission failed:", err);
-      throw err;
+      throw err?.response?.data?.message || "Submission failed";
     }
   };
 
