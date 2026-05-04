@@ -64,8 +64,8 @@ const ManageBusinesses = () => {
     setEditId(b._id);
     setEditForm({
       name: b.name || "",
-      category: typeof b.category === "object" ? b.category?.name : b.category,
-      city: typeof b.city === "object" ? b.city?.name : b.city
+      category: b.categoryId?.name || "",
+      city: b.cityId?.name || ""
     });
   };
 
@@ -88,7 +88,7 @@ const ManageBusinesses = () => {
     );
   };
 
-  const handleApprove = async (id) => {
+    const handleApprove = async (id) => {
     updateLocal(id, (b) => ({ ...b, status: "approved" }));
     await approveBusiness(id);
   };
@@ -253,9 +253,7 @@ const safeStatus = status || "pending";
                         }
                       />
                     ) : (
-                      typeof b.category === "object"
-                        ? b.category?.name
-                        : b.category
+                      b.categoryId?.name || "N/A"
                     )}
                   </td>
 
@@ -270,9 +268,7 @@ const safeStatus = status || "pending";
                         }
                       />
                     ) : (
-                      typeof b.city === "object"
-                        ? b.city?.name
-                        : b.city
+                      b.cityId?.name || "N/A"
                     )}
                   </td>
 

@@ -55,6 +55,9 @@ const Home = () => {
 
       const d = res?.data?.data || {};
 
+console.log("🔥 HOMEPAGE RAW RESPONSE:", res.data);
+console.log("🔥 HOMEPAGE DATA:", d);
+
       setData({
         featured: d.featuredBusinesses || [],
         topRated: d.topRatedBusinesses || [],

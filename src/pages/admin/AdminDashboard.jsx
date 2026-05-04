@@ -69,6 +69,8 @@ function AdminDashboard() {
         API.get("/admin/cities"),
       ]);
 
+      console.log("BUSINESS RESPONSE:", businessRes.data);
+
     const adminData =
   adminRes?.data?.data ||   // ✅ YOUR CURRENT API FORMAT
   adminRes?.data?.stats || // fallback (future safe)
@@ -83,13 +85,11 @@ function AdminDashboard() {
       usersRes?.data ||
       [];
 
-    const businessData =
-      businessRes?.data?.stats || businessRes?.data || {};
+    const businessData = businessRes?.data || {};
 
-    const businessList =
-      businessRes?.data?.businesses ||
-      businessRes?.data?.data ||
-      [];
+const businessList = businessData?.data || [];
+
+const businessTotal = businessData?.meta?.total ?? businessList.length;
 
     const adsData = adsRes?.data?.stats || adsRes?.data || {};
 
@@ -124,18 +124,10 @@ function AdminDashboard() {
 
       categories: safe(adminData.categories),
 
-      businesses:
-        safe(businessData.total) ||
-        safe(businessData.count) ||
-        businessList.length,
+      businesses: businessTotal,
 
-      pending:
-        safe(businessData.pending) ||
-        businessList.filter((b) => b.status === "pending").length,
-
-      featured:
-        safe(businessData.featured) ||
-        businessList.filter((b) => b.isFeatured).length,
+      pending: businessList.filter((b) => b.status === "pending").length,
+featured: businessList.filter((b) => b.isFeatured).length,
     });
   } catch (err) {
     console.error("Dashboard error", err);
