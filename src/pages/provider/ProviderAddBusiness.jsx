@@ -20,7 +20,12 @@ const ProviderAddBusiness = () => {
           <BusinessForm
             mode="provider"
             initialData={{ boost: false }}
-            onChange={setFormData} // 👈 LIVE DATA
+            onChange={(data) =>
+  setFormData((prev) => ({
+    ...prev,
+    ...data,
+  }))
+} // 👈 LIVE DATA
             onSubmit={(data) =>
               submitBusiness({
                 ...data,

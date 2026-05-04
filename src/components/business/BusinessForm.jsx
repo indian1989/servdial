@@ -156,11 +156,10 @@ setCategories(flattenCategories(tree));
 
   setForm(updated);
 
-  onChange?.((prev) => ({
-    ...prev,
-    ...updated,
-    cityName: selected.label,
-  }));
+  onChange?.({
+  ...updated,
+  cityName: selected.label,
+});
 
   return;
 }
@@ -174,11 +173,10 @@ setCategories(flattenCategories(tree));
 
   setForm(updated);
 
-  onChange?.((prev) => ({
-    ...prev,
-    ...updated,
-    categoryName: selected.label,
-  }));
+  onChange?.({
+  ...updated,
+  categoryName: selected.label,
+});
 
   return;
 }
