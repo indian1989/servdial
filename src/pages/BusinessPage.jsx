@@ -51,7 +51,7 @@ const BusinessPage = () => {
   if (slug) {
   fetchBusiness();
   }
-}, [citySlug, categorySlug, businessSlug]);
+}, [citySlug, categorySlug, Slug]);
 
   // ================= LOADING =================
   if (loading) {

@@ -67,6 +67,20 @@ const getCityDetails = (cityName) => {
   );
 };
 
+// ================= TOGGLE FEATURED =================
+const toggleFeatured = async (city) => {
+  try {
+    await updateCity(city._id, {
+      isFeatured: !city.isFeatured,
+    });
+
+    fetchCities(); // refresh UI
+  } catch (err) {
+    console.error(err);
+    alert("Failed to update featured status");
+  }
+};
+
   // ================= FETCH =================
   const fetchCities = async () => {
   setLoading(true);
@@ -326,12 +340,17 @@ const handleAddCity = async () => {
   );
 
   // ================= UI =================
-  return (
-    <div className="p-6 max-w-6xl mx-auto">
+ return (
+  <div className="p-6 max-w-6xl mx-auto relative">
 
-      <h2 className="text-2xl font-bold mb-4">Manage Cities</h2>
+    <h2 className="text-2xl font-bold mb-4">Manage Cities</h2>
 
-      {loading && <Loader />}
+    {/* NON-BLOCKING LOADER */}
+    {loading && (
+      <div className="absolute top-2 right-2 text-sm text-gray-500">
+        Loading...
+      </div>
+    )}
 
       {/* ================= ADD ================= */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
@@ -502,6 +521,7 @@ const handleAddCity = async () => {
           <th className="p-3">State</th>
           <th className="p-3">Latitude</th>
           <th className="p-3">Longitude</th>
+          <th className="p-3 text-center">Featured</th>
           <th className="p-3 text-center">Actions</th>
         </tr>
       </thead>
@@ -615,6 +635,20 @@ const handleAddCity = async () => {
               c.longitude
             )}
           </td>
+
+          {/* FEATURE TOGGLE */}
+                <td className="p-3 text-center">
+                  <button
+                    onClick={() => toggleFeatured(c)}
+                    className={`px-3 py-1 rounded text-xs ${
+                      c.isFeatured
+                        ? "bg-yellow-500 text-white"
+                        : "bg-gray-300"
+                    }`}
+                  >
+                    {c.isFeatured ? "Featured" : "Mark Featured"}
+                  </button>
+                </td>
 
             {/* ACTIONS */}
             <td className="p-3">

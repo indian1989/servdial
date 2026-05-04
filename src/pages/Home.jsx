@@ -8,7 +8,6 @@ import CategoriesGrid from "../components/home/CategoriesGrid";
 import FeaturedBusinesses from "../components/home/FeaturedBusinesses";
 import PopularBusinesses from "../components/home/PopularBusinesses";
 import NearbyBusinesses from "../components/home/NearbyBusinesses";
-import RecommendedBusinesses from "../components/recommendation/RecommendedBusinesses";
 import FeaturedCities from "../components/home/FeaturedCities";
 import PopularSearches from "../components/home/PopularSearches";
 import WhyChooseServDial from "../components/home/WhyChooseServDial";
@@ -55,17 +54,15 @@ const Home = () => {
 
       const d = res?.data?.data || {};
 
-console.log("🔥 HOMEPAGE RAW RESPONSE:", res.data);
-console.log("🔥 HOMEPAGE DATA:", d);
-
-      setData({
-        featured: d.featuredBusinesses || [],
-        topRated: d.topRatedBusinesses || [],
-        latest: d.latestBusinesses || [],
-        nearby: d.nearbyBusinesses || [],
-        categories: d.categories || [],
-        cities: d.cities || [],
-      });
+setData({
+  featured: d.featuredBusinesses || [],
+  topRated: d.topRatedBusinesses || [],
+  latest: d.latestBusinesses || [],
+  nearby: d.nearbyBusinesses || [],
+  recommended: d.recommendedBusinesses || [],
+  categories: d.categories || [],
+  cities: d.cities || [],
+});
 
     } catch (err) {
       console.error("❌ Homepage error:", err);
@@ -119,6 +116,8 @@ useEffect(() => {
 }, [city, loadingCity, userLocation.lat, userLocation.lng]);
 
 const cityName = city?.name || "your area";
+
+console.log("🔥 HOMEPAGE DATA STATE:", data);
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -196,8 +195,26 @@ const cityName = city?.name || "your area";
 
       {/* ================= RECOMMENDED ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">
-        <RecommendedBusinesses city={city?.slug} />
-      </section>
+  <div className="flex justify-between items-center mb-6">
+    <h2 className="text-2xl font-bold">
+      Recommended for You
+    </h2>
+
+    <button
+      onClick={() => window.location.href = `/recommendations?city=${city?.slug || "india"}`}
+      className="text-blue-600 font-semibold hover:underline"
+    >
+      View All →
+    </button>
+  </div>
+
+  <PopularBusinesses
+    businesses={data.recommended}
+    loading={loading || loadingCity}
+    city={city}
+    title="recommended businesses"
+  />
+</section>
 
       {/* ================= CITIES ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">

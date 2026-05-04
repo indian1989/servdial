@@ -13,6 +13,7 @@ import CityCategoryPage from "../pages/CityCategoryPage";
 import CityPage from "../pages/CityPage";
 import SEOLandingPage from "../pages/seo/SEOLandingPage";
 import ClaimBusiness from "../pages/ClaimBusiness";
+import RecommendedPage from "../pages/RecommendedPage";
 
 const PublicRoutes = () => {
   return (
@@ -26,6 +27,9 @@ const PublicRoutes = () => {
 
   {/* LATEST */}
   <Route path="/latest-businesses" element={<LatestBusinesses />} />
+
+  {/* RECOMMENDED */}
+<Route path="/recommendations" element={<RecommendedPage />} />
 
   {/* BUSINESS (MOST SPECIFIC FIRST) */}
   <Route path="/:citySlug/:categorySlug/:slug" element={<BusinessPage />} />

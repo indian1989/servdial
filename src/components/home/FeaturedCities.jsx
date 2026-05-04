@@ -32,7 +32,7 @@ const FeaturedCities = ({
   // ================= NAVIGATION =================
   const openCity = (city) => {
     // ✅ Use valid category slug (example: "services")
-    navigate(`/${city.slug}`);
+    navigate(`/${city.slug}/all`);
   };
 
   // ================= UI =================
