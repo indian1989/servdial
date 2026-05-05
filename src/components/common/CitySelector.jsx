@@ -19,7 +19,12 @@ const CitySelector = () => {
       try {
         setLoading(true);
         const res = await API.get("/cities?dropdown=true");
-        setCities(res.data.cities || []);
+        setCities(
+  res.data?.data?.cities ||
+  res.data?.cities ||
+  res.data?.data ||
+  []
+);
       } catch {
         setCities([]);
       } finally {
