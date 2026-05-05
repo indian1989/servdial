@@ -13,6 +13,9 @@ const Header = () => {
   const { city } = useCity();
 
   const [menuOpen, setMenuOpen] = useState(false);
+  const handleNavClick = () => {
+  setMenuOpen(false);
+};
 
   // ================= LOGOUT =================
   const handleLogout = () => {
@@ -78,7 +81,10 @@ const Header = () => {
             )}
 
             {/* MOBILE */}
-            <button className="md:hidden" onClick={() => setMenuOpen(!menuOpen)}>
+            <button
+  className="md:hidden p-2 rounded-lg hover:bg-gray-100"
+  onClick={() => setMenuOpen(!menuOpen)}
+>
               {menuOpen ? <X /> : <Menu />}
             </button>
 
@@ -88,20 +94,73 @@ const Header = () => {
 
       {/* MOBILE MENU */}
       {menuOpen && (
-        <div className="md:hidden border-t bg-white">
-          <div className="flex flex-col p-4 gap-4 text-sm">
+  <div className="md:hidden border-t bg-white">
+    <div className="flex flex-col p-4 gap-4 text-sm">
 
-            <Link to="/">Home</Link>
-            <Link to="/latest-businesses">Latest Businesses</Link>
+      {/* NAV LINKS */}
+      <Link to="/" onClick={handleNavClick}>Home</Link>
 
-            {/* MOBILE CITY */}
-            <div className="flex items-center gap-2">
-              <MapPin size={16} />
-              <span>{city?.name || "Select City"}</span>
-            </div>
+      <Link to="/latest-businesses" onClick={handleNavClick}>
+        Latest Businesses
+      </Link>
 
-          </div>
-        </div>
+      <Link to="/about" onClick={handleNavClick}>
+        About Us
+      </Link>
+
+      <Link to="/provider/add-business" onClick={handleNavClick}>
+        List Your Business
+      </Link>
+
+      {/* CITY SELECTOR (REAL, NOT TEXT) */}
+      <div className="pt-2 border-t">
+        <CitySelector />
+      </div>
+
+      {/* USER SECTION */}
+      {user ? (
+        <>
+          <Link
+            to={
+              user?.role === "provider"
+                ? "/provider/dashboard"
+                : user?.role === "admin" || user?.role === "superadmin"
+                ? "/admin/dashboard"
+                : "/"
+            }
+            onClick={handleNavClick}
+            className="text-blue-600 font-medium"
+          >
+            Dashboard
+          </Link>
+
+          <button
+            onClick={() => {
+              handleLogout();
+              handleNavClick();
+            }}
+            className="bg-red-500 text-white px-3 py-2 rounded text-left"
+          >
+            Logout
+          </button>
+        </>
+      ) : (
+        <>
+          <Link to="/login" onClick={handleNavClick}>
+            Login
+          </Link>
+
+          <Link
+            to="/register"
+            onClick={handleNavClick}
+            className="bg-blue-600 text-white px-3 py-2 rounded text-center"
+          >
+            Register
+          </Link>
+        </>
+      )}
+    </div>
+  </div>
       )}
     </header>
   );

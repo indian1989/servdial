@@ -18,9 +18,11 @@ const BusinessPage = () => {
   // ================= FETCH BUSINESS =================
   const fetchBusiness = async () => {
     try {
-      const res = await API.get(`/businesses/${slug}`);
+      const res = await API.get(`/businesses/${slug.trim()}`);
 
-      const biz = res.data.business;
+      console.log("🔥 BUSINESS API RESPONSE:", res.data);
+
+      const biz = res.data?.business || null;
 
       setBusiness(biz);
       setReviews(res.data.reviews || []);
@@ -30,8 +32,8 @@ const BusinessPage = () => {
       }
 
     } catch (err) {
-      console.error("Fetch error:", err);
-      setBusiness(null);
+  console.error("❌ Fetch error:", err.response?.data || err.message);
+  setBusiness(null);
     } finally {
       setLoading(false);
     }
@@ -51,7 +53,7 @@ const BusinessPage = () => {
   if (slug) {
   fetchBusiness();
   }
-}, [citySlug, categorySlug, Slug]);
+}, [citySlug, categorySlug, slug]);
 
   // ================= LOADING =================
   if (loading) {
