@@ -130,13 +130,22 @@ const [showStickyLead, setShowStickyLead] = useState(false);
 }, [business]);
 
   // ================= CATEGORY COUNT =================
-  useEffect(() => {
-    if (!business?.category && !business?.categoryId) return;
+useEffect(() => {
+  if (!business?.categoryId?._id || !business?.cityId?._id) return;
 
-    API.get(`/business/count?category=${business.categoryId || business.category}&city=${business.city}`)
-      .then(res => setCategoryCount(res.data.count))
-      .catch(() => {});
-  }, [business]);
+  API.get("/businesses/count/all", {
+    params: {
+      categoryId: business.categoryId._id,
+      cityId: business.cityId._id,
+    },
+  })
+    .then((res) => {
+      setCategoryCount(res.data?.data?.count || 0);
+    })
+    .catch((err) => {
+      console.error("❌ Count API error:", err);
+    });
+}, [business]);
 
   // ============ Share Popup Use Effect ==========
   useEffect(() => {
@@ -222,15 +231,36 @@ useEffect(() => {
     }
   };
 
-  const handleDirections = () => {
-    trackEvent("direction");
-    if (!lat || !lng) return showToastMsg("Location not available");
+  const openGoogleMaps = (lat, lng) => {
+  window.open(
+    `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+    "_blank"
+  );
+};
 
-    window.open(
-      `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
-      "_blank"
-    );
-  };
+const openLeafletDirections = (lat, lng) => {
+  const url = `https://www.openstreetmap.org/directions?to=${lat},${lng}`;
+  window.open(url, "_blank");
+};
+
+  const handleDirections = () => {
+  trackEvent("direction");
+  if (!lat || !lng) return showToastMsg("Location not available");
+
+  try {
+    // Try Google Maps first
+    openGoogleMaps(lat, lng);
+
+    // Optional: fallback trigger (simulate failure detection)
+    setTimeout(() => {
+      console.log("🧠 Smart Router: fallback ready if needed");
+    }, 1500);
+
+  } catch (err) {
+    console.log("⚠️ Google Maps failed → switching to Leaflet");
+    openLeafletDirections(lat, lng);
+  }
+};
 
   const handleShareOption = (type) => {
     trackEvent("share");
@@ -457,18 +487,6 @@ useEffect(() => {
           </div>
         </div>
 
-        {/* MAP */}
-        {lat && lng && (
-          <div className="h-72 rounded overflow-hidden">
-            <MapContainer center={[lat, lng]} zoom={15} style={{ height: "100%" }}>
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-              <Marker position={[lat, lng]} icon={markerIcon}>
-                <Popup>{business.name}</Popup>
-              </Marker>
-            </MapContainer>
-          </div>
-        )}
-
         {/* REVIEWS */}
         <div className="grid md:grid-cols-3 gap-6">
           <RatingBreakdown reviews={reviews} />
@@ -501,7 +519,7 @@ useEffect(() => {
       </div>
 
       {/* PREMIUM CTA */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 flex gap-2 z-50">
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-3 flex gap-2 z-50 overflow-x-auto">
 
         <button onClick={() => {handleCall(); }} className="relative flex-1 bg-blue-600 text-white py-2 rounded-lg flex items-center justify-center gap-1">
           <Phone size={16}/>

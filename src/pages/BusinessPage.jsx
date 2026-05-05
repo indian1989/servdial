@@ -42,7 +42,7 @@ const BusinessPage = () => {
   // ================= SIMILAR =================
   const fetchSimilar = async (id) => {
     try {
-      const res = await API.get(`/business/similar/${id}`);
+      const res = await API.get(`/businesses/${id}/similar`);
       setSimilar(res.data.businesses || []);
     } catch (err) {
       console.error("Similar error:", err);

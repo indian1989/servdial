@@ -1,13 +1,18 @@
-import { useEffect } from "react";
+// frontend/src/components/TrackBusinessView,jsx
+import { useEffect, useRef } from "react";
 import API from "../../api/axios";
 
 const TrackBusinessView = ({ businessId }) => {
-  useEffect(() => {
-    if (!businessId) return;
+  const trackedRef = useRef(false);
 
-    API.post(`/businesses/${businessId}/view`)
-      .catch(() => {});
-  }, [businessId]);
+useEffect(() => {
+  if (!businessId || trackedRef.current) return;
+
+  trackedRef.current = true;
+
+  API.post(`/businesses/${businessId}/view`)
+    .catch(() => {});
+}, [businessId]);
 
   return null;
 };

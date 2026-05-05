@@ -12,6 +12,8 @@ const Header = () => {
   const { user } = useAuth();
   const { city } = useCity();
 
+  console.log("CITY IN HEADER:", city);
+
   const [menuOpen, setMenuOpen] = useState(false);
   const handleNavClick = () => {
   setMenuOpen(false);

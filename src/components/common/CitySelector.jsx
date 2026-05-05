@@ -5,12 +5,12 @@ import { useCity } from "../../context/CityContext";
 
 const CitySelector = () => {
   const { city, setCity, detectLocation, loadingCity } = useCity();
-
+console.log("detectLocation fn:", detectLocation);
   const [cities, setCities] = useState([]);
   const [search, setSearch] = useState("");
   const [show, setShow] = useState(false);
   const [loading, setLoading] = useState(false);
-
+  const [detecting, setDetecting] = useState(false);
   const ref = useRef();
 
   // ================= FETCH CITIES =================
@@ -103,15 +103,29 @@ const CitySelector = () => {
 
           {/* DETECT BUTTON */}
           <button
-            onClick={() => {
-              detectLocation();
-              setShow(false);
-            }}
-            className="w-full flex items-center gap-2 p-3 text-sm hover:bg-gray-100 border-b"
-          >
-            <Locate size={16} className="text-green-600" />
-            Detect my location
-          </button>
+  onClick={async () => {
+  console.log("Detect clicked");
+
+  setShow(false);
+  setDetecting(true);
+
+  try {
+    await detectLocation();
+  } catch (err) {
+    console.error("detectLocation error:", err);
+  } finally {
+    setDetecting(false);
+  }
+}}
+  className="w-full flex items-center gap-2 p-3 text-sm hover:bg-gray-100 border-b"
+>
+  {detecting ? (
+  <Loader2 size={16} className="animate-spin text-green-600" />
+) : (
+  <Locate size={16} className="text-green-600" />
+)}
+  {detecting ? "Detecting..." : "Detect my location"}
+</button>
 
           {/* LIST */}
           <div className="max-h-64 overflow-y-auto">
