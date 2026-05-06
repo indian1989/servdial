@@ -17,37 +17,36 @@ const BusinessPage = () => {
 
   // ================= FETCH BUSINESS =================
   const fetchBusiness = async () => {
-    try {
-      const res = await API.get(`/businesses/${slug.trim()}`);
+  try {
+    const res = await API.get(`/businesses/${slug}`);
+    console.log("🔥 BUSINESS API RESPONSE:", res.data);
+    const biz = res.data?.business || null;
 
-      console.log("🔥 BUSINESS API RESPONSE:", res.data);
+    setBusiness(biz);
 
-      const biz = res.data?.business || null;
-
-      setBusiness(biz);
-      setReviews(res.data.reviews || []);
-
-      if (biz?._id) {
-        fetchSimilar(biz._id);
-      }
-
-    } catch (err) {
-  console.error("❌ Fetch error:", err.response?.data || err.message);
-  setBusiness(null);
-    } finally {
-      setLoading(false);
+    // ✅ CALL HERE
+    if (biz?._id) {
+      fetchSimilar(biz._id);
     }
-  };
+
+  } catch (err) {
+    console.error("Business error:", err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // ================= SIMILAR =================
   const fetchSimilar = async (id) => {
-    try {
-      const res = await API.get(`/businesses/${id}/similar`);
-      setSimilar(res.data.businesses || []);
-    } catch (err) {
-      console.error("Similar error:", err);
-    }
-  };
+  if (!id) return;
+
+  try {
+    const res = await API.get(`/businesses/similar/${id}`);
+    setSimilar(res.data.data || []);
+  } catch (err) {
+    console.error("Similar error:", err);
+  }
+};
 
   useEffect(() => {
   if (slug) {

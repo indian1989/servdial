@@ -60,6 +60,7 @@ const BusinessForm = ({ initialData = {}, onSubmit, onChange, children }) => {
     state: "",
     location: null,
     address: "",
+    pincode: "",
     phone: "",
     whatsapp: "",
     website: "",
@@ -88,16 +89,25 @@ console.log(JSON.stringify(tree, null, 2));
 setCategories(flattenCategories(tree));
 
         // ✅ STRICT CITY NORMALIZATION
-        const normalizedCities = (cityRes?.data?.data || [])
-          .filter((c) => c._id && c.name)
-          .map((c) => ({
-            value: c._id,
-            label: `${c.name}${c.state ? ` (${c.state})` : ""}`,
-            district: c.district || "",
-            state: c.state || "",
-            latitude: Number(c.latitude),
-            longitude: Number(c.longitude),
-          }));
+        // ✅ CORRECT PATH BASED ON YOUR API RESPONSE
+const cityRaw = cityRes?.data?.data?.cities;
+
+if (!Array.isArray(cityRaw)) {
+  console.error("Cities API wrong format:", cityRes.data);
+  setError("Failed to load cities");
+  return;
+}
+
+const normalizedCities = cityRaw
+  .filter((c) => c?._id && c?.name)
+  .map((c) => ({
+    value: c._id,
+    label: `${c.name}${c.state ? ` (${c.state})` : ""}`,
+    district: c.district || "",
+    state: c.state || "",
+    latitude: Number(c.latitude),
+    longitude: Number(c.longitude),
+  }));
 
         setCities(normalizedCities);
       } catch (err) {
@@ -113,20 +123,28 @@ setCategories(flattenCategories(tree));
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === "phone" || name === "whatsapp") {
-      const clean = value.replace(/\D/g, "").slice(0, 10);
-      return setForm((p) => {
-  const updated = { ...p, [name]: clean };
+   // ✅ PINCODE
+if (name === "pincode") {
+  const clean = value.replace(/\D/g, "").slice(0, 6);
+  const updated = { ...form, [name]: clean };
+  setForm(updated);
   onChange?.(updated);
-  return updated;
-});
-    }
+  return;
+}
 
-    setForm((p) => {
-  const updated = { ...p, [name]: value };
+// ✅ PHONE + WHATSAPP
+if (name === "phone" || name === "whatsapp") {
+  const clean = value.replace(/\D/g, "").slice(0, 10);
+  const updated = { ...form, [name]: clean };
+  setForm(updated);
   onChange?.(updated);
-  return updated;
-});
+  return;
+}
+
+// ✅ NORMAL INPUT
+const updated = { ...form, [name]: value };
+setForm(updated);
+onChange?.(updated);
   };
 
   /* ================= SELECT ================= */
@@ -186,6 +204,8 @@ setCategories(flattenCategories(tree));
     if (!form.name.trim()) return "Business name required";
     if (!form.categoryId) return "Category required";
     if (!form.cityId) return "City required";
+    if (!form.pincode) return "Pincode required";
+    if (form.pincode.length !== 6) return "Pincode must be 6 digits";
     if (!form.phone) return "Phone required";
     if (form.phone.length !== 10) return "Phone must be 10 digits";
     if (!form.location) return "City must have valid location";
@@ -260,10 +280,20 @@ setCategories(flattenCategories(tree));
         <input value={form.state} readOnly className="border p-2 bg-gray-100 rounded" />
 
         <input
+          name="pincode"
+          placeholder="Pincode *"
+          value={form.pincode}
+          onChange={handleChange}
+          inputMode="numeric"
+          className="border p-2 rounded"
+        />
+
+        <input
           name="phone"
           placeholder="Phone *"
           value={form.phone}
           onChange={handleChange}
+          inputMode="numeric"
           className="border p-2 rounded"
         />
 
