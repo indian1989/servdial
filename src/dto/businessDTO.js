@@ -1,7 +1,10 @@
-export const toBusinessDTO = (b = {}) => {
+// src/components/business/businessDTO.js
+
+/* ================= LIST DTO (FOR TABLES / CARDS) ================= */
+export const toBusinessListDTO = (b = {}) => {
   return {
-    _id: b._id || b.id || null,
-    slug: b.slug || b._id || "",
+    _id: b._id,
+    slug: b.slug || b._id,
 
     name: b.name || "Unnamed",
 
@@ -15,47 +18,111 @@ export const toBusinessDTO = (b = {}) => {
         ? b.categoryId?.name
         : b.category || "General",
 
-    // 🔥 FIX 1: CITY NAME (MULTI FALLBACK)
     cityName:
-      b.cityName ||
-      (typeof b.cityId === "object" ? b.cityId?.name : null) ||
-      b.city ||
-      "Unknown",
-
-    // 🔥 FIX 2: CITY SLUG SAFE
-    citySlug:
-      b.citySlug ||
-      (typeof b.cityId === "object" ? b.cityId?.slug : null) ||
-      "",
-
-    categorySlug:
-      typeof b.categoryId === "object"
-        ? b.categoryId?.slug
-        : "",
+      typeof b.cityId === "object"
+        ? b.cityId?.name
+        : b.cityName || "Unknown",
 
     rating: b.averageRating || b.rating || 0,
     reviewCount: b.totalReviews || b.reviewCount || 0,
 
-    // 🔥 FIX 3: PHONE NORMALIZATION (CRITICAL)
-    phone:
-      b.phone ||
-      b.contactNumber ||
-      b.mobile ||
-      null,
-
-    whatsapp:
-      b.whatsapp ||
-      b.phone ||
-      b.contactNumber ||
-      null,
-
     isFeatured: b.isFeatured || false,
     isVerified: b.isVerified || false,
 
-    distance: b.distance ?? null,
+    phone: b.phone || b.contactNumber || null,
+  };
+};
 
-    views: b.views || 0,
-    phoneClicks: b.phoneClicks || 0,
-    whatsappClicks: b.whatsappClicks || 0,
+/* ================= EDIT DTO (FULL FORM SAFE DATA) ================= */
+export const toBusinessEditDTO = (b = {}) => {
+  return {
+    _id: b._id,
+
+    // ===== BASIC INFO =====
+    name: b.name || "",
+    description: b.description || "",
+
+    // ===== RELATIONS (FIXED FOR SELECTS) =====
+    categoryId:
+      typeof b.categoryId === "object"
+        ? b.categoryId?._id
+        : b.categoryId || "",
+
+    cityId:
+      typeof b.cityId === "object"
+        ? b.cityId?._id
+        : b.cityId || "",
+
+    // ===== LOCATION INFO =====
+    address: b.address || "",
+    pincode: b.pincode || "",
+    district: b.district || "",
+    state: b.state || "",
+
+    location: b.location || null,
+
+    // ===== CONTACT =====
+    phone: b.phone || "",
+    whatsapp: b.whatsapp || "",
+    website: b.website || "",
+
+    // ===== MEDIA =====
+    images: b.images || [],
+    logo: b.logo || "",
+
+    // ===== PROVIDER FEATURES =====
+    businessHours: b.businessHours || {},
+    tags: b.tags || [],
+    boost: b.boost || false,
+
+    // ===== ADMIN FLAGS =====
+    isFeatured: b.isFeatured || false,
+    isVerified: b.isVerified || false,
+
+    // ===== METADATA =====
+    slug: b.slug || "",
+  };
+};
+
+/* ================= SAFE NORMALIZER FOR SAVE ================= */
+export const normalizeBusinessPayload = (data = {}, mode = "admin") => {
+  return {
+    name: data.name,
+    description: data.description,
+
+    categoryId: data.categoryId?.value || data.categoryId,
+    cityId: data.cityId?.value || data.cityId,
+
+    address: data.address,
+    pincode: data.pincode,
+    phone: data.phone,
+    whatsapp: data.whatsapp,
+    website: data.website || "",
+
+    images: data.images || [],
+    logo: data.logo || "",
+
+    location:
+      data.location?.coordinates?.length === 2
+        ? data.location
+        : undefined,
+
+    // ===== PROVIDER ONLY =====
+    ...(mode === "provider" && {
+      businessHours: data.businessHours || {},
+      tags: Array.isArray(data.tags)
+        ? data.tags
+        : (data.tags || "")
+            .split(",")
+            .map((t) => t.trim())
+            .filter(Boolean),
+
+      boost: data.boost || false,
+    }),
+
+    // ===== ADMIN ONLY =====
+    ...(mode === "admin" && {
+      isVerified: true,
+    }),
   };
 };

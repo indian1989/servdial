@@ -20,9 +20,12 @@ const BusinessPage = () => {
   try {
     const res = await API.get(`/businesses/${slug}`);
     console.log("🔥 BUSINESS API RESPONSE:", res.data);
-    const biz = res.data?.business || null;
+    const biz = res.data?.data?.business || null;
+    const rev = res.data?.data?.reviews || [];
 
     setBusiness(biz);
+    setReviews(rev);
+
 
     // ✅ CALL HERE
     if (biz?._id) {

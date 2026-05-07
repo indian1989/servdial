@@ -11,13 +11,12 @@ const flattenCategories = (tree = [], parent = "") => {
   let result = [];
 
   tree.forEach((cat) => {
-    const children = cat.subcategories || []; // ✅ FIXED
+    const children = cat.subcategories || [];
 
     const label = parent
       ? `${cat.name} (${parent})`
       : cat.name;
 
-    // ✅ ONLY leaf nodes
     if (children.length === 0) {
       result.push({
         value: cat._id,
@@ -25,18 +24,15 @@ const flattenCategories = (tree = [], parent = "") => {
       });
     }
 
-    // 🔁 traverse children
     if (children.length > 0) {
-      result = result.concat(
-        flattenCategories(children, cat.name)
-      );
+      result = result.concat(flattenCategories(children, cat.name));
     }
   });
 
   return result;
 };
 
-/* ================= SELECT STYLE ================= */
+/* ================= STYLE ================= */
 const styles = {
   control: (base) => ({
     ...base,
@@ -45,73 +41,81 @@ const styles = {
   }),
 };
 
-const BusinessForm = ({ initialData = {}, onSubmit, onChange, children }) => {
+/* ================= DEFAULT FORM ================= */
+const defaultForm = {
+  name: "",
+  categoryId: "",
+  cityId: "",
+  district: "",
+  state: "",
+  location: null,
+
+  address: "",
+  pincode: "",
+  phone: "",
+  whatsapp: "",
+  website: "",
+  description: "",
+
+  // provider fields (IMPORTANT)
+  images: [],
+  logo: "",
+  businessHours: {},
+  tags: [],
+  boost: false,
+};
+
+const BusinessForm = ({
+  initialData = {},
+  onSubmit,
+  onChange,
+  children
+}) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
 
-  const [form, setForm] = useState({
-    name: "",
-    categoryId: "",
-    cityId: "",
-    district: "",
-    state: "",
-    location: null,
-    address: "",
-    pincode: "",
-    phone: "",
-    whatsapp: "",
-    website: "",
-    description: "",
+  /* ================= SAFE INIT (NO DATA LOSS) ================= */
+  const [form, setForm] = useState(() => ({
+    ...defaultForm,
     ...initialData,
-  });
+  }));
 
-  /* ================= FETCH MASTER DATA ================= */
+  /* ================= FETCH DATA ================= */
   useEffect(() => {
     const init = async () => {
       try {
-        // ✅ FIXED: use PUBLIC cities endpoint
         const [catRes, cityRes] = await Promise.all([
           getAllCategories(),
           API.get("/cities"),
         ]);
 
-        // ✅ STRICT CATEGORY TREE
         const raw = catRes?.data?.data || [];
-const tree = buildCategoryTree(raw);
+        const tree = buildCategoryTree(raw);
 
-// 🔍 DEBUG HERE
-console.log("CATEGORY TREE ↓↓↓");
-console.log(JSON.stringify(tree, null, 2));
+        setCategories(flattenCategories(tree));
 
-setCategories(flattenCategories(tree));
+        const cityRaw = cityRes?.data?.data?.cities;
 
-        // ✅ STRICT CITY NORMALIZATION
-        // ✅ CORRECT PATH BASED ON YOUR API RESPONSE
-const cityRaw = cityRes?.data?.data?.cities;
+        if (!Array.isArray(cityRaw)) {
+          setError("Failed to load cities");
+          return;
+        }
 
-if (!Array.isArray(cityRaw)) {
-  console.error("Cities API wrong format:", cityRes.data);
-  setError("Failed to load cities");
-  return;
-}
-
-const normalizedCities = cityRaw
-  .filter((c) => c?._id && c?.name)
-  .map((c) => ({
-    value: c._id,
-    label: `${c.name}${c.state ? ` (${c.state})` : ""}`,
-    district: c.district || "",
-    state: c.state || "",
-    latitude: Number(c.latitude),
-    longitude: Number(c.longitude),
-  }));
+        const normalizedCities = cityRaw.map((c) => ({
+          value: c._id,
+          label: `${c.name}${c.state ? ` (${c.state})` : ""}`,
+          district: c.district || "",
+          state: c.state || "",
+          latitude: Number(c.latitude),
+          longitude: Number(c.longitude),
+        }));
 
         setCities(normalizedCities);
       } catch (err) {
-        console.error("INIT ERROR:", err);
+        console.error(err);
         setError("Failed to load form data");
       }
     };
@@ -119,96 +123,77 @@ const normalizedCities = cityRaw
     init();
   }, []);
 
+  /* ================= FIX: KEEP FULL DATA ================= */
+  useEffect(() => {
+    if (!initialData) return;
+
+    setForm((prev) => ({
+      ...defaultForm,
+      ...prev,
+      ...initialData,
+    }));
+  }, [initialData]);
+
   /* ================= INPUT ================= */
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-   // ✅ PINCODE
-if (name === "pincode") {
-  const clean = value.replace(/\D/g, "").slice(0, 6);
-  const updated = { ...form, [name]: clean };
-  setForm(updated);
-  onChange?.(updated);
-  return;
-}
+    const updated =
+      name === "pincode"
+        ? { ...form, [name]: value.replace(/\D/g, "").slice(0, 6) }
+        : name === "phone" || name === "whatsapp"
+        ? { ...form, [name]: value.replace(/\D/g, "").slice(0, 10) }
+        : { ...form, [name]: value };
 
-// ✅ PHONE + WHATSAPP
-if (name === "phone" || name === "whatsapp") {
-  const clean = value.replace(/\D/g, "").slice(0, 10);
-  const updated = { ...form, [name]: clean };
-  setForm(updated);
-  onChange?.(updated);
-  return;
-}
-
-// ✅ NORMAL INPUT
-const updated = { ...form, [name]: value };
-setForm(updated);
-onChange?.(updated);
+    setForm(updated);
+    onChange?.(updated);
   };
 
   /* ================= SELECT ================= */
   const handleSelect = (field, selected) => {
     if (!selected) return;
 
-    // ✅ CITY SELECT (CRITICAL FIX)
     if (field === "cityId") {
-  const lat = Number(selected.latitude);
-  const lng = Number(selected.longitude);
+      const updated = {
+        ...form,
+        cityId: selected.value,
+        district: selected.district,
+        state: selected.state,
+        location: {
+          type: "Point",
+          coordinates: [
+            selected.longitude,
+            selected.latitude,
+          ],
+        },
+      };
 
-  if (isNaN(lat) || isNaN(lng)) {
-    setError("Selected city has invalid coordinates");
-    return;
-  }
+      setForm(updated);
+      onChange?.(updated);
+      return;
+    }
 
-  const updated = {
-    ...form,
-    cityId: selected.value,
-    district: selected.district,
-    state: selected.state,
-    location: {
-      type: "Point",
-      coordinates: [lng, lat],
-    },
-  };
-
-  setForm(updated);
-
-  onChange?.({
-  ...updated,
-  cityName: selected.label,
-});
-
-  return;
-}
-
-    // ✅ CATEGORY SELECT
     if (field === "categoryId") {
-  const updated = {
-    ...form,
-    categoryId: selected.value,
+      const updated = {
+        ...form,
+        categoryId: selected.value,
+      };
+
+      setForm(updated);
+      onChange?.(updated);
+    }
   };
 
-  setForm(updated);
-
-  onChange?.({
-  ...updated,
-  categoryName: selected.label,
-});
-
-  return;
-}
-  };
   /* ================= VALIDATION ================= */
   const validate = () => {
-    if (!form.name.trim()) return "Business name required";
+    if (!form.name) return "Business name required";
     if (!form.categoryId) return "Category required";
     if (!form.cityId) return "City required";
-    if (!form.pincode) return "Pincode required";
-    if (form.pincode.length !== 6) return "Pincode must be 6 digits";
-    if (!form.phone) return "Phone required";
-    if (form.phone.length !== 10) return "Phone must be 10 digits";
-    if (!form.location) return "City must have valid location";
+    if (!form.pincode || form.pincode.length !== 6)
+      return "Valid pincode required";
+    if (!form.phone || form.phone.length !== 10)
+      return "Valid phone required";
+    if (!form.location) return "City location required";
 
     return "";
   };
@@ -220,7 +205,6 @@ onChange?.(updated);
     const err = validate();
     if (err) return setError(err);
 
-    setError("");
     setLoading(true);
 
     try {
@@ -246,9 +230,9 @@ onChange?.(updated);
 
         <input
           name="name"
-          placeholder="Business Name *"
           value={form.name}
           onChange={handleChange}
+          placeholder="Business Name"
           className="border p-2 rounded"
         />
 
@@ -257,14 +241,13 @@ onChange?.(updated);
           value={categories.find(c => c.value === form.categoryId) || null}
           onChange={(v) => handleSelect("categoryId", v)}
           styles={styles}
-          placeholder="Category *"
         />
 
         <input
           name="address"
-          placeholder="Address"
           value={form.address}
           onChange={handleChange}
+          placeholder="Address"
           className="border p-2 rounded"
         />
 
@@ -273,51 +256,48 @@ onChange?.(updated);
           value={cities.find(c => c.value === form.cityId) || null}
           onChange={(v) => handleSelect("cityId", v)}
           styles={styles}
-          placeholder="City *"
         />
 
-        <input value={form.district} readOnly className="border p-2 bg-gray-100 rounded" />
-        <input value={form.state} readOnly className="border p-2 bg-gray-100 rounded" />
+        <input value={form.district} readOnly className="bg-gray-100 p-2" />
+        <input value={form.state} readOnly className="bg-gray-100 p-2" />
 
         <input
           name="pincode"
-          placeholder="Pincode *"
           value={form.pincode}
           onChange={handleChange}
-          inputMode="numeric"
+          placeholder="Pincode"
           className="border p-2 rounded"
         />
 
         <input
           name="phone"
-          placeholder="Phone *"
           value={form.phone}
           onChange={handleChange}
-          inputMode="numeric"
+          placeholder="Phone"
           className="border p-2 rounded"
         />
 
         <input
           name="whatsapp"
-          placeholder="WhatsApp"
           value={form.whatsapp}
           onChange={handleChange}
+          placeholder="WhatsApp"
           className="border p-2 rounded"
         />
 
         <input
           name="website"
-          placeholder="Website"
           value={form.website}
           onChange={handleChange}
+          placeholder="Website"
           className="border p-2 rounded"
         />
 
         <textarea
           name="description"
-          placeholder="Description"
           value={form.description}
           onChange={handleChange}
+          placeholder="Description"
           className="border p-2 rounded"
         />
 
@@ -327,7 +307,7 @@ onChange?.(updated);
           disabled={loading}
           className="bg-blue-600 text-white p-2 rounded"
         >
-          {loading ? "Submitting..." : "Submit"}
+          {loading ? "Saving..." : "Submit"}
         </button>
 
       </form>

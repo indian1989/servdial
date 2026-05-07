@@ -17,6 +17,8 @@ const BusinessSubmitter = ({
     try {
       const payload = normalizeBusinessPayload(formData, mode);
 
+      console.log("🚀 FINAL PAYLOAD SENT TO BACKEND:", payload);
+      
       // 🔥 ROLE-BASED ROUTING ONLY (NOT LOGIC)
       const endpoint =
         mode === "admin"

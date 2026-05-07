@@ -3,7 +3,7 @@ import { Phone, MapPin, Star, MessageCircle } from "lucide-react";
 import { memo } from "react";
 
 import API from "../../api/axios";
-import { toBusinessDTO } from "../../dto/businessDTO";
+import { toBusinessListDTO } from "../../dto/businessDTO";
 
 const BusinessCard = ({ business }) => {
   if (!business) return null;
@@ -11,7 +11,7 @@ const BusinessCard = ({ business }) => {
   const location = useLocation();
 
   // ✅ SAFE DTO
-  const b = toBusinessDTO(business) || {};
+  const b = toBusinessListDTO(business) || {};
 
   const {
     _id,

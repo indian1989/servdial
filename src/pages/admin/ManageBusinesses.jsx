@@ -4,7 +4,8 @@ import {
   approveBusiness,
   rejectBusiness,
   toggleFeatured,
-  deleteBusiness
+  deleteBusiness,
+  updateBusiness
 } from "../../api/adminAPI";
 
 import {
@@ -15,11 +16,15 @@ import {
   FaTimes
 } from "react-icons/fa";
 
+import BusinessForm from "../../components/business/BusinessForm";
+import { normalizeBusinessPayload } from "../../components/business/BusinessMapper";
 import ImageModal from "../../components/admin/modals/ImageModal";
+import { toBusinessEditDTO } from "../../dto/businessDTO";
 
 const PAGE_SIZE = 10;
 
 const ManageBusinesses = () => {
+  // ================= STATE =================
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(false);
 
@@ -29,27 +34,33 @@ const ManageBusinesses = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
 
-  const [editId, setEditId] = useState(null);
-  const [editForm, setEditForm] = useState({ name: "", category: "", city: "" });
+  // ✅ SINGLE SOURCE OF TRUTH FOR EDIT
+  const [editBusiness, setEditBusiness] = useState(null);
 
-  const fetchBusinesses = async () => {
-  setLoading(true);
-  try {
-    const res = await getAllBusinesses();
-
-    const data =
-      res?.data?.businesses ||
-      res?.data?.data ||
-      [];
-
-    setBusinesses(Array.isArray(data) ? data : []);
-  } catch (err) {
-    console.error("Failed to fetch businesses", err);
-    setBusinesses([]);
-  } finally {
-    setLoading(false);
-  }
+  const openEdit = (b) => {
+  const dto = toBusinessEditDTO(b);
+  setEditBusiness(dto);
 };
+
+  // ================= FETCH =================
+  const fetchBusinesses = async () => {
+    setLoading(true);
+    try {
+      const res = await getAllBusinesses();
+
+      const data =
+        res?.data?.businesses ||
+        res?.data?.data ||
+        [];
+
+      setBusinesses(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error("Failed to fetch businesses", err);
+      setBusinesses([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchBusinesses();
@@ -59,36 +70,15 @@ const ManageBusinesses = () => {
     setCurrentPage(1);
   }, [search, statusFilter]);
 
-  // ================= EDIT =================
-  const startEdit = (b) => {
-    setEditId(b._id);
-    setEditForm({
-      name: b.name || "",
-      category: b.categoryId?.name || "",
-      city: b.cityId?.name || ""
-    });
-  };
-
-  const cancelEdit = () => {
-    setEditId(null);
-    setEditForm({ name: "", category: "", city: "" });
-  };
-
-  const saveEdit = async (id) => {
-    setBusinesses((prev) =>
-      prev.map((b) => (b._id === id ? { ...b, ...editForm } : b))
-    );
-    cancelEdit();
-  };
-
-  // ================= ACTIONS =================
+  // ================= LOCAL UPDATE HELPER =================
   const updateLocal = (id, updater) => {
     setBusinesses((prev) =>
       prev.map((b) => (b._id === id ? updater(b) : b))
     );
   };
 
-    const handleApprove = async (id) => {
+  // ================= ACTIONS =================
+  const handleApprove = async (id) => {
     updateLocal(id, (b) => ({ ...b, status: "approved" }));
     await approveBusiness(id);
   };
@@ -99,63 +89,93 @@ const ManageBusinesses = () => {
   };
 
   const handleFeature = async (id) => {
-  const original = businesses.find(b => b._id === id);
+    const original = businesses.find(b => b._id === id);
 
-  updateLocal(id, (b) => ({ ...b, isFeatured: !b.isFeatured }));
+    updateLocal(id, (b) => ({
+      ...b,
+      isFeatured: !b.isFeatured
+    }));
 
-  try {
-    await toggleFeatured(id);
-  } catch (err) {
-    console.error("Feature toggle failed", err);
-
-    // rollback on failure
-    updateLocal(id, () => original);
-  }
-};
+    try {
+      await toggleFeatured(id);
+    } catch (err) {
+      console.error("Feature toggle failed", err);
+      updateLocal(id, () => original);
+    }
+  };
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this business?")) return;
-    setBusinesses((prev) => prev.filter((b) => b._id !== id));
+
+    setBusinesses((prev) =>
+      prev.filter((b) => b._id !== id)
+    );
+
     await deleteBusiness(id);
   };
 
- // ================= FILTER =================
+  // ================= FULL EDIT SAVE =================
+  const handleUpdateBusiness = async (formData) => {
+    try {
+      const payload = normalizeAdminBusinessPayload(formData);
 
-const searchTerm = search.toLowerCase();
+      const res = await updateBusiness(editBusiness._id, payload);
 
-const filtered = businesses
-  .filter((b) =>
-    statusFilter === "all" ? true : b.status === statusFilter
-  )
-  .filter((b) =>
-    (b.name || "").toLowerCase().includes(searchTerm)
+      const updated = res?.data?.data;
+
+      setBusinesses((prev) =>
+        prev.map((b) =>
+          b._id === updated._id ? updated : b
+        )
+      );
+
+      setEditBusiness(null);
+    } catch (err) {
+      console.error("Update failed:", err);
+      alert(err?.response?.data?.message || "Update failed");
+    }
+  };
+
+  // ================= FILTER =================
+  const searchTerm = search.toLowerCase();
+
+  const filtered = businesses
+    .filter((b) =>
+      statusFilter === "all"
+        ? true
+        : b.status === statusFilter
+    )
+    .filter((b) =>
+      (b.name || "")
+        .toLowerCase()
+        .includes(searchTerm)
+    );
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+
+  const paginated = filtered.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
   );
 
-const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-
-const paginated = filtered.slice(
-  (currentPage - 1) * PAGE_SIZE,
-  currentPage * PAGE_SIZE
-);
-
-  // ================= STATUS =================
+  // ================= STATUS CHIP =================
   const StatusChip = ({ status }) => {
     const map = {
-  approved: "bg-green-100 text-green-700",
-  pending: "bg-yellow-100 text-yellow-700",
-  rejected: "bg-red-100 text-red-700"
-};
+      approved: "bg-green-100 text-green-700",
+      pending: "bg-yellow-100 text-yellow-700",
+      rejected: "bg-red-100 text-red-700"
+    };
 
-const safeStatus = status || "pending";
+    const safeStatus = status || "pending";
 
     return (
       <span className={`px-2 py-1 text-xs rounded-full ${map[safeStatus]}`}>
-  {safeStatus}
-</span>
+        {safeStatus}
+      </span>
     );
   };
 
-  // ================= UI =================
+    // ================= UI =================
   return (
     <div className="p-4 md:p-6">
 
@@ -184,7 +204,34 @@ const safeStatus = status || "pending";
         </div>
       </div>
 
-      {/* TABLE WRAPPER (MOBILE SCROLL FIX) */}
+      {/* ================= FULL EDIT MODAL ================= */}
+      {editBusiness && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+
+          <div className="bg-white w-full max-w-3xl p-6 rounded-xl overflow-y-auto max-h-[90vh]">
+
+            <h2 className="text-xl font-bold mb-4">
+              Edit Business
+            </h2>
+
+            <BusinessForm
+              initialData={editBusiness}
+              mode="admin"
+              onSubmit={handleUpdateBusiness}
+            />
+
+            <button
+              onClick={() => setEditBusiness(null)}
+              className="mt-4 bg-gray-500 text-white px-4 py-2 rounded"
+            >
+              Close
+            </button>
+
+          </div>
+        </div>
+      )}
+
+      {/* ================= TABLE ================= */}
       <div className="overflow-x-auto bg-white rounded-lg shadow">
 
         <table className="min-w-[900px] w-full text-sm">
@@ -229,47 +276,17 @@ const safeStatus = status || "pending";
                       onClick={() => setSelectedImage(b.images?.[0])}
                     />
 
-                    {editId === b._id ? (
-                      <input
-                        className="border px-2 py-1 rounded w-full"
-                        value={editForm.name}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, name: e.target.value })
-                        }
-                      />
-                    ) : (
-                      <span className="font-medium">{b.name}</span>
-                    )}
+                    <span className="font-medium">{b.name}</span>
                   </td>
 
                   {/* CATEGORY */}
                   <td className="p-3">
-                    {editId === b._id ? (
-                      <input
-                        className="border px-2 py-1 rounded w-full"
-                        value={editForm.category}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, category: e.target.value })
-                        }
-                      />
-                    ) : (
-                      b.categoryId?.name || "N/A"
-                    )}
+                    {b.categoryId?.name || "N/A"}
                   </td>
 
                   {/* CITY */}
                   <td className="p-3">
-                    {editId === b._id ? (
-                      <input
-                        className="border px-2 py-1 rounded w-full"
-                        value={editForm.city}
-                        onChange={(e) =>
-                          setEditForm({ ...editForm, city: e.target.value })
-                        }
-                      />
-                    ) : (
-                      b.cityId?.name || "N/A"
-                    )}
+                    {b.cityId?.name || "N/A"}
                   </td>
 
                   {/* STATUS */}
@@ -290,57 +307,37 @@ const safeStatus = status || "pending";
 
                   {/* ACTIONS */}
                   <td className="p-3 text-right">
+                    <div className="flex justify-end gap-2">
 
-                    {editId === b._id ? (
-                      <div className="flex justify-end gap-2">
-                        <button
-                          onClick={() => saveEdit(b._id)}
-                          className="bg-green-500 text-white px-3 py-1 rounded"
-                        >
-                          Save
-                        </button>
+                      <button
+                        onClick={() => openEdit(b)}
+                        className="p-2 bg-blue-500 text-white rounded"
+                      >
+                        <FaEdit />
+                      </button>
 
-                        <button
-                          onClick={cancelEdit}
-                          className="bg-gray-400 text-white px-3 py-1 rounded"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    ) : (
-                      <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => handleApprove(b._id)}
+                        className="p-2 bg-green-500 text-white rounded"
+                      >
+                        <FaCheck />
+                      </button>
 
-                        <button
-                          onClick={() => startEdit(b)}
-                          className="p-2 bg-blue-500 text-white rounded"
-                        >
-                          <FaEdit />
-                        </button>
+                      <button
+                        onClick={() => handleReject(b._id)}
+                        className="p-2 bg-yellow-500 text-white rounded"
+                      >
+                        <FaTimes />
+                      </button>
 
-                        <button
-                          onClick={() => handleApprove(b._id)}
-                          className="p-2 bg-green-500 text-white rounded"
-                        >
-                          <FaCheck />
-                        </button>
+                      <button
+                        onClick={() => handleDelete(b._id)}
+                        className="p-2 bg-red-500 text-white rounded"
+                      >
+                        <FaTrash />
+                      </button>
 
-                        <button
-                          onClick={() => handleReject(b._id)}
-                          className="p-2 bg-yellow-500 text-white rounded"
-                        >
-                          <FaTimes />
-                        </button>
-
-                        <button
-                          onClick={() => handleDelete(b._id)}
-                          className="p-2 bg-red-500 text-white rounded"
-                        >
-                          <FaTrash />
-                        </button>
-
-                      </div>
-                    )}
-
+                    </div>
                   </td>
 
                 </tr>
@@ -353,7 +350,7 @@ const safeStatus = status || "pending";
 
       </div>
 
-      {/* PAGINATION */}
+      {/* ================= PAGINATION ================= */}
       {totalPages > 1 && (
         <div className="flex justify-center mt-4 gap-2">
           {Array.from({ length: totalPages }).map((_, i) => (
@@ -372,7 +369,7 @@ const safeStatus = status || "pending";
         </div>
       )}
 
-      {/* IMAGE MODAL */}
+      {/* ================= IMAGE MODAL ================= */}
       {selectedImage && (
         <ImageModal
           image={selectedImage}

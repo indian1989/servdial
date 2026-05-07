@@ -10,6 +10,9 @@ export const getAllBusinesses = () =>
 export const addBusiness = (data) =>
   API.post("/admin/businesses", data);
 
+export const updateBusiness = (id, data) =>
+  API.put(`/admin/businesses/${id}`, data);
+
 // ✅ FIXED PARAM ORDER
 export const approveBusiness = (id) =>
   API.put(`/admin/businesses/${id}/approve`);

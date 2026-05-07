@@ -6,14 +6,15 @@ export const normalizeBusinessPayload = (data, mode = "provider") => {
     cityId: data.cityId?.value || data.cityId,
 
     address: data.address,
+    pincode: data.pincode,
     phone: data.phone,
     whatsapp: data.whatsapp || data.phone,
     website: data.website || "",
+    images: data.images || [],
 
     // provider-only fields
     ...(mode === "provider" && {
       logo: data.logo || "",
-      images: data.images || [],
       businessHours: data.businessHours || {},
       tags: Array.isArray(data.tags)
         ? data.tags
