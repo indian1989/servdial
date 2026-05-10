@@ -13,7 +13,7 @@ const Analytics = () => {
       try {
         setLoading(true);
         const res = await API.get("/admin/analytics"); // Replace with your endpoint
-        setStats(res.data);
+        setStats(res.data?.data || res.data || {});
       } catch (err) {
         console.error(err);
         setError("Failed to load analytics data.");
@@ -27,7 +27,11 @@ const Analytics = () => {
   if (loading) return <Loader />;
   if (error) return <p className="text-red-500">{error}</p>;
 
-  const { usersPerMonth, businessesPerCategory } = stats || {};
+  const usersPerMonth =
+  stats?.usersPerMonth || [];
+
+const businessesPerCategory =
+  stats?.businessesPerCategory || [];
 
   const COLORS = ["#4f46e5", "#f97316", "#10b981", "#ef4444", "#facc15"];
 

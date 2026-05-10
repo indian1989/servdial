@@ -32,17 +32,36 @@ const ManageAdmins = () => {
 
   // ================= FETCH ADMINS =================
   const fetchAdmins = async () => {
-    setLoading(true);
-    try {
-      const res = await getAllAdmins();
-      setAdmins(res.data.admins);
-    } catch (err) {
-      console.error("Failed to fetch admins:", err);
-      alert("Failed to fetch admins.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+
+  try {
+    const res = await getAllAdmins();
+
+    console.log("ADMINS RESPONSE:", res.data);
+
+    const adminsData =
+      res.data?.data?.admins ||
+      res.data?.data ||
+      res.data?.admins ||
+      [];
+
+    setAdmins(
+      Array.isArray(adminsData)
+        ? adminsData
+        : []
+    );
+
+  } catch (err) {
+    console.error("Failed to fetch admins:", err);
+
+    setAdmins([]);
+
+    alert("Failed to fetch admins.");
+
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchAdmins();

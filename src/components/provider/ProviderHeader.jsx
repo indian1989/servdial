@@ -1,44 +1,81 @@
-const ProviderHeader = () => {
+import { useContext } from "react";
+import { AuthContext } from "../../context/AuthContext";
+import {
+  FaBell,
+  FaSearch,
+  FaUserCircle,
+  FaHome,
+  FaStore,
+} from "react-icons/fa";
+import { Link } from "react-router-dom";
+
+function ProviderHeader() {
+  const { user } = useContext(AuthContext);
+
   return (
-    <div>
-      <h1 className="text-3xl font-bold mb-6">Dashboard Overview</h1>
+    <div className="flex items-center justify-between bg-white border-b px-6 py-3 shadow-sm sticky top-0 z-20">
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h3 className="text-gray-500">Total Leads</h3>
-          <p className="text-2xl font-bold text-blue-600">24</p>
-        </div>
+      {/* LEFT: HOME + SEARCH */}
+      <div className="flex items-center gap-4 w-1/2">
 
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h3 className="text-gray-500">Total Reviews</h3>
-          <p className="text-2xl font-bold text-green-600">18</p>
-        </div>
+        {/* HOME BUTTON */}
+        <Link
+          to="/"
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition"
+        >
+          <FaHome />
+          Home
+        </Link>
 
-        <div className="bg-white p-6 rounded-xl shadow">
-          <h3 className="text-gray-500">Profile Views</h3>
-          <p className="text-2xl font-bold text-purple-600">142</p>
+        {/* BUSINESS QUICK LINK */}
+        <Link
+          to="/provider/businesses"
+          className="flex items-center gap-2 text-sm font-medium text-gray-700 hover:text-blue-600 transition"
+        >
+          <FaStore />
+          Businesses
+        </Link>
+
+        {/* SEARCH */}
+        <div className="flex items-center gap-3 w-full bg-gray-50 px-3 py-2 rounded-md">
+          <FaSearch className="text-gray-400" />
+          <input
+            placeholder="Search your businesses, leads, reviews..."
+            className="w-full outline-none text-sm bg-transparent"
+          />
         </div>
 
       </div>
 
-      {/* Quick Actions */}
-      <div className="bg-white p-6 rounded-xl shadow">
-        <h2 className="text-xl font-semibold mb-4">Quick Actions</h2>
+      {/* RIGHT: ACTIONS */}
+      <div className="flex items-center gap-5">
 
-        <div className="flex gap-4">
-          <button className="bg-blue-600 text-white px-5 py-2 rounded-lg hover:bg-blue-700">
-            Edit Business
-          </button>
-
-          <button className="bg-green-600 text-white px-5 py-2 rounded-lg hover:bg-green-700">
-            View Leads
-          </button>
+        {/* NOTIFICATIONS */}
+        <div className="relative cursor-pointer">
+          <FaBell className="text-gray-600 text-lg hover:text-blue-600 transition" />
+          <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] px-1 rounded-full">
+            2
+          </span>
         </div>
+
+        {/* ROLE BADGE */}
+        <span className="text-xs bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium capitalize">
+          {user?.role === "provider" ? "Business Owner" : user?.role}
+        </span>
+
+        {/* USER INFO */}
+        <div className="flex items-center gap-2">
+          <FaUserCircle className="text-2xl text-gray-600" />
+
+          <div className="text-sm leading-tight">
+            <div className="font-medium">{user?.name}</div>
+            <div className="text-gray-400 text-xs">Provider Panel</div>
+          </div>
+        </div>
+
       </div>
     </div>
   );
-};
+}
 
 export default ProviderHeader;

@@ -90,7 +90,7 @@ const toggleFeatured = async (city) => {
     console.log("🔥 FULL RESPONSE:", res);
     console.log("🔥 DATA:", res.data);
 
-    setCities(res.data?.data || []);
+    setCities(res.data?.data?.cities || []);
   } catch (err) {
     console.error("❌ FETCH ERROR:", err);
     alert("Failed to fetch cities");
@@ -328,7 +328,7 @@ const handleAddCity = async () => {
 };
 
   // ================= FILTER =================
-  const filtered = cities.filter((c) =>
+  const filtered = (Array.isArray(cities) ? cities : []).filter((c) =>
     `${c.name} ${c.district} ${c.state}`
       .toLowerCase()
       .includes(search.toLowerCase())

@@ -1,197 +1,194 @@
-// frontend/src/pages/provider/ProviderDashboard.jsx
 import { useEffect, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import API from "../../api/axios";
-import { providerRoutes } from "../../routes/routeConfig";
-
-function ProviderSidebar({ sidebarOpen, onClose }) {
-  const location = useLocation();
-
-  return (
-    <>
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block w-64 bg-gray-900 text-white min-h-screen p-4">
-        <SidebarContent location={location} />
-      </div>
-
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-50 bg-black/50 md:hidden">
-          <div className="fixed inset-y-0 left-0 w-64 bg-gray-900 text-white p-4">
-            <button
-              onClick={onClose}
-              className="mb-4 text-white text-xl font-bold"
-            >
-              ✕ Close
-            </button>
-            <SidebarContent location={location} />
-          </div>
-        </div>
-      )}
-    </>
-  );
-}
-
-// Separate component for sidebar content
-function SidebarContent({ location }) {
-  return (
-    <>
-      <h2 className="text-xl font-bold mb-6">Provider Panel</h2>
-      <ul className="space-y-3">
-        {providerRoutes.map((route) => {
-          const isActive = location.pathname.startsWith(route.path);
-          return (
-            <li key={route.path}>
-              <Link
-                to={route.path}
-                className={`block p-2 rounded transition-colors ${
-                  isActive
-                    ? "bg-blue-600 text-white font-semibold"
-                    : "hover:bg-gray-700"
-                }`}
-              >
-                {route.name}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </>
-  );
-}
 
 const ProviderDashboard = () => {
   const [businesses, setBusinesses] = useState([]);
+  const [stats, setStats] = useState({
+    total: 0,
+    approved: 0,
+    pending: 0,
+    rejected: 0,
+    leads: 0,
+    reviews: 0,
+  });
+
   const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const user = JSON.parse(localStorage.getItem("servdial_user") || "null");
 
-  const fetchBusinesses = async () => {
+  const fetchDashboardData = async () => {
     try {
-      const res = await API.get("/provider/businesses");
-      setBusinesses(res.data.businesses || []);
+      // 🔥 parallel calls (faster dashboard)
+      const [bizRes, leadsRes, reviewsRes] = await Promise.all([
+        API.get("/provider/businesses"),
+        API.get("/provider/leads"),
+        API.get("/provider/reviews"),
+      ]);
+
+      const bizList = Array.isArray(bizRes.data?.businesses)
+        ? bizRes.data.businesses
+        : [];
+
+      const leads = Array.isArray(leadsRes.data?.leads)
+        ? leadsRes.data.leads
+        : [];
+
+      const reviews = Array.isArray(reviewsRes.data?.reviews)
+        ? reviewsRes.data.reviews
+        : [];
+
+      setBusinesses(bizList);
+
+      setStats({
+        total: bizList.length,
+        approved: bizList.filter((b) => b.status === "approved").length,
+        pending: bizList.filter((b) => b.status === "pending").length,
+        rejected: bizList.filter((b) => b.status === "rejected").length,
+
+        // 🔥 NEW KPIs
+        leads: leads.length,
+        reviews: reviews.length,
+      });
     } catch (err) {
-      console.error(err);
+      console.error("Dashboard fetch error:", err);
+      setBusinesses([]);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchBusinesses();
+    fetchDashboardData();
   }, []);
 
   const deleteBusiness = async (id) => {
     if (!window.confirm("Delete this business?")) return;
+
     try {
       await API.delete(`/business/${id}`);
-      fetchBusinesses();
-    } catch {
+      fetchDashboardData();
+    } catch (err) {
       alert("Error deleting business");
     }
   };
 
   if (!user) return <p className="p-10">Login required</p>;
 
-  return (
-    <div className="flex min-h-screen bg-gray-100">
-      
-      {/* MAIN CONTENT */}
-      <div className="flex-1 p-4 md:p-6">
-        {/* Mobile hamburger */}
-        <div className="flex justify-between items-center mb-6 md:hidden">
-          <h1 className="text-2xl font-bold">Provider Dashboard</h1>
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="text-gray-700 bg-gray-200 px-3 py-1 rounded-md"
-          >
-            ☰ Menu
-          </button>
-        </div>
+  const StatCard = ({ label, value, color }) => (
+    <div className="bg-white p-4 rounded shadow hover:shadow-md transition">
+      <p className="text-gray-500 text-sm">{label}</p>
+      <h2 className={`text-xl font-bold ${color}`}>{value}</h2>
+    </div>
+  );
 
-        {/* Desktop header */}
-        <div className="hidden md:flex justify-between items-center mb-8">
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+
+      <div className="flex-1 p-4 md:p-6 space-y-6">
+
+        {/* HEADER */}
+        <div className="flex justify-between items-center">
           <h1 className="text-2xl font-bold">Provider Dashboard</h1>
+
           <Link
             to="/provider/add-business"
-            className="bg-blue-600 text-white px-4 py-2 rounded"
+            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
-            Add New Business
+            + Add Business
           </Link>
         </div>
 
+        {/* STATS GRID */}
+        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+
+          <StatCard label="Total" value={stats.total} color="" />
+          <StatCard label="Approved" value={stats.approved} color="text-green-600" />
+          <StatCard label="Pending" value={stats.pending} color="text-yellow-600" />
+          <StatCard label="Rejected" value={stats.rejected} color="text-red-600" />
+
+          {/* 🔥 NEW */}
+          <StatCard label="Leads" value={stats.leads} color="text-blue-600" />
+          <StatCard label="Reviews" value={stats.reviews} color="text-purple-600" />
+
+        </div>
+
         {/* LOADING */}
-        {loading && <p>Loading your businesses...</p>}
+        {loading && (
+          <div className="grid gap-4">
+            <div className="h-24 bg-gray-200 animate-pulse rounded"></div>
+            <div className="h-24 bg-gray-200 animate-pulse rounded"></div>
+          </div>
+        )}
 
         {/* EMPTY */}
         {!loading && businesses.length === 0 && (
-          <div className="border rounded p-10 text-center">
-            <p className="mb-4">You have not added any business yet.</p>
+          <div className="p-10 text-center border rounded bg-white">
+            <p className="mb-4">No businesses found yet</p>
             <Link
               to="/provider/add-business"
               className="bg-blue-600 text-white px-4 py-2 rounded"
             >
-              Add Your First Business
+              Create Your First Business
             </Link>
           </div>
         )}
 
         {/* BUSINESS LIST */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {businesses.map((biz) => {
-            let statusColor = "bg-yellow-500";
-            if (biz.status === "approved") statusColor = "bg-green-600";
-            if (biz.status === "rejected") statusColor = "bg-red-600";
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-            return (
-              <div
-                key={biz._id}
-                className="border rounded-lg overflow-hidden shadow-sm bg-white"
-              >
-                <img
-                  src={biz.logo || "/placeholder.png"}
-                  alt={biz.name}
-                  className="h-40 w-full object-cover"
-                />
-                <div className="p-4">
-                  <h3 className="font-semibold text-lg">{biz.name}</h3>
-                  <p className="text-sm text-gray-500">
-                   {biz.cityId?.name || "City"}
-                   </p>
+          {businesses.map((biz) => (
+            <div
+              key={biz._id}
+              className="bg-white border rounded-lg overflow-hidden hover:shadow-md transition"
+            >
 
-                  <p className="text-sm text-gray-500">
-                    Category: {biz.categoryId?.name || "Category"}
-                    </p>
+              <img
+                src={biz.logo || "/placeholder.png"}
+                className="h-40 w-full object-cover"
+                alt={biz.name}
+              />
 
-                  <div className="mt-2">
-                    <span
-                      className={`text-white text-xs px-2 py-1 rounded ${statusColor}`}
-                    >
-                      {biz.status}
-                    </span>
-                  </div>
+              <div className="p-4 space-y-2">
 
-                  <div className="flex gap-2 mt-4 flex-wrap">
-                    <Link
-                      to={`/provider/edit-business/${biz._id}`}
-                      className="bg-gray-800 text-white px-3 py-1 text-sm rounded"
-                    >
-                      Edit
-                    </Link>
+                <h3 className="font-semibold text-lg">{biz.name}</h3>
 
-                    <button
-                      onClick={() => deleteBusiness(biz._id)}
-                      className="bg-red-500 text-white px-3 py-1 text-sm rounded"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                <p className="text-sm text-gray-500">
+                  {biz.cityId?.name || "City"}
+                </p>
+
+                <p className="text-sm text-gray-500">
+                  {biz.categoryId?.name || "Category"}
+                </p>
+
+                <span className="text-xs px-2 py-1 rounded bg-gray-100 inline-block">
+                  {biz.status}
+                </span>
+
+                <div className="flex gap-2 pt-3">
+
+                  <Link
+                    to={`/provider/edit-business/${biz._id}`}
+                    className="bg-gray-800 text-white px-3 py-1 text-sm rounded"
+                  >
+                    Edit
+                  </Link>
+
+                  <button
+                    onClick={() => deleteBusiness(biz._id)}
+                    className="bg-red-500 text-white px-3 py-1 text-sm rounded"
+                  >
+                    Delete
+                  </button>
+
                 </div>
+
               </div>
-            );
-          })}
+            </div>
+          ))}
+
         </div>
+
       </div>
     </div>
   );

@@ -1,22 +1,36 @@
-// src/components/business/BusinessForm.jsx
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Select from "react-select";
+
 import API from "../../api/axios";
+
 import { getAllCategories } from "../../api/adminAPI";
+
 import { buildCategoryTree } from "../../utils/adminUtils";
 
-/* ================= SAFE CATEGORY FLATTEN ================= */
-const flattenCategories = (tree = [], parent = "") => {
+import FormSection from "./FormSection";
+import FormField from "./FormField";
+
+import {
+  BUSINESS_NAME_MAX,
+  DESCRIPTION_MAX,
+  defaultBusinessForm,
+  validateBusinessForm,
+} from "./businessFormSchema";
+
+/* ================= CATEGORY FLATTEN ================= */
+
+const flattenCategories = (
+  tree = [],
+  parent = ""
+) => {
   let result = [];
 
   tree.forEach((cat) => {
     const children = cat.subcategories || [];
 
-    const label = parent
-      ? `${cat.name} (${parent})`
-      : cat.name;
+    const label = cat.name;
 
+    // ONLY LEAF SUBCATEGORIES
     if (children.length === 0) {
       result.push({
         value: cat._id,
@@ -25,65 +39,54 @@ const flattenCategories = (tree = [], parent = "") => {
     }
 
     if (children.length > 0) {
-      result = result.concat(flattenCategories(children, cat.name));
+      result = result.concat(
+        flattenCategories(children, cat.name)
+      );
     }
   });
 
   return result;
 };
 
-/* ================= STYLE ================= */
+/* ================= SELECT STYLE ================= */
+
 const styles = {
-  control: (base) => ({
+  control: (base, state) => ({
     ...base,
-    borderRadius: "10px",
-    padding: "4px",
+    minHeight: "48px",
+    borderRadius: "12px",
+    borderColor: state.isFocused
+      ? "#6366f1"
+      : "#d1d5db",
+
+    boxShadow: "none",
+
+    "&:hover": {
+      borderColor: "#6366f1",
+    },
   }),
 };
 
-/* ================= DEFAULT FORM ================= */
-const defaultForm = {
-  name: "",
-  categoryId: "",
-  cityId: "",
-  district: "",
-  state: "",
-  location: null,
-
-  address: "",
-  pincode: "",
-  phone: "",
-  whatsapp: "",
-  website: "",
-  description: "",
-
-  // provider fields (IMPORTANT)
-  images: [],
-  logo: "",
-  businessHours: {},
-  tags: [],
-  boost: false,
-};
+/* ================= COMPONENT ================= */
 
 const BusinessForm = ({
-  initialData = {},
-  onSubmit,
+  value = {},
   onChange,
-  children
+  onSubmit,
+  children,
+  mode = "provider",
 }) => {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+
+  const [errors, setErrors] = useState({});
 
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
 
-  /* ================= SAFE INIT (NO DATA LOSS) ================= */
-  const [form, setForm] = useState(() => ({
-    ...defaultForm,
-    ...initialData,
-  }));
+  const [form, setForm] = useState(defaultBusinessForm);
 
-  /* ================= FETCH DATA ================= */
+  /* ================= FETCH ================= */
+
   useEffect(() => {
     const init = async () => {
       try {
@@ -92,225 +95,480 @@ const BusinessForm = ({
           API.get("/cities"),
         ]);
 
-        const raw = catRes?.data?.data || [];
-        const tree = buildCategoryTree(raw);
+        const rawCategories =
+          catRes?.data?.data || [];
+
+        const tree =
+          buildCategoryTree(rawCategories);
 
         setCategories(flattenCategories(tree));
 
-        const cityRaw = cityRes?.data?.data?.cities;
+        const cityRaw =
+          cityRes?.data?.data?.cities || [];
 
-        if (!Array.isArray(cityRaw)) {
-          setError("Failed to load cities");
-          return;
-        }
+        const normalizedCities = cityRaw.map(
+          (c) => ({
+            value: c._id,
 
-        const normalizedCities = cityRaw.map((c) => ({
-          value: c._id,
-          label: `${c.name}${c.state ? ` (${c.state})` : ""}`,
-          district: c.district || "",
-          state: c.state || "",
-          latitude: Number(c.latitude),
-          longitude: Number(c.longitude),
-        }));
+            label: c.name,
+
+            district: c.district || "",
+            state: c.state || "",
+
+            latitude: Number(c.latitude),
+            longitude: Number(c.longitude),
+          })
+        );
 
         setCities(normalizedCities);
+
       } catch (err) {
         console.error(err);
-        setError("Failed to load form data");
       }
     };
 
     init();
   }, []);
 
-  /* ================= FIX: KEEP FULL DATA ================= */
-  useEffect(() => {
-    if (!initialData) return;
+  /* ================= INITIAL DATA ================= */
+useEffect(() => {
+  if (!value || !value._id) return;
 
-    setForm((prev) => ({
-      ...defaultForm,
-      ...prev,
-      ...initialData,
-    }));
-  }, [initialData]);
+  setForm({
+    ...defaultBusinessForm,
+    ...value,
+  });
+}, [value?._id]);
+
+  /* ================= HELPERS ================= */
+
+  const updateForm = (updated) => {
+  setForm(updated);
+  onChange?.(updated);
+};
 
   /* ================= INPUT ================= */
+
   const handleChange = (e) => {
-    const { name, value } = e.target;
+  const { name, value, type, checked } = e.target;
 
-    const updated =
-      name === "pincode"
-        ? { ...form, [name]: value.replace(/\D/g, "").slice(0, 6) }
-        : name === "phone" || name === "whatsapp"
-        ? { ...form, [name]: value.replace(/\D/g, "").slice(0, 10) }
-        : { ...form, [name]: value };
+  let nextValue;
 
-    setForm(updated);
-    onChange?.(updated);
+  if (type === "checkbox") {
+    nextValue = checked;
+
+  } else if (name === "phone" || name === "whatsapp") {
+    nextValue = value.replace(/\D/g, "").slice(0, 10);
+
+  } else if (name === "pincode") {
+    nextValue = value.replace(/\D/g, "").slice(0, 6);
+
+  } else {
+    nextValue = value;
+  }
+
+  const updated = {
+    ...form,
+    [name]: nextValue,
   };
+
+  if (name === "phone" && form.whatsapp === form.phone) {
+    updated.whatsapp = nextValue;
+  }
+
+  updateForm(updated);
+};
 
   /* ================= SELECT ================= */
+
   const handleSelect = (field, selected) => {
-    if (!selected) return;
+  if (!selected) return;
 
-    if (field === "cityId") {
-      const updated = {
-        ...form,
-        cityId: selected.value,
-        district: selected.district,
-        state: selected.state,
-        location: {
-          type: "Point",
-          coordinates: [
-            selected.longitude,
-            selected.latitude,
-          ],
-        },
-      };
+  if (field === "categoryId") {
+    updateForm({
+      ...form,
+      categoryId: selected.value,
+      categoryName: selected.label,
+    });
+    return;
+  }
 
-      setForm(updated);
-      onChange?.(updated);
-      return;
-    }
+  if (field === "cityId") {
+    updateForm({
+      ...form,
+      cityId: selected.value,
+      cityName: selected.label,
+      district: selected.district,
+      state: selected.state,
+      location: {
+        type: "Point",
+        coordinates: [
+          selected.longitude,
+          selected.latitude,
+        ],
+      },
+    });
+  }
+};
 
-    if (field === "categoryId") {
-      const updated = {
-        ...form,
-        categoryId: selected.value,
-      };
+  /* ================= SEO PREVIEW ================= */
 
-      setForm(updated);
-      onChange?.(updated);
-    }
-  };
+  const slugify = (text = "") =>
+  text
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 
-  /* ================= VALIDATION ================= */
-  const validate = () => {
-    if (!form.name) return "Business name required";
-    if (!form.categoryId) return "Category required";
-    if (!form.cityId) return "City required";
-    if (!form.pincode || form.pincode.length !== 6)
-      return "Valid pincode required";
-    if (!form.phone || form.phone.length !== 10)
-      return "Valid phone required";
-    if (!form.location) return "City location required";
+const seoPreview = useMemo(() => {
+  const city =
+    cities.find(
+      (c) => c.value === form.cityId
+    )?.label || "city";
 
-    return "";
-  };
+  const category =
+    categories.find(
+      (c) => c.value === form.categoryId
+    )?.label || "category";
+
+  const businessSlug =
+    slugify(form.name) || "business-name";
+
+  return `servdial.com/${slugify(city)}/${slugify(category)}/${businessSlug}`;
+
+}, [
+  form.name,
+  form.cityId,
+  form.categoryId,
+  cities,
+  categories,
+]);
 
   /* ================= SUBMIT ================= */
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const err = validate();
-    if (err) return setError(err);
+  const validationErrors = validateBusinessForm(form);
+  setErrors(validationErrors);
 
+  if (Object.keys(validationErrors).length) return;
+
+  try {
     setLoading(true);
 
-    try {
-      await onSubmit(form);
-    } catch (err) {
-      console.error(err);
-      setError("Submission failed");
-    } finally {
-      setLoading(false);
+    const payload = { ...form };
+
+    if (payload.website && !payload.website.startsWith("http")) {
+      payload.website = `https://${payload.website}`;
     }
-  };
+
+    await onSubmit(payload);
+
+  } catch (err) {
+    console.error(err);
+  } finally {
+    setLoading(false);
+  }
+};
 
   /* ================= UI ================= */
-  return (
-    <div className="max-w-4xl mx-auto p-6">
-      <form onSubmit={handleSubmit} className="grid gap-4">
 
-        {error && (
-          <div className="bg-red-100 text-red-600 p-2 rounded">
-            {error}
+  return (
+    <div className="max-w-5xl mx-auto">
+
+      <form
+        onSubmit={handleSubmit}
+        className="space-y-6"
+      >
+
+        {/* BUSINESS INFO */}
+
+        <FormSection
+          title="Business Information"
+          subtitle="Primary business details"
+        >
+
+          <FormField
+            label="Business Name"
+            required
+            error={errors.name}
+          >
+
+            <input
+              name="name"
+              value={form.name}
+              onChange={handleChange}
+              maxLength={BUSINESS_NAME_MAX}
+              placeholder="Enter business name"
+              className="border rounded-xl p-3 w-full"
+            />
+
+            <div className="text-xs text-gray-400 mt-1">
+              {form.name.length}/
+              {BUSINESS_NAME_MAX}
+            </div>
+
+          </FormField>
+
+          <FormField
+            label="Primary Category"
+            required
+            error={errors.categoryId}
+          >
+
+            <Select
+              options={categories}
+              value={
+                categories.find(
+                  (c) =>
+                    c.value === form.categoryId
+                ) || null
+              }
+              onChange={(v) =>
+                handleSelect(
+                  "categoryId",
+                  v
+                )
+              }
+              placeholder="Select Primary Category"
+              styles={styles}
+            />
+
+          </FormField>
+
+        </FormSection>
+
+        {/* LOCATION */}
+
+        <FormSection
+          title="Location Information"
+          subtitle="Business address and geo data"
+        >
+
+          <FormField
+            label="Address"
+            required
+            error={errors.address}
+          >
+
+            <textarea
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              placeholder="Enter full address"
+              className="border rounded-xl p-3 w-full"
+            />
+
+          </FormField>
+
+          <FormField
+            label="City"
+            required
+            error={errors.cityId}
+          >
+
+            <Select
+              options={cities}
+              value={
+                cities.find(
+                  (c) =>
+                    c.value === form.cityId
+                ) || null
+              }
+              onChange={(v) =>
+                handleSelect(
+                  "cityId",
+                  v
+                )
+              }
+              placeholder="Select City"
+              styles={styles}
+            />
+
+          </FormField>
+
+          <div className="grid md:grid-cols-2 gap-4">
+
+            <input
+              value={form.district}
+              readOnly
+              placeholder="District"
+              className="bg-gray-100 rounded-xl p-3"
+            />
+
+            <input
+              value={form.state}
+              readOnly
+              placeholder="State"
+              className="bg-gray-100 rounded-xl p-3"
+            />
+
           </div>
+
+          <FormField
+            label="Pincode"
+            required
+            error={errors.pincode}
+          >
+
+            <input
+              name="pincode"
+              value={form.pincode}
+              onChange={handleChange}
+              placeholder="Enter pincode"
+              className="border rounded-xl p-3 w-full"
+            />
+
+          </FormField>
+
+        </FormSection>
+
+        {/* CONTACT */}
+
+        <FormSection
+          title="Contact Information"
+          subtitle="Customer contact details"
+        >
+
+          <FormField
+            label="Phone Number"
+            required
+            error={errors.phone}
+          >
+
+            <input
+              name="phone"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="Enter phone number"
+              className="border rounded-xl p-3 w-full"
+            />
+
+          </FormField>
+
+          <FormField
+            label="WhatsApp Number"
+          >
+
+            <input
+              name="whatsapp"
+              value={form.whatsapp}
+              onChange={handleChange}
+              placeholder="Enter WhatsApp number"
+              className="border rounded-xl p-3 w-full"
+            />
+
+          </FormField>
+
+          <FormField
+            label="Website"
+            error={errors.website}
+          >
+
+            <input
+              name="website"
+              value={form.website}
+              onChange={handleChange}
+              placeholder="https://example.com"
+              className="border rounded-xl p-3 w-full"
+            />
+
+          </FormField>
+
+        </FormSection>
+
+        {/* DESCRIPTION */}
+
+        <FormSection
+          title="Description"
+          subtitle="Business overview"
+        >
+
+          <FormField
+            label="Business Description"
+            error={errors.description}
+          >
+
+            <textarea
+              name="description"
+              value={form.description}
+              onChange={handleChange}
+              rows={6}
+              maxLength={DESCRIPTION_MAX}
+              placeholder="Describe your business"
+              className="border rounded-xl p-3 w-full"
+            />
+
+            <div className="text-xs text-gray-400 mt-1">
+              {form.description.length}/
+              {DESCRIPTION_MAX}
+            </div>
+
+          </FormField>
+
+        </FormSection>
+
+        {/* SEO */}
+
+        <FormSection
+          title="SEO Preview"
+          subtitle="Generated business URL"
+        >
+
+          <div className="bg-gray-100 rounded-xl p-3 text-sm break-all">
+            {seoPreview}
+          </div>
+
+        </FormSection>
+
+        {/* PROVIDER */}
+
+        {mode === "provider" && (
+          <FormSection
+            title="Promotion"
+            subtitle="Boost business visibility"
+          >
+
+            <label className="flex items-center gap-3">
+
+              <input
+                type="checkbox"
+                name="boost"
+                checked={form.boost}
+                onChange={handleChange}
+              />
+
+              <span>
+                Boost this business listing
+              </span>
+
+            </label>
+
+          </FormSection>
         )}
 
-        <input
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          placeholder="Business Name"
-          className="border p-2 rounded"
-        />
-
-        <Select
-          options={categories}
-          value={categories.find(c => c.value === form.categoryId) || null}
-          onChange={(v) => handleSelect("categoryId", v)}
-          styles={styles}
-        />
-
-        <input
-          name="address"
-          value={form.address}
-          onChange={handleChange}
-          placeholder="Address"
-          className="border p-2 rounded"
-        />
-
-        <Select
-          options={cities}
-          value={cities.find(c => c.value === form.cityId) || null}
-          onChange={(v) => handleSelect("cityId", v)}
-          styles={styles}
-        />
-
-        <input value={form.district} readOnly className="bg-gray-100 p-2" />
-        <input value={form.state} readOnly className="bg-gray-100 p-2" />
-
-        <input
-          name="pincode"
-          value={form.pincode}
-          onChange={handleChange}
-          placeholder="Pincode"
-          className="border p-2 rounded"
-        />
-
-        <input
-          name="phone"
-          value={form.phone}
-          onChange={handleChange}
-          placeholder="Phone"
-          className="border p-2 rounded"
-        />
-
-        <input
-          name="whatsapp"
-          value={form.whatsapp}
-          onChange={handleChange}
-          placeholder="WhatsApp"
-          className="border p-2 rounded"
-        />
-
-        <input
-          name="website"
-          value={form.website}
-          onChange={handleChange}
-          placeholder="Website"
-          className="border p-2 rounded"
-        />
-
-        <textarea
-          name="description"
-          value={form.description}
-          onChange={handleChange}
-          placeholder="Description"
-          className="border p-2 rounded"
-        />
+        {/* EXTRA */}
 
         {children}
 
-        <button
-          disabled={loading}
-          className="bg-blue-600 text-white p-2 rounded"
-        >
-          {loading ? "Saving..." : "Submit"}
-        </button>
+        {/* SUBMIT */}
+
+        <div className="sticky bottom-0 bg-white border-t p-4 rounded-t-2xl">
+
+          <button
+            disabled={loading}
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl p-3 font-medium"
+          >
+            {loading
+              ? "Saving..."
+              : "Submit Business"}
+          </button>
+
+        </div>
 
       </form>
+
     </div>
   );
 };

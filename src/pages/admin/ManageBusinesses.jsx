@@ -20,6 +20,9 @@ import BusinessForm from "../../components/business/BusinessForm";
 import { normalizeBusinessPayload } from "../../components/business/BusinessMapper";
 import ImageModal from "../../components/admin/modals/ImageModal";
 import { toBusinessEditDTO } from "../../dto/businessDTO";
+import BusinessMediaManager from "../../components/BusinessMediaManager";
+import BusinessHoursManager from "../../components/BusinessHoursManager";
+
 
 const PAGE_SIZE = 10;
 
@@ -42,6 +45,15 @@ const ManageBusinesses = () => {
   setEditBusiness(dto);
 };
 
+const defaultHours = {
+  monday: { open: "", close: "", closed: false, open24h: false },
+  tuesday: { open: "", close: "", closed: false, open24h: false },
+  wednesday: { open: "", close: "", closed: false, open24h: false },
+  thursday: { open: "", close: "", closed: false, open24h: false },
+  friday: { open: "", close: "", closed: false, open24h: false },
+  saturday: { open: "", close: "", closed: false, open24h: false },
+  sunday: { open: "", close: "", closed: false, open24h: false },
+};
   // ================= FETCH =================
   const fetchBusinesses = async () => {
     setLoading(true);
@@ -117,7 +129,7 @@ const ManageBusinesses = () => {
   // ================= FULL EDIT SAVE =================
   const handleUpdateBusiness = async (formData) => {
     try {
-      const payload = normalizeAdminBusinessPayload(formData);
+      const payload = normalizeBusinessPayload(formData, "admin");
 
       const res = await updateBusiness(editBusiness._id, payload);
 
@@ -215,10 +227,38 @@ const ManageBusinesses = () => {
             </h2>
 
             <BusinessForm
-              initialData={editBusiness}
-              mode="admin"
-              onSubmit={handleUpdateBusiness}
-            />
+  value={editBusiness}
+  onChange={setEditBusiness}
+  mode="edit"
+  onSubmit={handleUpdateBusiness}
+>
+  {/* MEDIA */}
+  <BusinessMediaManager
+    value={editBusiness?.images || []}
+    onChange={(imgs) =>
+      setEditBusiness((prev) => ({
+        ...prev,
+        images: imgs
+      }))
+    }
+  />
+
+  {/* HOURS */}
+  <BusinessHoursManager
+    value={
+      editBusiness?.businessHours &&
+      Object.keys(editBusiness.businessHours).length
+        ? editBusiness.businessHours
+        : defaultHours
+    }
+    onChange={(hrs) =>
+      setEditBusiness((prev) => ({
+        ...prev,
+        businessHours: hrs
+      }))
+    }
+  />
+</BusinessForm>
 
             <button
               onClick={() => setEditBusiness(null)}

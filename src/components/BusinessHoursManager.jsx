@@ -68,8 +68,10 @@ const toggle24h = (day) => {
             type="time"
             value={value?.[day]?.open || ""}
             disabled={value?.[day]?.closed || value?.[day]?.is24h}
-            onChange={() => toggleClosed(day)}
-            className="border p-1"
+            onChange={(e) =>
+              handleChange(day, "open", e.target.value)
+            }
+            className="border p-1 rounded"
           />
 
           <span className="px-1 text-gray-500">to</span>

@@ -16,7 +16,8 @@ import ProviderMessages from "../pages/provider/ProviderMessages";
 import ProviderNotifications from "../pages/provider/ProviderNotifications";
 import ProviderSubscription from "../pages/provider/ProviderSubscription";
 import ProviderProfile from "../pages/provider/ProviderProfile";
-
+import ProviderAddBanner from "../pages/provider/ProviderAddBanner";
+import ProviderManageBanners from "../pages/provider/ProviderManageBanners";
 import { providerRoutes } from "./routeConfig";
 
 const components = {
@@ -27,6 +28,8 @@ const components = {
   ProviderSettings,
   ProviderAnalytics,
   ProviderAddBusiness,
+  ProviderAddBanner,
+  ProviderManageBanners,
   ProviderOffers,
   ProviderMessages,
   ProviderNotifications,

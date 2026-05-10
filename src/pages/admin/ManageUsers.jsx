@@ -16,18 +16,37 @@ const ManageUsers = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   // ================= FETCH USERS =================
-  const fetchUsers = async () => {
-    setLoading(true);
-    try {
-      const res = await getAllUsers();
-      setUsers(res.data.users);
-    } catch (err) {
-      console.error("Failed to fetch users:", err);
-      alert("Failed to fetch users.");
-    } finally {
-      setLoading(false);
-    }
-  };
+const fetchUsers = async () => {
+  setLoading(true);
+
+  try {
+    const res = await getAllUsers();
+
+    console.log("🔥 USERS RESPONSE:", res.data);
+
+    const usersData =
+      res?.data?.data?.users ||
+      res?.data?.users ||
+      res?.data?.data ||
+      [];
+
+    setUsers(
+      Array.isArray(usersData)
+        ? usersData
+        : []
+    );
+
+  } catch (err) {
+    console.error("Failed to fetch users:", err);
+
+    setUsers([]);
+
+    alert("Failed to fetch users.");
+
+  } finally {
+    setLoading(false);
+  }
+};
 
   useEffect(() => {
     fetchUsers();

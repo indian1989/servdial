@@ -8,7 +8,7 @@ const ProviderReviews = () => {
   const fetchReviews = async () => {
     try {
       const res = await API.get("/provider/reviews");
-      setReviews(res.data || []);
+      setReviews(res.data?.reviews || []);
     } catch (err) {
       console.error(err);
     }

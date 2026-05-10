@@ -13,15 +13,29 @@ export const toBusinessListDTO = (b = {}) => {
       b.logo ||
       "https://via.placeholder.com/400x250",
 
+    // ================= CATEGORY =================
     categoryName:
-      typeof b.categoryId === "object"
-        ? b.categoryId?.name
-        : b.category || "General",
+  (b.categoryId?.name || b.category || "General")
+    .toString()
+    .trim()
+    .replace(/\b\w/g, (l) => l.toUpperCase()),
 
+    categorySlug:
+      b.categoryId?.slug || b.categorySlug || null,
+
+    // ================= CITY =================
     cityName:
-      typeof b.cityId === "object"
-        ? b.cityId?.name
-        : b.cityName || "Unknown",
+  (b.cityId?.name || b.cityName || "Unknown")
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/\b\w/g, (l) => l.toUpperCase()),
+
+    citySlug:
+  (b.cityId?.slug || b.citySlug || "")
+    .toString()
+    .trim()
+    .toLowerCase(),
 
     rating: b.averageRating || b.rating || 0,
     reviewCount: b.totalReviews || b.reviewCount || 0,
@@ -44,14 +58,14 @@ export const toBusinessEditDTO = (b = {}) => {
 
     // ===== RELATIONS (FIXED FOR SELECTS) =====
     categoryId:
-      typeof b.categoryId === "object"
-        ? b.categoryId?._id
-        : b.categoryId || "",
+      b.categoryId?._id?.toString?.() ||
+      b.categoryId?.toString?.() ||
+      "",
 
     cityId:
-      typeof b.cityId === "object"
-        ? b.cityId?._id
-        : b.cityId || "",
+      b.cityId?._id?.toString?.() ||
+      b.cityId?.toString?.() ||
+      "",
 
     // ===== LOCATION INFO =====
     address: b.address || "",
@@ -67,12 +81,21 @@ export const toBusinessEditDTO = (b = {}) => {
     website: b.website || "",
 
     // ===== MEDIA =====
-    images: b.images || [],
+    images: Array.isArray(b.images)
+      ? b.images
+      : b.images?.url
+      ? [b.images.url]
+      : [],
+
     logo: b.logo || "",
 
     // ===== PROVIDER FEATURES =====
     businessHours: b.businessHours || {},
-    tags: b.tags || [],
+
+    tags: Array.isArray(b.tags)
+      ? b.tags
+      : [],
+
     boost: b.boost || false,
 
     // ===== ADMIN FLAGS =====

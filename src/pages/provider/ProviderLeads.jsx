@@ -12,7 +12,7 @@ try{
 
 const res = await API.get("/provider/leads");
 
-setLeads(res.data || []);
+setLeads(res.data?.leads || []);
 
 }catch(err){
 
