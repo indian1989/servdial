@@ -102,23 +102,17 @@ const ManageCategories = () => {
     return filterNodes(tree);
   }, [search, tree]);
 
-  const useDebounce = (value, delay = 250) => {
-  const [debounced, setDebounced] = useState(value);
-
-  useEffect(() => {
-    const handler = setTimeout(() => setDebounced(value), delay);
-    return () => clearTimeout(handler);
-  }, [value, delay]);
-
-  return debounced;
-};
-
    /* ================= EXISTING CATEGORY ================= */
-  const existingCategory = useMemo(() => {
+  const normalize = (str = "") =>
+  str
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+
+const existingCategory = useMemo(() => {
   return flatCategories.find(
     (c) =>
-      c.name.trim().toLowerCase() ===
-        newCategory.name.trim().toLowerCase() &&
+      normalize(c.name) === normalize(newCategory.name) &&
       String(c.parentCategory || "") ===
         String(newCategory.parentCategory || "")
   );
