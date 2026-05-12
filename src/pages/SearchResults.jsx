@@ -65,21 +65,26 @@ const SearchResults = () => {
         setLoading(true);
 
         const params = {
-          ...(filters.lat && filters.lng
-  ? {
-      lat: filters.lat,
-      lng: filters.lng,
-      distance: filters.distance || 10, // ✅ default 10km
-    }
-  : {}),
-        };
+  q: filters.q || "",
 
-        const res = await API.get("/", { params });
+  city: typeof filters.city === "object"
+    ? filters.city?.slug
+    : filters.city || "",
 
-console.log("FULL RESPONSE:", res);
-console.log("res.data:", res.data);
-console.log("🔥 SEARCH API HIT");
-setBusinesses(res.data.data || res.data.businesses || []);
+  categorySlug: filters.category || "",
+
+  ...(filters.lat && filters.lng
+    ? {
+        lat: filters.lat,
+        lng: filters.lng,
+        distance: filters.distance || 5,
+      }
+    : {}),
+};
+
+        const res = await API.get("/businesses/search", { params });
+
+setBusinesses(res.data.data || []);
       } catch (err) {
         console.error(err);
       } finally {
@@ -103,7 +108,7 @@ setBusinesses(res.data.data || res.data.businesses || []);
 
   const handleView = async (b) => {
   try {
-    await API.post(`/business/${b._id}/click`, {
+    await API.post(`/businesses/${b._id}/view`, {
       keyword: filters.q || "",
       city: filters.city || ""
     });
@@ -111,7 +116,7 @@ setBusinesses(res.data.data || res.data.businesses || []);
     console.warn("Click tracking failed");
   }
 
-  navigate(`/business/${b.slug || b._id}`);
+  navigate(`/businesses/${b.slug || b._id}`);
 };
 
   // ================= MAP CENTER FIX =================
@@ -151,10 +156,24 @@ setBusinesses(res.data.data || res.data.businesses || []);
       </div>
 
       {/* ================= CONTENT ================= */}
-      <div className="max-w-7xl mx-auto px-3 py-4">
+<div className="max-w-7xl mx-auto px-3 py-4">
 
-        {/* LIST */}
-        {viewMode === "list" && (
+  {/* LOADING */}
+{loading && (
+  <div className="text-center py-12 text-gray-500">
+    Loading businesses...
+  </div>
+)}
+
+  {/* EMPTY STATE */}
+  {!loading && businesses.length === 0 && (
+    <div className="text-center text-gray-500 py-12">
+      No businesses found
+    </div>
+  )}
+
+  {/* LIST */}
+  {viewMode === "list" && businesses.length > 0 && (
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-4">
             {businesses.map((biz) => (
               <BusinessCard key={biz._id || biz.id} business={biz} />
@@ -163,7 +182,7 @@ setBusinesses(res.data.data || res.data.businesses || []);
         )}
 
         {/* MAP VIEW */}
-        {viewMode === "map" && (
+        {viewMode === "map" && filters.lat && filters.lng && (
           <div className="h-[75vh] mt-4 rounded-xl overflow-hidden">
 
             <MapContainer
@@ -188,11 +207,13 @@ setBusinesses(res.data.data || res.data.businesses || []);
                     eventHandlers={{
                       click: async () => {
   try {
-    await API.post(`/business/${b._id}/click`, {
+    await API.post(`/businesses/${b._id}/view`, {
       keyword: filters.q || "",
       city: filters.city || ""
     });
-  } catch (err) {}
+  } catch (err) {
+  console.warn("View tracking failed");
+}
 
   setSelectedBusiness(b);
 },

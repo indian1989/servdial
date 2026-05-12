@@ -23,6 +23,9 @@ export const rejectBusiness = (id) =>
 export const toggleFeatured = (id) =>
   API.put(`/admin/businesses/${id}/feature`);
 
+export const toggleVerified = (id) =>
+  API.put(`/admin/businesses/${id}/verify`);
+
 export const deleteBusiness = (id) =>
   API.delete(`/admin/businesses/${id}`);
 

@@ -5,35 +5,16 @@ const GPSButton = () => {
   const [loading, setLoading] = useState(false);
   const { detectLocation } = useCity();
 
-  const handleDetect = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation not supported");
-      return;
+  const handleDetect = async () => {
+    try {
+      setLoading(true);
+      await detectLocation();
+    } catch (e) {
+      alert("Failed to detect location");
+      console.error("GPS detect failed:", e);
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(true);
-
-    navigator.geolocation.getCurrentPosition(
-      async (position) => {
-        try {
-          await detectLocation(); 
-          alert("Location detected. Please select your city if not auto-selected.");
-        } catch (e) {
-          alert("Failed to detect city");
-        } finally {
-          setLoading(false);
-        }
-      },
-      (error) => {
-        setLoading(false);
-
-        if (error.code === 1) {
-          alert("Location permission denied");
-        } else {
-          alert("Unable to fetch location");
-        }
-      }
-    );
   };
 
   return (

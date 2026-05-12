@@ -42,6 +42,7 @@ const ManageCategories = () => {
   const [search, setSearch] = useState("");
 
   const [expanded, setExpanded] = useState({});
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [newCategory, setNewCategory] = useState({
     name: "",
@@ -101,9 +102,39 @@ const ManageCategories = () => {
     return filterNodes(tree);
   }, [search, tree]);
 
+  const useDebounce = (value, delay = 250) => {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debounced;
+};
+
+   /* ================= EXISTING CATEGORY ================= */
+  const existingCategory = useMemo(() => {
+  return flatCategories.find(
+    (c) =>
+      c.name.trim().toLowerCase() ===
+        newCategory.name.trim().toLowerCase() &&
+      String(c.parentCategory || "") ===
+        String(newCategory.parentCategory || "")
+  );
+}, [flatCategories, newCategory.name, newCategory.parentCategory]);
+
   /* ================= ADD CATEGORY ================= */
   const handleAdd = async () => {
-    if (!newCategory.name.trim()) return alert("Name required");
+    if (!newCategory.name.trim()) {
+  return alert("Name required");
+}
+
+if (existingCategory) {
+  return alert(
+    `"${existingCategory.name}" already exists in this Parent`
+  );
+}
 
     const orderValue =
     newCategory.order === "" || newCategory.order === null
@@ -376,17 +407,34 @@ const ManageCategories = () => {
 
       {/* ADD */}
       <div className="grid md:grid-cols-5 gap-3 mb-6">
-        <input
-          className="border px-3 py-2 rounded"
-          placeholder="Name"
-          value={newCategory.name}
-          onChange={(e) =>
-            setNewCategory((p) => ({
-              ...p,
-              name: e.target.value,
-            }))
-          }
-        />
+        <div className="flex flex-col">
+  <input
+    list="categorySuggestions"
+    className={`border px-3 py-2 rounded ${
+      existingCategory ? "border-red-500" : ""
+    }`}
+    placeholder="Category / Subcategory Name"
+    value={newCategory.name}
+    onChange={(e) =>
+      setNewCategory((p) => ({
+        ...p,
+        name: e.target.value,
+      }))
+    }
+  />
+
+  <datalist id="categorySuggestions">
+    {flatCategories.map((cat) => (
+      <option key={cat._id} value={cat.name} />
+    ))}
+  </datalist>
+
+  {existingCategory && (
+    <span className="text-red-500 text-xs mt-1">
+      Already exists under selected parent
+    </span>
+  )}
+</div>
 
         <input
           className="border px-3 py-2 rounded"

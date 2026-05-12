@@ -8,11 +8,12 @@ const ProviderReviews = () => {
   const fetchReviews = async () => {
     try {
       const res = await API.get("/provider/reviews");
-      setReviews(res.data?.reviews || []);
+      setReviews(res.data?.data || []);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   useEffect(() => {
@@ -32,12 +33,13 @@ const ProviderReviews = () => {
       <div className="space-y-4">
         {reviews.map((review) => (
           <div key={review._id} className="border p-4 rounded bg-white">
+
             <h3 className="font-semibold">
-              {review.business?.name}
+              {review.businessId?.name}
             </h3>
 
             <p className="text-yellow-500">
-              ⭐ {review.rating} / 5
+              {"⭐".repeat(review.rating)}
             </p>
 
             <p className="text-gray-700">
@@ -45,12 +47,13 @@ const ProviderReviews = () => {
             </p>
 
             <p className="text-sm text-gray-500">
-              — {review.user?.name || "Anonymous"}
+              — {review.userId?.name || "Anonymous"}
             </p>
 
             <p className="text-xs text-gray-400 mt-2">
               {new Date(review.createdAt).toLocaleString()}
             </p>
+
           </div>
         ))}
       </div>

@@ -1,58 +1,110 @@
-const RatingBreakdown = ({ reviews }) => {
+const RatingBreakdown = ({ reviews = [] }) => {
+  // ======================================================
+  // SAFETY
+  // ======================================================
+  const safeReviews = Array.isArray(reviews)
+    ? reviews
+    : [];
 
-const total = reviews.length;
+  const total = safeReviews.length;
 
-const countStars = (star)=>{
-return reviews.filter(r=>r.rating===star).length;
-};
+  // ======================================================
+  // STAR COUNTS
+  // ======================================================
+  const counts = {
+    5: 0,
+    4: 0,
+    3: 0,
+    2: 0,
+    1: 0,
+  };
 
-return(
+  for (const review of safeReviews) {
+    const rating = Number(review?.rating);
 
-<div className="border p-4 rounded">
+    if (counts[rating] !== undefined) {
+      counts[rating]++;
+    }
+  }
 
-<h3 className="font-semibold mb-3">
-Rating Breakdown
-</h3>
+  // ======================================================
+  // AVERAGE RATING
+  // ======================================================
+  const averageRating = total
+    ? (
+        safeReviews.reduce(
+          (acc, r) => acc + (r.rating || 0),
+          0
+        ) / total
+      ).toFixed(1)
+    : "0.0";
 
-{[5,4,3,2,1].map((star)=>{
+  return (
+    <div className="border p-4 rounded bg-white">
+      {/* ======================================================
+          HEADER
+      ====================================================== */}
+      <div className="mb-4">
+        <h3 className="font-semibold text-lg">
+          Rating Breakdown
+        </h3>
 
-const count = countStars(star);
-const percent = total ? (count/total)*100 : 0;
+        <p className="text-sm text-gray-500 mt-1">
+          {averageRating} average from{" "}
+          {total} review
+          {total !== 1 ? "s" : ""}
+        </p>
+      </div>
 
-return(
+      {/* ======================================================
+          EMPTY STATE
+      ====================================================== */}
+      {total === 0 && (
+        <p className="text-sm text-gray-500">
+          No ratings yet
+        </p>
+      )}
 
-<div
-key={star}
-className="flex items-center gap-2 mb-2"
->
+      {/* ======================================================
+          BREAKDOWN
+      ====================================================== */}
+      {total > 0 &&
+        [5, 4, 3, 2, 1].map((star) => {
+          const count = counts[star];
 
-<span className="w-6">
-{star}⭐
-</span>
+          const percent = total
+            ? (count / total) * 100
+            : 0;
 
-<div className="flex-1 bg-gray-200 h-2 rounded">
+          return (
+            <div
+              key={star}
+              className="flex items-center gap-3 mb-3"
+            >
+              {/* STAR */}
+              <span className="w-10 text-sm">
+                {star} ⭐
+              </span>
 
-<div
-style={{width:`${percent}%`}}
-className="bg-yellow-400 h-2 rounded"
-/>
+              {/* BAR */}
+              <div className="flex-1 bg-gray-200 h-2 rounded overflow-hidden">
+                <div
+                  style={{
+                    width: `${percent}%`,
+                  }}
+                  className="bg-yellow-400 h-2 rounded"
+                />
+              </div>
 
-</div>
-
-<span className="text-sm">
-{count}
-</span>
-
-</div>
-
-);
-
-})}
-
-</div>
-
-);
-
+              {/* COUNT */}
+              <span className="text-sm text-gray-600 w-8 text-right">
+                {count}
+              </span>
+            </div>
+          );
+        })}
+    </div>
+  );
 };
 
 export default RatingBreakdown;

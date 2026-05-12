@@ -15,105 +15,138 @@ import {
   FaImages,
 } from "react-icons/fa";
 
+/**
+ * ==================================================
+ * 🧭 PROVIDER ROUTES (SSOT)
+ * ==================================================
+ * UI navigation registry only
+ * No business logic
+ * No permissions logic
+ * No API logic
+ * ==================================================
+ */
+
 export const providerRoutes = [
+  // ================= DASHBOARD =================
   {
     path: "/provider/dashboard",
-    name: "Dashboard",
+    key: "dashboard",
+    label: "Dashboard",
     element: "ProviderDashboard",
     icon: FaTachometerAlt,
   },
 
+  // ================= BUSINESSES =================
   {
     path: "/provider/businesses",
-    name: "My Businesses",
+    key: "businesses",
+    label: "My Businesses",
     element: "ProviderBusinesses",
     icon: FaBuilding,
   },
 
   {
     path: "/provider/add-business",
-    name: "Add Business",
+    key: "add-business",
+    label: "Add Business",
     element: "ProviderAddBusiness",
     icon: FaPlusCircle,
   },
 
-  /* ================= BANNER ADS ================= */
-
+  // ================= BANNERS =================
   {
     path: "/provider/add-banner",
-    name: "Add Banner Ad",
+    key: "add-banner",
+    label: "Add Banner Ad",
     element: "ProviderAddBanner",
     icon: FaImage,
   },
 
   {
     path: "/provider/manage-banners",
-    name: "Manage Banner Ads",
+    key: "manage-banners",
+    label: "Manage Banner Ads",
     element: "ProviderManageBanners",
     icon: FaImages,
   },
 
-  /* ================= OTHER ================= */
-
+  // ================= LEADS =================
   {
     path: "/provider/leads",
-    name: "Leads",
+    key: "leads",
+    label: "Leads",
     element: "ProviderLeads",
     icon: FaUsers,
   },
 
+  // ================= REVIEWS =================
   {
     path: "/provider/reviews",
-    name: "Reviews",
+    key: "reviews",
+    label: "Reviews",
     element: "ProviderReviews",
     icon: FaStar,
   },
 
+  // ================= ANALYTICS =================
   {
     path: "/provider/analytics",
-    name: "Analytics",
+    key: "analytics",
+    label: "Analytics",
     element: "ProviderAnalytics",
     icon: FaChartLine,
   },
 
+  // ================= OFFERS =================
   {
     path: "/provider/offers",
-    name: "Offers / Promotions",
+    key: "offers",
+    label: "Offers / Promotions",
     element: "ProviderOffers",
     icon: FaTags,
   },
 
+  // ================= MESSAGES =================
   {
     path: "/provider/messages",
-    name: "Messages",
+    key: "messages",
+    label: "Messages",
     element: "ProviderMessages",
     icon: FaEnvelope,
   },
 
+  // ================= NOTIFICATIONS =================
   {
     path: "/provider/notifications",
-    name: "Notifications",
+    key: "notifications",
+    label: "Notifications",
     element: "ProviderNotifications",
     icon: FaBell,
   },
 
+  // ================= SUBSCRIPTION =================
   {
     path: "/provider/subscription",
-    name: "Subscription",
+    key: "subscription",
+    label: "Subscription",
     element: "ProviderSubscription",
     icon: FaCreditCard,
   },
 
+  // ================= PROFILE =================
   {
     path: "/provider/profile",
-    name: "Profile",
+    key: "profile",
+    label: "Profile",
     element: "ProviderProfile",
     icon: FaUser,
   },
 
+  // ================= SETTINGS =================
   {
     path: "/provider/settings",
-    name: "Settings",
+    key: "settings",
+    label: "Settings",
     element: "ProviderSettings",
     icon: FaCog,
   },

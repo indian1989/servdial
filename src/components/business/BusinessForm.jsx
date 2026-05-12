@@ -3,8 +3,6 @@ import Select from "react-select";
 
 import API from "../../api/axios";
 
-import { getAllCategories } from "../../api/adminAPI";
-
 import { buildCategoryTree } from "../../utils/adminUtils";
 
 import FormSection from "./FormSection";
@@ -87,48 +85,50 @@ const BusinessForm = ({
 
   /* ================= FETCH ================= */
 
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const [catRes, cityRes] = await Promise.all([
-          getAllCategories(),
-          API.get("/cities"),
-        ]);
+useEffect(() => {
+  const init = async () => {
+    try {
+      const [catRes, cityRes] = await Promise.all([
+  API.get("/categories"),
+  API.get("/cities"),
+]);
 
-        const rawCategories =
-          catRes?.data?.data || [];
+      // ✅ FIX CATEGORY RESPONSE
+      const rawCategories =
+        catRes?.data?.data || [];
 
-        const tree =
-          buildCategoryTree(rawCategories);
+      const tree =
+        buildCategoryTree(rawCategories);
 
-        setCategories(flattenCategories(tree));
+      setCategories(flattenCategories(tree));
 
-        const cityRaw =
-          cityRes?.data?.data?.cities || [];
+      // ✅ FIX CITY RESPONSE
+      const cityRaw =
+        cityRes?.data?.data?.cities || [];
 
-        const normalizedCities = cityRaw.map(
-          (c) => ({
-            value: c._id,
+      const normalizedCities = cityRaw.map(
+        (c) => ({
+          value: c._id,
 
-            label: c.name,
+          label: `${c.name} (${c.state})`,
 
-            district: c.district || "",
-            state: c.state || "",
+          district: c.district || "",
+          state: c.state || "",
 
-            latitude: Number(c.latitude),
-            longitude: Number(c.longitude),
-          })
-        );
+          latitude: Number(c.latitude),
+          longitude: Number(c.longitude),
+        })
+      );
 
-        setCities(normalizedCities);
+      setCities(normalizedCities);
 
-      } catch (err) {
-        console.error(err);
-      }
-    };
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-    init();
-  }, []);
+  init();
+}, []);
 
   /* ================= INITIAL DATA ================= */
 useEffect(() => {

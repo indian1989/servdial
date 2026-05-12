@@ -23,7 +23,9 @@ const LatestBusinesses = () => {
           },
         });
 
-        setBusinesses(res?.data?.data || []);
+        setBusinesses(
+  res?.data?.data || []
+);
       } catch (err) {
         console.error("❌ Latest fetch error:", err);
         setBusinesses([]);

@@ -68,14 +68,8 @@ export const CityProvider = ({ children }) => {
   // ================= DETECT LOCATION =================
   const detectLocation = () => {
   console.log("🚀 detectLocation triggered");
-  console.log("🚀 REAL detectLocation EXECUTING INSIDE CONTEXT");
 
-  const saved = loadSavedCity();
-  if (saved) {
-    setCityState(saved);
-    setLoadingCity(false);
-    return;
-  }
+  setLoadingCity(true);
 
   if (!navigator.geolocation) {
     console.log("❌ Geolocation not supported");
@@ -84,80 +78,67 @@ export const CityProvider = ({ children }) => {
   }
 
   navigator.geolocation.getCurrentPosition(
-  async (pos) => {
-    console.log("✅ GEO SUCCESS:", pos);
+    async (pos) => {
+      console.log("✅ GEO SUCCESS:", pos);
 
-    // ❌ CLEAR TIMEOUT IMMEDIATELY ON SUCCESS
-    if (geoTimeoutRef.current) {
-      clearTimeout(geoTimeoutRef.current);
-      geoTimeoutRef.current = null;
-    }
-
-    try {
-      const { latitude, longitude } = pos.coords;
-
-      const res = await API.get(
-        `/location/reverse?lat=${latitude}&lng=${longitude}`
-      );
-
-      console.log("🌍 reverse API response:", res.data);
-
-      const detectedName =
-  res?.data?.city ||
-  res?.data?.data?.city ||
-  res?.data?.result?.city ||
-  res?.data?.name ||
-  "";
-
-      if (!detectedName) {
-        console.log("❌ No city → fallback");
-        return fallbackIP();
+      if (geoTimeoutRef.current) {
+        clearTimeout(geoTimeoutRef.current);
+        geoTimeoutRef.current = null;
       }
 
-      const cities = await getCities();
+      try {
+        const { latitude, longitude } = pos.coords;
 
-      const normalize = (str = "") =>
-  str.toLowerCase().replace(/[^a-z0-9]/g, "");
+        const res = await API.get(
+          `/location/reverse?lat=${latitude}&lng=${longitude}`
+        );
 
-const match = cities.find((c) =>
-  normalize(c.name) === normalize(detectedName)
-);
+        const detectedName =
+          res?.data?.city ||
+          res?.data?.data?.city ||
+          res?.data?.result?.city ||
+          res?.data?.name ||
+          "";
 
-      if (match) {
-  console.log("🎯 CITY MATCH:", match);
-  setCity({
-    _id: match._id,
-    name: match.name,
-    slug: match.slug,
-    state: match.state || "",
-    district: match.district || "",
-  });
-}
-      else {
-        console.log("❌ No match → fallback");
+        if (!detectedName) {
+          return fallbackIP();
+        }
+
+        const cities = await getCities();
+
+        const normalize = (str = "") =>
+          str.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+        const match = cities.find(
+          (c) => normalize(c.name) === normalize(detectedName)
+        );
+
+        if (match) {
+          setCity(match);
+        } else {
+          fallbackIP();
+        }
+      } catch (err) {
+        console.error("❌ Reverse API error:", err);
         fallbackIP();
+      } finally {
+        setLoadingCity(false);
       }
-    } catch (err) {
-      console.error("❌ Reverse API error:", err);
-      fallbackIP();
-    } finally {
-      setLoadingCity(false);
-    }
-  },
+    },
     (err) => {
-  console.error("❌ GEO FAILED:", err.code, err.message);
+      console.error("❌ GEO FAILED:", err.code, err.message);
 
-  if (geoTimeoutRef.current) {
-    clearTimeout(geoTimeoutRef.current);
-    geoTimeoutRef.current = null;
-  }
+      if (geoTimeoutRef.current) {
+        clearTimeout(geoTimeoutRef.current);
+        geoTimeoutRef.current = null;
+      }
 
-  fallbackIP();
-},
+      fallbackIP();
+    },
     {
       enableHighAccuracy: true,
-timeout: 10000,
-maximumAge: 300000,
+      timeout: 10000,
+      maximumAge: 300000,
     }
   );
 };
@@ -169,7 +150,13 @@ maximumAge: 300000,
       const detectedName = res?.data?.city;
 
       if (!detectedName) {
-        setCityState({ _id: "india", name: "India", slug: "india" });
+        setCity({
+  _id: "india",
+  name: "India",
+  slug: "india",
+  state: "",
+  district: "",
+});
         setLoadingCity(false);
         return;
       }
@@ -182,13 +169,7 @@ maximumAge: 300000,
       );
 
       if (match) {
-  setCityState({
-  _id: match._id,
-  name: match.name,
-  slug: match.slug,
-  state: match.state || "",
-  district: match.district || "",
-});
+  setCity(match);
 }
     } catch {
       

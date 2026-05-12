@@ -1,44 +1,40 @@
+import API from "../api/axios";
+
 export const getUserCity = async () => {
+  if (!navigator.geolocation) {
+    return null;
+  }
 
-if (!navigator.geolocation) {
-return null;
-}
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
 
-return new Promise((resolve) => {
+          const res = await API.get(
+            `/location/reverse?lat=${lat}&lng=${lng}`
+          );
 
-navigator.geolocation.getCurrentPosition(
-async (position) => {
+          const city =
+            res?.data?.city ||
+            res?.data?.data?.city ||
+            res?.data?.result?.city ||
+            res?.data?.name ||
+            null;
 
-const lat = position.coords.latitude;
-const lon = position.coords.longitude;
-
-try {
-
-const res = await fetch(
-`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`
-);
-
-const data = await res.json();
-
-const city =
-data.address.city ||
-data.address.town ||
-data.address.village ||
-data.address.state;
-
-resolve(city);
-
-} catch (error) {
-
-console.log("Location error", error);
-
-resolve(null);
-
-}
-
-},
-() => resolve(null)
-);
-
-});
+          resolve(city);
+        } catch (error) {
+          console.error("Location error:", error);
+          resolve(null);
+        }
+      },
+      () => resolve(null),
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 300000,
+      }
+    );
+  });
 };

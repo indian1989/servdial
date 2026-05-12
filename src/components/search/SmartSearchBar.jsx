@@ -1,4 +1,3 @@
-// frontend/src/components/search/SmartSearchBar.jsx
 import { useRef, useState, useEffect } from "react";
 import API from "../../api/axios";
 import { X } from "lucide-react";
@@ -8,72 +7,105 @@ const SmartSearchBar = ({
   setQuery,
   onSearch,
 }) => {
-  const inputRef = useRef();
+  const inputRef = useRef(null);
 
-  // -----------------------------
+  const [suggestions, setSuggestions] = useState([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+
+  // =============================
   // SUBMIT
-  // -----------------------------
+  // =============================
   const submitSearch = (e) => {
     e.preventDefault();
-    if (!query.trim()) return;
-    onSearch(query.trim());
+
+    const clean = query?.trim();
+
+    if (!clean) return;
+
+    onSearch(clean);
+    setSuggestions([]);
   };
 
-  // -----------------------------
-  // CLEAR INPUT
-  // -----------------------------
+  // =============================
+  // CLEAR
+  // =============================
   const clearInput = () => {
     setQuery("");
+    setSuggestions([]);
     inputRef.current?.focus();
   };
 
-  // -----------------------------
-  // KEYBOARD HANDLING
-  // -----------------------------
+  // =============================
+  // KEYBOARD
+  // =============================
   const handleKeyDown = (e) => {
     if (e.key === "Enter") {
       submitSearch(e);
     }
   };
 
-  // -----------------------------
-  // SHOW SUGGESTION
-  // -----------------------------
-  const [suggestions, setSuggestions] = useState([]);
-
-  // =========== SHOW SUGGESTION USE EFFECT ========
+  // =============================
+  // AUTOCOMPLETE
+  // =============================
   useEffect(() => {
-  if (!query || query.length < 2) {
-    setSuggestions([]);
-    return;
-  }
+    const clean = query?.trim();
 
-  const fetchSuggestions = async () => {
-    try {
-      const res = await API.get(`/businesses/suggest?q=${query}`);
-      setSuggestions(res.data?.suggestions || []);
-    } catch (err) {}
-  };
+    if (!clean || clean.length < 2) {
+      setSuggestions([]);
+      return;
+    }
 
-  const delay = setTimeout(fetchSuggestions, 300);
-  return () => clearTimeout(delay);
-}, [query]);
+    const controller = new AbortController();
+
+    const fetchSuggestions = async () => {
+      try {
+        setLoadingSuggestions(true);
+
+        const res = await API.get("/search/autocomplete", {
+          params: { q: clean },
+          signal: controller.signal,
+        });
+
+        setSuggestions(res?.data?.data || []);
+      } catch (err) {
+        if (err.name !== "CanceledError") {
+          setSuggestions([]);
+        }
+      } finally {
+        setLoadingSuggestions(false);
+      }
+    };
+
+    const delay = setTimeout(fetchSuggestions, 300);
+
+    return () => {
+      clearTimeout(delay);
+      controller.abort();
+    };
+  }, [query]);
 
   return (
     <div className="relative w-full">
-      <form onSubmit={submitSearch} className="flex items-center">
+
+      {/* ================= SEARCH FORM ================= */}
+      <form
+        onSubmit={submitSearch}
+        className="flex items-center bg-white rounded-xl"
+      >
 
         {/* INPUT */}
         <input
           ref={inputRef}
+          type="text"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={`Search for local services, e.g. plumbers, electricians, hotels in your city...`}
-          className="w-full outline-none text-sm md:text-base placeholder-gray-400"
+          placeholder="Search for local services..."
+          autoComplete="off"
+          className="w-full outline-none text-sm md:text-base placeholder-gray-400 bg-transparent"
         />
 
-        {/* CLEAR BUTTON */}
+        {/* CLEAR */}
         {query && (
           <button
             type="button"
@@ -85,26 +117,35 @@ const SmartSearchBar = ({
         )}
       </form>
 
-      {/* SHOW SUGGESTION */}
-{suggestions.length > 0 && (
-  <div className="absolute top-full left-0 right-0 bg-white shadow-lg rounded-xl mt-2 z-50">
+      {/* ================= SUGGESTIONS ================= */}
+      {suggestions.length > 0 && (
+        <div className="absolute top-full left-0 right-0 bg-white shadow-lg rounded-xl mt-2 z-50 overflow-hidden">
 
-    {suggestions.map((s) => (
-      <div
-        key={s._id}
-        onClick={() => {
-          setQuery(s.name);
-          onSearch(s.name);
-          setSuggestions([]);
-        }}
-        className="px-4 py-2 text-sm hover:bg-gray-100 cursor-pointer"
-      >
-        {s.name}
-      </div>
-    ))}
+          {suggestions.map((s, i) => (
+            <button
+              key={s._id || i}
+              type="button"
+              onClick={() => {
+                setQuery(s.name);
+                onSearch(s.name);
+                setSuggestions([]);
+              }}
+              className="w-full text-left px-4 py-3 text-sm hover:bg-gray-100 transition"
+            >
+              {s.name}
+            </button>
+          ))}
 
-  </div>
-)}
+        </div>
+      )}
+
+      {/* ================= LOADING ================= */}
+      {loadingSuggestions && (
+        <div className="absolute top-full left-0 mt-2 text-xs text-gray-400">
+          Searching...
+        </div>
+      )}
+
     </div>
   );
 };

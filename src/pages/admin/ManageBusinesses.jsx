@@ -4,6 +4,7 @@ import {
   approveBusiness,
   rejectBusiness,
   toggleFeatured,
+  toggleVerified,
   deleteBusiness,
   updateBusiness
 } from "../../api/adminAPI";
@@ -13,6 +14,7 @@ import {
   FaStar,
   FaEdit,
   FaCheck,
+  FaCheckCircle,
   FaTimes
 } from "react-icons/fa";
 
@@ -115,6 +117,22 @@ const defaultHours = {
       updateLocal(id, () => original);
     }
   };
+
+  const handleVerify = async (id) => {
+  const original = businesses.find(b => b._id === id);
+
+  updateLocal(id, (b) => ({
+    ...b,
+    isVerified: !b.isVerified,
+  }));
+
+  try {
+    await toggleVerified(id);
+  } catch (err) {
+    console.error("Verify toggle failed", err);
+    updateLocal(id, () => original);
+  }
+};
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this business?")) return;
@@ -283,6 +301,7 @@ const defaultHours = {
               <th className="p-3">City</th>
               <th className="p-3">Status</th>
               <th className="p-3">Featured</th>
+              <th className="p-3">Verified</th>
               <th className="p-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -343,6 +362,18 @@ const defaultHours = {
                       <FaStar />
                       {b.isFeatured ? "Yes" : "No"}
                     </button>
+                  </td>
+
+                  <td className="p-3">
+                  <button
+                    onClick={() => handleVerify(b._id)}
+                    className={`p-2 rounded ${
+                      b.isVerified ? "text-green-600" : "text-gray-400"
+                    }`}
+                  >
+                    <FaCheckCircle />
+                    {b.isVerified ? "Verified" : "Verify"}
+                  </button>
                   </td>
 
                   {/* ACTIONS */}

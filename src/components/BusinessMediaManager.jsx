@@ -21,6 +21,8 @@ const BusinessMediaManager = ({ value = [], onChange }) => {
 
     const json = await res.json();
 
+    console.log("Cloudinary response:", json);
+
     if (!json.secure_url) {
       throw new Error("Upload failed");
     }

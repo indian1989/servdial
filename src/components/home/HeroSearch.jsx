@@ -19,11 +19,11 @@ const HeroSearch = ({ city }) => {
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   const currentCity =
-  globalCity?.slug
-    ? globalCity
-    : city?.slug
-    ? city
-    : null;
+    globalCity?.slug
+      ? globalCity
+      : city?.slug
+      ? city
+      : null;
 
   // ================= CLOSE DROPDOWN =================
   useEffect(() => {
@@ -41,9 +41,8 @@ const HeroSearch = ({ city }) => {
   useEffect(() => {
     const fetchTrending = async () => {
       try {
-        const res = await API.get("/categories/trending");
-        const list = res?.data?.categories?.map((c) => c.name) || [];
-        setTrending(list);
+        const res = await API.get("/search/trending");
+        setTrending(res?.data?.data || []);
       } catch {
         setTrending(["Plumber", "Electrician", "Salon", "AC Repair"]);
       }
@@ -67,10 +66,10 @@ const HeroSearch = ({ city }) => {
         setLoadingSuggestions(true);
 
         const res = await API.get(
-  `/search/suggestions?q=${query}&city=${currentCity?.slug}`
-);
+          `/search/autocomplete?q=${encodeURIComponent(query)}`
+        );
 
-        setSuggestions(res?.data?.suggestions || []);
+        setSuggestions(res?.data?.data || []);
       } catch {
         setSuggestions([]);
       } finally {
@@ -93,7 +92,7 @@ const HeroSearch = ({ city }) => {
     if (!value || !currentCity) return;
 
     saveRecent(value);
-    navigate(`/search?q=${value}&city=${currentCity?.slug}`);
+    navigate(`/search?q=${value}&city=${currentCity?.slug || ""}`);
     setShowSuggestions(false);
   };
 
@@ -111,16 +110,22 @@ const HeroSearch = ({ city }) => {
           const detected = res?.data?.city;
 
           if (detected) {
-  const resCity = await API.get(`/cities?search=${detected}`);
-  const match = resCity.data?.cities?.[0];
+            // ⚠️ FIX: DO NOT call /cities directly (architecture violation fixed)
+            const resCity = await API.get(
+              `/search/autocomplete?q=${detected}`
+            );
 
-  if (match) {
-    setCity({
-      name: match.name,
-      slug: match.slug,
-    });
-  }
-}
+            const match = resCity?.data?.data?.find(
+              (item) => item.type === "city"
+            );
+
+            if (match) {
+              setCity({
+                name: match.name,
+                slug: match.slug,
+              });
+            }
+          }
         } catch {}
       },
       () => {}
@@ -133,9 +138,9 @@ const HeroSearch = ({ city }) => {
       <div className="max-w-4xl mx-auto text-center mb-8">
         <h1 className="text-3xl md:text-5xl font-bold text-gray-800 leading-tight">
           Find Trusted Services in{" "}
-            <span className="text-blue-600">
-         {currentCity?.name || "your city"}
-        </span>
+          <span className="text-blue-600">
+            {currentCity?.name || "your city"}
+          </span>
         </h1>
 
         <p className="text-gray-500 mt-3 text-sm md:text-base">
