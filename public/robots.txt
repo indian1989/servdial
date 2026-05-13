@@ -9,4 +9,4 @@ Disallow: /*?page=
 Disallow: /*?sort=
 Disallow: /*?filter=
 
-Sitemap: https://servdial.com/sitemap.xml
+Sitemap: https://api.servdial.com/sitemap.xml
