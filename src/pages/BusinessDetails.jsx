@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
 import API from "../api/axios";
 import { useRef } from "react";
 
@@ -77,6 +78,39 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
   const whatsappNumber =
     (business?.whatsapp || business?.phone || "").replace(/\D/g, "");
+
+    const schema = useMemo(() => ({
+  "@context": "https://schema.org",
+  "@type": "LocalBusiness",
+  name: business?.name,
+  image: business?.images?.[0] || business?.logo || "",
+  telephone: business?.phone || "",
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: business?.address || "",
+    addressLocality: business?.cityId?.name || "",
+    addressRegion: business?.state || "",
+    postalCode: business?.pincode || "",
+    addressCountry: "IN"
+  },
+  geo:
+    lat && lng
+      ? {
+          "@type": "GeoCoordinates",
+          latitude: lat,
+          longitude: lng
+        }
+      : undefined,
+  url: window.location.href,
+  aggregateRating:
+    business?.averageRating
+      ? {
+          "@type": "AggregateRating",
+          ratingValue: business.averageRating,
+          reviewCount: business.totalReviews || 0
+        }
+      : undefined
+}), [business, lat, lng]);
 
   // ================= SERVICES =================
   const services = useMemo(() => {
@@ -334,6 +368,13 @@ const openLeafletDirections = (lat, lng) => {
 }
 
   return (
+  <>
+    <Helmet>
+      <script type="application/ld+json">
+        {JSON.stringify(schema)}
+      </script>
+    </Helmet>
+
     <div className="bg-gray-50 min-h-screen pb-32">
 
       <TrackBusinessView businessId={business._id} />
@@ -652,7 +693,8 @@ const openLeafletDirections = (lat, lng) => {
       )}
 
     </div>
-  );
+    </>
+);
 };
 
 export default BusinessDetails;

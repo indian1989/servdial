@@ -13,6 +13,7 @@ const CityCategoryPage = () => {
 
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const meta = generateMeta({ city: citySlug, category: categorySlug });
 
   // ================= FETCH BUSINESSES =================
   useEffect(() => {
