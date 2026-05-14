@@ -1,24 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-
-<sitemap>
-<loc>https://servdial.com/sitemap-static.xml</loc>
-</sitemap>
-
-<sitemap>
-<loc>https://servdial.com/sitemap-cities.xml</loc>
-</sitemap>
-
-<sitemap>
-<loc>https://servdial.com/sitemap-categories.xml</loc>
-</sitemap>
-
-<sitemap>
-<loc>https://servdial.com/sitemap-services.xml</loc>
-</sitemap>
-
-<sitemap>
-<loc>https://servdial.com/sitemap-businesses.xml</loc>
-</sitemap>
-
+  <sitemap>
+    <loc>https://api.servdial.com/sitemap.xml</loc>
+  </sitemap>
 </sitemapindex>
