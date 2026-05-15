@@ -24,8 +24,9 @@ const BusinessMediaManager = ({ value = [], onChange }) => {
     console.log("Cloudinary response:", json);
 
     if (!json.secure_url) {
-      throw new Error("Upload failed");
-    }
+  console.error("Cloudinary upload error:", json);
+  throw new Error(json?.error?.message || "Upload failed");
+}
 
     return json.secure_url;
   };
@@ -57,7 +58,7 @@ const BusinessMediaManager = ({ value = [], onChange }) => {
 
     } catch (err) {
       console.error(err);
-      alert("Upload failed");
+      alert(err.message);
     } finally {
       // cleanup previews
       setUploading((prev) => {
