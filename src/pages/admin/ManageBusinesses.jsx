@@ -93,9 +93,15 @@ const defaultHours = {
 
   // ================= ACTIONS =================
   const handleApprove = async (id) => {
-    updateLocal(id, (b) => ({ ...b, status: "approved" }));
-    await approveBusiness(id);
-  };
+  updateLocal(id, (b) => ({
+    ...b,
+    status: "approved"
+  }));
+
+  await approveBusiness(id);
+
+  fetchBusinesses();
+};
 
   const handleReject = async (id) => {
     updateLocal(id, (b) => ({ ...b, status: "rejected" }));
@@ -170,11 +176,16 @@ const defaultHours = {
   const searchTerm = search.toLowerCase();
 
   const filtered = businesses
-    .filter((b) =>
-      statusFilter === "all"
-        ? true
-        : b.status === statusFilter
-    )
+  .filter((b) => {
+    if (statusFilter === "claim-pending") {
+      return b.isClaimed && b.status === "pending";
+    }
+
+    return statusFilter === "all"
+      ? true
+      : b.status === statusFilter;
+  })
+    
     .filter((b) =>
       (b.name || "")
         .toLowerCase()
@@ -230,6 +241,7 @@ const defaultHours = {
             <option value="pending">Pending</option>
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
+            <option value="claim-pending">Claim Pending</option>
           </select>
         </div>
       </div>
@@ -335,7 +347,15 @@ const defaultHours = {
                       onClick={() => setSelectedImage(b.images?.[0])}
                     />
 
+                    <div>
                     <span className="font-medium">{b.name}</span>
+
+                    {b.isClaimed && b.status === "pending" && (
+                      <div className="text-xs text-orange-600 font-semibold">
+                        Claim Pending Approval
+                      </div>
+                    )}
+                  </div>
                   </td>
 
                   {/* CATEGORY */}
@@ -389,9 +409,11 @@ const defaultHours = {
 
                       <button
                         onClick={() => handleApprove(b._id)}
-                        className="p-2 bg-green-500 text-white rounded"
+                        className="px-3 py-2 bg-green-500 text-white rounded text-xs"
                       >
-                        <FaCheck />
+                        {b.isClaimed && b.status === "pending"
+                        ? "Approve Claim"
+                        : <FaCheck />}
                       </button>
 
                       <button
