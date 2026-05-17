@@ -1,18 +1,26 @@
-// frontend/src/components/TrackBusinessView,jsx
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import API from "../../api/axios";
 
 const TrackBusinessView = ({ businessId }) => {
-  const trackedRef = useRef(false);
+  useEffect(() => {
+    if (!businessId) return;
 
-useEffect(() => {
-  if (!businessId || trackedRef.current) return;
+    const storageKey = `servdial_view_${businessId}`;
 
-  trackedRef.current = true;
+    // same session me already counted
+    if (sessionStorage.getItem(storageKey)) return;
 
-  API.post(`/businesses/${businessId}/view`)
-    .catch(() => {});
-}, [businessId]);
+    const trackView = async () => {
+      try {
+        await API.post(`/businesses/${businessId}/view`);
+        sessionStorage.setItem(storageKey, "true");
+      } catch (err) {
+        console.error("View tracking failed:", err);
+      }
+    };
+
+    trackView();
+  }, [businessId]);
 
   return null;
 };

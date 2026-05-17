@@ -182,7 +182,13 @@ const Footer = () => {
           {/* SOCIAL ICONS */}
           <div className="flex gap-4">
 
-            <a href="#" className="hover:text-white">
+            <a
+              href="https://www.facebook.com/ServDialdotcom/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-blue-500 transition-colors"
+              aria-label="ServDial Facebook Page"
+            >
               <Facebook size={18} />
             </a>
 

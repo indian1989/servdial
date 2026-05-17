@@ -39,6 +39,7 @@ const markerIcon = new L.Icon({
 });
 
 const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
+console.log("BusinessDetails reviews:", reviews);
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("servdial_user"));
 
