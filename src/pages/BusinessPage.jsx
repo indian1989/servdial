@@ -20,8 +20,20 @@ const BusinessPage = () => {
   try {
     const res = await API.get(`/businesses/${slug}`);
     console.log("🔥 BUSINESS API RESPONSE:", res.data);
-    const biz = res.data?.data?.business || null;
-    const rev = res.data?.data?.reviews || [];
+    const payload = res?.data?.data || {};
+
+const biz = payload.business || null;
+
+const rev =
+  payload.reviews ||
+  payload.business?.reviews ||
+  [];
+
+console.log("Business:", biz);
+console.log("Reviews:", rev);
+
+setBusiness(biz);
+setReviews(Array.isArray(rev) ? rev : []);
 
     setBusiness(biz);
     setReviews(rev);
