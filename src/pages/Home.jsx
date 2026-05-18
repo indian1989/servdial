@@ -14,6 +14,7 @@ import WhyChooseServDial from "../components/home/WhyChooseServDial";
 import Testimonials from "../components/home/Testimonials";
 import DownloadApp from "../components/home/DownloadApp";
 import BecomeProvider from "../components/home/BecomeProvider";
+import BannerAd from "../components/ads/BannerAd";
 
 const Home = () => {
   const { city, loadingCity } = useCity();
@@ -123,7 +124,10 @@ console.log("🔥 HOMEPAGE DATA STATE:", data);
     <div className="bg-gray-50 min-h-screen">
 
       {/* HERO */}
-      <HeroSearch city={city} />
+<HeroSearch city={city} />
+
+{/* 🔥 TOP BANNER */}
+<BannerAd placement="homepage_top" />
 
       {/* LOCATION LOADING */}
       {loadingCity && (
@@ -139,6 +143,7 @@ console.log("🔥 HOMEPAGE DATA STATE:", data);
         loading={loading || loadingCity}
       />
 
+
       {/* ================= FEATURED ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">
         <h2 className="text-3xl font-bold text-center mb-8">
@@ -151,6 +156,10 @@ console.log("🔥 HOMEPAGE DATA STATE:", data);
   city={city}
 />
       </section>
+
+      
+      {/* 🔥 MIDDLE BANNER */}
+<BannerAd placement="homepage_middle" />
 
       {/* ================= TOP RATED ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">
@@ -215,6 +224,9 @@ console.log("🔥 HOMEPAGE DATA STATE:", data);
     title="recommended businesses"
   />
 </section>
+
+{/* 🔥 BOTTOM BANNER */}
+<BannerAd placement="homepage_bottom" />
 
       {/* ================= CITIES ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">
