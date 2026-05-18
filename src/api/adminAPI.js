@@ -96,7 +96,7 @@ export const getAllBanners = () =>
   API.get("/admin/banners");
 
 export const addBanner = (data) =>
-  API.post("/admin/banners", {
+  API.post("/banners", {
     ...data,
     status: undefined,
     paymentStatus: undefined,
