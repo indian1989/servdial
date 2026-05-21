@@ -1,4 +1,32 @@
 routes:
   - type: rewrite
+    source: /sitemap.xml
+    destination: https://api.servdial.com/sitemap.xml
+
+  - type: rewrite
+    source: /sitemap-static.xml
+    destination: https://api.servdial.com/sitemap-static.xml
+
+  - type: rewrite
+    source: /sitemap-cities.xml
+    destination: https://api.servdial.com/sitemap-cities.xml
+
+  - type: rewrite
+    source: /sitemap-categories.xml
+    destination: https://api.servdial.com/sitemap-categories.xml
+
+  - type: rewrite
+    source: /sitemap-services.xml
+    destination: https://api.servdial.com/sitemap-services.xml
+
+  - type: rewrite
+    source: /sitemap-businesses.xml
+    destination: https://api.servdial.com/sitemap-businesses.xml
+
+  - type: rewrite
+    source: /sitemap-businesses-*
+    destination: https://api.servdial.com/sitemap-businesses-:splat
+
+  - type: rewrite
     source: /*
     destination: /index.html
