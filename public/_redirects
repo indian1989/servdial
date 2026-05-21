@@ -1,9 +1,1 @@
-/sitemap.xml https://api.servdial.com/sitemap.xml 200
-/sitemap-static.xml https://api.servdial.com/sitemap-static.xml 200
-/sitemap-cities.xml https://api.servdial.com/sitemap-cities.xml 200
-/sitemap-categories.xml https://api.servdial.com/sitemap-categories.xml 200
-/sitemap-services.xml https://api.servdial.com/sitemap-services.xml 200
-/sitemap-businesses.xml https://api.servdial.com/sitemap-businesses.xml 200
-/sitemap-businesses-* https://api.servdial.com/sitemap-businesses-:splat 200
-
 /* /index.html 200
