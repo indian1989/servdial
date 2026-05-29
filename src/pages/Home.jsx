@@ -25,6 +25,7 @@ const Home = () => {
     topRated: [],
     latest: [],
     nearby: [],
+    recommended: [],
     categories: [],
     cities: [],
   });

@@ -17,7 +17,7 @@ if (window.location.hostname === "servdial.onrender.com") {
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <HelmetProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/">
         <App />
       </BrowserRouter>
     </HelmetProvider>
