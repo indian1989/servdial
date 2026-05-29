@@ -11,14 +11,6 @@ import ReviewForm from "../components/reviews/ReviewForm";
 import BusinessCard from "../components/business/BusinessCard";
 
 import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup
-} from "react-leaflet";
-
-import L from "leaflet";
-import {
   Star,
   MapPin,
   Share2,
@@ -29,19 +21,18 @@ import {
   Facebook,
   Twitter,
   Mail,
-  MessageSquare
 } from "lucide-react";
 
-const markerIcon = new L.Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41]
-});
-
 const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
-console.log("BusinessDetails reviews:", reviews);
+
   const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem("servdial_user"));
+  let user = null;
+
+try {
+  user = JSON.parse(localStorage.getItem("servdial_user"));
+} catch {
+  localStorage.removeItem("servdial_user");
+}
 
   // ================= STATE =================
   const [activeImg, setActiveImg] = useState(0);
@@ -62,10 +53,8 @@ console.log("BusinessDetails reviews:", reviews);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [pendingReview, setPendingReview] = useState(null);
 
+  const analyticsRef = useRef({});
   const shareRef = useRef(null);
-
-  // ================ Live Viewers ==============
-  const [liveViewers, setLiveViewers] = useState(0);
 
   // ================= SAFE DATA =================
   const images = useMemo(() => {
@@ -80,12 +69,22 @@ console.log("BusinessDetails reviews:", reviews);
   const whatsappNumber =
     (business?.whatsapp || business?.phone || "").replace(/\D/g, "");
 
-    const schema = useMemo(() => ({
+    const [currentUrl, setCurrentUrl] = useState("");
+
+useEffect(() => {
+  if (typeof window !== "undefined") {
+    setCurrentUrl(window.location.href);
+  }
+}, []);
+
+const schema = useMemo(() => ({
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
+  "@id": currentUrl,
   name: business?.name,
   image: business?.images?.[0] || business?.logo || "",
   telephone: business?.phone || "",
+
   address: {
     "@type": "PostalAddress",
     streetAddress: business?.address || "",
@@ -94,6 +93,12 @@ console.log("BusinessDetails reviews:", reviews);
     postalCode: business?.pincode || "",
     addressCountry: "IN"
   },
+
+  description: business?.description || "",
+  sameAs: business?.website ? [business.website] : undefined,
+  priceRange: "₹₹",
+  areaServed: business?.city || "",
+
   geo:
     lat && lng
       ? {
@@ -102,7 +107,9 @@ console.log("BusinessDetails reviews:", reviews);
           longitude: lng
         }
       : undefined,
-  url: window.location.href,
+
+  url: currentUrl,
+
   aggregateRating:
     business?.averageRating
       ? {
@@ -110,8 +117,12 @@ console.log("BusinessDetails reviews:", reviews);
           ratingValue: business.averageRating,
           reviewCount: business.totalReviews || 0
         }
-      : undefined
-}), [business, lat, lng]);
+      : undefined,
+
+  openingHoursSpecification:
+  business?.openingHours || undefined
+
+}), [business, lat, lng, currentUrl]);
 
   // ================= SERVICES =================
   const services = useMemo(() => {
@@ -159,8 +170,20 @@ const [showStickyLead, setShowStickyLead] = useState(false);
   const trackEvent = useCallback((type) => {
   if (!business?._id) return;
 
-  API.post(`/business/analytics/${business._id}`, {
-    type
+  const key = `${business._id}-${type}`;
+
+  // prevent spam within 10 sec
+  if (
+    analyticsRef.current[key] &&
+    Date.now() - analyticsRef.current[key] < 10000
+  ) {
+    return;
+  }
+
+  analyticsRef.current[key] = Date.now();
+
+  API.post(`/businesses/analytics/${business._id}`, {
+    type,
   }).catch(() => {});
 }, [business]);
 
@@ -202,44 +225,28 @@ useEffect(() => {
 // ============ Sticky Lead Use Effect ============
 useEffect(() => {
   const handleScroll = () => {
-    if (window.scrollY > 500) {
-      setShowStickyLead(true);
-    }
+    setShowStickyLead(window.scrollY > 500);
   };
 
   window.addEventListener("scroll", handleScroll);
+
   return () => window.removeEventListener("scroll", handleScroll);
 }, []);
 
-// ============ LIVE VIEWERS USE EFFECT ==============
-useEffect(() => {
-  // base viewers from traffic (views)
-  let base = Math.floor((business?.views || 50) / 15);
-
-  if (base < 3) base = 3;
-
-  setLiveViewers(base + Math.floor(Math.random() * 5));
-
-  const interval = setInterval(() => {
-    setLiveViewers((prev) => {
-      const change = Math.random() > 0.5 ? 1 : -1;
-      let next = prev + change;
-
-      if (next < 2) next = 2;
-      if (next > 15) next = 15;
-
-      return next;
-    });
-  }, 4000); // changes every 4 sec
-
-  return () => clearInterval(interval);
-}, [business]);
-
   // ================= TOAST =================
-  const showToastMsg = useCallback((msg) => {
-    setShowToast(msg);
-    setTimeout(() => setShowToast(""), 2000);
-  }, []);
+  useEffect(() => {
+  if (!showToast) return;
+
+  const timer = setTimeout(() => {
+    setShowToast("");
+  }, 2000);
+
+  return () => clearTimeout(timer);
+}, [showToast]);
+
+const showToastMsg = useCallback((msg) => {
+  setShowToast(msg);
+}, []);
 
   // ================= ACTIONS =================
   const handleCall = () => {
@@ -278,21 +285,21 @@ const openLeafletDirections = (lat, lng) => {
   window.open(url, "_blank");
 };
 
-  const handleDirections = () => {
+const handleDirections = () => {
   trackEvent("direction");
-  if (!lat || !lng) return showToastMsg("Location not available");
+
+  if (!lat || !lng) {
+    return showToastMsg("Location not available");
+  }
 
   try {
-    // Try Google Maps first
     openGoogleMaps(lat, lng);
 
-    // Optional: fallback trigger (simulate failure detection)
     setTimeout(() => {
-      console.log("🧠 Smart Router: fallback ready if needed");
     }, 1500);
 
   } catch (err) {
-    console.log("⚠️ Google Maps failed → switching to Leaflet");
+    console.log("⚠️ Google Maps failed → switching to OSM");
     openLeafletDirections(lat, lng);
   }
 };
@@ -327,10 +334,15 @@ const openLeafletDirections = (lat, lng) => {
   };
 
   const handleLoginRedirect = () => {
-    navigate("/login", {
-      state: { from: window.location.pathname, pendingReview }
-    });
-  };
+  setShowLoginPrompt(false);
+
+  navigate("/login", {
+    state: {
+      from: window.location.pathname,
+      pendingReview,
+    },
+  });
+};
 
   const handleLeadSubmit = async () => {
     try {
@@ -374,6 +386,8 @@ const openLeafletDirections = (lat, lng) => {
       <script type="application/ld+json">
         {JSON.stringify(schema)}
       </script>
+
+      <link rel="canonical" href={currentUrl} />
     </Helmet>
 
     <div className="bg-gray-50 min-h-screen pb-32">
@@ -388,10 +402,15 @@ const openLeafletDirections = (lat, lng) => {
           </div>
         ) : (
           <img
-            src={images[activeImg]}
-            className="w-full h-full object-cover cursor-pointer"
-            onClick={() => setShowGallery(true)}
-          />
+              src={images[activeImg]}
+              alt={business.name}
+              loading="eager"
+              fetchPriority="high"
+              width="1200"
+              height="600"
+              className="w-full h-full object-cover cursor-pointer"
+              onClick={() => setShowGallery(true)}
+            />
         )}
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
@@ -418,12 +437,6 @@ const openLeafletDirections = (lat, lng) => {
     </span>
   )}
 
-  {customersServed && (
-    <span className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full">
-      👥 {customersServed}+ customers served
-    </span>
-  )}
-
   {business.averageRating >= 4.5 && (
     <span className="bg-yellow-100 text-yellow-700 px-2 py-1 rounded-full">
       ⭐ Top Rated
@@ -433,20 +446,6 @@ const openLeafletDirections = (lat, lng) => {
   <span className="bg-green-50 text-green-600 px-2 py-1 rounded-full">
   ⚡ Responds quickly
 </span>
-
-  <span className="inline-block bg-red-600 text-white text-xs px-2 py-1 rounded mt-1">
-  Limited Time Offer
-</span>
-
-{/* 👀 LIVE VIEWERS */}
-<div className="text-xs bg-black/60 px-2 py-1 rounded inline-block mt-1">
-  👀 {liveViewers} people viewing right now
-</div>
-
-  {/* 🔥 URGENCY SIGNAL */}
-<div className="bg-red-50 border border-red-200 text-red-600 text-sm p-1 rounded-xl">
-  🔥 {Math.floor(Math.random() * 5) + 3} people contacted in last 24 hours
-</div>
 
 </div>
           </div>
@@ -484,6 +483,41 @@ const openLeafletDirections = (lat, lng) => {
   </div>
 
 </div>
+
+{/* LOGIN REQUIRED POPUP */}
+{showLoginPrompt && (
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] px-4">
+    <div className="bg-white rounded-2xl p-6 w-full max-w-sm text-center shadow-2xl">
+
+      <div className="text-4xl mb-3">🔐</div>
+
+      <h2 className="text-xl font-bold mb-2">
+        Login Required
+      </h2>
+
+      <p className="text-sm text-gray-600 mb-5">
+        Please login to submit your review and help other customers.
+      </p>
+
+      <div className="flex gap-3">
+        <button
+          onClick={() => setShowLoginPrompt(false)}
+          className="flex-1 border border-gray-300 py-2 rounded-lg"
+        >
+          Cancel
+        </button>
+
+        <button
+          onClick={handleLoginRedirect}
+          className="flex-1 bg-blue-600 text-white py-2 rounded-lg"
+        >
+          Login
+        </button>
+      </div>
+
+    </div>
+  </div>
+)}
 
 
 {/* CLAIM BANNER */}
@@ -552,7 +586,7 @@ const openLeafletDirections = (lat, lng) => {
             <div className="flex gap-4 overflow-x-auto">
               {similar.map((b) => (
                 <div key={b._id} className="min-w-[220px]">
-                  <BusinessCard business={b} />
+                  <BusinessCard business={b} loading="lazy" />
                 </div>
               ))}
             </div>
@@ -589,7 +623,9 @@ const openLeafletDirections = (lat, lng) => {
   💰 Get Deal
 </button>
 
- <button onClick={() => { trackEvent("direction"); handleDirections(); }} className="flex-1 bg-gray-800 text-white py-2 rounded-lg flex items-center justify-center gap-1">
+ <button
+  onClick={handleDirections}
+   className="flex-1 bg-gray-800 text-white py-2 rounded-lg flex items-center justify-center gap-1">
           <Navigation size={16}/> Directions
         </button>
 
