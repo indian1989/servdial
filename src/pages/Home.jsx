@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useCity } from "../context/CityContext";
 import API from "../api/axios";
+import { Helmet } from "react-helmet-async";
 
 // Sections
 import HeroSearch from "../components/home/HeroSearch";
@@ -72,6 +73,7 @@ setData({
         featured: [],
         topRated: [],
         latest: [],
+        recommended: [],
         nearby: [],
         categories: [],
         cities: [],
@@ -121,9 +123,81 @@ const cityName = city?.name || "your area";
 console.log("🔥 HOMEPAGE DATA STATE:", data);
 
   return (
+
+    <>
+  <Helmet>
+    <title>
+      ServDial - Find Trusted Local Businesses & Services in {cityName}
+    </title>
+
+    <meta
+      name="description"
+      content={`Discover trusted local businesses, home services, electricians, plumbers, salons, AC repair, restaurants and more in ${cityName} with ServDial.`}
+    />
+
+    <meta
+      name="keywords"
+      content="local business directory, electricians, plumbers, salons, AC repair, nearby services, trusted businesses, ServDial"
+    />
+
+    <link rel="canonical" href="https://servdial.com/" />
+
+    {/* Open Graph */}
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={`ServDial - Trusted Services in ${cityName}`} />
+    <meta
+      property="og:description"
+      content={`Find verified businesses and local services in ${cityName} with ServDial.`}
+    />
+    <meta property="og:url" content="https://servdial.com/" />
+    <meta property="og:site_name" content="ServDial" />
+
+    <meta
+  property="og:image"
+  content="https://servdial.com/og-image.jpg"
+/>
+
+<meta
+  name="twitter:image"
+  content="https://servdial.com/og-image.jpg"
+/>
+
+    {/* Twitter */}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content={`ServDial - Trusted Services in ${cityName}`}
+    />
+    <meta
+      name="twitter:description"
+      content={`Find trusted local businesses and services in ${cityName}.`}
+    />
+
+    {/* JSON-LD */}
+    <script type="application/ld+json">
+      {JSON.stringify({
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        name: "ServDial",
+        url: "https://servdial.com",
+        potentialAction: {
+          "@type": "SearchAction",
+          target:
+            "https://servdial.com/search?q={search_term_string}",
+          "query-input": "required name=search_term_string",
+        },
+      })}
+    </script>
+  </Helmet>
+
     <div className="bg-gray-50 min-h-screen">
 
-      {/* HERO */}
+      {/* SEO H1 */}
+<h1 className="sr-only">
+  ServDial - Find Trusted Local Businesses and Services in {cityName}
+</h1>
+
+{/* HERO */}
 <HeroSearch city={city} />
 
 {/* 🔥 TOP BANNER */}
@@ -242,7 +316,8 @@ console.log("🔥 HOMEPAGE DATA STATE:", data);
       <DownloadApp />
       <BecomeProvider />
     </div>
-  );
+</>
+);
 };
 
 export default Home;
