@@ -12,8 +12,9 @@
     "postbuild": "react-snap"
   },
   "reactSnap": {
-    "inlineCss": true
-  },
+  "source": "dist",
+  "inlineCss": true
+},
   "dependencies": {
     "axios": "^1.13.6",
     "leaflet": "^1.9.4",
