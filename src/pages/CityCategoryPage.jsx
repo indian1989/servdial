@@ -13,7 +13,7 @@ const CityCategoryPage = () => {
 
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const meta = generateMeta({ city: citySlug, category: categorySlug });
+  
 
   // ================= FETCH BUSINESSES =================
   useEffect(() => {
@@ -84,6 +84,31 @@ const CityCategoryPage = () => {
     })),
   };
 
+  const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: "https://servdial.com",
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: formattedCity,
+      item: `https://servdial.com/city/${citySlug}`,
+    },
+    {
+      "@type": "ListItem",
+      position: 3,
+      name: formattedCategory,
+      item: canonicalUrl,
+    },
+  ],
+};
+
   // ================= LOADING =================
   if (loading) {
     return (
@@ -102,27 +127,70 @@ const CityCategoryPage = () => {
   return (
     <>
       <Helmet>
-        <title>{title}</title>
+  <title>{title}</title>
 
-        <meta
-          name="description"
-          content={description}
-        />
+  <meta
+    name="description"
+    content={description}
+  />
 
-        <link
-          rel="canonical"
-          href={canonicalUrl}
-        />
+  <link
+    rel="canonical"
+    href={canonicalUrl}
+  />
 
-        <meta
-          name="robots"
-          content="index,follow"
-        />
+  <meta
+    name="robots"
+    content="index,follow"
+  />
 
-        <script type="application/ld+json">
-          {JSON.stringify(schema)}
-        </script>
-      </Helmet>
+  {/* Open Graph */}
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="ServDial" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonicalUrl} />
+  <meta
+    property="og:image"
+    content="https://servdial.com/og-image.jpg"
+  />
+
+  <meta
+  property="og:image:alt"
+  content={`${formattedCategory} in ${formattedCity} | ServDial`}
+/>
+
+<meta
+  name="twitter:image:alt"
+  content={`${formattedCategory} in ${formattedCity} | ServDial`}
+/>
+
+  {/* Twitter */}
+  <meta
+    name="twitter:card"
+    content="summary_large_image"
+  />
+  <meta
+    name="twitter:title"
+    content={title}
+  />
+  <meta
+    name="twitter:description"
+    content={description}
+  />
+  <meta
+    name="twitter:image"
+    content="https://servdial.com/og-image.jpg"
+  />
+
+  <script type="application/ld+json">
+    {JSON.stringify(schema)}
+  </script>
+
+  <script type="application/ld+json">
+  {JSON.stringify(breadcrumbSchema)}
+</script>
+</Helmet>
 
       <div className="min-h-screen bg-gray-50">
 
@@ -206,7 +274,7 @@ const CityCategoryPage = () => {
 
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                Available Businesses
+                Top {formattedCategory} Businesses in {formattedCity}
               </h2>
 
               <p className="text-gray-500 mt-1">
