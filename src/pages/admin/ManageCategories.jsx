@@ -45,19 +45,21 @@ const ManageCategories = () => {
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const [newCategory, setNewCategory] = useState({
-    name: "",
-    description: "",
-    order: 0,
-    parentCategory: "",
-  });
+  name: "",
+  description: "",
+  order: 0,
+  parentCategory: "",
+  uiType: "service",
+});
 
   const [editingId, setEditingId] = useState(null);
   const [editingData, setEditingData] = useState({
-    name: "",
-    description: "",
-    order: 0,
-    isTrending: false,
-  });
+  name: "",
+  description: "",
+  order: 0,
+  isTrending: false,
+  uiType: "service",
+});
 
   /* ================= FETCH ================= */
   const fetchCategories = async () => {
@@ -139,21 +141,23 @@ if (existingCategory) {
 
     try {
       await addCategory({
-        name: toTitleCase(newCategory.name),
-        description: newCategory.description,
-        order:
-  newCategory.order === "" || newCategory.order === null
-    ? 0
-    : Number(newCategory.order),
-        parentCategory: newCategory.parentCategory || null,
-      });
+  name: toTitleCase(newCategory.name),
+  description: newCategory.description,
+  order:
+    newCategory.order === "" || newCategory.order === null
+      ? 0
+      : Number(newCategory.order),
+  parentCategory: newCategory.parentCategory || null,
+  uiType: newCategory.uiType,
+});
 
       setNewCategory({
-        name: "",
-        description: "",
-        order: 0,
-        parentCategory: "",
-      });
+  name: "",
+  description: "",
+  order: 0,
+  parentCategory: "",
+  uiType: "service",
+});
 
       fetchCategories();
     } catch (err) {
@@ -173,6 +177,7 @@ if (existingCategory) {
         description: editingData.description,
         order: Number(editingData.order),
         isTrending: editingData.isTrending,
+        uiType: editingData.uiType,
       });
 
       setEditingId(null);
@@ -294,6 +299,32 @@ if (existingCategory) {
             )}
           </td>
 
+          {editingId === cat._id ? (
+<select
+    value={editingData.uiType}
+    onChange={(e)=>
+        setEditingData({
+            ...editingData,
+            uiType:e.target.value
+        })
+    }
+    className="border px-2 py-1 w-full"
+>
+
+<option value="service">Service</option>
+<option value="appointment">Appointment</option>
+<option value="hotel">Hotel</option>
+<option value="restaurant">Restaurant</option>
+<option value="shopping">Shopping</option>
+
+</select>
+
+) : (
+
+cat.uiType || "service"
+
+)}
+
           {/* ORDER */}
           <td className="border px-3 py-2">
             {editingId === cat._id ? (
@@ -361,11 +392,12 @@ if (existingCategory) {
                 onClick={() => {
                   setEditingId(cat._id);
                   setEditingData({
-                    name: cat.name,
-                    description: cat.description || "",
-                    order: cat.order,
-                    isTrending: cat.isTrending || false,
-                  });
+    name:cat.name,
+    description:cat.description || "",
+    order:cat.order,
+    isTrending:cat.isTrending || false,
+    uiType:cat.uiType || "service"
+});
                 }}
                 className="bg-yellow-500 text-white px-2 py-1 rounded"
               >
@@ -474,6 +506,23 @@ if (existingCategory) {
         {cat.name}
       </option>
     ))}
+</select>
+
+<select
+  className="border px-3 py-2 rounded"
+  value={newCategory.uiType}
+  onChange={(e) =>
+    setNewCategory((p) => ({
+      ...p,
+      uiType: e.target.value,
+    }))
+  }
+>
+  <option value="service">Service</option>
+  <option value="appointment">Appointment</option>
+  <option value="hotel">Hotel</option>
+  <option value="restaurant">Restaurant</option>
+  <option value="shopping">Shopping</option>
 </select>
 
         <button

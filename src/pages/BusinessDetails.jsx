@@ -13,13 +13,15 @@ import BusinessTabs from "../components/business/BusinessTabs";
 import BusinessHero from "../components/business/BusinessHero";
 import SmartActionBar from "../components/business/SmartActionBar";
 import QuickInfoBar from "../components/business/QuickInfoBar";
-import CategoryFeatureSection from "../components/business/CategoryFeatureSection";
 import BusinessHours from "../components/business/BusinessHours";
 import BusinessFAQ from "../components/business/BusinessFAQ";
 import BookingModal from "../components/business/BookingModal";
 import PhotoGallery from "../components/business/PhotoGallery";
 import LocationMap from "../components/business/LocationMap";
-import LeadModal from "../components/business/LeadModal";
+import OffersSection from "../components/business/OffersSection";
+import BusinessInsight from "../components/business/BusinessInsight";
+import ClaimBusinessBanner from "../components/business/ClaimBusinessBanner";
+import BusinessDynamicSections from "../components/business/BusinessDynamicSections";
 
 const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
@@ -120,12 +122,6 @@ const schema = useMemo(() => ({
 
 }), [business, lat, lng, currentUrl]);
 
-  // ================= SERVICES =================
-  const services = useMemo(() => {
-    if (business?.tags?.length) return business.tags;
-    if (business?.keywords?.length) return business.keywords;
-    return [business?.categoryId?.name || business?.category || "General"];
-  }, [business]);
 
   // ================ Sticky Lead ========
 const [showStickyLead, setShowStickyLead] = useState(false);
@@ -305,6 +301,16 @@ const handleDirections = () => {
     }
   };
 
+  const handleBookingSubmit = async (bookingData) => {
+  try {
+    await API.post("/leads", bookingData);
+
+    showToastMsg("Booking Request Sent!");
+  } catch {
+    showToastMsg("Booking Failed");
+  }
+};
+
   
   if (!business?._id) {
   return <div className="p-6 text-center">Loading...</div>;
@@ -390,21 +396,10 @@ const handleDirections = () => {
 
 
 {/* CLAIM BANNER */}
-{!business.isClaimed && user && (
-  <div className="bg-yellow-100 border border-yellow-300 p-3 rounded-xl text-sm flex justify-between items-center">
-    <span>
-      Own this business? Claim it now and manage your profile.
-    </span>
-
-    <button
-      onClick={() => navigate(`/claim-business/${business._id}`)}
-      className="bg-black text-white px-3 py-1 rounded"
-    >
-      Claim
-    </button>
-  </div>
-)}
-
+<ClaimBusinessBanner
+   business={business}
+   user={user}
+/>
         {/*DESCRIPTION*/}
         <div id="about" className="bg-white p-4 rounded-xl shadow">
 
@@ -429,16 +424,21 @@ business.categoryId?.name || "local service provider"
           <p className="text-sm text-gray-600">{aiSummary}</p>
         </div>
 
-      <div id="services">
-
-<CategoryFeatureSection
- business={business}
+        <BusinessInsight
+  business={business}
 />
 
-</div>
+      <BusinessDynamicSections
+  business={business}
+  onBooking={handleBookingSubmit}
+/>
 
         {/* LOCATION MAP */}
         <LocationMap
+  business={business}
+/>
+
+<OffersSection
   business={business}
 />
 
@@ -498,7 +498,6 @@ className="grid md:grid-cols-3 gap-6"
  handleWhatsApp={handleWhatsApp}
  handleDirections={handleDirections}
  setShowPopup={setShowPopup}
- setShowShareMenu={setShowShareMenu}
 />
 
 {/* BOOKING MODAL */}
@@ -512,15 +511,6 @@ className="grid md:grid-cols-3 gap-6"
  loading={loadingLead}
 />
 
-<LeadModal
-  open={showPopup}
-  onClose={() => setShowPopup(false)}
-  business={business}
-  leadData={leadData}
-  setLeadData={setLeadData}
-  handleSubmit={handleLeadSubmit}
-  loading={loadingLead}
-/>
 
    {/* STICKY LEAD */}
    {showStickyLead && (
