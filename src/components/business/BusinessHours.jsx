@@ -1,9 +1,11 @@
 import {
   Clock,
   CheckCircle,
-  XCircle
+  XCircle,
 } from "lucide-react";
 
+import BusinessSection from "./BusinessSection";
+import BusinessSectionHeader from "./BusinessSectionHeader";
 
 const days = [
   "monday",
@@ -12,286 +14,175 @@ const days = [
   "thursday",
   "friday",
   "saturday",
-  "sunday"
+  "sunday",
 ];
 
+const formatDay = (day) =>
+  day.charAt(0).toUpperCase() + day.slice(1);
 
-const formatDay = (day)=>{
+const formatTime = (time) => {
+  if (!time) return "";
 
-  return day.charAt(0).toUpperCase()+day.slice(1);
-
-};
-
-
-
-const formatTime = (time)=>{
-
-  if(!time) return "";
-
-  const [hour,minute] = time.split(":");
+  const [hour, minute] = time.split(":");
 
   const h = Number(hour);
 
   const suffix = h >= 12 ? "PM" : "AM";
 
-  const formatted =
-    h % 12 || 12;
-
-  return `${formatted}:${minute} ${suffix}`;
-
+  return `${h % 12 || 12}:${minute} ${suffix}`;
 };
 
+const BusinessHours = ({ hours }) => {
+  if (!hours) return null;
 
+  const now = new Date();
 
-const BusinessHours = ({hours})=>{
+  const currentDay =
+    days[now.getDay() === 0 ? 6 : now.getDay() - 1];
 
+  const today = hours[currentDay];
 
-if(!hours){
+  // =========================
+  // Open Status
+  // =========================
 
-return null;
+  const openNow = (() => {
+    if (!today || today.closed) return false;
 
-}
+    if (today.is24h) return true;
 
+    const current =
+      now.getHours() * 60 +
+      now.getMinutes();
 
+    const open = today.open?.split(":");
+    const close = today.close?.split(":");
 
-const now =
-new Date();
+    if (!open || !close) return false;
 
-const currentDay =
-days[now.getDay()===0 ? 6 : now.getDay()-1];
+    const openMin =
+      Number(open[0]) * 60 +
+      Number(open[1]);
 
+    const closeMin =
+      Number(close[0]) * 60 +
+      Number(close[1]);
 
+    return (
+      current >= openMin &&
+      current <= closeMin
+    );
+  })();
 
-const today =
-hours[currentDay];
+  return (
+    <BusinessSection id="hours">
 
+      <BusinessSectionHeader
+        icon={Clock}
+        title="Business Hours"
+        action={
+          openNow ? (
+            <div
+              className="
+                flex
+                items-center
+                gap-1
+                bg-green-50
+                text-green-700
+                px-3
+                py-1
+                rounded-full
+                text-sm
+                font-semibold
+              "
+            >
+              <CheckCircle size={16} />
 
+              Open Now
+            </div>
+          ) : (
+            <div
+              className="
+                flex
+                items-center
+                gap-1
+                bg-red-50
+                text-red-700
+                px-3
+                py-1
+                rounded-full
+                text-sm
+                font-semibold
+              "
+            >
+              <XCircle size={16} />
 
-const isOpen = ()=>{
+              Closed
+            </div>
+          )
+        }
+      />
 
+      <div className="space-y-2">
 
-if(!today || today.closed)
-return false;
+        {days.map((day, index) => {
+          const item = hours[day];
 
+          return (
+            <div
+              key={day}
+              className={`
+                flex
+                justify-between
+                items-center
+                text-sm
+                px-2
+                py-2
+                rounded-lg
+                transition
+                hover:bg-gray-50
+                ${
+                  index !== days.length - 1
+                    ? "border-b"
+                    : ""
+                }
+              `}
+            >
+              <span
+                className="
+                  font-medium
+                  capitalize
+                  text-gray-800
+                "
+              >
+                {formatDay(day)}
+              </span>
 
-if(today.is24h)
-return true;
+              <span
+                className={
+                  item?.closed
+                    ? "text-red-500 font-medium"
+                    : "text-gray-600"
+                }
+              >
+                {item?.closed
+                  ? "Closed"
+                  : item?.is24h
+                  ? "24 Hours"
+                  : `${formatTime(
+                      item?.open
+                    )} - ${formatTime(
+                      item?.close
+                    )}`}
+              </span>
+            </div>
+          );
+        })}
 
+      </div>
 
-const current =
-now.getHours()*60+
-now.getMinutes();
-
-
-const open =
-today.open?.split(":");
-
-const close =
-today.close?.split(":");
-
-
-if(!open || !close)
-return false;
-
-
-const openMin =
-Number(open[0])*60+
-Number(open[1]);
-
-
-const closeMin =
-Number(close[0])*60+
-Number(close[1]);
-
-
-return current>=openMin &&
-current<=closeMin;
-
-
+    </BusinessSection>
+  );
 };
-
-
-
-return (
-
-<section
-id="hours"
-className="
-bg-white
-rounded-2xl
-shadow
-p-5
-"
->
-
-
-<div className="
-flex
-items-center
-justify-between
-mb-5
-">
-
-
-<h2 className="
-text-xl
-font-bold
-flex
-gap-2
-items-center
-">
-
-<Clock size={22}/>
-
-Business Hours
-
-</h2>
-
-
-
-{
-isOpen()
-?
-<div className="
-flex
-items-center
-gap-1
-text-green-600
-font-semibold
-">
-
-<CheckCircle size={18}/>
-
-Open Now
-
-</div>
-
-:
-
-<div className="
-flex
-items-center
-gap-1
-text-red-500
-font-semibold
-">
-
-<XCircle size={18}/>
-
-Closed
-
-</div>
-
-}
-
-
-
-</div>
-
-
-
-
-
-<div className="
-space-y-3
-">
-
-
-{
-
-days.map(day=>{
-
-
-const item =
-hours[day];
-
-
-return (
-
-<div
-key={day}
-className="
-flex
-justify-between
-border-b
-pb-2
-text-sm
-"
->
-
-
-<span className="
-font-medium
-capitalize
-">
-
-{formatDay(day)}
-
-</span>
-
-
-
-<span
-className={
-
-item?.closed
-?
-"text-red-500"
-:
-"text-gray-600"
-
-}
->
-
-
-{
-item?.closed
-
-?
-
-"Closed"
-
-
-:
-
-item?.is24h
-
-?
-
-"24 Hours"
-
-
-:
-
-`${formatTime(item?.open)} - ${formatTime(item?.close)}`
-
-}
-
-
-</span>
-
-
-</div>
-
-
-)
-
-
-})
-
-}
-
-
-</div>
-
-
-
-</section>
-
-
-)
-
-}
-
 
 export default BusinessHours;

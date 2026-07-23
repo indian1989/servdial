@@ -39,7 +39,10 @@ const BusinessDynamicSections = ({
 
   return (
     <>
-      <CategoryFeatureSection business={business} />
+      <CategoryFeatureSection
+    business={business}
+    onBooking={onBooking}
+/>
 
       <CatalogSection
         title={business.catalogTitle}

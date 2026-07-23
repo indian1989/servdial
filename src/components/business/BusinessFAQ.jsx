@@ -1,10 +1,12 @@
-import {
-  HelpCircle,
-  ChevronDown
-} from "lucide-react";
-
 import { useState } from "react";
 
+import {
+  HelpCircle,
+  ChevronDown,
+} from "lucide-react";
+
+import BusinessSection from "./BusinessSection";
+import BusinessSectionHeader from "./BusinessSectionHeader";
 
 const BusinessFAQ = ({ faq = [] }) => {
 
@@ -23,35 +25,13 @@ return null;
 
 return (
 
-<section
-id="faq"
-className="
-bg-white
-rounded-2xl
-shadow
-p-5
-"
->
+<BusinessSection id="faq">
 
 
-<h2
-className="
-text-xl
-font-bold
-flex
-items-center
-gap-2
-mb-5
-"
->
-
-<HelpCircle size={22}/>
-
-Frequently Asked Questions
-
-</h2>
-
-
+<BusinessSectionHeader
+        icon={HelpCircle}
+        title="Frequently Asked Questions"
+    />
 
 <div
 className="
@@ -115,15 +95,11 @@ font-medium
 
 size={18}
 
-className={
-
-openIndex===index
-?
-"rotate-180 transition"
-:
-"transition"
-
-}
+className={`
+    transition-transform
+    duration-300
+    ${openIndex === index ? "rotate-180" : ""}
+`}
 
 />
 
@@ -170,7 +146,7 @@ leading-6
 </div>
 
 
-</section>
+</BusinessSection>
 
 
 )

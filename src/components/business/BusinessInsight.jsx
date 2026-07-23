@@ -7,6 +7,9 @@ import {
   MapPin,
 } from "lucide-react";
 
+import BusinessSection from "./BusinessSection";
+import BusinessSectionHeader from "./BusinessSectionHeader";
+
 const BusinessInsight = ({ business }) => {
   const insights = [];
 
@@ -55,7 +58,7 @@ const BusinessInsight = ({ business }) => {
   if (!insights.length) return null;
 
   return (
-    <section className="bg-white rounded-2xl shadow p-5">
+    <BusinessSection>
 
       <h2 className="text-xl font-bold mb-5">
         Business Insights
@@ -85,7 +88,7 @@ const BusinessInsight = ({ business }) => {
 
       </div>
 
-    </section>
+    </BusinessSection>
   );
 };
 

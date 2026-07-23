@@ -10,9 +10,10 @@ import {
   ShoppingBag
 } from "lucide-react";
 
-
-const CategoryFeatureSection = ({ business }) => {
-
+const CategoryFeatureSection = ({
+    business,
+    onBooking
+}) => {
 
   const category =
     (
@@ -22,24 +23,19 @@ const CategoryFeatureSection = ({ business }) => {
     )
     .toLowerCase();
 
-
-
   const isRestaurant =
     category.includes("restaurant") ||
     category.includes("cafe") ||
     category.includes("food");
 
-
   const isHotel =
     category.includes("hotel") ||
     category.includes("resort");
-
 
   const isElectrician =
     category.includes("electrician") ||
     category.includes("plumber") ||
     category.includes("repair");
-
 
   const isDoctor =
     category.includes("doctor") ||
@@ -88,26 +84,29 @@ const CategoryFeatureSection = ({ business }) => {
       gap-4
       ">
 
-
       <FeatureCard
-      icon={<CalendarCheck/>}
-      title="Book Table"
-      text="Reserve your table instantly"
-      />
-
-
-      <FeatureCard
-      icon={<ShoppingBag/>}
-      title="Food Menu"
-      text="View dishes and prices"
-      />
+    icon={<CalendarCheck/>}
+    title="Book Table"
+    text="Reserve your table instantly"
+    onClick={onBooking}
+    />
+ 
 
 
       <FeatureCard
-      icon={<CalendarCheck/>}
-      title="Party Booking"
-      text="Birthday, events and functions"
-      />
+    icon={<ShoppingBag/>}
+    title="Food Menu"
+    text="View dishes and prices"
+    onClick={onBooking}
+/>
+
+
+      <FeatureCard
+    icon={<CalendarCheck/>}
+    title="Party Booking"
+    text="Birthday, events and functions"
+    onClick={onBooking}
+/>
 
 
       </div>
@@ -166,6 +165,7 @@ const CategoryFeatureSection = ({ business }) => {
       icon={<CalendarCheck/>}
       title="Check Availability"
       text="Select check-in and check-out"
+      onClick={onBooking}
       />
 
 
@@ -173,6 +173,7 @@ const CategoryFeatureSection = ({ business }) => {
       icon={<BedDouble/>}
       title="Room Types"
       text="Deluxe, Premium Rooms"
+      onClick={onBooking}
       />
 
 
@@ -180,6 +181,7 @@ const CategoryFeatureSection = ({ business }) => {
       icon={<IndianRupee/>}
       title="Price"
       text="Starting room rates"
+      onClick={onBooking}
       />
 
 
@@ -355,6 +357,7 @@ const CategoryFeatureSection = ({ business }) => {
 
         <button
         key={slot}
+        onClick={onBooking}
         className="
         border
         rounded-xl
@@ -453,9 +456,10 @@ text={service.description || "Professional service"}
 
 
 const FeatureCard = ({
-icon,
-title,
-text
+    icon,
+    title,
+    text,
+    onClick
 }) => {
 
 
@@ -495,8 +499,8 @@ mt-1
 {text}
 </p>
 
-
 <button
+onClick={onClick}
 className="
 mt-3
 text-sm

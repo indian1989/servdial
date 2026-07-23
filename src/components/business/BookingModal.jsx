@@ -38,7 +38,7 @@ const BookingModal = ({
 
   if (!open) return null;
 
-
+console.log("Booking Modal Open");
 
   const handleChange = (e)=>{
 

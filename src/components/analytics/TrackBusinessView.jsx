@@ -1,3 +1,4 @@
+//frontend/src/components/analytics/TrackBusinessView.jsx
 import { useEffect } from "react";
 import API from "../../api/axios";
 

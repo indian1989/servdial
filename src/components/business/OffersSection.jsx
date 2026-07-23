@@ -1,4 +1,7 @@
 import { Tag, Gift, Percent } from "lucide-react";
+import BusinessSection from "./BusinessSection";
+import BusinessSectionHeader from "./BusinessSectionHeader";
+
 
 const OffersSection = ({ business }) => {
   const offers = business?.offers || [];
@@ -6,10 +9,8 @@ const OffersSection = ({ business }) => {
   if (!offers.length) return null;
 
   return (
-    <section
-      id="offers"
-      className="bg-white rounded-2xl shadow p-5"
-    >
+    <BusinessSection id="offers">
+
       <div className="flex items-center gap-2 mb-4">
         <Gift className="text-red-500" size={22} />
         <h2 className="text-xl font-bold">
@@ -52,7 +53,7 @@ const OffersSection = ({ business }) => {
           </div>
         ))}
       </div>
-    </section>
+    </BusinessSection>
   );
 };
 

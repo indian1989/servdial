@@ -1,14 +1,14 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import {
+    useState,
+    useMemo,
+    useEffect,
+    useCallback,
+    useRef
+} from "react";
 import { useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
 import API from "../api/axios";
-import { useRef } from "react";
 
 import TrackBusinessView from "../components/analytics/TrackBusinessView";
-import ReviewsList from "../components/reviews/ReviewsList";
-import RatingBreakdown from "../components/reviews/RatingBreakdown";
-import ReviewForm from "../components/reviews/ReviewForm";
-import BusinessCard from "../components/business/BusinessCard";
 import BusinessTabs from "../components/business/BusinessTabs";
 import BusinessHero from "../components/business/BusinessHero";
 import SmartActionBar from "../components/business/SmartActionBar";
@@ -16,12 +16,19 @@ import QuickInfoBar from "../components/business/QuickInfoBar";
 import BusinessHours from "../components/business/BusinessHours";
 import BusinessFAQ from "../components/business/BusinessFAQ";
 import BookingModal from "../components/business/BookingModal";
+import LeadModal from "../components/business/LeadModal";
 import PhotoGallery from "../components/business/PhotoGallery";
 import LocationMap from "../components/business/LocationMap";
 import OffersSection from "../components/business/OffersSection";
 import BusinessInsight from "../components/business/BusinessInsight";
 import ClaimBusinessBanner from "../components/business/ClaimBusinessBanner";
 import BusinessDynamicSections from "../components/business/BusinessDynamicSections";
+import BusinessDescription from "../components/business/BusinessDescription";
+import BusinessAISummary from "../components/business/BusinessAISummary";
+import BusinessReviewsSection from "../components/business/BusinessReviewsSection";
+import BusinessSEO from "../components/business/BusinessSEO";
+import SimilarBusinessesSection from "../components/business/SimilarBusinessesSection";
+import ShareMenu from "../components/business/ShareMenu";
 
 const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
@@ -37,11 +44,13 @@ try {
   // ================= STATE =================
   const [activeImg, setActiveImg] = useState(0);
   const [showGallery, setShowGallery] = useState(false);
-  const [showPopup, setShowPopup] = useState(false);
+  const [showLeadPopup, setShowLeadPopup] = useState(false);
+const [showBookingPopup, setShowBookingPopup] = useState(false);
   const [showToast, setShowToast] = useState("");
   const [phoneRevealed, setPhoneRevealed] = useState(false);
   const [loadingLead, setLoadingLead] = useState(false);
   const [categoryCount, setCategoryCount] = useState(null);
+  const [showShareMenu, setShowShareMenu] = useState(false);
 
   const [leadData, setLeadData] = useState({
     name: "",
@@ -75,73 +84,8 @@ useEffect(() => {
   }
 }, []);
 
-const schema = useMemo(() => ({
-  "@context": "https://schema.org",
-  "@type": "LocalBusiness",
-  "@id": currentUrl,
-  name: business?.name,
-  image: business?.images?.[0] || business?.logo || "",
-  telephone: business?.phone || "",
-
-  address: {
-    "@type": "PostalAddress",
-    streetAddress: business?.address || "",
-    addressLocality: business?.cityId?.name || "",
-    addressRegion: business?.state || "",
-    postalCode: business?.pincode || "",
-    addressCountry: "IN"
-  },
-
-  description: business?.description || "",
-  sameAs: business?.website ? [business.website] : undefined,
-  priceRange: "₹₹",
-  areaServed: business?.city || "",
-
-  geo:
-    lat && lng
-      ? {
-          "@type": "GeoCoordinates",
-          latitude: lat,
-          longitude: lng
-        }
-      : undefined,
-
-  url: currentUrl,
-
-  aggregateRating:
-    business?.averageRating
-      ? {
-          "@type": "AggregateRating",
-          ratingValue: business.averageRating,
-          reviewCount: business.totalReviews || 0
-        }
-      : undefined,
-
-  openingHoursSpecification:
-  business?.openingHours || undefined
-
-}), [business, lat, lng, currentUrl]);
-
-
   // ================ Sticky Lead ========
 const [showStickyLead, setShowStickyLead] = useState(false);
-
-  // ================= AI SUMMARY =================
-  const aiSummary = useMemo(() => {
-    if (!reviews.length) return "No reviews yet.";
-
-    let score = 0;
-
-    reviews.forEach((r) => {
-      const text = (r.comment || "").toLowerCase();
-      if (text.match(/good|great|excellent|fast|best/)) score += 2;
-      if (text.match(/bad|slow|worst|delay|poor/)) score -= 2;
-    });
-
-    if (score > 5) return "Customers highly praise service quality and speed.";
-    if (score < -5) return "Some customers reported delays or issues.";
-    return "Mixed feedback from customers.";
-  }, [reviews]);
 
   // ================= ANALYTICS =================
   const trackEvent = useCallback((type) => {
@@ -180,7 +124,11 @@ useEffect(() => {
     .catch((err) => {
       console.error("❌ Count API error:", err);
     });
-}, [business]);
+
+}, [
+  business?.categoryId?._id,
+  business?.cityId?._id,
+]);
 
 // ============ Sticky Lead Use Effect ============
 useEffect(() => {
@@ -254,10 +202,6 @@ const handleDirections = () => {
 
   try {
     openGoogleMaps(lat, lng);
-
-    setTimeout(() => {
-    }, 1500);
-
   } catch (err) {
     console.log("⚠️ Google Maps failed → switching to OSM");
     openLeafletDirections(lat, lng);
@@ -271,7 +215,10 @@ const handleDirections = () => {
       setShowLoginPrompt(true);
       return;
     }
-    API.post("/reviews", { businessId: business._id, ...data }).then(refresh);
+    API.post("/reviews", {
+  businessId: business._id,
+  ...data,
+}).then(() => refresh?.());
   };
 
   const handleLoginRedirect = () => {
@@ -285,6 +232,22 @@ const handleDirections = () => {
   });
 };
 
+const uiType =
+  business?.categoryId?.uiType ||
+  business?.category?.uiType ||
+  "service";
+
+  console.log("uiType =", uiType);
+console.log("category =", business?.categoryId);
+
+  const openPrimaryModal = () => {
+  if (["table", "room", "appointment"].includes(uiType)) {
+    setShowBookingPopup(true);
+  } else {
+    setShowLeadPopup(true);
+  }
+};
+
   const handleLeadSubmit = async () => {
     try {
       setLoadingLead(true);
@@ -293,7 +256,7 @@ const handleDirections = () => {
         ...leadData
       });
       showToastMsg("Request sent!");
-      setShowPopup(false);
+      setShowLeadPopup(false);
     } catch {
       showToastMsg("Failed!");
     } finally {
@@ -318,25 +281,26 @@ const handleDirections = () => {
 
   return (
   <>
-    <Helmet>
-      <script type="application/ld+json">
-        {JSON.stringify(schema)}
-      </script>
-
-      <link rel="canonical" href={currentUrl} />
-    </Helmet>
+    <BusinessSEO
+    business={business}
+    currentUrl={currentUrl}
+/>
 
     <div className="bg-gray-50 min-h-screen pb-32">
 
       <TrackBusinessView businessId={business._id} />
 
 {/* BUSINESS HERO */}
-      <BusinessHero
+  <BusinessHero
   business={business}
   images={images}
   activeImg={activeImg}
   setActiveImg={setActiveImg}
   setShowGallery={setShowGallery}
+  handleCall={handleCall}
+  handleWhatsApp={handleWhatsApp}
+  handleDirections={handleDirections}
+  setShowShareMenu={setShowShareMenu}
 />
 
 {/* PHOTO GALLERY */}
@@ -357,6 +321,70 @@ const handleDirections = () => {
 
 <BusinessTabs
  business={business}
+/>
+
+{/* CLAIM BANNER */}
+<ClaimBusinessBanner
+   business={business}
+   user={user}
+/>
+
+        {/*DESCRIPTION*/}
+      <BusinessDescription
+    business={business}
+/>
+
+{/* AI SUMMARY */}
+        <BusinessAISummary
+    business={business}
+    reviews={reviews}
+/>
+
+        <BusinessInsight
+  business={business}
+/>
+
+  <BusinessDynamicSections
+    business={business}
+    onBooking={openPrimaryModal}
+/>
+
+<OffersSection
+  business={business}
+/>
+
+<BusinessHours
+    hours={business.openingHours}
+/>
+
+      {/* LOCATION MAP */}
+        <LocationMap
+  business={business}
+/>
+
+<BusinessFAQ
+    faq={business.faq}
+/>
+
+{/* REVIEWS */}
+        <BusinessReviewsSection
+    business={business}
+    reviews={reviews}
+    refresh={refresh}
+    onSubmitReview={handleReviewSubmit}
+/>
+
+        {/* SIMILAR */}
+        <SimilarBusinessesSection
+    business={business}
+    similar={similar}
+    categoryCount={categoryCount}
+/>
+
+<ShareMenu
+    open={showShareMenu}
+    onClose={() => setShowShareMenu(false)}
+    business={business}
 />
 
 {/* LOGIN REQUIRED POPUP */}
@@ -392,130 +420,42 @@ const handleDirections = () => {
 
     </div>
   </div>
-)}
-
-
-{/* CLAIM BANNER */}
-<ClaimBusinessBanner
-   business={business}
-   user={user}
-/>
-        {/*DESCRIPTION*/}
-        <div id="about" className="bg-white p-4 rounded-xl shadow">
-
-<h2 className="font-semibold mb-2">
-About
-</h2>
-
-<p className="text-gray-600 text-sm">
-{
-business.description ||
-`${business.name} is a ${
-business.categoryId?.name || "local service provider"
-} in ${business.city || "your city"}.`
-}
-</p>
-
-</div>
-
-        {/* AI SUMMARY */}
-        <div className="bg-white p-4 rounded-xl shadow">
-          <h2 className="font-semibold mb-2">AI Summary</h2>
-          <p className="text-sm text-gray-600">{aiSummary}</p>
-        </div>
-
-        <BusinessInsight
-  business={business}
-/>
-
-      <BusinessDynamicSections
-  business={business}
-  onBooking={handleBookingSubmit}
-/>
-
-        {/* LOCATION MAP */}
-        <LocationMap
-  business={business}
-/>
-
-<OffersSection
-  business={business}
-/>
-
-  <div id="hours">
-<BusinessHours
- hours={business.openingHours}
-/>
-
-</div>
-
-<div id="faq">
-
-<BusinessFAQ
- faq={business.faq}
-/>
-
-</div>
-
-        {/* REVIEWS */}
-        <div
-id="reviews"
-className="grid md:grid-cols-3 gap-6"
->
-          <RatingBreakdown reviews={reviews} />
-          <div className="md:col-span-2">
-            <ReviewsList reviews={reviews} refresh={refresh} />
-            <ReviewForm onSubmitAttempt={handleReviewSubmit} />
-          </div>
-        </div>
-
-        {/* SIMILAR */}
-        {similar.length > 0 && (
-          <div>
-            <h2 className="text-lg font-semibold mb-2">Similar Businesses</h2>
-
-            {categoryCount && (
-              <p className="text-sm text-gray-500 mb-2">
-                {categoryCount}+ businesses in {business.categoryId?.name || business.category || "General"} near {business.city}
-              </p>
-            )}
-
-            <div className="flex gap-4 overflow-x-auto">
-              {similar.map((b) => (
-                <div key={b._id} className="min-w-[220px]">
-                  <BusinessCard business={b} loading="lazy" />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+)}          
+ </div>
 
 {/* SMART ACTION BAR */}
   <SmartActionBar
- business={business}
- handleCall={handleCall}
- handleWhatsApp={handleWhatsApp}
- handleDirections={handleDirections}
- setShowPopup={setShowPopup}
+  business={business}
+  setShowLeadPopup={setShowLeadPopup}
+  setShowBookingPopup={setShowBookingPopup}
 />
 
 {/* BOOKING MODAL */}
 <BookingModal
- open={showPopup}
- onClose={()=>setShowPopup(false)}
- business={business}
- leadData={leadData}
- setLeadData={setLeadData}
- handleSubmit={handleLeadSubmit}
- loading={loadingLead}
+  open={showBookingPopup}
+  onClose={() => setShowBookingPopup(false)}
+  business={business}
+  onSubmit={handleBookingSubmit}
+/>
+
+{/* LEAD MODAL */}
+<LeadModal
+  open={showLeadPopup}
+  onClose={() => setShowLeadPopup(false)}
+  business={business}
+  leadData={leadData}
+  setLeadData={setLeadData}
+  handleSubmit={handleLeadSubmit}
+  loading={loadingLead}
 />
 
 
    {/* STICKY LEAD */}
-   {showStickyLead && (
-  <div className="fixed bottom-24 right-4 bg-black text-white px-4 py-2 rounded-full shadow-lg z-50 animate-bounce cursor-pointer"
-       onClick={() => setShowPopup(true)}>
+  {showStickyLead && (
+  <div
+    className="fixed bottom-24 right-4 bg-black text-white px-4 py-2 rounded-full shadow-lg z-50 animate-bounce cursor-pointer"
+    onClick={openPrimaryModal}
+  >
     💬 Get Best Deal
   </div>
 )}
