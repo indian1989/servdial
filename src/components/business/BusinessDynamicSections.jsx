@@ -1,26 +1,26 @@
-import CategoryFeatureSection from "./CategoryFeatureSection";
 import CatalogSection from "./CatalogSection";
+
 import ServicePricing from "./ServicePricing";
 import AppointmentBooking from "./AppointmentBooking";
 import RoomBooking from "./RoomBooking";
 
-const uiRegistry = {
+import RestaurantBooking from "./RestaurantBooking";
+import FoodMenuSection from "./FoodMenuSection";
+import PartyBooking from "./PartyBooking";
 
-  service: [
-    ServicePricing,
-  ],
+const featureRegistry = {
 
-  appointment: [
-    AppointmentBooking,
-  ],
+  pricing: ServicePricing,
 
-  hotel: [
-    RoomBooking,
-  ],
+  appointment_booking: AppointmentBooking,
 
-  restaurant: [],
+  room_booking: RoomBooking,
 
-  shopping: [],
+  table_booking: RestaurantBooking,
+
+  food_menu: FoodMenuSection,
+
+  party_booking: PartyBooking,
 
 };
 
@@ -29,36 +29,48 @@ const BusinessDynamicSections = ({
   onBooking,
 }) => {
 
-  const uiType =
-    business?.categoryId?.uiType ||
-    business?.category?.uiType ||
-    "service";
+  const features =
+  business?.categoryId?.features || [];
 
-  const Components =
-    uiRegistry[uiType] || [];
+console.log(
+  "BUSINESS FEATURES:",
+  features
+);
+
+console.log(
+  "CATEGORY DATA:",
+  business?.categoryId
+);
 
   return (
     <>
-      <CategoryFeatureSection
-    business={business}
-    onBooking={onBooking}
-/>
 
       <CatalogSection
         title={business.catalogTitle}
         items={business.catalog}
       />
 
-      {Components.map((Component, index) => (
-        <Component
-          key={index}
-          business={business}
-          pricing={business.pricing}
-          onSubmit={onBooking}
-        />
-      ))}
+      {features.map((feature) => {
+
+        const Component =
+          featureRegistry[feature];
+
+        if (!Component) return null;
+
+        return (
+          <Component
+            key={feature}
+            business={business}
+            pricing={business.pricing}
+            onBooking={onBooking}
+          />
+        );
+
+      })}
+
     </>
   );
+
 };
 
 export default BusinessDynamicSections;

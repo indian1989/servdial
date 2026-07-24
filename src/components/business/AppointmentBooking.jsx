@@ -1,123 +1,80 @@
-import { useState } from "react";
 import { Stethoscope } from "lucide-react";
 
-const AppointmentBooking = ({ business, onSubmit }) => {
 
-  const [form, setForm] = useState({
-    name: "",
-    phone: "",
-    date: "",
-    time: "",
-    department: "",
-    message: "",
-  });
+const AppointmentBooking = ({
+  onBooking
+}) => {
 
-  const handleChange = (e) => {
-    setForm({
-      ...form,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const submit = (e) => {
-    e.preventDefault();
-
-    onSubmit?.({
-      businessId: business?._id,
-      type: "appointment_booking",
-      ...form,
-    });
-  };
 
   return (
+
     <section
       id="appointment-booking"
-      className="bg-white rounded-2xl shadow p-5"
+      className="
+      bg-white
+      rounded-2xl
+      shadow
+      p-6
+      "
     >
 
-      <div className="flex items-center gap-2 mb-5">
+
+      <div className="
+      flex
+      items-center
+      gap-2
+      ">
+
         <Stethoscope
-          size={22}
+          size={24}
           className="text-blue-600"
         />
 
+
         <h2 className="text-xl font-bold">
-          Book Appointment
+          Appointment Booking
         </h2>
+
+
       </div>
 
-      <form
-        onSubmit={submit}
-        className="space-y-4"
+
+
+      <p className="
+      text-gray-600
+      mt-3
+      ">
+        Book doctor consultation appointment.
+      </p>
+
+
+
+      <button
+
+        onClick={() => onBooking?.("appointment_booking")}
+
+        className="
+        mt-5
+        bg-blue-600
+        text-white
+        px-6
+        py-3
+        rounded-xl
+        hover:bg-blue-700
+        "
+
       >
 
-        <input
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          placeholder="Patient Name"
-          className="w-full border rounded-lg p-3"
-          required
-        />
+        Book Appointment
 
-        <input
-          name="phone"
-          value={form.phone}
-          onChange={handleChange}
-          placeholder="Mobile Number"
-          className="w-full border rounded-lg p-3"
-          required
-        />
+      </button>
 
-        <div className="grid md:grid-cols-2 gap-4">
-
-          <input
-            type="date"
-            name="date"
-            value={form.date}
-            onChange={handleChange}
-            className="border rounded-lg p-3"
-            required
-          />
-
-          <input
-            type="time"
-            name="time"
-            value={form.time}
-            onChange={handleChange}
-            className="border rounded-lg p-3"
-            required
-          />
-
-        </div>
-
-        <input
-          name="department"
-          value={form.department}
-          onChange={handleChange}
-          placeholder="Department / Doctor Name (Optional)"
-          className="w-full border rounded-lg p-3"
-        />
-
-        <textarea
-          rows="4"
-          name="message"
-          value={form.message}
-          onChange={handleChange}
-          placeholder="Describe your problem"
-          className="w-full border rounded-lg p-3"
-        />
-
-        <button
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-semibold"
-        >
-          Book Appointment
-        </button>
-
-      </form>
 
     </section>
+
   );
+
 };
+
 
 export default AppointmentBooking;

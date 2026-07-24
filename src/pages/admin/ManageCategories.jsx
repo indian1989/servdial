@@ -555,6 +555,9 @@ cat.uiType || "service"
               <th className="border px-3 py-2">
                 Description
               </th>
+              <th className="border px-3 py-2">
+    UI Type
+</th>
               <th className="border px-3 py-2">Order</th>
               <th className="border px-3 py-2">Status</th>
               <th className="border px-3 py-2">Actions</th>

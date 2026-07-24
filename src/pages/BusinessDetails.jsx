@@ -51,6 +51,7 @@ const [showBookingPopup, setShowBookingPopup] = useState(false);
   const [loadingLead, setLoadingLead] = useState(false);
   const [categoryCount, setCategoryCount] = useState(null);
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [bookingType, setBookingType] = useState("");
 
   const [leadData, setLeadData] = useState({
     name: "",
@@ -240,12 +241,38 @@ const uiType =
   console.log("uiType =", uiType);
 console.log("category =", business?.categoryId);
 
-  const openPrimaryModal = () => {
-  if (["table", "room", "appointment"].includes(uiType)) {
-    setShowBookingPopup(true);
-  } else {
-    setShowLeadPopup(true);
-  }
+  const openPrimaryModal=(type="lead")=>{
+
+setBookingType(type);
+
+switch(type){
+
+case "table_booking":
+  setBookingType("table_booking");
+  setShowBookingPopup(true);
+  break;
+
+case "party_booking":
+  setBookingType("party_booking");
+  setShowBookingPopup(true);
+  break;
+
+case "room_booking":
+  setBookingType("room_booking");
+  setShowBookingPopup(true);
+  break;
+
+case "appointment_booking":
+  setBookingType("appointment_booking");
+  setShowBookingPopup(true);
+  break;
+
+default:
+
+setShowLeadPopup(true);
+
+}
+
 };
 
   const handleLeadSubmit = async () => {
@@ -435,6 +462,7 @@ console.log("category =", business?.categoryId);
   open={showBookingPopup}
   onClose={() => setShowBookingPopup(false)}
   business={business}
+  bookingType={bookingType}
   onSubmit={handleBookingSubmit}
 />
 
@@ -454,7 +482,7 @@ console.log("category =", business?.categoryId);
   {showStickyLead && (
   <div
     className="fixed bottom-24 right-4 bg-black text-white px-4 py-2 rounded-full shadow-lg z-50 animate-bounce cursor-pointer"
-    onClick={openPrimaryModal}
+    onClick={() => openPrimaryModal("lead")}
   >
     💬 Get Best Deal
   </div>

@@ -1,409 +1,521 @@
-import { useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { bookingConfig } from "../../config/bookingConfig";
+
+const bookingTitles = {
+  table_booking: "🍽 Book Table",
+  party_booking: "🎉 Party Booking",
+  room_booking: "🏨 Book Room",
+  appointment_booking: "🩺 Book Appointment",
+  salon_booking: "💇 Salon Booking",
+  spa_booking: "🧖 Spa Booking",
+  gym_booking: "🏋 Gym Membership",
+  test_drive_booking: "🚗 Test Drive",
+  repair_booking: "🔧 Repair Booking",
+  consultation_booking: "👨‍⚕ Consultation",
+  car_rental_booking: "🚘 Car Rental",
+  tour_booking: "🧳 Tour Booking",
+  service_booking: "⚡ Service Booking",
+};
 
 const BookingModal = ({
   business,
   open,
   onClose,
-  onSubmit
+  onSubmit,
+  bookingType = "service_booking",
 }) => {
 
-
-  const category =
-    (
-      business?.categoryId?.name ||
-      business?.category ||
-      ""
-    )
-    .toLowerCase();
-
-
+    const config =
+  bookingConfig[bookingType] ||
+  bookingConfig.service_booking;
 
   const [form, setForm] = useState({
-
     name: "",
     phone: "",
 
     date: "",
     time: "",
 
+    checkIn: "",
+    checkOut: "",
+
     guests: 1,
 
     service: "",
 
-    message: ""
+    eventType: "",
+    eventDate: "",
 
+    vehicle: "",
+
+    destination: "",
+
+    duration: "",
+
+    message: "",
   });
 
+  useEffect(() => {
+    if (!open) return;
 
+    setForm({
+      name: "",
+      phone: "",
+      date: "",
+      time: "",
+      checkIn: "",
+      checkOut: "",
+      guests: 1,
+      service: "",
+      eventType: "",
+      eventDate: "",
+      vehicle: "",
+      destination: "",
+      duration: "",
+      message: "",
+    });
+
+  }, [open, bookingType]);
 
   if (!open) return null;
 
-console.log("Booking Modal Open");
+  const title =
+config.title;
 
-  const handleChange = (e)=>{
+  const isRestaurant =
+    bookingType === "table_booking";
 
-    setForm({
+  const isParty =
+    bookingType === "party_booking";
 
-      ...form,
+  const isHotel =
+    bookingType === "room_booking";
 
-      [e.target.name]: e.target.value
+  const isDoctor =
+    bookingType === "appointment_booking";
 
-    });
+  const isSalon =
+    bookingType === "salon_booking";
+
+  const isSpa =
+    bookingType === "spa_booking";
+
+  const isGym =
+    bookingType === "gym_booking";
+
+  const isTestDrive =
+    bookingType === "test_drive_booking";
+
+  const isRepair =
+    bookingType === "repair_booking";
+
+  const isConsultation =
+    bookingType === "consultation_booking";
+
+  const isRental =
+    bookingType === "car_rental_booking";
+
+  const isTour =
+    bookingType === "tour_booking";
+
+  const handleChange = (e) => {
+
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
 
   };
 
-
-
-  const submitBooking = (e)=>{
+  const submitBooking = (e) => {
 
     e.preventDefault();
 
-
     onSubmit?.({
-
       businessId: business._id,
-
-      type:
-        category.includes("restaurant")
-          ? "table_booking"
-          :
-        category.includes("hotel")
-          ? "room_booking"
-          :
-        "service_booking",
-
-
-      ...form
-
+      type: bookingType,
+      ...form,
     });
 
+    onClose?.();
 
   };
 
+  return (
 
+<div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
 
-  const isRestaurant =
-    category.includes("restaurant");
+<div className="bg-white rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
 
-
-  const isHotel =
-    category.includes("hotel");
-
-
-  const isDoctor =
-    category.includes("doctor") ||
-    category.includes("clinic");
-
-
-
-return (
-
-<div className="
-fixed inset-0
-bg-black/50
-flex
-items-center
-justify-center
-z-[100]
-px-4
-">
-
-
-<div className="
-bg-white
-rounded-2xl
-w-full
-max-w-lg
-p-6
-shadow-xl
-">
-
-
-{/* HEADER */}
-
-<div className="flex justify-between mb-5">
-
+<div className="flex justify-between items-center border-b p-5">
 
 <h2 className="text-xl font-bold">
-
-{
-isRestaurant
-?
-"🍽 Book Table"
-:
-isHotel
-?
-"🏨 Book Room"
-:
-isDoctor
-?
-"🩺 Book Appointment"
-:
-"⚡ Book Service"
-}
-
+{title}
 </h2>
 
-
 <button
-
 onClick={onClose}
-
-className="text-gray-500"
-
+className="text-2xl text-gray-500 hover:text-red-500"
 >
-
-✕
-
-
+×
 </button>
 
-
 </div>
-
-
-
 
 <form
 onSubmit={submitBooking}
-className="space-y-4"
+className="p-5 space-y-4"
 >
 
-
-
 <input
-
 name="name"
-
 value={form.name}
-
 onChange={handleChange}
-
 placeholder="Your Name"
-
+required
 className="w-full border rounded-lg p-3"
-
 />
 
-
-
 <input
-
 name="phone"
-
 value={form.phone}
-
 onChange={handleChange}
-
 placeholder="Mobile Number"
-
+required
 className="w-full border rounded-lg p-3"
-
 />
 
+      {/* ================= Restaurant ================= */}
 
+      {isRestaurant && (
+        <>
+          <input
+            type="date"
+            name="date"
+            value={form.date}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-lg p-3"
+          />
 
+          <input
+            type="time"
+            name="time"
+            value={form.time}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-lg p-3"
+          />
 
+          <input
+            type="number"
+            min="1"
+            name="guests"
+            value={form.guests}
+            onChange={handleChange}
+            placeholder="Number of Guests"
+            className="w-full border rounded-lg p-3"
+          />
+        </>
+      )}
 
-{/* Restaurant */}
+      {/* ================= Party Booking ================= */}
 
-{isRestaurant && (
+      {isParty && (
+        <>
+          <input
+            type="date"
+            name="eventDate"
+            value={form.eventDate}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-lg p-3"
+          />
 
-<div>
+          <input
+            name="eventType"
+            value={form.eventType}
+            onChange={handleChange}
+            placeholder="Birthday / Anniversary / Corporate"
+            className="w-full border rounded-lg p-3"
+          />
 
-<label className="text-sm">
+          <input
+            type="number"
+            name="guests"
+            value={form.guests}
+            onChange={handleChange}
+            placeholder="Guests"
+            className="w-full border rounded-lg p-3"
+          />
+        </>
+      )}
 
-Number of Guests
+      {/* ================= Hotel ================= */}
 
-</label>
+      {isHotel && (
+        <>
+          <input
+            type="date"
+            name="checkIn"
+            value={form.checkIn}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-lg p-3"
+          />
 
+          <input
+            type="date"
+            name="checkOut"
+            value={form.checkOut}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-lg p-3"
+          />
 
-<input
+          <input
+            type="number"
+            min="1"
+            name="guests"
+            value={form.guests}
+            onChange={handleChange}
+            placeholder="Guests"
+            className="w-full border rounded-lg p-3"
+          />
+        </>
+      )}
 
-type="number"
+      {/* ================= Doctor ================= */}
 
-name="guests"
+      {isDoctor && (
+        <>
+          <input
+            type="date"
+            name="date"
+            value={form.date}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-lg p-3"
+          />
 
-min="1"
+          <input
+            type="time"
+            name="time"
+            value={form.time}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-lg p-3"
+          />
+        </>
+      )}
 
-value={form.guests}
+      {/* ================= Salon / Spa ================= */}
 
-onChange={handleChange}
+      {(isSalon || isSpa) && (
+        <>
+          <input
+            name="service"
+            value={form.service}
+            onChange={handleChange}
+            placeholder="Select Service"
+            className="w-full border rounded-lg p-3"
+          />
 
-className="w-full border rounded-lg p-3"
+          <input
+            type="date"
+            name="date"
+            value={form.date}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-3"
+          />
 
-/>
+          <input
+            type="time"
+            name="time"
+            value={form.time}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-3"
+          />
+        </>
+      )}
 
+      {/* ================= Gym ================= */}
+
+      {isGym && (
+        <>
+          <select
+            name="service"
+            value={form.service}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-3"
+          >
+            <option value="">Membership Plan</option>
+            <option>1 Month</option>
+            <option>3 Months</option>
+            <option>6 Months</option>
+            <option>12 Months</option>
+          </select>
+        </>
+      )}
+
+      {/* ================= Test Drive ================= */}
+
+      {isTestDrive && (
+        <>
+          <input
+            name="vehicle"
+            value={form.vehicle}
+            onChange={handleChange}
+            placeholder="Vehicle Model"
+            className="w-full border rounded-lg p-3"
+          />
+
+          <input
+            type="date"
+            name="date"
+            value={form.date}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-3"
+          />
+        </>
+      )}
+
+      {/* ================= Repair ================= */}
+
+      {isRepair && (
+        <>
+          <input
+            name="service"
+            value={form.service}
+            onChange={handleChange}
+            placeholder="Repair Required"
+            className="w-full border rounded-lg p-3"
+          />
+        </>
+      )}
+
+      {/* ================= Consultation ================= */}
+
+      {isConsultation && (
+        <>
+          <input
+            type="date"
+            name="date"
+            value={form.date}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-3"
+          />
+
+          <input
+            type="time"
+            name="time"
+            value={form.time}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-3"
+          />
+        </>
+      )}
+
+      {/* ================= Car Rental ================= */}
+
+      {isRental && (
+        <>
+          <input
+            name="vehicle"
+            value={form.vehicle}
+            onChange={handleChange}
+            placeholder="Preferred Car"
+            className="w-full border rounded-lg p-3"
+          />
+
+          <input
+            name="duration"
+            value={form.duration}
+            onChange={handleChange}
+            placeholder="Rental Duration"
+            className="w-full border rounded-lg p-3"
+          />
+        </>
+      )}
+
+      {/* ================= Tour ================= */}
+
+      {isTour && (
+        <>
+          <input
+            name="destination"
+            value={form.destination}
+            onChange={handleChange}
+            placeholder="Destination"
+            className="w-full border rounded-lg p-3"
+          />
+
+          <input
+            type="date"
+            name="date"
+            value={form.date}
+            onChange={handleChange}
+            className="w-full border rounded-lg p-3"
+          />
+
+          <input
+            type="number"
+            name="guests"
+            value={form.guests}
+            onChange={handleChange}
+            placeholder="Travellers"
+            className="w-full border rounded-lg p-3"
+          />
+        </>
+      )}
+
+      {/* ================= Generic Service ================= */}
+
+      {!isRestaurant &&
+        !isParty &&
+        !isHotel &&
+        !isDoctor &&
+        !isSalon &&
+        !isSpa &&
+        !isGym &&
+        !isTestDrive &&
+        !isRepair &&
+        !isConsultation &&
+        !isRental &&
+        !isTour && (
+          <input
+            name="service"
+            value={form.service}
+            onChange={handleChange}
+            placeholder="Required Service"
+            className="w-full border rounded-lg p-3"
+          />
+        )}
+
+      <textarea
+        name="message"
+        value={form.message}
+        onChange={handleChange}
+        placeholder="Additional Message"
+        rows={4}
+        className="w-full border rounded-lg p-3"
+      />
+
+      <button
+        type="submit"
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-3 font-semibold transition"
+      >
+        Confirm Booking
+      </button>
+
+    </form>
+
+  </div>
 
 </div>
-
-)}
-
-
-
-
-
-{/* Hotel */}
-
-{isHotel && (
-
-<div className="space-y-3">
-
-
-<input
-
-type="date"
-
-name="checkIn"
-
-onChange={handleChange}
-
-className="w-full border rounded-lg p-3"
-
-/>
-
-
-
-<input
-
-type="date"
-
-name="checkOut"
-
-onChange={handleChange}
-
-className="w-full border rounded-lg p-3"
-
-/>
-
-
-
-</div>
-
-)}
-
-
-
-
-
-{/* Common Date Time */}
-
-<input
-
-type="date"
-
-name="date"
-
-value={form.date}
-
-onChange={handleChange}
-
-className="w-full border rounded-lg p-3"
-
-/>
-
-
-
-<input
-
-type="time"
-
-name="time"
-
-value={form.time}
-
-onChange={handleChange}
-
-className="w-full border rounded-lg p-3"
-
-/>
-
-
-
-
-
-
-{/* Service */}
-
-{!isRestaurant &&
-!isHotel &&
-!isDoctor && (
-
-<input
-
-name="service"
-
-value={form.service}
-
-onChange={handleChange}
-
-placeholder="Required Service"
-
-className="w-full border rounded-lg p-3"
-
-/>
-
-)}
-
-
-
-
-
-
-<textarea
-
-name="message"
-
-value={form.message}
-
-onChange={handleChange}
-
-placeholder="Additional Message"
-
-rows="3"
-
-className="w-full border rounded-lg p-3"
-
-/>
-
-
-
-
-
-<button
-
-className="
-w-full
-bg-blue-600
-text-white
-py-3
-rounded-xl
-font-semibold
-hover:bg-blue-700
-"
-
->
-
-
-Confirm Booking
-
-
-</button>
-
-
-
-</form>
-
-
-</div>
-
-
-</div>
-
 
 );
 
 };
-
 
 export default BookingModal;

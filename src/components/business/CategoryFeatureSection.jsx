@@ -84,30 +84,32 @@ const CategoryFeatureSection = ({
       gap-4
       ">
 
-      <FeatureCard
-    icon={<CalendarCheck/>}
-    title="Book Table"
-    text="Reserve your table instantly"
-    onClick={onBooking}
-    />
- 
-
-
-      <FeatureCard
-    icon={<ShoppingBag/>}
-    title="Food Menu"
-    text="View dishes and prices"
-    onClick={onBooking}
+<FeatureCard
+  title="Book Table"
+  onClick={() => onBooking("table_booking")}
 />
 
-
-      <FeatureCard
-    icon={<CalendarCheck/>}
-    title="Party Booking"
-    text="Birthday, events and functions"
-    onClick={onBooking}
+<FeatureCard
+  title="Food Menu"
+  onClick={() =>
+    document
+      .getElementById("food-menu")
+      ?.scrollIntoView({
+        behavior: "smooth",
+      })
+  }
 />
 
+<FeatureCard
+  title="Party Booking"
+  onClick={() =>
+    document
+      .getElementById("party-booking")
+      ?.scrollIntoView({
+        behavior: "smooth",
+      })
+  }
+/>
 
       </div>
 
