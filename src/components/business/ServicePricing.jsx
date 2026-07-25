@@ -2,10 +2,6 @@ import { IndianRupee } from "lucide-react";
 
 const ServicePricing = ({ pricing = [] }) => {
 
-    console.log("🔥 ServicePricing Rendered");
-console.log("pricing =", pricing);
-console.log("business =", business);
-
     if (!pricing.length) return null;
 
   return (

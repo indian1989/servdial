@@ -9,7 +9,7 @@ import RoomBooking from "./RoomBooking";
 import RestaurantBooking from "./RestaurantBooking";
 import FoodMenuSection from "./FoodMenuSection";
 import PartyBooking from "./PartyBooking";
-
+import OffersSection from "./OffersSection";
 
 /*
 |--------------------------------------------------------------------------

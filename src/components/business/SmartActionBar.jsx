@@ -30,43 +30,45 @@ const SmartActionBar = ({
 
 
   // 🍽 Restaurant
-  if (category.includes("restaurant")) {
+if (category.includes("restaurant")) {
 
     actions = [
       {
-        title: "Book Table",
-        icon: <Utensils />
+        title:"Book Table",
+        type:"table_booking",
+        icon:<Utensils/>
       },
       {
-        title: "Menu",
-        icon: <Calendar />
+        title:"Menu",
+        type:"food_menu",
+        icon:<Calendar/>
       },
       {
-        title: "Party Booking",
-        icon: <Calendar />
+        title:"Party Booking",
+        type:"party_booking",
+        icon:<Calendar/>
       }
     ];
 
-  }
+}
 
 
   // 🏨 Hotel
   else if (category.includes("hotel")) {
 
     actions = [
-      {
-        title: "Book Room",
-        icon: <Bed />
-      },
-      {
-        title: "Check Availability",
-        icon: <Calendar />
-      }
-
-    ];
-
+ {
+   title:"Book Room",
+   type:"room_booking",
+   icon:<Bed/>
+ },
+ {
+   title:"Check Availability",
+   type:"room_booking",
+   icon:<Calendar/>
+ }
+];
   }
-
 
   // 🩺 Doctor
   else if (
@@ -74,12 +76,13 @@ const SmartActionBar = ({
     category.includes("clinic")
   ) {
 
-    actions = [
-      {
-        title: "Book Appointment",
-        icon: <Stethoscope />
-      }
-    ];
+   actions = [
+  {
+    title:"Book Appointment",
+    type:"appointment_booking",
+    icon:<Stethoscope/>
+  }
+];
 
   }
 
@@ -93,29 +96,60 @@ const SmartActionBar = ({
   ) {
 
     actions = [
-      {
-        title: "Book Service",
-        icon: <Wrench />
-      },
-      {
-        title: "View Price",
-        icon: <DollarSign />
-      }
-    ];
+ {
+   title:"Book Service",
+   type:"lead",
+   icon:<Wrench/>
+ },
+ {
+   title:"View Price",
+   type:"pricing",
+   icon:<DollarSign/>
+ }
+];
 
   }
 
-  const openPrimaryAction = () => {
+  const openPrimaryAction = (action) => {
 
-  if (
-    ["restaurant", "hotel", "appointment"].includes(uiType)
-  ) {
+  switch(action){
 
-    setShowBookingPopup?.(true);
+    case "pricing":
 
-  } else {
+      document
+      .getElementById("pricing")
+      ?.scrollIntoView({
+        behavior:"smooth"
+      });
 
-    setShowLeadPopup?.(true);
+      break;
+
+      case "food_menu":
+
+ document
+ .getElementById("food_menu")
+ ?.scrollIntoView({
+    behavior:"smooth"
+ });
+
+ break;
+
+
+    case "table_booking":
+    case "room_booking":
+    case "appointment_booking":
+    case "party_booking":
+
+      setShowBookingPopup?.(true);
+
+      break;
+
+
+    case "lead":
+
+    default:
+
+      setShowLeadPopup?.(true);
 
   }
 
@@ -146,7 +180,9 @@ const SmartActionBar = ({
 
           <button
             key={i}
-            onClick={openPrimaryAction}
+            onClick={() =>
+ openPrimaryAction(a.type)
+}
             className="
             min-w-[140px]
             border

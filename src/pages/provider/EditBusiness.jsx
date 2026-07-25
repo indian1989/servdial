@@ -28,6 +28,7 @@ import {
   getProviderBusinessById
 } from "../../api/providerAPI";
 
+import BusinessFeatureFields from "../../components/business/BusinessFeatureFields";
 import BusinessMediaManager from "../../components/BusinessMediaManager";
 import BusinessHoursManager from "../../components/BusinessHoursManager";
 
@@ -100,19 +101,37 @@ const EditBusiness = () => {
     useState([26.1209, 85.3647]);
 
   const [form, setForm] = useState({
-    name: "",
-    description: "",
-    categoryId: null,
-    cityId: null,
-    address: "",
-    pincode: "",
-    phone: "",
-    whatsapp: "",
-    website: "",
-    logo: "",
-    images: [],
-    businessHours: {},
-  });
+
+  name: "",
+  description: "",
+
+  categoryId: null,
+  cityId: null,
+
+  categoryFeatures: [],
+
+  address: "",
+  pincode: "",
+
+  phone: "",
+  whatsapp: "",
+  website: "",
+
+  logo: "",
+  images: [],
+
+
+  pricing: [],
+  services: [],
+  catalog: [],
+  faq: [],
+  offers: [],
+  menu: [],
+
+
+  businessHours: {},
+
+});
 
   /* ================= FETCH ================= */
 
@@ -137,11 +156,16 @@ const EditBusiness = () => {
           catRes?.data?.data || [];
 
         setCategories(
-          rawCategories.map((c) => ({
-            value: c._id,
-            label: c.name,
-          }))
-        );
+ rawCategories.map((c)=>({
+
+   value:c._id,
+
+   label:c.name,
+
+   features:c.features || [],
+
+ }))
+);
 
         /* ================= CITIES ================= */
 
@@ -167,24 +191,23 @@ const EditBusiness = () => {
 
         if (!business) return;
 
+        console.log("BUSINESS =", business);
+console.log("CATEGORY =", business.categoryId);
+console.log("FEATURES =", business.categoryId?.features);
+
         setForm({
           name: business.name || "",
 
           description:
             business.description || "",
 
-          categoryId:
-            business.categoryId
-              ? {
-                  value:
-                    business.categoryId
-                      ._id,
-
-                  label:
-                    business.categoryId
-                      .name,
-                }
-              : null,
+          categoryId: business.categoryId
+  ? {
+      value: business.categoryId._id,
+      label: business.categoryId.name,
+      features: business.categoryId.features || [],
+    }
+  : null,
 
           cityId: business.cityId
             ? {
@@ -219,6 +242,28 @@ const EditBusiness = () => {
           businessHours:
             business.businessHours ||
             {},
+
+            pricing:
+  business.pricing || [],
+
+services:
+  business.services || [],
+
+catalog:
+  business.catalog || [],
+
+faq:
+  business.faq || [],
+
+offers:
+  business.offers || [],
+
+menu:
+  business.menu || [],
+
+
+categoryFeatures:
+  business.categoryId?.features || [],
         });
 
         if (
@@ -285,48 +330,41 @@ const EditBusiness = () => {
     try {
       setSaving(true);
 
-      await API.put(
-        `/provider/businesses/${id}`,
-        {
-          name: form.name,
+      await API.put(`/provider/businesses/${id}`, {
+  name: form.name,
+  description: form.description,
 
-          description:
-            form.description,
+  categoryId: form.categoryId?.value,
+  cityId: form.cityId?.value,
 
-          categoryId:
-            form.categoryId?.value,
+  address: form.address,
+  pincode: form.pincode,
 
-          cityId:
-            form.cityId?.value,
+  phone: form.phone,
+  whatsapp: form.whatsapp,
+  website: form.website,
 
-          address: form.address,
+  logo: form.logo,
+  images: form.images,
 
-          pincode: form.pincode,
+  // 🔥 ADD THESE
+  pricing: form.pricing,
+  services: form.services,
+  catalog: form.catalog,
+  faq: form.faq,
+  offers: form.offers,
+  menu: form.menu,
 
-          phone: form.phone,
+  businessHours: form.businessHours,
 
-          whatsapp:
-            form.whatsapp,
-
-          website: form.website,
-
-          logo: form.logo,
-
-          images: form.images,
-
-          businessHours:
-            form.businessHours,
-
-          location: {
-            type: "Point",
-
-            coordinates: [
-              location[1],
-              location[0],
-            ],
-          },
-        }
-      );
+  location: {
+    type: "Point",
+    coordinates: [
+      location[1],
+      location[0],
+    ],
+  },
+});
 
       alert(
         "Business updated successfully"
@@ -431,11 +469,16 @@ const EditBusiness = () => {
                 form.categoryId
               }
               onChange={(v) =>
-                setForm((prev) => ({
-                  ...prev,
-                  categoryId: v,
-                }))
-              }
+ setForm((prev) => ({
+   ...prev,
+
+   categoryId: v,
+
+   categoryFeatures:
+     v?.features || [],
+
+ }))
+}
               styles={selectStyles}
             />
           </div>
@@ -542,20 +585,82 @@ const EditBusiness = () => {
             />
           </div>
 
-          {/* HOURS */}
+         {/* BUSINESS HOURS */}
 
-          <BusinessHoursManager
-            value={
-              form.businessHours
-            }
-            onChange={(hrs) =>
-              setForm((prev) => ({
-                ...prev,
-                businessHours:
-                  hrs,
-              }))
-            }
-          />
+<BusinessHoursManager
+  value={form.businessHours}
+  onChange={(v)=>
+    setForm(prev=>({
+      ...prev,
+      businessHours:v
+    }))
+  }
+/>
+
+
+{/* DYNAMIC CATEGORY FEATURES */}
+
+<BusinessFeatureFields
+
+features={
+  form.categoryFeatures
+}
+
+
+pricing={form.pricing}
+setPricing={(v)=>
+ setForm(prev=>({
+   ...prev,
+   pricing:v
+ }))
+}
+
+
+services={form.services}
+setServices={(v)=>
+ setForm(prev=>({
+   ...prev,
+   services:v
+ }))
+}
+
+
+catalog={form.catalog}
+setCatalog={(v)=>
+ setForm(prev=>({
+   ...prev,
+   catalog:v
+ }))
+}
+
+
+faq={form.faq}
+setFaq={(v)=>
+ setForm(prev=>({
+   ...prev,
+   faq:v
+ }))
+}
+
+
+offers={form.offers}
+setOffers={(v)=>
+ setForm(prev=>({
+   ...prev,
+   offers:v
+ }))
+}
+
+
+menu={form.menu}
+setMenu={(v)=>
+ setForm(prev=>({
+   ...prev,
+   menu:v
+ }))
+}
+
+/>
 
           {/* MEDIA */}
 

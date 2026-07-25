@@ -239,27 +239,6 @@ const uiType =
   business?.category?.uiType ||
   "service";
 
-  console.log("uiType =", uiType);
-console.log("category =", business?.categoryId);
-console.log(
-  "CATEGORY NAME:",
-  business?.categoryId?.name
-);
-
-console.log(
-  "CATEGORY UI TYPE:",
-  business?.categoryId?.uiType
-);
-
-console.log(
-  "CATEGORY FEATURES:",
-  business?.categoryId?.features
-);
-
-console.log("business.pricing =", business.pricing);
-console.log("business.services =", business.services);
-console.log("business.menu =", business.menu);
-
   const openPrimaryModal=(type="lead")=>{
 
 setBookingType(type);
@@ -482,6 +461,7 @@ setShowLeadPopup(true);
   business={business}
   setShowLeadPopup={setShowLeadPopup}
   setShowBookingPopup={setShowBookingPopup}
+  setBookingType={setBookingType}
 />
 
 {/* BOOKING MODAL */}

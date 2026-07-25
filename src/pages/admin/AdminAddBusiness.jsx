@@ -27,10 +27,22 @@ const AdminAddBusiness = () => {
             }
               onSubmit={(data) =>
                 submitBusiness({
-                  ...data,
-                  images,
-                  logo,
-                })
+    ...data,
+
+    logo,
+    images,
+
+    pricing,
+
+    services,
+    catalog,
+    faq,
+    offers,
+
+    menu,
+
+    businessHours: hours,
+})
               }
             >
               <BusinessMediaManager value={images} onChange={setImages} />

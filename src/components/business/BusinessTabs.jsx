@@ -8,82 +8,193 @@ import {
   Tag,
   Clock,
   MapPin,
-  HelpCircle
+  HelpCircle,
+  Utensils
 } from "lucide-react";
 
 
 const BusinessTabs = ({ business }) => {
 
 
-  const tabs = [
-    {
-      id: "about",
-      label: "About",
-      icon: Info
-    },
+  /*
+  |--------------------------------------------------------------------------
+  | FEATURE → TAB CONFIG
+  |--------------------------------------------------------------------------
+  */
 
-    {
+  const featureTabs = {
+
+    services: {
       id: "services",
       label: "Services",
-      icon: Briefcase
+      icon: Briefcase,
     },
 
 
-    {
+    pricing: {
       id: "pricing",
       label: "Pricing",
-      icon: IndianRupee
+      icon: IndianRupee,
     },
 
 
-    {
+    catalog: {
+      id: "catalog",
+      label: "Catalog",
+      icon: Tag,
+    },
+
+
+    food_menu: {
+      id: "food_menu",
+      label: "Menu",
+      icon: Utensils,
+    },
+
+
+    table_booking: {
       id: "booking",
       label: "Booking",
       icon: CalendarCheck,
-      show:
-        business?.bookingEnabled
+    },
+
+
+    room_booking: {
+      id: "booking",
+      label: "Booking",
+      icon: CalendarCheck,
+    },
+
+
+    appointment_booking: {
+      id: "booking",
+      label: "Booking",
+      icon: CalendarCheck,
+    },
+
+
+    party_booking: {
+      id: "booking",
+      label: "Booking",
+      icon: CalendarCheck,
+    },
+
+
+    offers: {
+      id:"offers",
+      label:"Offers",
+      icon:Tag,
+    },
+
+
+    business_hours:{
+      id:"hours",
+      label:"Hours",
+      icon:Clock,
+    },
+
+
+    faq:{
+      id:"faq",
+      label:"FAQ",
+      icon:HelpCircle,
+    }
+
+  };
+
+
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | CREATE DYNAMIC TABS
+  |--------------------------------------------------------------------------
+  */
+
+
+  const dynamicTabs = 
+  (
+    business?.categoryId?.features || []
+  )
+  .map(feature => {
+
+    return featureTabs[feature];
+
+  })
+  .filter(Boolean);
+
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | REMOVE DUPLICATE IDS
+  |--------------------------------------------------------------------------
+  */
+
+
+  const uniqueTabs = Array.from(
+    new Map(
+      dynamicTabs.map(
+        tab=>[
+          tab.id,
+          tab
+        ]
+      )
+    ).values()
+  );
+
+
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | FINAL TABS
+  |--------------------------------------------------------------------------
+  */
+
+
+  const tabs = [
+
+    // ALWAYS SHOW
+    {
+      id:"about",
+      label:"About",
+      icon:Info,
+    },
+
+
+    ...uniqueTabs,
+
+
+
+    // PHOTOS
+    ...(business?.images?.length
+      ?
+      [
+        {
+          id:"photos",
+          label:"Photos",
+          icon:Image,
+        }
+      ]
+      :
+      []
+    ),
+
+
+
+    // ALWAYS SHOW
+    {
+      id:"reviews",
+      label:"Reviews",
+      icon:Star,
     },
 
 
     {
-      id: "photos",
-      label: "Photos",
-      icon: Image
-    },
-
-
-    {
-      id: "reviews",
-      label: "Reviews",
-      icon: Star
-    },
-
-
-    {
-      id: "offers",
-      label: "Offers",
-      icon: Tag
-    },
-
-
-    {
-      id: "hours",
-      label: "Hours",
-      icon: Clock
-    },
-
-
-    {
-      id: "location",
-      label: "Location",
-      icon: MapPin
-    },
-
-
-    {
-      id: "faq",
-      label: "FAQ",
-      icon: HelpCircle
+      id:"location",
+      label:"Location",
+      icon:MapPin,
     }
 
   ];
@@ -91,7 +202,9 @@ const BusinessTabs = ({ business }) => {
 
 
 
-  const scrollToSection = (id) => {
+
+
+  const scrollToSection = (id)=>{
 
     const element =
       document.getElementById(id);
@@ -100,13 +213,17 @@ const BusinessTabs = ({ business }) => {
     if(element){
 
       element.scrollIntoView({
+
         behavior:"smooth",
+
         block:"start"
+
       });
 
     }
 
   };
+
 
 
 
@@ -141,11 +258,7 @@ min-w-max
 
 
 {
-tabs
-.filter(
-(tab)=> tab.show !== false
-)
-.map((tab)=>{
+tabs.map((tab)=>{
 
 
 const Icon = tab.icon;
@@ -178,21 +291,16 @@ transition
 
 >
 
-
 <Icon size={16}/>
-
 
 {tab.label}
 
-
 </button>
 
-
-)
+);
 
 
 })
-
 }
 
 
@@ -201,9 +309,11 @@ transition
 
 </div>
 
-)
 
-}
+);
+
+
+};
 
 
 export default BusinessTabs;

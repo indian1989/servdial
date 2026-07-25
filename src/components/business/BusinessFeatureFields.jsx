@@ -9,7 +9,8 @@ import FAQManager from "./FAQManager";
 import OffersManager from "./OffersManager";
 
 import BusinessHoursManager from "../BusinessHoursManager";
-
+import RestaurantBookingManager from "./RestaurantBookingManager";
+import RoomBookingManager from "./RoomBookingManager";
 
 
 /*
@@ -281,6 +282,37 @@ if (!Component) return null;
                 />
 
               );
+
+              case "table_booking":
+
+  return (
+
+    <Component
+      {...commonProps}
+
+      value={null}
+
+      onChange={() => {}}
+
+    />
+
+  );
+
+
+case "room_booking":
+
+  return (
+
+    <Component
+      {...commonProps}
+
+      value={null}
+
+      onChange={() => {}}
+
+    />
+
+  );
 
 
 

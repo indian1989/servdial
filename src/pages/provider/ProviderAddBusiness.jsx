@@ -14,9 +14,9 @@ const ProviderAddBusiness = () => {
   const [pricing, setPricing] = useState([]);
   const [services, setServices] = useState([]);
   const [catalog, setCatalog] = useState([]);
-
+  const [faq,setFaq] = useState([]);
+  const [offers,setOffers] = useState([]);
   const [formData, setFormData] = useState({});
-  const [selectedCategoryFeatures,setSelectedCategoryFeatures] = useState([]);
 
   return (
     <BusinessSubmitter mode="provider">
@@ -52,36 +52,59 @@ const ProviderAddBusiness = () => {
  }));
 
 
- setSelectedCategoryFeatures(
-   data.categoryFeatures || []
- );
-
 }}
  onSubmit={(data) =>
  submitBusiness({
-
     ...data,
 
     logo,
-
     images,
 
     pricing,
 
     services,
-
     catalog,
+    faq,
+    offers,
 
     menu,
 
     businessHours: hours,
-
- })
+})
 }
       >
         <BusinessMediaManager
   value={images}
   onChange={setImages}
+/>
+
+<BusinessFeatureFields
+
+features={
+  formData.categoryFeatures || []
+}
+
+pricing={pricing}
+setPricing={setPricing}
+
+services={services}
+setServices={setServices}
+
+catalog={catalog}
+setCatalog={setCatalog}
+
+faq={faq}
+setFaq={setFaq}
+
+offers={offers}
+setOffers={setOffers}
+
+menu={menu}
+setMenu={setMenu}
+
+hours={hours}
+setHours={setHours}
+
 />
 
       </BusinessForm>
