@@ -15,6 +15,8 @@ import {
   validateBusinessForm,
 } from "./businessFormSchema";
 
+import BusinessFeatureFields from "./BusinessFeatureFields";
+
 /* ================= CATEGORY FLATTEN ================= */
 
 const flattenCategories = (
@@ -185,13 +187,64 @@ useEffect(() => {
   if (!selected) return;
 
   if (field === "categoryId") {
-    updateForm({
-      ...form,
-      categoryId: selected.value,
-      categoryName: selected.label,
-    });
-    return;
-  }
+
+  const loadCategory = async()=>{
+
+    try{
+
+      const res = await API.get(
+        `/categories/${selected.value}`
+      );
+
+
+      const category =
+  res.data.data || res.data;
+
+
+      updateForm({
+
+        ...form,
+
+        categoryId:selected.value,
+
+        categoryName:selected.label,
+
+
+        categoryFeatures:
+          category.features || [],
+
+      });
+
+
+    }catch(err){
+
+      console.log(
+        "Category feature load error",
+        err
+      );
+
+
+      updateForm({
+
+        ...form,
+
+        categoryId:selected.value,
+
+        categoryName:selected.label,
+
+        categoryFeatures:[]
+
+      });
+
+    }
+
+  };
+
+
+  loadCategory();
+
+  return;
+}
 
   if (field === "cityId") {
     updateForm({
@@ -548,9 +601,76 @@ const seoPreview = useMemo(() => {
           </FormSection>
         )}
 
-        {/* EXTRA */}
+        <BusinessFeatureFields
 
-        {children}
+features={
+  form.categoryFeatures || []
+}
+
+form={form}
+
+setForm={setForm}
+
+pricing={
+  form.pricing || []
+}
+
+setPricing={(value)=>
+ updateForm({
+   ...form,
+   pricing:value
+ })
+}
+
+
+services={
+  form.services || []
+}
+
+setServices={(value)=>
+ updateForm({
+   ...form,
+   services:value
+ })
+}
+
+
+catalog={
+  form.catalog || []
+}
+
+setCatalog={(value)=>
+ updateForm({
+   ...form,
+   catalog:value
+ })
+}
+
+
+menu={
+  form.menu || []
+}
+
+setMenu={(value)=>
+ updateForm({
+   ...form,
+   menu:value
+ })
+}
+
+
+hours={
+  form.businessHours || {}
+}
+
+setHours={(value)=>
+ updateForm({
+   ...form,
+   businessHours:value
+ })
+}
+
+/>
 
         {/* SUBMIT */}
 

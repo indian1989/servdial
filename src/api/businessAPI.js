@@ -25,3 +25,12 @@ export const getFeaturedBusinesses = () =>
 // Recommendations
 export const getRecommendedBusinesses = () =>
   API.get("/businesses/recommended");
+
+// ================= PROVIDER BUSINESS =================
+
+export const getProviderBusinessById = (id) =>
+  API.get(`/provider/businesses/${id}`);
+
+
+export const updateProviderBusiness = (id,data)=>
+  API.put(`/provider/businesses/${id}`,data);

@@ -20,6 +20,13 @@ export const approveBusiness = (id) =>
 export const rejectBusiness = (id) =>
   API.put(`/admin/businesses/${id}/reject`);
 
+export const approveClaim = (id) =>
+  API.patch(`/admin/businesses/${id}/approve-claim`);
+
+
+export const rejectClaim = (id) =>
+  API.patch(`/admin/businesses/${id}/reject-claim`);
+
 export const toggleFeatured = (id) =>
   API.put(`/admin/businesses/${id}/feature`);
 

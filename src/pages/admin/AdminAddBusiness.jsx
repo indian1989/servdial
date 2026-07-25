@@ -1,3 +1,4 @@
+//frontend/src/pages/admin/AdminAddBusiness.jsx
 import { useState } from "react";
 import BusinessForm from "../../components/business/BusinessForm";
 import BusinessSubmitter from "../../components/business/BusinessSubmitter";

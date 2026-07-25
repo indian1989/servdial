@@ -1,8 +1,11 @@
+// frontend/src/pages/admin/ManageBusinesses.jsx
 import React, { useEffect, useState } from "react";
 import {
   getAllBusinesses,
   approveBusiness,
   rejectBusiness,
+  approveClaim,
+  rejectClaim,
   toggleFeatured,
   toggleVerified,
   deleteBusiness,
@@ -107,6 +110,49 @@ const defaultHours = {
     updateLocal(id, (b) => ({ ...b, status: "rejected" }));
     await rejectBusiness(id);
   };
+
+  const handleApproveClaim = async (id) => {
+
+  try {
+
+    await approveClaim(id);
+
+    fetchBusinesses();
+
+  } catch(err){
+
+    console.error(
+      "Claim approve failed",
+      err
+    );
+
+    alert(
+      err?.response?.data?.message ||
+      "Claim approval failed"
+    );
+  }
+
+};
+
+
+const handleRejectClaim = async (id) => {
+
+  try {
+
+    await rejectClaim(id);
+
+    fetchBusinesses();
+
+  } catch(err){
+
+    console.error(
+      "Claim reject failed",
+      err
+    );
+
+  }
+
+};
 
   const handleFeature = async (id) => {
     const original = businesses.find(b => b._id === id);
@@ -311,6 +357,7 @@ const defaultHours = {
               <th className="p-3">Business</th>
               <th className="p-3">Category</th>
               <th className="p-3">City</th>
+              <th className="p-3">Claim</th>
               <th className="p-3">Status</th>
               <th className="p-3">Featured</th>
               <th className="p-3">Verified</th>
@@ -368,6 +415,32 @@ const defaultHours = {
                     {b.cityId?.name || "N/A"}
                   </td>
 
+                    {/* CLAIM */}
+                  <td className="p-3">
+
+{
+ b.claimStatus === "pending" ?
+
+<span className="text-orange-600 font-semibold">
+Pending
+</span>
+
+:
+
+b.claimStatus === "approved"?
+
+<span className="text-green-600">
+Approved
+</span>
+
+:
+
+"-"
+
+}
+
+</td>
+
                   {/* STATUS */}
                   <td className="p-3">
                     <StatusChip status={b.status} />
@@ -407,14 +480,27 @@ const defaultHours = {
                         <FaEdit />
                       </button>
 
-                      <button
-                        onClick={() => handleApprove(b._id)}
-                        className="px-3 py-2 bg-green-500 text-white rounded text-xs"
-                      >
-                        {b.isClaimed && b.status === "pending"
-                        ? "Approve Claim"
-                        : <FaCheck />}
-                      </button>
+                      {/* CLAIM APPROVAL */}
+
+{b.claimStatus === "pending" ? (
+
+<button
+  onClick={() => handleApproveClaim(b._id)}
+  className="px-3 py-2 bg-purple-600 text-white rounded text-xs"
+>
+  Approve Claim
+</button>
+
+) : (
+
+<button
+  onClick={() => handleApprove(b._id)}
+  className="px-3 py-2 bg-green-500 text-white rounded text-xs"
+>
+  <FaCheck />
+</button>
+
+)}
 
                       <button
                         onClick={() => handleReject(b._id)}

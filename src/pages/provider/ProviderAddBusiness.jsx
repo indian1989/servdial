@@ -1,17 +1,22 @@
+// frontend/src/pages/provider/ProviderAddBusiness.jsx
 import { useState } from "react";
 
 import BusinessForm from "../../components/business/BusinessForm";
 import BusinessSubmitter from "../../components/business/BusinessSubmitter";
-
-import BusinessHoursManager from "../../components/BusinessHoursManager";
 import BusinessMediaManager from "../../components/BusinessMediaManager";
+import BusinessFeatureFields from "../../components/business/BusinessFeatureFields";
 
 const ProviderAddBusiness = () => {
   const [hours, setHours] = useState({});
   const [images, setImages] = useState([]);
   const [logo, setLogo] = useState("");
+  const [menu, setMenu] = useState([]);
+  const [pricing, setPricing] = useState([]);
+  const [services, setServices] = useState([]);
+  const [catalog, setCatalog] = useState([]);
 
   const [formData, setFormData] = useState({});
+  const [selectedCategoryFeatures,setSelectedCategoryFeatures] = useState([]);
 
   return (
     <BusinessSubmitter mode="provider">
@@ -39,30 +44,46 @@ const ProviderAddBusiness = () => {
       <BusinessForm
         mode="provider"
         initialData={{ boost: false }}
-        onChange={(data) =>
-          setFormData((prev) => ({
-            ...prev,
-            ...data,
-          }))
-        }
-        onSubmit={(data) =>
-          submitBusiness({
-            ...data,
-            logo,
-            images,
-            businessHours: hours,
-          })
-        }
+        onChange={(data)=>{
+
+ setFormData(prev=>({
+   ...prev,
+   ...data,
+ }));
+
+
+ setSelectedCategoryFeatures(
+   data.categoryFeatures || []
+ );
+
+}}
+ onSubmit={(data) =>
+ submitBusiness({
+
+    ...data,
+
+    logo,
+
+    images,
+
+    pricing,
+
+    services,
+
+    catalog,
+
+    menu,
+
+    businessHours: hours,
+
+ })
+}
       >
         <BusinessMediaManager
-          value={images}
-          onChange={setImages}
-        />
+  value={images}
+  onChange={setImages}
+/>
 
-        <BusinessHoursManager
-          value={hours}
-          onChange={setHours}
-        />
       </BusinessForm>
 
     </div>

@@ -1,3 +1,5 @@
+// src/components/business/BusinessDynamicSections.jsx
+
 import CatalogSection from "./CatalogSection";
 
 import ServicePricing from "./ServicePricing";
@@ -8,69 +10,188 @@ import RestaurantBooking from "./RestaurantBooking";
 import FoodMenuSection from "./FoodMenuSection";
 import PartyBooking from "./PartyBooking";
 
+
+/*
+|--------------------------------------------------------------------------
+| CATEGORY FEATURE REGISTRY
+|--------------------------------------------------------------------------
+|
+| Category.features database me jo string hogi
+| uske according component load hoga
+|
+| Example:
+|
+| Category:
+| {
+|   name:"Electrician",
+|   features:[
+|      "pricing"
+|   ]
+| }
+|
+|--------------------------------------------------------------------------
+*/
+
+
 const featureRegistry = {
 
-  pricing: ServicePricing,
+  catalog:
+    CatalogSection,
 
-  appointment_booking: AppointmentBooking,
+  pricing:
+    ServicePricing,
 
-  room_booking: RoomBooking,
+  appointment_booking:
+    AppointmentBooking,
 
-  table_booking: RestaurantBooking,
+  room_booking:
+    RoomBooking,
 
-  food_menu: FoodMenuSection,
+  table_booking:
+    RestaurantBooking,
 
-  party_booking: PartyBooking,
+  food_menu:
+    FoodMenuSection,
+
+  party_booking:
+    PartyBooking,
+
+  offers:
+    OffersSection,
 
 };
+
+
 
 const BusinessDynamicSections = ({
   business,
   onBooking,
 }) => {
 
+
+  /*
+  |--------------------------------------------------------------------------
+  | CATEGORY CHECK
+  |--------------------------------------------------------------------------
+  */
+
+  const category =
+    business?.categoryId;
+
+
+  if(!category){
+    console.log(featureRegistry);
+    return null;
+  }
+
+
+
+  /*
+  |--------------------------------------------------------------------------
+  | FEATURES ONLY FROM CATEGORY
+  |--------------------------------------------------------------------------
+  */
+
   const features =
-  business?.categoryId?.features || [];
+  Array.isArray(category.features)
+    ? category.features
+    : [];
 
 console.log(
-  "BUSINESS FEATURES:",
+  "🔥 CATEGORY FEATURES:",
+  category.name,
   features
 );
 
-console.log(
-  "CATEGORY DATA:",
-  business?.categoryId
-);
+
+
+  if(features.length === 0){
+    return null;
+  }
+
+
 
   return (
-    <>
 
-      <CatalogSection
-        title={business.catalogTitle}
-        items={business.catalog}
-      />
+    <div
+      className="
+      space-y-8
+      "
+    >
 
-      {features.map((feature) => {
 
-        const Component =
-          featureRegistry[feature];
+      {
+        features.map((feature)=>{
 
-        if (!Component) return null;
 
-        return (
-          <Component
-            key={feature}
-            business={business}
-            pricing={business.pricing}
-            onBooking={onBooking}
-          />
-        );
+          const Component =
+            featureRegistry[feature];
 
-      })}
 
-    </>
+          /*
+          unknown feature ignore
+          */
+
+          if(!Component){
+            return null;
+          }
+
+
+
+          return (
+
+            <div
+              key={feature}
+              className="
+              bg-white
+              rounded-2xl
+              shadow-sm
+              border
+              p-5
+              "
+            >
+
+              <Component
+
+                business={business}
+
+                pricing={
+                  business?.pricing || []
+                }
+
+
+                title={
+                  business?.catalogTitle
+                }
+
+
+                items={
+                  business?.catalog || []
+                }
+
+
+                onBooking={
+                  onBooking
+                }
+
+              />
+
+
+            </div>
+
+          );
+
+
+        })
+      }
+
+
+
+    </div>
+
   );
 
 };
+
 
 export default BusinessDynamicSections;

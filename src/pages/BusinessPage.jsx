@@ -16,38 +16,68 @@ const BusinessPage = () => {
   const [loading, setLoading] = useState(true);
 
   // ================= FETCH BUSINESS =================
-  const fetchBusiness = async () => {
+  // ================= FETCH BUSINESS =================
+const fetchBusiness = async () => {
   try {
+
     const res = await API.get(`/businesses/${slug}`);
+
     console.log("🔥 BUSINESS API RESPONSE:", res.data);
-    const payload = res?.data?.data || {};
 
-const biz = payload.business || null;
 
-const rev =
-  payload.reviews ||
-  payload.business?.reviews ||
-  [];
+    const biz =
+      res?.data?.data?.business ||
+      res?.data?.data ||
+      null;
 
-console.log("Business:", biz);
-console.log("Reviews:", rev);
 
-setBusiness(biz);
-setReviews(Array.isArray(rev) ? rev : []);
+    console.log("FINAL BUSINESS:", biz);
+
+
+    console.log(
+      "CATEGORY DATA:",
+      biz?.categoryId
+    );
+
+
+    console.log(
+      "CATEGORY FEATURES:",
+      biz?.categoryId?.features
+    );
+
 
     setBusiness(biz);
-    setReviews(rev);
 
 
-    // ✅ CALL HERE
+    const reviewsData =
+      res?.data?.data?.reviews ||
+      biz?.reviews ||
+      [];
+
+
+    setReviews(
+      Array.isArray(reviewsData)
+        ? reviewsData
+        : []
+    );
+
+
     if (biz?._id) {
       fetchSimilar(biz._id);
     }
 
+
   } catch (err) {
-    console.error("Business error:", err);
+
+    console.error(
+      "Business error:",
+      err
+    );
+
   } finally {
+
     setLoading(false);
+
   }
 };
 

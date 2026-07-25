@@ -1,3 +1,4 @@
+//frontend/src/pages/provider/EditBusiness.jsx
 import { useEffect, useState } from "react";
 
 import {
@@ -22,6 +23,10 @@ import {
   FaSave,
   FaMapMarkerAlt,
 } from "react-icons/fa";
+
+import {
+  getProviderBusinessById
+} from "../../api/providerAPI";
 
 import BusinessMediaManager from "../../components/BusinessMediaManager";
 import BusinessHoursManager from "../../components/BusinessHoursManager";
@@ -123,7 +128,7 @@ const EditBusiness = () => {
         ] = await Promise.all([
           API.get("/categories"),
           API.get("/cities"),
-          API.get(`/business/${id}`),
+          API.get(`/provider/businesses/${id}`),
         ]);
 
         /* ================= CATEGORIES ================= */
@@ -158,7 +163,7 @@ const EditBusiness = () => {
         /* ================= BUSINESS ================= */
 
         const business =
-          bizRes?.data?.data;
+  bizRes?.data?.business;
 
         if (!business) return;
 

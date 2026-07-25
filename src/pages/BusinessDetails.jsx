@@ -29,6 +29,7 @@ import BusinessReviewsSection from "../components/business/BusinessReviewsSectio
 import BusinessSEO from "../components/business/BusinessSEO";
 import SimilarBusinessesSection from "../components/business/SimilarBusinessesSection";
 import ShareMenu from "../components/business/ShareMenu";
+import MenuItemsSection from "../components/business/MenuItemsSection";
 
 const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
@@ -240,6 +241,24 @@ const uiType =
 
   console.log("uiType =", uiType);
 console.log("category =", business?.categoryId);
+console.log(
+  "CATEGORY NAME:",
+  business?.categoryId?.name
+);
+
+console.log(
+  "CATEGORY UI TYPE:",
+  business?.categoryId?.uiType
+);
+
+console.log(
+  "CATEGORY FEATURES:",
+  business?.categoryId?.features
+);
+
+console.log("business.pricing =", business.pricing);
+console.log("business.services =", business.services);
+console.log("business.menu =", business.menu);
 
   const openPrimaryModal=(type="lead")=>{
 
@@ -375,6 +394,14 @@ setShowLeadPopup(true);
     business={business}
     onBooking={openPrimaryModal}
 />
+
+{
+  business?.categoryId?.features?.includes("food_menu") && (
+    <MenuItemsSection
+      business={business}
+    />
+  )
+}
 
 <OffersSection
   business={business}
