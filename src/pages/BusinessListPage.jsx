@@ -15,7 +15,7 @@ const BusinessListPage = () => {
 
   const fetchBusinesses = async () => {
     try {
-      const res = await API.get(`/business/search`, {
+      const res = await API.get(`/businesses/search`, {
         params: { city, category },
       });
 

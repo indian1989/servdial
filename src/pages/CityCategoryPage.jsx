@@ -28,7 +28,7 @@ const CityCategoryPage = () => {
       try {
         setLoading(true);
 
-        const { data } = await API.get("/business/search", {
+        const { data } = await API.get("/businesses/search", {
           params: {
             citySlug,
             categorySlug,

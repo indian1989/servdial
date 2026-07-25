@@ -47,7 +47,10 @@ const PublicRoutes = () => {
 <Route path="/category/:slug" element={<CategoryDetails />} />
 
   {/* SEO */}
-  <Route path="/seo/:seoSlug" element={<SEOLandingPage />} />
+  <Route
+ path="/:citySlug/:categorySlug"
+ element={<SEOLandingPage />}
+/>
 
   {/* CLAIM */}
   <Route path="/claim-business/:businessId" element={<ClaimBusiness />} />
