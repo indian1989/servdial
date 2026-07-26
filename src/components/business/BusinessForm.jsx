@@ -672,6 +672,8 @@ setHours={(value)=>
 
 />
 
+{/* Extra Admin Components */}
+{children}
         {/* SUBMIT */}
 
         <div className="sticky bottom-0 bg-white border-t p-4 rounded-t-2xl">

@@ -47,7 +47,18 @@ const ManageBusinesses = () => {
 
   const openEdit = (b) => {
   const dto = toBusinessEditDTO(b);
-  setEditBusiness(dto);
+
+  setEditBusiness({
+    ...dto,
+
+    pricing: dto.pricing || [],
+    services: dto.services || [],
+    catalog: dto.catalog || [],
+    faq: dto.faq || [],
+    offers: dto.offers || [],
+    menu: dto.menu || [],
+    businessHours: dto.businessHours || defaultHours,
+  });
 };
 
 const defaultHours = {
@@ -198,25 +209,50 @@ const handleRejectClaim = async (id) => {
 
   // ================= FULL EDIT SAVE =================
   const handleUpdateBusiness = async (formData) => {
-    try {
-      const payload = normalizeBusinessPayload(formData, "admin");
+  try {
 
-      const res = await updateBusiness(editBusiness._id, payload);
+    const payload = normalizeBusinessPayload({
+      ...formData,
 
-      const updated = res?.data?.data;
+      pricing: formData.pricing || [],
+      services: formData.services || [],
+      catalog: formData.catalog || [],
+      faq: formData.faq || [],
+      offers: formData.offers || [],
+      menu: formData.menu || [],
+      businessHours: formData.businessHours || defaultHours,
+    });
 
-      setBusinesses((prev) =>
-        prev.map((b) =>
-          b._id === updated._id ? updated : b
-        )
-      );
+    const res = await updateBusiness(
+      editBusiness._id,
+      payload
+    );
 
-      setEditBusiness(null);
-    } catch (err) {
-      console.error("Update failed:", err);
-      alert(err?.response?.data?.message || "Update failed");
-    }
-  };
+    const updated =
+      res?.data?.data ||
+      res?.data?.business;
+
+    setBusinesses((prev) =>
+      prev.map((b) =>
+        b._id === updated._id
+          ? updated
+          : b
+      )
+    );
+
+    setEditBusiness(null);
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert(
+      err?.response?.data?.message ||
+      "Update failed"
+    );
+
+  }
+};
 
   // ================= FILTER =================
   const searchTerm = search.toLowerCase();
@@ -302,10 +338,17 @@ const handleRejectClaim = async (id) => {
               Edit Business
             </h2>
 
-            <BusinessForm
+ <BusinessForm
   value={editBusiness}
-  onChange={setEditBusiness}
   mode="edit"
+
+  onChange={(data) =>
+    setEditBusiness((prev) => ({
+      ...prev,
+      ...data,
+    }))
+  }
+
   onSubmit={handleUpdateBusiness}
 >
   {/* MEDIA */}

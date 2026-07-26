@@ -1,4 +1,5 @@
-//frontend/src/pages/admin/AdminAddBusiness.jsx
+// frontend/src/pages/admin/AdminAddBusiness.jsx
+
 import { useState } from "react";
 import BusinessForm from "../../components/business/BusinessForm";
 import BusinessSubmitter from "../../components/business/BusinessSubmitter";
@@ -14,98 +15,138 @@ const AdminAddBusiness = () => {
       {(submitBusiness) => (
         <div className="flex flex-col md:flex-row gap-6">
 
-          {/* LEFT: FORM */}
-          <div className="md:w-2/3 w-full">
+          {/* ================= LEFT ================= */}
+
+          <div className="w-full md:w-2/3">
+
             <BusinessForm
               mode="admin"
-              initialData={{ isVerified: true }}
+              initialData={{
+                isVerified: true,
+              }}
               onChange={(data) =>
-              setFormData((prev) => ({
-                ...prev,
-                ...data,
-              }))
-            }
+                setFormData((prev) => ({
+                  ...prev,
+                  ...data,
+                }))
+              }
               onSubmit={(data) =>
                 submitBusiness({
-    ...data,
-
-    logo,
-    images,
-
-    pricing,
-
-    services,
-    catalog,
-    faq,
-    offers,
-
-    menu,
-
-    businessHours: hours,
-})
+                  ...data,
+                  logo,
+                  images,
+                })
               }
             >
-              <BusinessMediaManager value={images} onChange={setImages} />
+              <BusinessMediaManager
+                value={images}
+                onChange={setImages}
+              />
             </BusinessForm>
+
           </div>
 
-          {/* RIGHT: PREVIEW */}
-          <div className="md:w-1/3 w-full">
-            <div className="sticky top-6 border p-4 rounded bg-gray-50 max-h-[90vh] overflow-auto">
+          {/* ================= RIGHT ================= */}
 
-              <h3 className="font-bold mb-3 text-lg">Live Preview</h3>
+          <div className="w-full md:w-1/3">
 
-              {/* LOGO */}
+            <div className="sticky top-6 rounded-lg border bg-gray-50 p-4 max-h-[90vh] overflow-auto">
+
+              <h3 className="text-lg font-bold mb-4">
+                Live Preview
+              </h3>
+
               {logo && (
                 <img
                   src={logo}
-                  alt="logo"
-                  className="w-20 h-20 object-cover rounded mb-3"
+                  alt="Logo"
+                  className="w-20 h-20 rounded object-cover mb-4"
                 />
               )}
 
-              {/* BASIC */}
-              <p><b>Name:</b> {formData.name || "-"}</p>
-              <p><b>Category:</b> {formData.categoryName || "-"}</p>
-              <p><b>City:</b> {formData.cityName || "-"}</p>
-              <p><b>Address:</b> {formData.address || "-"}</p>
+              <div className="space-y-2">
 
-              {/* CONTACT */}
-              <div className="mt-3">
-                <p><b>Phone:</b> {formData.phone || "-"}</p>
-                <p><b>WhatsApp:</b> {formData.whatsapp || "-"}</p>
-                <p><b>Website:</b> {formData.website || "-"}</p>
+                <p>
+                  <b>Name:</b> {formData.name || "-"}
+                </p>
+
+                <p>
+                  <b>Category:</b> {formData.categoryName || "-"}
+                </p>
+
+                <p>
+                  <b>City:</b> {formData.cityName || "-"}
+                </p>
+
+                <p>
+                  <b>Address:</b> {formData.address || "-"}
+                </p>
+
               </div>
 
-              {/* DESCRIPTION */}
+              <div className="mt-5">
+
+                <h4 className="font-semibold mb-2">
+                  Contact
+                </h4>
+
+                <p>
+                  <b>Phone:</b> {formData.phone || "-"}
+                </p>
+
+                <p>
+                  <b>WhatsApp:</b> {formData.whatsapp || "-"}
+                </p>
+
+                <p>
+                  <b>Website:</b> {formData.website || "-"}
+                </p>
+
+              </div>
+
               {formData.description && (
-                <div className="mt-3">
-                  <p><b>Description:</b></p>
-                  <p className="text-sm text-gray-700">
+                <div className="mt-5">
+
+                  <h4 className="font-semibold mb-2">
+                    Description
+                  </h4>
+
+                  <p className="text-sm text-gray-700 whitespace-pre-line">
                     {formData.description}
                   </p>
+
                 </div>
               )}
 
-              {/* IMAGES */}
-              <div className="mt-3">
-                <p><b>Images:</b></p>
-                <div className="flex gap-2 flex-wrap mt-1">
-                  {images.length > 0 ? (
-                    images.map((img, i) => (
+              <div className="mt-5">
+
+                <h4 className="font-semibold mb-2">
+                  Images
+                </h4>
+
+                {images.length === 0 ? (
+                  <p className="text-sm text-gray-400">
+                    No images uploaded
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+
+                    {images.map((img, index) => (
                       <img
-                        key={i}
+                        key={index}
                         src={img}
+                        alt=""
                         className="w-16 h-16 rounded object-cover"
                       />
-                    ))
-                  ) : (
-                    <p className="text-sm text-gray-400">No images</p>
-                  )}
-                </div>
+                    ))}
+
+                  </div>
+                )}
+
               </div>
 
             </div>
+
           </div>
 
         </div>
