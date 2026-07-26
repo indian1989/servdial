@@ -4,8 +4,11 @@ import {
   Phone,
   MessageCircle,
   Navigation,
+  BadgeCheck,
+  Crown,
+  ShieldCheck,
   Share2,
-  Bookmark
+  Bookmark,
 } from "lucide-react";
 
 
@@ -83,13 +86,6 @@ font-bold
 <span>
 ({business.totalReviews || 0} Reviews)
 </span>
-
-
-
-<span>
-📍 {business.city}, {business.state}
-</span>
-
 
 
 </div>
@@ -183,41 +179,98 @@ rounded-xl
 
 </div>
 
+{/* ================= BADGES ================= */}
 
+<div className="flex gap-2 mt-3 flex-wrap">
 
-<div className="flex gap-2 mt-3">
-
-
+{/* VERIFIED BUSINESS */}
 {
-business.isVerified &&
-<span className="
+business.isVerified && (
+
+<span
+className="
 bg-green-500/90
 px-3 py-1
 rounded-full
 text-sm
-">
+font-semibold
+flex
+items-center
+gap-1
+shadow
+text-white
+"
+>
+<BadgeCheck size={15}/>
 
-✔ Verified Business
+Verified Business
 
 </span>
+
+)
+}
+
+
+{/* TRUSTED PARTNER */}
+{
+business.plan === "trusted" && (
+
+<span
+className="
+bg-purple-600/90
+px-3 py-1
+rounded-full
+text-sm
+font-semibold
+flex
+items-center
+gap-1
+shadow
+text-white
+"
+>
+
+<ShieldCheck size={15}/>
+
+Trusted Partner
+
+</span>
+
+)
 }
 
 
 
-<span className="
-bg-yellow-500/90
+{/* PREMIUM PARTNER */}
+{
+business.plan === "premium" && (
+
+<span
+className="
+bg-gradient-to-r
+from-yellow-400
+to-orange-500
 px-3 py-1
 rounded-full
 text-sm
-">
+font-semibold
+flex
+items-center
+gap-1
+shadow
+text-black
+"
+>
 
-ServDial Trusted Partner
+<Crown size={15}/>
+
+Premium Partner
 
 </span>
 
-
+)
+}
 </div>
-
 
 </div>
 

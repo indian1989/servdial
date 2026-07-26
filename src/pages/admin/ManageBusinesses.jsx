@@ -165,6 +165,26 @@ const handleRejectClaim = async (id) => {
 
 };
 
+const handlePlanChange = async(id, plan)=>{
+
+try{
+
+await API.put(`/admin/business/${id}/plan`,{
+ plan
+});
+
+
+fetchBusinesses();
+
+
+}catch(err){
+
+console.log(err);
+
+}
+
+};
+
   const handleFeature = async (id) => {
     const original = businesses.find(b => b._id === id);
 
@@ -404,6 +424,7 @@ const handleRejectClaim = async (id) => {
               <th className="p-3">Status</th>
               <th className="p-3">Featured</th>
               <th className="p-3">Verified</th>
+              <th className="p-3">Plan</th>
               <th className="p-3 text-right">Actions</th>
             </tr>
           </thead>
@@ -511,6 +532,52 @@ Approved
                     {b.isVerified ? "Verified" : "Verify"}
                   </button>
                   </td>
+
+                  {/* PLAN */}
+
+<td className="p-3">
+
+<select
+
+value={b.plan || "free"}
+
+onChange={(e)=>
+ handlePlanChange(
+  b._id,
+  e.target.value
+ )
+}
+
+className="
+border
+rounded
+px-2
+py-1
+text-sm
+"
+
+>
+
+
+<option value="free">
+Free
+</option>
+
+
+<option value="trusted">
+🛡 Trusted
+</option>
+
+
+<option value="premium">
+👑 Premium
+</option>
+
+
+</select>
+
+
+</td>
 
                   {/* ACTIONS */}
                   <td className="p-3 text-right">

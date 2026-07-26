@@ -11,7 +11,19 @@ import {
 
 const QuickInfoBar = ({ business }) => {
 
+const cityName =
+  (business?.cityName || "")
+    .toLowerCase()
+    .replace(/\b\w/g, (l) => l.toUpperCase());
 
+const district =
+  (business?.district || "")
+    .replace(/\b\w/g, (l) => l.toUpperCase());
+
+const state =
+  (business?.state || "")
+    .replace(/\b\w/g, (l) => l.toUpperCase());
+    
   // ================= HOURS =================
 
   const getTodayStatus = () => {
@@ -123,15 +135,12 @@ text-red-600
 <div>
 
 <p className="text-xs text-gray-500">
-Address
+Location
 </p>
 
 
 <p className="font-medium text-sm line-clamp-2">
-
-{business.city},
-{business.state}
-
+  {cityName}, {district}, {state}
 </p>
 
 

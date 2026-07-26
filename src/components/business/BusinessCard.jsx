@@ -26,6 +26,8 @@ const BusinessCard = ({ business }) => {
     categoryName,
     cityName,
     citySlug,
+    district,
+    state,
     categorySlug,
     rating = 0,
     reviewCount = 0,
@@ -38,6 +40,11 @@ const BusinessCard = ({ business }) => {
     phoneClicks = 0,
     whatsappClicks = 0,
   } = b;
+
+  console.log("RAW BUSINESS:", business);
+console.log("DTO:", b);
+console.log("CITY:", cityName);
+console.log("STATE:", business.state);
 
   // HARD GUARD
   if (!_id || !slug || !citySlug || !categorySlug) {
@@ -177,8 +184,8 @@ const BusinessCard = ({ business }) => {
         <div className="flex items-center text-sm text-gray-500 mt-3">
           <MapPin size={15} className="mr-1 shrink-0" />
           <span className="line-clamp-1">
-            {cityName}
-          </span>
+  {[cityName, district, state].filter(Boolean).join(", ")}
+</span>
         </div>
 
         {/* REVIEWS */}

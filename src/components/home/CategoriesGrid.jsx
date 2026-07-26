@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 // ICONS
 import home from "../../assets/icons/home.png";
 import construction from "../../assets/icons/construction.png";
+import dentist from "../../assets/icons/dentist.png";
 import health from "../../assets/icons/health.png";
 import education from "../../assets/icons/education.png";
 import restaurant from "../../assets/icons/restaurant.png";
@@ -27,6 +28,7 @@ import agriculture from "../../assets/icons/agriculture.png";
 const iconMap = {
   "home-services": home,
   "construction-contractors": construction,
+  "dentist" : dentist,
   "health-medical": health,
   "education-training": education,
   "restaurants-food": restaurant,

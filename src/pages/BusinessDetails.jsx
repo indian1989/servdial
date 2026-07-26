@@ -33,6 +33,15 @@ import MenuItemsSection from "../components/business/MenuItemsSection";
 
 const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
+console.log("DETAIL PAGE BUSINESS:", business);
+
+console.log("DETAIL LOCATION:", {
+  address: business?.address,
+  cityName: business?.cityName,
+  district: business?.district,
+  state: business?.state,
+  cityId: business?.cityId
+});
   const navigate = useNavigate();
   let user = null;
 
