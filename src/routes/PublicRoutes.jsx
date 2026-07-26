@@ -46,10 +46,10 @@ const PublicRoutes = () => {
 {/* CATEGORY DETAILS */}
 <Route path="/category/:slug" element={<CategoryDetails />} />
 
-  {/* SEO */}
-  <Route
- path="/:citySlug/:categorySlug"
- element={<SEOLandingPage />}
+  {/* SEO LANDING */}
+<Route
+  path="/seo/:citySlug/:categorySlug"
+  element={<SEOLandingPage />}
 />
 
   {/* CLAIM */}

@@ -1,5 +1,6 @@
 import {
-  useParams
+  useParams,
+  Link
 } from "react-router-dom";
 
 import {
@@ -19,11 +20,13 @@ import BusinessCard from "../../components/business/BusinessCard";
 
 const SEOLandingPage = () => {
 
+console.log("SEO PAGE LOADED");
 
-  const {
-    citySlug,
-    categorySlug
-  } = useParams();
+
+const {
+  citySlug,
+  categorySlug
+} = useParams();
 
 
 
@@ -230,9 +233,30 @@ const SEOLandingPage = () => {
       cityName || "your city"
     }. Browse verified businesses, services, contact details and reviews on ServDial.`;
 
+  const relatedServices = [
+  {
+    name: "AC Repair",
+    slug: "ac-repair-service",
+  },
+  {
+    name: "Electrician",
+    slug: "electrician",
+  },
+  {
+    name: "Plumber",
+    slug: "plumber",
+  },
+  {
+    name: "Restaurants",
+    slug: "restaurants",
+  },
+  {
+    name: "Wedding Photographer",
+    slug: "wedding-photographer",
+  },
+];
 
-
-
+console.log("RELATED SERVICES:", relatedServices);
 
   const schema = {
 
@@ -256,11 +280,6 @@ const SEOLandingPage = () => {
       window.location.href
 
   };
-
-
-
-
-
 
   return (
 
@@ -302,10 +321,6 @@ const SEOLandingPage = () => {
 
       </Helmet>
 
-
-
-
-
       <div
         className="
         max-w-7xl
@@ -314,9 +329,6 @@ const SEOLandingPage = () => {
         py-10
         "
       >
-
-
-
 
         {/* Breadcrumb */}
 
@@ -386,10 +398,6 @@ const SEOLandingPage = () => {
 
         </p>
 
-
-
-
-
         {
           loading && (
 
@@ -399,11 +407,6 @@ const SEOLandingPage = () => {
 
           )
         }
-
-
-
-
-
 
         {
           error && (
@@ -416,10 +419,6 @@ const SEOLandingPage = () => {
 
           )
         }
-
-
-
-
 
         {
           !loading &&
@@ -442,77 +441,129 @@ const SEOLandingPage = () => {
 
         }
 
+{/* ================= TOP BUSINESSES ================= */}
+
+{
+  !loading &&
+  !error &&
+  businesses.length > 0 && (
+
+    <>
+
+      <h2
+        className="
+        text-xl
+        font-semibold
+        mb-5
+        "
+      >
+        Top {categoryName} Businesses in {cityName}
+      </h2>
 
 
-
-
+      <div
+        className="
+        grid
+        md:grid-cols-3
+        gap-6
+        "
+      >
 
         {
-          businesses.length > 0 && (
+          businesses.map(
+            (biz)=>(
 
+              <BusinessCard
 
-            <>
+                key={biz._id}
 
+                business={biz}
 
-            <h2
-              className="
-              text-xl
-              font-semibold
-              mb-5
-              "
-            >
+              />
 
-              Top {categoryName} Businesses in {cityName}
-
-            </h2>
-
-
-
-
-
-            <div
-              className="
-              grid
-              md:grid-cols-3
-              gap-6
-              "
-            >
-
-
-              {
-                businesses.map(
-                  (biz)=>(
-
-
-                    <BusinessCard
-
-                      key={
-                        biz._id
-                      }
-
-                      business={
-                        biz
-                      }
-
-                    />
-
-
-                  )
-                )
-              }
-
-
-            </div>
-
-
-            </>
-
-
+            )
           )
         }
 
+      </div>
+
+{/* ================= SIMILAR CATEGORIES ================= */}
+
+<div
+  className="
+  mt-12
+  border-t
+  pt-8
+  "
+>
+
+  <h2
+    className="
+    text-2xl
+    font-bold
+    mb-6
+    "
+  >
+    Explore More Categories in {cityName}
+  </h2>
 
 
+  <div
+    className="
+    grid
+    grid-cols-2
+    sm:grid-cols-3
+    md:grid-cols-5
+    gap-4
+    "
+  >
+
+    {
+      relatedServices
+      .filter(
+        (service)=>
+          service.slug !== categorySlug
+      )
+      .map(
+        (service)=>(
+
+          <Link
+
+            key={service.slug}
+
+            to={`/${citySlug}/${service.slug}`}
+
+            className="
+            border
+            rounded-xl
+            p-4
+            text-center
+            font-medium
+            hover:bg-blue-50
+            hover:text-blue-600
+            transition
+            "
+
+          >
+
+            {service.name}
+
+          </Link>
+
+        )
+      )
+    }
+
+
+  </div>
+
+</div>
+
+
+    </>
+
+  )
+}
 
 
       </div>
