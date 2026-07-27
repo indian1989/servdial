@@ -32,7 +32,9 @@ export const toBusinessListDTO = (b = {}) => {
       b.logo ||
       "https://via.placeholder.com/400x250",
 
-
+    plan: b.plan || "free",
+isTrustedPartner: b.isTrustedPartner || false,
+isPremiumPartner: b.isPremiumPartner || false,
 
     // ================= CATEGORY =================
 

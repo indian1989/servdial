@@ -16,7 +16,16 @@ const BusinessCard = ({ business }) => {
   if (!business) return null;
 
   const location = useLocation();
+
+  console.log("BUSINESS PROP:", business);
+console.log("CURRENT URL:", location.pathname);
+
   const b = toBusinessListDTO(business) || {};
+
+    
+console.log("CARD RAW PLAN:", business.plan);
+console.log("CARD DTO PLAN:", b.plan);
+console.log("CARD NAME:", business.name);
 
   const {
     _id,
@@ -35,16 +44,23 @@ const BusinessCard = ({ business }) => {
     whatsapp,
     isFeatured,
     isVerified,
+    plan,
+    isTrustedPartner,
+    isPremiumPartner,
     distance,
     views = 0,
     phoneClicks = 0,
     whatsappClicks = 0,
   } = b;
 
-  console.log("RAW BUSINESS:", business);
+ console.log("RAW BUSINESS:", business);
+ console.log("RAW PLAN:", business.plan);
+console.log("RAW FEATURED:", business.isFeatured);
+console.log("RAW VERIFIED:", business.isVerified);
 console.log("DTO:", b);
-console.log("CITY:", cityName);
-console.log("STATE:", business.state);
+console.log("PLAN:", business.plan);
+console.log("DTO PLAN:", b.plan);
+console.log(business);
 
   // HARD GUARD
   if (!_id || !slug || !citySlug || !categorySlug) {
@@ -146,6 +162,19 @@ console.log("STATE:", business.state);
               Verified
             </span>
           )}
+
+           {plan === "trusted" && (
+    <span className="bg-purple-600 text-white text-xs font-semibold px-3 py-1 rounded-full shadow">
+      🛡 Trusted
+    </span>
+  )}
+
+  {plan === "premium" && (
+    <span className="bg-gradient-to-r from-yellow-400 to-orange-500 text-black text-xs font-semibold px-3 py-1 rounded-full shadow">
+      👑 Premium
+    </span>
+  )}
+
         </div>
 
         {/* DISTANCE */}

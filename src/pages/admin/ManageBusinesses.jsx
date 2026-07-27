@@ -1,5 +1,7 @@
 // frontend/src/pages/admin/ManageBusinesses.jsx
 import React, { useEffect, useState } from "react";
+import API from "../../api/axios";
+
 import {
   getAllBusinesses,
   approveBusiness,
@@ -9,7 +11,7 @@ import {
   toggleFeatured,
   toggleVerified,
   deleteBusiness,
-  updateBusiness
+  updateBusinessPlan,
 } from "../../api/adminAPI";
 
 import {
@@ -165,24 +167,26 @@ const handleRejectClaim = async (id) => {
 
 };
 
-const handlePlanChange = async(id, plan)=>{
+const handlePlanChange = async (id, plan) => {
+  try {
 
-try{
+    const res = await updateBusinessPlan(id, plan);
 
-await API.put(`/admin/business/${id}/plan`,{
- plan
-});
+    console.log(
+      "PLAN UPDATED:",
+      res.data
+    );
 
+    fetchBusinesses();
 
-fetchBusinesses();
+  } catch (error) {
 
+    console.error(
+      "Plan update failed:",
+      error
+    );
 
-}catch(err){
-
-console.log(err);
-
-}
-
+  }
 };
 
   const handleFeature = async (id) => {

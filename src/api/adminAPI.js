@@ -33,6 +33,11 @@ export const toggleFeatured = (id) =>
 export const toggleVerified = (id) =>
   API.put(`/admin/businesses/${id}/verify`);
 
+export const updateBusinessPlan = (id, plan) =>
+  API.put(`/admin/businesses/${id}/plan`, {
+    plan,
+  });
+
 export const deleteBusiness = (id) =>
   API.delete(`/admin/businesses/${id}`);
 
