@@ -84,6 +84,17 @@ const BusinessForm = ({
   const [cities, setCities] = useState([]);
 
   const [form, setForm] = useState(defaultBusinessForm);
+console.log(
+  "🔥 CURRENT FORM HOURS:",
+  form.businessHours
+);
+
+  const [restaurantBooking, setRestaurantBooking] = useState({
+  enabled: false,
+  totalTables: "",
+  seatingCapacity: "",
+  advanceBookingDays: "",
+});
 
   /* ================= FETCH ================= */
 
@@ -133,14 +144,56 @@ useEffect(() => {
 }, []);
 
   /* ================= INITIAL DATA ================= */
+/* ================= INITIAL DATA ================= */
 useEffect(() => {
+
   if (!value || !value._id) return;
 
-  setForm({
+  console.log(
+    "🔥 EDIT VALUE HOURS:",
+    value.businessHours
+  );
+
+  const updatedForm = {
+
     ...defaultBusinessForm,
+
     ...value,
-  });
-}, [value?._id]);
+
+    businessHours:
+      value.businessHours &&
+      Object.keys(value.businessHours).length > 0
+        ? value.businessHours
+        : defaultBusinessHours,
+
+  };
+
+  console.log(
+    "🔥 FORM SET HOURS:",
+    updatedForm.businessHours
+  );
+
+  setForm(updatedForm);
+
+  setRestaurantBooking(
+    value.restaurantBooking || {
+      enabled:false,
+      totalTables:"",
+      seatingCapacity:"",
+      advanceBookingDays:""
+    }
+  );
+
+}, [value]);
+
+useEffect(() => {
+
+  console.log(
+    "🔥 FORM STATE HOURS:",
+    form.businessHours
+  );
+
+}, [form.businessHours]);
 
   /* ================= HELPERS ================= */
 
@@ -669,6 +722,19 @@ setHours={(value)=>
    businessHours:value
  })
 }
+
+restaurantBooking={restaurantBooking}
+
+setRestaurantBooking={(value)=>{
+
+  setRestaurantBooking(value);
+
+  updateForm({
+    ...form,
+    restaurantBooking:value
+  });
+
+}}
 
 />
 

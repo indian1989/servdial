@@ -6,6 +6,7 @@ import {
   getAllBusinesses,
   approveBusiness,
   rejectBusiness,
+  updateBusiness,
   approveClaim,
   rejectClaim,
   toggleFeatured,
@@ -34,6 +35,7 @@ import BusinessHoursManager from "../../components/BusinessHoursManager";
 const PAGE_SIZE = 10;
 
 const ManageBusinesses = () => {
+  console.log("🔥 ManageBusinesses LOADED");
   // ================= STATE =================
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -48,7 +50,22 @@ const ManageBusinesses = () => {
   const [editBusiness, setEditBusiness] = useState(null);
 
   const openEdit = (b) => {
+
+  console.log("🔥 OPEN EDIT CLICKED", b);
+
+
+  console.log(
+    "🔥 EDIT OPEN RAW HOURS:",
+    b.businessHours
+  );
+
   const dto = toBusinessEditDTO(b);
+
+  console.log(
+    "🔥 EDIT DTO HOURS:",
+    dto.businessHours
+  );
+
 
   setEditBusiness({
     ...dto,
@@ -235,6 +252,12 @@ const handlePlanChange = async (id, plan) => {
   const handleUpdateBusiness = async (formData) => {
   try {
 
+    console.log(
+      "🔥 UPDATE FORM HOURS BEFORE NORMALIZE:",
+      formData.businessHours
+    );
+
+
     const payload = normalizeBusinessPayload({
       ...formData,
 
@@ -244,8 +267,18 @@ const handlePlanChange = async (id, plan) => {
       faq: formData.faq || [],
       offers: formData.offers || [],
       menu: formData.menu || [],
-      businessHours: formData.businessHours || defaultHours,
+
+      businessHours:
+        formData.businessHours || defaultHours,
     });
+
+
+    console.log(
+      "🔥 FINAL PAYLOAD HOURS:",
+      payload.businessHours
+    );
+
+
 
     const res = await updateBusiness(
       editBusiness._id,

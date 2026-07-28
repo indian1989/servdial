@@ -313,6 +313,10 @@ setShowLeadPopup(true);
   return <div className="p-6 text-center">Loading...</div>;
 }
 
+console.log(
+ "DETAIL HOURS:",
+ business.businessHours
+);
   return (
   <>
     <BusinessSEO

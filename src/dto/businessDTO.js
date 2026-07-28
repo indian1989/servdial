@@ -1,14 +1,9 @@
 // src/dto/businessDTO.js
+import { normalizeBusinessHours } from "../utils/normalizeBusinessHours";
+
 /* ================= LIST DTO (FOR TABLES / CARDS) ================= */
 
 export const toBusinessListDTO = (b = {}) => {
-
-  console.log("RAW LOCATION:", {
-    cityId: b.cityId,
-    cityName: b.cityName,
-    district: b.district,
-    state: b.state,
-  });
 
 
   return {
@@ -23,6 +18,9 @@ export const toBusinessListDTO = (b = {}) => {
     name:
       b.name ||
       "Unnamed",
+
+      businessHours:
+  b.businessHours || null,
 
 
     image:
@@ -303,112 +301,142 @@ export const toBusinessEditDTO = (b = {}) => {
 
 
 
-/* ================= SAFE NORMALIZER FOR SAVE ================= */
+/* ================= SAFE NORMALIZER ================= */
 
 export const normalizeBusinessPayload = (
   data = {},
   mode = "admin"
 ) => {
 
-
   return {
 
+    // ================= BASIC =================
 
-    name:
-      data.name,
+    name: data.name || "",
 
-
-    description:
-      data.description,
-
-
+    description: data.description || "",
 
     categoryId:
       data.categoryId?.value ||
-      data.categoryId,
-
-
+      data.categoryId ||
+      "",
 
     cityId:
       data.cityId?.value ||
-      data.cityId,
+      data.cityId ||
+      "",
 
+    address: data.address || "",
 
+    pincode: data.pincode || "",
 
-    address:
-      data.address,
+    district: data.district || "",
 
+    state: data.state || "",
 
-    pincode:
-      data.pincode,
+    country: data.country || "India",
 
-
-
-    district:
-      data.district || "",
-
-
-    state:
-      data.state || "",
-
-
-
-    phone:
-      data.phone,
-
+    phone: data.phone || "",
 
     whatsapp:
-      data.whatsapp,
+      data.whatsapp ||
+      data.phone ||
+      "",
 
+    website: data.website || "",
 
+    logo: data.logo || "",
 
-    website:
-      data.website || "",
+    images: Array.isArray(data.images)
+      ? data.images
+      : [],
 
-
-
-    images:
-      data.images || [],
-
-
-    logo:
-      data.logo || "",
-
-
+    // ================= LOCATION =================
 
     location:
       data.location?.coordinates?.length === 2
         ? data.location
         : undefined,
 
+    // ================= HOURS =================
 
+    businessHours: normalizeBusinessHours(
+      data.businessHours || {}
+    ),
 
-    ...(mode === "provider" && {
+    // ================= RESTAURANT =================
 
-      businessHours:
-        data.businessHours || {},
+    restaurantBooking:
+      data.restaurantBooking || {
+        enabled: false,
+        totalTables: "",
+        seatingCapacity: "",
+        advanceBookingDays: "",
+      },
 
+    // ================= PARTY =================
 
-      tags:
-        Array.isArray(data.tags)
-          ? data.tags
-          : [],
+    partyBooking:
+      data.partyBooking || {
+        enabled: false,
+        bookingTypes: [],
+        minimumGuests: "",
+        maximumGuests: "",
+        advanceAmount: "",
+        bookingNotice: "24h",
+        availableTimeSlots: [],
+        contactNumber: "",
+        whatsappBooking: false,
+        notes: "",
+      },
 
+    // ================= EXTRA =================
 
-      boost:
-        data.boost || false,
+    pricing: Array.isArray(data.pricing)
+      ? data.pricing
+      : [],
 
-    }),
+    services: Array.isArray(data.services)
+      ? data.services
+      : [],
 
+    catalog: Array.isArray(data.catalog)
+      ? data.catalog
+      : [],
 
+    menu: Array.isArray(data.menu)
+      ? data.menu
+      : [],
+
+    faq: Array.isArray(data.faq)
+      ? data.faq
+      : [],
+
+    offers: Array.isArray(data.offers)
+      ? data.offers
+      : [],
+
+    tags: Array.isArray(data.tags)
+      ? data.tags
+      : [],
+
+    keywords: Array.isArray(data.keywords)
+      ? data.keywords
+      : [],
+
+    boost: Boolean(data.boost),
+
+    // ================= ADMIN =================
 
     ...(mode === "admin" && {
 
       isVerified:
-        true,
+        data.isVerified ?? true,
+
+      status:
+        data.status || "approved",
 
     }),
-
 
   };
 

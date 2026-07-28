@@ -1,36 +1,87 @@
-import API from "../../api/axios";
+// src/components/business/BusinessSubmitter.jsx
+
 import { useNavigate } from "react-router-dom";
+import API from "../../api/axios";
+
 import { normalizeBusinessPayload } from "./BusinessMapper";
 
 /**
- * SINGLE SOURCE OF SUBMISSION LOGIC
- * Used by BOTH Admin and Provider
+ * ======================================================
+ * BUSINESS SUBMITTER
+ * Shared by Admin & Provider
+ * ======================================================
  */
 
 const BusinessSubmitter = ({
-  mode = "admin", // "admin" | "provider"
+  mode = "admin",
   children,
 }) => {
   const navigate = useNavigate();
 
   const submitBusiness = async (formData) => {
     try {
-      const payload = normalizeBusinessPayload(formData, mode);
 
-      console.log("🚀 FINAL PAYLOAD SENT TO BACKEND:", payload);
-      
-      // 🔥 ROLE-BASED ROUTING ONLY (NOT LOGIC)
+      /* ===========================================
+         BUILD FINAL PAYLOAD
+      =========================================== */
+
+      const payload = normalizeBusinessPayload(
+        formData,
+        mode
+      );
+
+      console.log(
+        "🚀 FINAL BUSINESS PAYLOAD",
+        payload
+      );
+
+      console.log(
+        "🕒 BUSINESS HOURS",
+        payload.businessHours
+      );
+
+      console.log(
+        "🍽 RESTAURANT BOOKING",
+        payload.restaurantBooking
+      );
+
+      console.log(
+        "🎉 PARTY BOOKING",
+        payload.partyBooking
+      );
+
+      /* ===========================================
+         ENDPOINT
+      =========================================== */
+
       const endpoint =
         mode === "admin"
           ? "/admin/businesses"
           : "/provider/businesses";
 
-      const res = await API.post(endpoint, payload);
+      /* ===========================================
+         SAVE
+      =========================================== */
 
-      const created = res?.data?.data;
+      const res = await API.post(
+        endpoint,
+        payload
+      );
 
-      // ✅ SAFE REDIRECT (NO LOGIC HERE)
-      if (created?.slug && created?.citySlug && created?.categorySlug) {
+      const created =
+        res?.data?.data ||
+        res?.data?.business ||
+        null;
+
+      /* ===========================================
+         REDIRECT
+      =========================================== */
+
+      if (
+        created?.slug &&
+        created?.citySlug &&
+        created?.categorySlug
+      ) {
         navigate(
           `/${created.citySlug}/${created.categorySlug}/${created.slug}`
         );
@@ -43,9 +94,20 @@ const BusinessSubmitter = ({
       }
 
       return res.data;
+
     } catch (err) {
-      console.error("Business submission failed:", err);
-      throw err?.response?.data?.message || "Submission failed";
+
+      console.error(
+        "❌ Business submission failed",
+        err
+      );
+
+      const message =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Business submission failed";
+
+      throw new Error(message);
     }
   };
 

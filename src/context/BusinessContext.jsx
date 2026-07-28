@@ -10,25 +10,62 @@ export const BusinessProvider = ({ children }) => {
 
   // ================= FETCH BUSINESSES =================
   useEffect(() => {
-  const fetchBusinesses = async () => {
-    setLoading(true);
-    try {
-      const { data } = await API.get("/businesses");
 
-      if (Array.isArray(data)) {
-        setBusinesses(data);
-      } else {
-        setBusinesses(data.businesses || []);
-      }
+const fetchBusinesses = async () => {
 
-    } catch (error) {
-      console.error("Failed to fetch businesses:", error);
-    } finally {
-      setLoading(false);
+  setLoading(true);
+
+  try {
+
+    const { data } = await API.get("/businesses");
+
+
+    console.log(
+      "🔥 BUSINESS LIST API RAW:",
+      data
+    );
+
+    console.log(
+  "🔥 BUSINESSES WITH HOURS:",
+  data?.data
+    ?.filter(b =>
+      b.businessHours?.monday?.open
+    )
+    .map(b => ({
+      name: b.name,
+      hours: b.businessHours
+    }))
+);
+
+    if(Array.isArray(data?.data)){
+
+      setBusinesses(data.data);
+
+    }else{
+
+      setBusinesses([]);
+
     }
-  };
 
-  fetchBusinesses();
+
+  } catch(error){
+
+    console.error(
+      "Failed to fetch businesses:",
+      error
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
+
+};
+
+
+fetchBusinesses();
+
 }, []);
 
   // ================= ADD BUSINESS =================

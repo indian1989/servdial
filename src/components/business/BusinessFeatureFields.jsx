@@ -11,7 +11,7 @@ import OffersManager from "./OffersManager";
 import BusinessHoursManager from "../BusinessHoursManager";
 import RestaurantBookingManager from "./RestaurantBookingManager";
 import RoomBookingManager from "./RoomBookingManager";
-
+import PartyBookingManager from "./PartyBookingManager";
 
 /*
 |--------------------------------------------------------------------------
@@ -63,6 +63,7 @@ const featureRegistry = {
   room_booking:
     RoomBookingManager,
 
+    party_booking: PartyBookingManager,
 };
 
 
@@ -98,6 +99,12 @@ const BusinessFeatureFields = ({
 
   hours,
   setHours,
+
+   restaurantBooking,
+  setRestaurantBooking,
+
+    partyBooking,
+  setPartyBooking,
 
 }) => {
 
@@ -241,6 +248,14 @@ if (!Component) return null;
 
               );
 
+    case "party_booking":
+  return (
+    <Component
+      {...commonProps}
+      value={partyBooking}
+      onChange={setPartyBooking}
+    />
+  );
 
 
             case "faq":
@@ -290,9 +305,9 @@ if (!Component) return null;
     <Component
       {...commonProps}
 
-      value={null}
+      value={restaurantBooking}
 
-      onChange={() => {}}
+      onChange={setRestaurantBooking}
 
     />
 

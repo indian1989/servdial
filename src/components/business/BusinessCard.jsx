@@ -11,21 +11,28 @@ import {
 import { memo } from "react";
 import API from "../../api/axios";
 import { toBusinessListDTO } from "../../dto/businessDTO";
+import { getBusinessStatus } from "../../utils/getBusinessStatus";
 
 const BusinessCard = ({ business }) => {
   if (!business) return null;
 
+  console.log(
+  "🔥 CARD RECEIVED:",
+  business.name,
+  business.businessHours
+);
+
   const location = useLocation();
 
-  console.log("BUSINESS PROP:", business);
-console.log("CURRENT URL:", location.pathname);
 
-  const b = toBusinessListDTO(business) || {};
+const b = toBusinessListDTO(business) || {};
 
-    
-console.log("CARD RAW PLAN:", business.plan);
-console.log("CARD DTO PLAN:", b.plan);
-console.log("CARD NAME:", business.name);
+const businessStatus = getBusinessStatus(b);
+
+console.log(
+  "🔥 BUSINESS STATUS VARIABLE:",
+  businessStatus
+);
 
   const {
     _id,
@@ -52,15 +59,6 @@ console.log("CARD NAME:", business.name);
     phoneClicks = 0,
     whatsappClicks = 0,
   } = b;
-
- console.log("RAW BUSINESS:", business);
- console.log("RAW PLAN:", business.plan);
-console.log("RAW FEATURED:", business.isFeatured);
-console.log("RAW VERIFIED:", business.isVerified);
-console.log("DTO:", b);
-console.log("PLAN:", business.plan);
-console.log("DTO PLAN:", b.plan);
-console.log(business);
 
   // HARD GUARD
   if (!_id || !slug || !citySlug || !categorySlug) {
@@ -177,15 +175,35 @@ console.log(business);
 
         </div>
 
-        {/* DISTANCE */}
-        {distance != null && (
-          <div className="absolute bottom-3 right-3">
-            <span className="bg-black/70 backdrop-blur text-white text-xs px-3 py-1 rounded-full">
-              {distance} km away
-            </span>
-          </div>
-        )}
-      </div>
+{/* OPEN STATUS BADGE */}
+
+{businessStatus && (
+  <div
+    className={`
+      absolute
+      top-3
+      right-3
+      z-20
+      px-3
+      py-1
+      rounded-full
+      text-xs
+      font-bold
+      shadow-lg
+      ${
+        businessStatus.status === "open"
+          ? "bg-green-500 text-white"
+          : "bg-red-500 text-white"
+      }
+    `}
+  >
+    {businessStatus.status === "open"
+      ? "🟢 Open Now"
+      : "🔴 Closed Now"}
+  </div>
+)}
+
+</div>
 
       {/* CONTENT */}
       <div className="p-5 flex flex-col flex-1">

@@ -28,6 +28,13 @@ export const defaultBusinessForm = {
 
   website: "",
 
+  restaurantBooking:{
+  enabled:false,
+  totalTables:"",
+  seatingCapacity:"",
+  advanceBookingDays:""
+},
+
   description: "",
 
   location: null,

@@ -121,8 +121,6 @@ useEffect(() => {
 
 const cityName = city?.name || "your area";
 
-console.log("🔥 HOMEPAGE DATA STATE:", data);
-
   return (
 
     <>

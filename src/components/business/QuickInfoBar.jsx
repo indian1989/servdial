@@ -23,38 +23,54 @@ const district =
 const state =
   (business?.state || "")
     .replace(/\b\w/g, (l) => l.toUpperCase());
-    
+
   // ================= HOURS =================
 
   const getTodayStatus = () => {
 
-    if (!business?.openingHours) {
-      return "Hours not available";
-    }
+  const hours = business?.businessHours;
 
 
-    const today = new Date()
+  if (!hours) {
+    return "Hours not available";
+  }
+
+
+  const today =
+    new Date()
       .toLocaleDateString(
         "en-US",
         {
           weekday: "long"
         }
-      );
+      )
+      .toLowerCase();
 
 
-    const todayHours =
-      business.openingHours[today];
+  const todayHours = hours[today];
 
 
-    if (!todayHours) {
-      return "Closed today";
-    }
+  if (!todayHours) {
+    return "Closed today";
+  }
 
 
-    return todayHours;
+  if (todayHours.closed) {
+    return "Closed today";
+  }
 
-  };
 
+  if (
+    todayHours.open &&
+    todayHours.close
+  ) {
+    return `${todayHours.open} - ${todayHours.close}`;
+  }
+
+
+  return "Hours not available";
+
+};
 
 
 return (
