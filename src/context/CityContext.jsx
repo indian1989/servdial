@@ -1,3 +1,4 @@
+// src/context/CityContext.jsx
 import { createContext, useContext, useState, useEffect, useRef } from "react";
 import API from "../api/axios";
 
@@ -67,7 +68,9 @@ export const CityProvider = ({ children }) => {
 
   // ================= DETECT LOCATION =================
   const detectLocation = () => {
-  console.log("🚀 detectLocation triggered");
+  console.log(
+  "🚀 detectLocation STARTED"
+);
 
   setLoadingCity(true);
 
@@ -79,7 +82,13 @@ export const CityProvider = ({ children }) => {
 
   navigator.geolocation.getCurrentPosition(
     async (pos) => {
-      console.log("✅ GEO SUCCESS:", pos);
+      console.log(
+  "✅ GEO SUCCESS COORDS:",
+  {
+    latitude: pos.coords.latitude,
+    longitude: pos.coords.longitude,
+  }
+);
 
       if (geoTimeoutRef.current) {
         clearTimeout(geoTimeoutRef.current);
@@ -87,11 +96,29 @@ export const CityProvider = ({ children }) => {
       }
 
       try {
-        const { latitude, longitude } = pos.coords;
+       const { latitude, longitude } = pos.coords;
 
-        const res = await API.get(
-          `/location/reverse?lat=${latitude}&lng=${longitude}`
-        );
+localStorage.setItem(
+  "user_lat",
+  latitude
+);
+
+localStorage.setItem(
+  "user_lng",
+  longitude
+);
+
+console.log(
+  "💾 GPS SAVED:",
+  {
+    lat: localStorage.getItem("user_lat"),
+    lng: localStorage.getItem("user_lng")
+  }
+);
+
+const res = await API.get(
+  `/location/reverse?lat=${latitude}&lng=${longitude}`
+);
 
         const detectedName =
           res?.data?.city ||

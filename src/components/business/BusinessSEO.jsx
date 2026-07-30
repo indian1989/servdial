@@ -1,15 +1,22 @@
 // src/components/business/BusinessSEO.jsx
 
 import { Helmet } from "react-helmet-async";
+import {
+  generateLocalBusinessSchema,
+  generateBreadcrumbSchema,
+} from "../../utils/schemaBuilder";
 
+const FRONTEND_URL =
+  import.meta.env.VITE_FRONTEND_URL ||
+  "https://servdial.com";
 
-const BusinessSEO = ({
-  business,
-  currentUrl,
-}) => {
+const absoluteUrl = (url) => {
+  if (!url) return `${FRONTEND_URL}/logo.png`;
+  return url.startsWith("http") ? url : `${FRONTEND_URL}${url}`;
+};
 
+const BusinessSEO = ({ business, currentUrl }) => {
   if (!business) return null;
-
 
   /* ================= LOCATION ================= */
 
@@ -18,333 +25,158 @@ const BusinessSEO = ({
     business?.cityName ||
     "";
 
-
   const stateName =
     business?.state ||
     "";
 
-
   const countryName =
     business?.country ||
-    "";
+    "India";
 
-
-  const locationText =
-    [
-      cityName,
-      stateName,
-      countryName,
-    ]
+  const locationText = [cityName, stateName, countryName]
     .filter(Boolean)
     .join(", ");
-
-
 
   /* ================= CATEGORY ================= */
 
   const categoryName =
     business?.categoryId?.name ||
+    business?.categoryName ||
     "Business";
 
+  /* ================= TITLE ================= */
 
-
-  /* ================= GEO ================= */
-
-  const lat =
-    business?.location?.coordinates?.[1];
-
-
-  const lng =
-    business?.location?.coordinates?.[0];
-
-
-
-  /* ================= SEO TITLE ================= */
-
-
-  const title =
-    `${business.name} - ${categoryName}${
-      cityName
-        ? ` in ${cityName}`
-        : ""
-    } | ServDial`;
-
-
+  const title = `${business.name} - ${categoryName}${
+    cityName ? ` in ${cityName}` : ""
+  } | ServDial`;
 
   /* ================= DESCRIPTION ================= */
-
 
   const description =
     business.description ||
     `${business.name} is a trusted ${categoryName}${
-      locationText
-        ? ` in ${locationText}`
-        : ""
+      locationText ? ` in ${locationText}` : ""
     }. Find contact details, address, reviews, photos, services and business information on ServDial.`;
-
-
 
   /* ================= IMAGE ================= */
 
-
-  const image =
+  const image = absoluteUrl(
     business?.images?.[0] ||
-    business?.logo ||
-    "/logo.png";
-
-
-
-  /* ================= SCHEMA ================= */
-
-
-  const schema = {
-
-    "@context": "https://schema.org",
-
-    "@type": "LocalBusiness",
-
-
-    "@id": currentUrl,
-
-
-    name:
-      business.name,
-
-
-    url:
-      currentUrl,
-
-
-    image,
-
-
-    description,
-
-
-
-    telephone:
-      business.phone || "",
-
-
-
-    address: {
-
-      "@type":
-        "PostalAddress",
-
-
-      streetAddress:
-        business.address || "",
-
-
-      addressLocality:
-        cityName,
-
-
-      addressRegion:
-        stateName,
-
-
-      postalCode:
-        business.pincode || "",
-
-
-      addressCountry:
-        countryName,
-
-    },
-
-    "@type": [
-  "LocalBusiness",
-  "Service"
-],
-
-areaServed: {
-  "@type": "City",
-  name: cityName
-},
-
-hasOfferCatalog: {
- "@type":"OfferCatalog",
- "name": categoryName
-},
-
-
-    ...(lat && lng
-      ? {
-
-        geo: {
-
-          "@type":
-            "GeoCoordinates",
-
-          latitude:
-            lat,
-
-          longitude:
-            lng,
-
-        }
-
-      }
-
-      : {}
-    ),
-
-
-
-
-    ...(business.averageRating > 0
-      ? {
-
-        aggregateRating: {
-
-          "@type":
-            "AggregateRating",
-
-
-          ratingValue:
-            business.averageRating,
-
-
-          reviewCount:
-            business.totalReviews || 0,
-
-        }
-
-      }
-
-      : {}
-    ),
-
-
-
-
-    ...(business.website
-      ? {
-
-        sameAs:[
-          business.website
-        ]
-
-      }
-
-      : {}
-    ),
-
-
-  };
-
-
+      business?.logo
+  );
+
+  /* ================= URL ================= */
+
+  const url =
+    currentUrl ||
+    `${FRONTEND_URL}/${business.citySlug}/${business.categorySlug}/${business.slug}`;
+
+  /* ================= KEYWORDS ================= */
+
+  const keywords = [
+    business.name,
+    categoryName,
+    cityName,
+    `${categoryName} in ${cityName}`,
+    `Best ${categoryName} in ${cityName}`,
+    `Verified ${categoryName} in ${cityName}`,
+    `${business.name} phone number`,
+    `${business.name} address`,
+    "ServDial",
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  /* ================= SCHEMAS ================= */
+
+  const localBusinessSchema =
+    generateLocalBusinessSchema({
+      ...business,
+      categoryName,
+      cityName,
+      state: stateName,
+    });
+
+  const breadcrumbSchema =
+    generateBreadcrumbSchema({
+      city: cityName,
+      category: categoryName,
+      businessName: business.name,
+      citySlug: business.citySlug,
+      categorySlug: business.categorySlug,
+      businessSlug: business.slug,
+    });
 
   return (
-
     <Helmet>
 
+      {/* ================= BASIC ================= */}
 
-      {/* TITLE */}
-
-      <title>
-        {title}
-      </title>
-
-
-
-      {/* DESCRIPTION */}
+      <title>{title}</title>
 
       <meta
         name="description"
         content={description}
       />
 
+      <meta
+        name="keywords"
+        content={keywords}
+      />
 
-
-      {/* CANONICAL */}
+      <meta
+        name="robots"
+        content="index, follow, max-image-preview:large"
+      />
 
       <link
         rel="canonical"
-        href={currentUrl}
+        href={url}
       />
 
+      {/* ================= OPEN GRAPH ================= */}
 
+      <meta property="og:type" content="website" />
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:image" content={image} />
+      <meta property="og:url" content={url} />
+      <meta property="og:site_name" content="ServDial" />
 
-      {/* OPEN GRAPH */}
-
-
-      <meta
-        property="og:title"
-        content={title}
-      />
-
-
-      <meta
-        property="og:description"
-        content={description}
-      />
-
-
-      <meta
-        property="og:image"
-        content={image}
-      />
-
-
-      <meta
-        property="og:url"
-        content={currentUrl}
-      />
-
-
-      <meta
-        property="og:type"
-        content="business.business"
-      />
-
-
-
-      {/* TWITTER */}
-
+      {/* ================= TWITTER ================= */}
 
       <meta
         name="twitter:card"
         content="summary_large_image"
       />
 
-
       <meta
         name="twitter:title"
         content={title}
       />
-
 
       <meta
         name="twitter:description"
         content={description}
       />
 
-
       <meta
         name="twitter:image"
         content={image}
       />
 
-
-
-      {/* GOOGLE STRUCTURED DATA */}
-
+      {/* ================= STRUCTURED DATA ================= */}
 
       <script type="application/ld+json">
-
-        {JSON.stringify(schema)}
-
+        {JSON.stringify(localBusinessSchema)}
       </script>
 
+      <script type="application/ld+json">
+        {JSON.stringify(breadcrumbSchema)}
+      </script>
 
     </Helmet>
-
   );
-
 };
-
 
 export default BusinessSEO;

@@ -33,7 +33,17 @@ const formatTime = (time) => {
 };
 
 const BusinessHours = ({ hours }) => {
-  if (!hours) return null;
+  const hasHours = days.some((day) => {
+  const item = hours?.[day];
+
+  return (
+    item?.closed ||
+    item?.is24h ||
+    (item?.open && item?.close)
+  );
+});
+
+if (!hasHours) return null;
 
   const now = new Date();
 

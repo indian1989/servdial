@@ -22,29 +22,11 @@ const fetchBusiness = async () => {
 
     const res = await API.get(`/businesses/${slug}`);
 
-    console.log("🔥 BUSINESS API RESPONSE:", res.data);
-
 
     const biz =
       res?.data?.data?.business ||
       res?.data?.data ||
       null;
-
-
-    console.log("FINAL BUSINESS:", biz);
-
-
-    console.log(
-      "CATEGORY DATA:",
-      biz?.categoryId
-    );
-
-
-    console.log(
-      "CATEGORY FEATURES:",
-      biz?.categoryId?.features
-    );
-
 
     setBusiness(biz);
 

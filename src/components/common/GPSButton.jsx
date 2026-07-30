@@ -4,18 +4,58 @@ import { useCity } from "../../context/CityContext";
 const GPSButton = () => {
   const [loading, setLoading] = useState(false);
   const { detectLocation } = useCity();
+ const { latitude, longitude } = pos.coords;
+
+ localStorage.setItem(
+  "user_lat",
+  latitude
+);
+
+localStorage.setItem(
+  "user_lng",
+  longitude
+);
+
+
+const res = await API.get(
+  `/location/reverse?lat=${latitude}&lng=${longitude}`
+);
 
   const handleDetect = async () => {
-    try {
-      setLoading(true);
-      await detectLocation();
-    } catch (e) {
-      alert("Failed to detect location");
-      console.error("GPS detect failed:", e);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+  console.log("🔥 GPS BUTTON CLICKED");
+
+  try {
+
+    setLoading(true);
+
+    console.log(
+      "🔥 CALLING detectLocation:",
+      detectLocation
+    );
+
+    const result = await detectLocation();
+
+    console.log(
+      "🔥 detectLocation RESULT:",
+      result
+    );
+
+
+  } catch (e) {
+
+    console.error(
+      "❌ GPS detect failed:",
+      e
+    );
+
+  } finally {
+
+    setLoading(false);
+
+  }
+
+};
 
   return (
     <button

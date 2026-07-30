@@ -12,15 +12,10 @@ import { memo } from "react";
 import API from "../../api/axios";
 import { toBusinessListDTO } from "../../dto/businessDTO";
 import { getBusinessStatus } from "../../utils/getBusinessStatus";
+import { getDistance } from "../../utils/getDistance";
 
 const BusinessCard = ({ business }) => {
   if (!business) return null;
-
-  console.log(
-  "🔥 CARD RECEIVED:",
-  business.name,
-  business.businessHours
-);
 
   const location = useLocation();
 
@@ -29,10 +24,19 @@ const b = toBusinessListDTO(business) || {};
 
 const businessStatus = getBusinessStatus(b);
 
-console.log(
-  "🔥 BUSINESS STATUS VARIABLE:",
-  businessStatus
-);
+// User GPS coordinates
+const userLat = Number(localStorage.getItem("user_lat"));
+const userLng = Number(localStorage.getItem("user_lng"));
+
+// Business coordinates
+const businessLng = b.location?.coordinates?.[0];
+const businessLat = b.location?.coordinates?.[1];
+
+// Real distance
+const realDistance =
+  userLat && userLng && businessLat && businessLng
+    ? getDistance(userLat, userLng, businessLat, businessLng)
+    : null;
 
   const {
     _id,
@@ -177,32 +181,54 @@ console.log(
 
 {/* OPEN STATUS BADGE */}
 
-{businessStatus && (
-  <div
-    className={`
-      absolute
-      top-3
-      right-3
-      z-20
-      px-3
-      py-1
-      rounded-full
-      text-xs
-      font-bold
-      shadow-lg
-      ${
-        businessStatus.status === "open"
-          ? "bg-green-500 text-white"
-          : "bg-red-500 text-white"
-      }
-    `}
-  >
-    {businessStatus.status === "open"
-      ? "🟢 Open Now"
-      : "🔴 Closed Now"}
-  </div>
+{businessStatus && ( <div className=
+{` absolute bottom-3 left-3
+z-20 inline-flex items-center gap-1
+px-3 py-1 rounded-full text-xs
+font-semibold shadow-lg backdrop-blur-sm ${
+  businessStatus.status === "open" ?
+"bg-green-500/90 text-white" :
+   "bg-red-500/90 text-white" } `} >
+<span>
+  {businessStatus.status === "open" ? "🟢" : "🔴"}
+
+</span>
+{businessStatus.text}
+</div>
 )}
 
+
+     {/* DISTANCE BADGE */}
+
+{realDistance != null && (
+  <div className="absolute bottom-3 right-3 z-20">
+    <span
+      className={`
+        backdrop-blur
+        text-xs
+        px-3
+        py-1
+        rounded-full
+        shadow-lg
+        font-semibold
+        flex
+        items-center
+        gap-1
+        whitespace-nowrap
+        ${
+          realDistance < 0.1
+            ? "bg-green-500/90 text-white"
+            : "bg-black/70 text-white"
+        }
+      `}
+    >
+      📍{" "}
+      {realDistance < 0.1
+        ? "Nearby"
+        : `${realDistance.toFixed(1)} km away`}
+    </span>
+  </div>
+)}
 </div>
 
       {/* CONTENT */}

@@ -97,19 +97,9 @@ const BusinessDynamicSections = ({
     ? category.features
     : [];
 
-console.log(
-  "🔥 CATEGORY FEATURES:",
-  category.name,
-  features
-);
-
-
-
   if(features.length === 0){
     return null;
   }
-
-
 
   return (
 

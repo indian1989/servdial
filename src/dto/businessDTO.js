@@ -19,6 +19,18 @@ export const toBusinessListDTO = (b = {}) => {
       b.name ||
       "Unnamed",
 
+      location:
+      b.location?.coordinates?.length === 2
+      ? {
+        type: "Point",
+        coordinates: [
+        Number(b.location.coordinates[0]),
+        Number(b.location.coordinates[1]),
+      ],
+
+      }
+      : null,
+
       businessHours:
   b.businessHours || null,
 

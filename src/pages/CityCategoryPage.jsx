@@ -13,7 +13,8 @@ const CityCategoryPage = () => {
 
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+  const [subCategories, setSubCategories] = useState([]);
+const [categoryInfo, setCategoryInfo] = useState(null);
 
   // ================= FETCH BUSINESSES =================
   useEffect(() => {
@@ -25,30 +26,52 @@ const CityCategoryPage = () => {
     }
 
     const fetchBusinesses = async () => {
-      try {
-        setLoading(true);
+  try {
+    setLoading(true);
 
-        const { data } = await API.get("/businesses/search", {
-          params: {
-            citySlug,
-            categorySlug,
-          },
-        });
+    const { data } = await API.get(
+      `/seo/${citySlug}/${categorySlug}`
+    );
 
-        const list =
-          data?.data ||
-          data?.businesses ||
-          [];
 
-        setBusinesses(list);
+    // ================= BUSINESSES =================
 
-      } catch (error) {
-        console.error("Search Error:", error);
-        setBusinesses([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+    setBusinesses(
+      data?.data || []
+    );
+
+
+    // ================= SUB CATEGORIES =================
+
+    setSubCategories(
+      data?.subCategories || []
+    );
+
+
+    // ================= CATEGORY INFO =================
+
+    setCategoryInfo(
+      data?.category || null
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "SEO PAGE ERROR:",
+      error
+    );
+
+    setBusinesses([]);
+
+    setSubCategories([]);
+
+  } finally {
+
+    setLoading(false);
+
+  }
+};
 
     fetchBusinesses();
 
@@ -226,6 +249,8 @@ const CityCategoryPage = () => {
 
             </div>
 
+         
+
             {/* HEADING */}
             <h1 className="text-3xl md:text-5xl font-bold capitalize leading-tight">
               {formattedCategory} in {formattedCity}
@@ -268,7 +293,64 @@ const CityCategoryPage = () => {
 
         {/* ================= CONTENT ================= */}
         <div className="max-w-7xl mx-auto px-4 py-10">
+   {
+subCategories.length > 0 && (
 
+<div className="max-w-7xl mx-auto px-4 py-8">
+
+
+<h2 className="text-2xl font-bold mb-5">
+Explore Home Services
+</h2>
+
+
+<div className="
+grid
+grid-cols-2
+md:grid-cols-4
+gap-4
+">
+
+
+{
+subCategories.map((sub)=>(
+
+<Link
+key={sub._id}
+to={`/${citySlug}/${sub.slug}`}
+className="
+bg-white
+border
+rounded-xl
+p-4
+hover:shadow-lg
+transition
+"
+>
+
+<h3 className="font-semibold capitalize">
+{sub.name}
+</h3>
+
+
+<p className="text-sm text-gray-500 mt-1">
+View Services
+</p>
+
+
+</Link>
+
+))
+}
+
+
+</div>
+
+
+</div>
+
+)
+}
           {/* RESULTS TOPBAR */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
 
@@ -292,12 +374,13 @@ const CityCategoryPage = () => {
 
           </div>
 
-          {/* ================= BUSINESS GRID ================= */}
+          {/* ================= BUSINESS CARD ================= */}
           {businesses.length > 0 ? (
 
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
 
               {businesses.map((biz) => (
+                
                 <BusinessCard
                   key={biz._id}
                   business={biz}

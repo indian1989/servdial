@@ -86,22 +86,35 @@ setData({
   };
 
   /* ================= GET LOCATION ================= */
-  useEffect(() => {
-    if (!navigator.geolocation) return;
+useEffect(() => {
 
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
+  const lat = localStorage.getItem("user_lat");
+  const lng = localStorage.getItem("user_lng");
 
-        setUserLocation({ lat, lng });
-      },
-      () => {
-        console.log("Location denied");
-      },
-      { enableHighAccuracy: true, timeout: 8000 }
-    );
-  }, []);
+
+  if (lat && lng) {
+
+    console.log("🔥 USING SAVED GPS:", {
+      lat,
+      lng
+    });
+
+
+    setUserLocation({
+      lat: Number(lat),
+      lng: Number(lng),
+    });
+
+    return;
+  }
+
+
+  console.log(
+    "⚠️ GPS NOT FOUND - WAITING FOR CityContext"
+  );
+
+
+}, []);
 
   // 🔥 ONLY showing changed parts
 

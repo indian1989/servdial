@@ -30,18 +30,10 @@ import BusinessSEO from "../components/business/BusinessSEO";
 import SimilarBusinessesSection from "../components/business/SimilarBusinessesSection";
 import ShareMenu from "../components/business/ShareMenu";
 import MenuItemsSection from "../components/business/MenuItemsSection";
+import { getDistance } from "../utils/getDistance";
 
 const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
-console.log("DETAIL PAGE BUSINESS:", business);
-
-console.log("DETAIL LOCATION:", {
-  address: business?.address,
-  cityName: business?.cityName,
-  district: business?.district,
-  state: business?.state,
-  cityId: business?.cityId
-});
   const navigate = useNavigate();
   let user = null;
 
@@ -73,6 +65,26 @@ const [showBookingPopup, setShowBookingPopup] = useState(false);
   const [pendingReview, setPendingReview] = useState(null);
 
   const analyticsRef = useRef({});
+
+  // ================= DISTANCE =================
+  const [distance, setDistance] = useState(null);
+
+  useEffect(() => {
+    if (!business) return;
+
+    const userLat = Number(localStorage.getItem("user_lat"));
+    const userLng = Number(localStorage.getItem("user_lng"));
+
+    const businessLng = business?.location?.coordinates?.[0];
+    const businessLat = business?.location?.coordinates?.[1];
+
+    if (userLat && userLng && businessLat && businessLng) {
+      const d = getDistance(userLat, userLng, businessLat, businessLng);
+      setDistance(d);
+      } else {
+        setDistance(null);
+        }
+        }, [business]);
   
 
   // ================= SAFE DATA =================
@@ -87,13 +99,10 @@ const [showBookingPopup, setShowBookingPopup] = useState(false);
   const whatsappNumber =
     (business?.whatsapp || business?.phone || "").replace(/\D/g, "");
 
-    const [currentUrl, setCurrentUrl] = useState("");
-
-useEffect(() => {
-  if (typeof window !== "undefined") {
-    setCurrentUrl(window.location.href);
-  }
-}, []);
+    const currentUrl =
+  typeof window !== "undefined"
+    ? window.location.href
+    : "https://servdial.com";
 
   // ================ Sticky Lead ========
 const [showStickyLead, setShowStickyLead] = useState(false);
@@ -309,14 +318,15 @@ setShowLeadPopup(true);
 };
 
   
-  if (!business?._id) {
-  return <div className="p-6 text-center">Loading...</div>;
+ if (!business?._id) {
+ return (
+  <div className="min-h-screen flex items-center justify-center">
+    Loading...
+  </div>
+ );
 }
+<BusinessSEO />
 
-console.log(
- "DETAIL HOURS:",
- business.businessHours
-);
   return (
   <>
     <BusinessSEO
@@ -339,6 +349,7 @@ console.log(
   handleWhatsApp={handleWhatsApp}
   handleDirections={handleDirections}
   setShowShareMenu={setShowShareMenu}
+  distance={distance}
 />
 
 {/* PHOTO GALLERY */}
@@ -400,7 +411,7 @@ console.log(
 />
 
 <BusinessHours
-    hours={business.openingHours}
+    hours={business.businessHours}
 />
 
       {/* LOCATION MAP */}
@@ -428,9 +439,9 @@ console.log(
 />
 
 <ShareMenu
-    open={showShareMenu}
-    onClose={() => setShowShareMenu(false)}
-    business={business}
+ open={showShareMenu}
+ url={currentUrl}
+ business={business}
 />
 
 {/* LOGIN REQUIRED POPUP */}
