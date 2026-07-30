@@ -7,7 +7,7 @@
     "preinstall": "npm config set legacy-peer-deps true",
     "dev": "vite",
     "build": "vite build && shx cp public/_redirects dist/_redirects",
-    "postbuild": "react-snap",
+    
     "lint": "eslint .",
     "preview": "vite preview"
   },
