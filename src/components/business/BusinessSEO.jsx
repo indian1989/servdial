@@ -16,6 +16,8 @@ const absoluteUrl = (url) => {
 };
 
 const BusinessSEO = ({ business, currentUrl }) => {
+
+ 
   if (!business) return null;
 
   /* ================= LOCATION ================= */
@@ -91,20 +93,28 @@ const locationText = normalizeLocation(
 
   /* ================= TITLE ================= */
 
-  const titleLocation = locationText
+const titleLocation = locationText
   ? ` in ${locationText}`
   : "";
 
-
 const title =
-`${business.name} - ${categoryName}${titleLocation} | ServDial`;
+  `${business.name} - ${categoryName}${titleLocation} | ServDial`;
 
-  /* ================= DESCRIPTION ================= */
+
+/* ================= DESCRIPTION ================= */
+
+const seoLocation = normalizeLocation(
+  area,
+  cityName,
+  districtName,
+  stateName
+);
+
 
 const description =
-business.description
-  ? `${business.description} Find contact details, address, phone number, reviews, photos and services of ${business.name} on ServDial.`
-  : `${business.name} is a trusted ${categoryName} in ${locationText}. Find phone number, address, reviews, photos, services and business details on ServDial.`;
+`${business.name} is a trusted & Verified ${categoryName} in ${seoLocation}. Find address, phone number, reviews, photos, services and contact details on ServDial.`
+.replace(/\s+/g, " ")
+.slice(0, 250);
 
   /* ================= IMAGE ================= */
 
@@ -130,8 +140,8 @@ business.description
   districtName,
   stateName,
 
-  `${categoryName} in ${area}`,
-  `${categoryName} in ${cityName}`,
+  area && `${categoryName} in ${area}`,
+  cityName && `${categoryName} in ${cityName}`,
   `Best ${categoryName} in ${cityName}`,
   `Verified ${categoryName} in ${cityName}`,
 
@@ -146,12 +156,17 @@ business.description
   /* ================= SCHEMAS ================= */
 
   const localBusinessSchema =
-    generateLocalBusinessSchema({
-      ...business,
-      categoryName,
-      cityName,
-      state: stateName,
-    });
+    generateLocalBusinessSchema(
+    {
+    ...business,
+    categoryName,
+    cityName,
+    state: stateName,
+    image,
+    descriptionSEO: description,
+    },
+    url
+    );
 
   const breadcrumbSchema =
     generateBreadcrumbSchema({

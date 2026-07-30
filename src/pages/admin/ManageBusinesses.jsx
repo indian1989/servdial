@@ -46,7 +46,7 @@ const ManageBusinesses = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
-
+  const [logo, setLogo] = useState("");
   // ✅ SINGLE SOURCE OF TRUTH FOR EDIT
   const [editBusiness, setEditBusiness] = useState(null);
 

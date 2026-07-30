@@ -70,21 +70,19 @@ export const generateLocalBusinessSchema = (
 
 
     image:
-      business.images?.[0] ||
-      business.logo ||
-      undefined,
+  business.image ||
+  business.images?.[0] ||
+  business.logo ||
+  "https://servdial.com/logo.png",
 
 
 
     telephone:
       business.phone || undefined,
 
-
-
     description:
-      business.description ||
-      `${business.name} ${category} in ${city}`,
-
+    business.descriptionSEO ||
+    `${business.name} ${category} in ${city}`,
 
 
     address:{
@@ -94,9 +92,14 @@ export const generateLocalBusinessSchema = (
         "PostalAddress",
 
 
-      streetAddress:
-        business.address || "",
-
+streetAddress:
+[
+  business.address?.street,
+  business.address?.area,
+  business.address?.landmark
+]
+.filter(Boolean)
+.join(", "),
 
       addressLocality:
         titleCase(city),
