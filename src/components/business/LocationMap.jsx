@@ -1,4 +1,5 @@
 import { MapPin, Navigation } from "lucide-react";
+import { formatBusinessAddress } from "../../utils/addressHelper";
 
 const LocationMap = ({ business }) => {
   const lat = business?.location?.coordinates?.[1];
@@ -35,16 +36,24 @@ const LocationMap = ({ business }) => {
       {/* Address */}
 
       <div className="p-5">
-        <p className="text-gray-700">
-          {business?.address || "Address not available"}
-        </p>
 
-        <p className="text-sm text-gray-500 mt-1">
-          {[business?.city, business?.state, business?.pincode]
-            .filter(Boolean)
-            .join(", ")}
-        </p>
-      </div>
+  <p className="text-gray-700">
+  {formatBusinessAddress(business?.address) ||
+   "Address not available"}
+</p>
+
+  <p className="text-sm text-gray-500 mt-1">
+    {[
+       business?.cityName || business?.cityId?.name,
+      business?.district,
+      business?.state,
+      business?.pincode
+    ]
+      .filter(Boolean)
+      .join(", ")}
+  </p>
+
+</div>
 
       {/* Map */}
 

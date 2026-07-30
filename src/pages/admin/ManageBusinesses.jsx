@@ -30,6 +30,7 @@ import ImageModal from "../../components/admin/modals/ImageModal";
 import { toBusinessEditDTO } from "../../dto/businessDTO";
 import BusinessMediaManager from "../../components/BusinessMediaManager";
 import BusinessHoursManager from "../../components/BusinessHoursManager";
+import { formatBusinessAddress } from "../../utils/addressHelper";
 
 
 const PAGE_SIZE = 10;
@@ -417,6 +418,8 @@ const handlePlanChange = async (id, plan) => {
         images: imgs
       }))
     }
+    logo={logo}
+    onLogoChange={setLogo}
   />
 
   {/* HOURS */}
@@ -488,22 +491,31 @@ const handlePlanChange = async (id, plan) => {
                 <tr key={b._id} className="border-t hover:bg-gray-50">
 
                   {/* BUSINESS */}
-                  <td className="p-3 flex items-center gap-3">
+                  <td className="p-3">
+                    <div className="flex items-start gap-3">
                     <img
                       src={b.images?.[0] || "/placeholder.png"}
                       className="w-10 h-10 rounded cursor-pointer object-cover"
                       onClick={() => setSelectedImage(b.images?.[0])}
                     />
 
-                    <div>
-                    <span className="font-medium">{b.name}</span>
+                    
+                    <div className="min-w-0">
+                      <div className="font-medium truncate">
+                        {b.name}
+                      </div>
+
+                      <div className="text-xs text-gray-500 truncate mt-1">
+                        {formatBusinessAddress(b.address) || "Address not available"}
+                      </div>
 
                     {b.isClaimed && b.status === "pending" && (
                       <div className="text-xs text-orange-600 font-semibold">
                         Claim Pending Approval
                       </div>
                     )}
-                  </div>
+                    </div>
+                    </div>
                   </td>
 
                   {/* CATEGORY */}

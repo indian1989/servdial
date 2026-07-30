@@ -20,7 +20,11 @@ export const defaultBusinessForm = {
   district: "",
   state: "",
 
-  address: "",
+  address: {
+  street: "",
+  area: "",
+  landmark: "",
+},
   pincode: "",
 
   phone: "",
@@ -67,8 +71,12 @@ export const validateBusinessForm = (form = {}) => {
     errors.cityId = "City required";
   }
 
-  if (!form.address?.trim()) {
-    errors.address = "Address required";
+  if (!form.address?.street?.trim()) {
+    errors.address = "Street / Road is required";
+  }
+
+  if (!form.address?.area?.trim()) {
+    errors.area = "Area / Locality is required";
   }
 
   if (!form.pincode || form.pincode.length !== 6) {

@@ -5,6 +5,7 @@ import BusinessForm from "../../components/business/BusinessForm";
 import BusinessSubmitter from "../../components/business/BusinessSubmitter";
 import BusinessMediaManager from "../../components/BusinessMediaManager";
 import BusinessFeatureFields from "../../components/business/BusinessFeatureFields";
+import { formatBusinessAddress } from "../../utils/addressHelper";
 
 const ProviderAddBusiness = () => {
   const [hours, setHours] = useState({});
@@ -76,6 +77,8 @@ const ProviderAddBusiness = () => {
         <BusinessMediaManager
   value={images}
   onChange={setImages}
+  logo={logo}
+  onLogoChange={setLogo}
 />
 
 <BusinessFeatureFields
@@ -191,7 +194,13 @@ setHours={setHours}
                       </span>
 
                       <span className="font-medium text-gray-800 truncate">
-                        {formData.website || "-"}
+                        {formData.website ? (
+                          <a href={formData.website} target="_blank" rel="noreferrer" className="text-blue-600 underline truncate block max-w-[140px]" >
+                            {formData.website}
+                          </a>
+                          ) : (
+                            "-"
+                          )}
                       </span>
                     </div>
 
@@ -201,7 +210,13 @@ setHours={setHours}
                       </p>
 
                       <p className="text-sm text-gray-800">
-                        {formData.address || "-"}
+                        {formatBusinessAddress(formData.address) || "-"}
+                      </p>
+
+                      <p className="text-xs text-gray-500 mt-1">
+                        {[ formData.cityName, formData.district, formData.state, ]
+                        .filter(Boolean)
+                        .join(", ") || "Location not selected"}
                       </p>
                     </div>
 

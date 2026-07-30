@@ -52,7 +52,13 @@ overflow-hidden
 
 src={heroImage}
 
-alt={`${business.name} ${business.categoryId?.name || "business"} in ${business.cityName || ""}`}
+alt={`${business.name} ${
+  business.categoryId?.name || "business"
+} in ${
+  business.cityName ||
+  business.cityId?.name ||
+  ""
+}`}
 
 loading="eager"
 
@@ -122,7 +128,23 @@ leading-tight
 
 </h1>
 
-
+<p
+className="
+text-sm
+sm:text-base
+mt-1
+text-white/90
+"
+>
+{[
+ business.categoryId?.name,
+ business.cityName ||
+ business.cityId?.name,
+ business.state
+]
+.filter(Boolean)
+.join(" • ")}
+</p>
 
 <div
 className="
@@ -406,7 +428,7 @@ Premium
 }
 
   {/* RIGHT SIDE DISTANCE */}
-{distance !== null && (
+{typeof distance === "number" && (
   <span
     className={`
       backdrop-blur

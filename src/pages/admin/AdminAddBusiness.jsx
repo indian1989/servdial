@@ -4,6 +4,7 @@ import { useState } from "react";
 import BusinessForm from "../../components/business/BusinessForm";
 import BusinessSubmitter from "../../components/business/BusinessSubmitter";
 import BusinessMediaManager from "../../components/BusinessMediaManager";
+import { formatBusinessAddress } from "../../utils/addressHelper";
 
 const AdminAddBusiness = () => {
   const [images, setImages] = useState([]);
@@ -41,6 +42,8 @@ const AdminAddBusiness = () => {
               <BusinessMediaManager
                 value={images}
                 onChange={setImages}
+                logo={logo}
+                onLogoChange={setLogo}
               />
             </BusinessForm>
 
@@ -75,12 +78,33 @@ const AdminAddBusiness = () => {
                 </p>
 
                 <p>
-                  <b>City:</b> {formData.cityName || "-"}
-                </p>
+  <b>City:</b>{" "}
+  {
+    formData.cityName ||
+    formData.cityId?.name ||
+    "-"
+  }
+</p>
 
                 <p>
-                  <b>Address:</b> {formData.address || "-"}
-                </p>
+  <b>Address:</b>{" "}
+  {[
+    formData.address?.street,
+    formData.address?.area,
+    formData.address?.landmark,
+  ]
+    .filter(Boolean)
+    .join(", ") || "-"}
+</p>
+
+<p className="mt-2">
+  <b>Location:</b>
+</p>
+
+<p>
+  <b>Address:</b>{" "}
+  {formatBusinessAddress(formData.address) || "-"}
+</p>
 
               </div>
 

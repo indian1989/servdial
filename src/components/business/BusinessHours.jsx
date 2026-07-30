@@ -127,7 +127,7 @@ if (!hasHours) return null;
             >
               <XCircle size={16} />
 
-              Closed
+              Closed Now
             </div>
           )
         }

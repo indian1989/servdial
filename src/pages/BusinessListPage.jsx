@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import API from "../api/axios";
+import { formatBusinessAddress } from "../../utils/addressHelper";
 
 const BusinessListPage = () => {
   const { city, category } = useParams();
@@ -56,8 +57,10 @@ Best {category?.name} services in {city?.name}
               <h2 className="text-lg font-semibold">{biz.name}</h2>
 
               <p className="text-sm text-gray-600">
-                {biz.address}
-              </p>
+ {
+ formatBusinessAddress(biz.address)
+ }
+</p>
 
               <p className="text-blue-600 font-medium mt-2">
                 {biz.phone}

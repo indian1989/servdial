@@ -41,19 +41,29 @@ const BusinessInsight = ({ business }) => {
       color: "text-purple-600",
     });
 
-  if (business?.openingHours)
+  if (
+  business?.businessHours &&
+  Object.keys(business.businessHours).length > 0
+)
     insights.push({
       icon: Clock,
       text: "Opening Hours Available",
       color: "text-orange-600",
     });
 
-  if (business?.city)
-    insights.push({
-      icon: MapPin,
-      text: business.city,
-      color: "text-red-500",
-    });
+  if (
+ business?.cityName ||
+ business?.cityId?.name
+)
+{
+ insights.push({
+   icon: MapPin,
+   text:
+     business.cityName ||
+     business.cityId?.name,
+   color:"text-red-500",
+ });
+}
 
   if (!insights.length) return null;
 

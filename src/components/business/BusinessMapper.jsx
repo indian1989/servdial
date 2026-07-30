@@ -1,4 +1,5 @@
 // src/components/business/BusinessMapper.jsx
+import { normalizeAddress } from "../../utils/addressHelper";
 
 export const normalizeBusinessPayload = (
   data = {},
@@ -22,8 +23,18 @@ export const normalizeBusinessPayload = (
       data.cityId ||
       "",
 
-    address:
-      data.address || "",
+    address: (() => {
+      const address = normalizeAddress(data.address);
+
+      const cleaned = {
+        street: address.street?.trim() || "",
+        area: address.area?.trim() || "",
+        landmark: address.landmark?.trim() || "",
+        };
+
+        const hasAny = Object.values(cleaned).some(Boolean);
+        return hasAny ? cleaned : undefined;
+        })(),
 
     pincode:
       data.pincode || "",

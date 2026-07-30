@@ -38,49 +38,10 @@ const BusinessList = () => {
 
         const res = await API.get("/businesses");
 
-
-
-        console.log(
-          "🔥 FULL API RESPONSE:",
-          res.data
-        );
-
-
-
         const businessList =
           res.data?.data ||
           res.data?.businesses ||
           [];
-
-console.log(
-  "🔥 LOCATION TEST ALL:",
-  businessList.map(item => ({
-    name:item.name,
-    location:item.location,
-    keys:Object.keys(item)
-  }))
-);
-
-        console.log(
-          "🔥 FINAL BUSINESS ARRAY:",
-          businessList
-        );
-
-
-
-        console.log(
-          "🔥 FIRST BUSINESS:",
-          businessList[0]
-        );
-
-
-
-        console.log(
-          "🔥 FIRST BUSINESS LOCATION:",
-          businessList[0]?.location
-        );
-
-
 
         setBusinesses(
           Array.isArray(businessList)

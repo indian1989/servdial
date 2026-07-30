@@ -19,23 +19,68 @@ const BusinessSEO = ({ business, currentUrl }) => {
   if (!business) return null;
 
   /* ================= LOCATION ================= */
+const cityName =
+  business?.cityId?.name ||
+  business?.cityName ||
+  "";
 
-  const cityName =
-    business?.cityId?.name ||
-    business?.cityName ||
-    "";
+const districtName =
+  business?.district ||
+  "";
 
-  const stateName =
-    business?.state ||
-    "";
+const stateName =
+  business?.state ||
+  "";
 
-  const countryName =
-    business?.country ||
-    "India";
+const countryName =
+  business?.country ||
+  "India";
 
-  const locationText = [cityName, stateName, countryName]
+
+const normalizeLocation = (...parts) => {
+  return parts
     .filter(Boolean)
+    .map((item) => item.trim())
+    .filter(
+      (item, index, arr) =>
+        arr.findIndex(
+          (x) =>
+            x.toLowerCase() === item.toLowerCase()
+        ) === index
+    )
     .join(", ");
+};
+
+/* ================= ADDRESS ================= */
+
+const street =
+  business?.address?.street ||
+  "";
+
+const area =
+  business?.address?.area ||
+  "";
+
+const landmark =
+  business?.address?.landmark ||
+  "";
+
+
+const addressText = normalizeLocation(
+  street,
+  area,
+  landmark
+);
+
+
+/* ================= SEO LOCATION ================= */
+
+const locationText = normalizeLocation(
+  area,
+  cityName,
+  districtName,
+  stateName
+);
 
   /* ================= CATEGORY ================= */
 
@@ -46,17 +91,20 @@ const BusinessSEO = ({ business, currentUrl }) => {
 
   /* ================= TITLE ================= */
 
-  const title = `${business.name} - ${categoryName}${
-    cityName ? ` in ${cityName}` : ""
-  } | ServDial`;
+  const titleLocation = locationText
+  ? ` in ${locationText}`
+  : "";
+
+
+const title =
+`${business.name} - ${categoryName}${titleLocation} | ServDial`;
 
   /* ================= DESCRIPTION ================= */
 
-  const description =
-    business.description ||
-    `${business.name} is a trusted ${categoryName}${
-      locationText ? ` in ${locationText}` : ""
-    }. Find contact details, address, reviews, photos, services and business information on ServDial.`;
+const description =
+business.description
+  ? `${business.description} Find contact details, address, phone number, reviews, photos and services of ${business.name} on ServDial.`
+  : `${business.name} is a trusted ${categoryName} in ${locationText}. Find phone number, address, reviews, photos, services and business details on ServDial.`;
 
   /* ================= IMAGE ================= */
 
@@ -74,18 +122,26 @@ const BusinessSEO = ({ business, currentUrl }) => {
   /* ================= KEYWORDS ================= */
 
   const keywords = [
-    business.name,
-    categoryName,
-    cityName,
-    `${categoryName} in ${cityName}`,
-    `Best ${categoryName} in ${cityName}`,
-    `Verified ${categoryName} in ${cityName}`,
-    `${business.name} phone number`,
-    `${business.name} address`,
-    "ServDial",
-  ]
-    .filter(Boolean)
-    .join(", ");
+  business.name,
+  categoryName,
+
+  area,
+  cityName,
+  districtName,
+  stateName,
+
+  `${categoryName} in ${area}`,
+  `${categoryName} in ${cityName}`,
+  `Best ${categoryName} in ${cityName}`,
+  `Verified ${categoryName} in ${cityName}`,
+
+  `${business.name} phone number`,
+  `${business.name} address`,
+
+  "ServDial",
+]
+.filter(Boolean)
+.join(", ");
 
   /* ================= SCHEMAS ================= */
 

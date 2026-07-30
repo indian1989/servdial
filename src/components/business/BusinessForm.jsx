@@ -67,6 +67,34 @@ const styles = {
   }),
 };
 
+const normalizeAddress = (address) => {
+
+  if (!address) {
+    return {
+      street:"",
+      area:"",
+      landmark:"",
+    };
+  }
+
+
+  if (typeof address === "string") {
+    return {
+      street: address,
+      area:"",
+      landmark:"",
+    };
+  }
+
+
+  return {
+    street: address.street || "",
+    area: address.area || "",
+    landmark: address.landmark || "",
+  };
+
+};
+
 /* ================= COMPONENT ================= */
 
 const BusinessForm = ({
@@ -105,6 +133,7 @@ useEffect(() => {
   API.get("/categories"),
   API.get("/cities"),
 ]);
+console.log("CITY RESPONSE:", cityRes.data);
 
       // ✅ FIX CATEGORY RESPONSE
       const rawCategories =
@@ -116,8 +145,7 @@ useEffect(() => {
       setCategories(flattenCategories(tree));
 
       // ✅ FIX CITY RESPONSE
-      const cityRaw =
-        cityRes?.data?.data?.cities || [];
+      const cityRaw = cityRes.data?.data || [];
 
       const normalizedCities = cityRaw.map(
         (c) => ({
@@ -143,35 +171,28 @@ useEffect(() => {
   init();
 }, []);
 
-  /* ================= INITIAL DATA ================= */
 /* ================= INITIAL DATA ================= */
 useEffect(() => {
 
   if (!value || !value._id) return;
 
-  console.log(
-    "🔥 EDIT VALUE HOURS:",
-    value.businessHours
-  );
-
   const updatedForm = {
 
-    ...defaultBusinessForm,
+  ...defaultBusinessForm,
 
-    ...value,
+  ...value,
 
-    businessHours:
-      value.businessHours &&
-      Object.keys(value.businessHours).length > 0
-        ? value.businessHours
-        : defaultBusinessHours,
+  address: normalizeAddress(
+    value.address
+  ),
 
-  };
+  businessHours:
+    value.businessHours &&
+    Object.keys(value.businessHours).length > 0
+      ? value.businessHours
+      : defaultBusinessHours,
 
-  console.log(
-    "🔥 FORM SET HOURS:",
-    updatedForm.businessHours
-  );
+};
 
   setForm(updatedForm);
 
@@ -187,11 +208,6 @@ useEffect(() => {
 }, [value]);
 
 useEffect(() => {
-
-  console.log(
-    "🔥 FORM STATE HOURS:",
-    form.businessHours
-  );
 
 }, [form.businessHours]);
 
@@ -303,7 +319,7 @@ useEffect(() => {
     updateForm({
       ...form,
       cityId: selected.value,
-      cityName: selected.label,
+      cityName: selected.label.split(" (")[0],
       district: selected.district,
       state: selected.state,
       location: {
@@ -363,7 +379,10 @@ const seoPreview = useMemo(() => {
   try {
     setLoading(true);
 
-    const payload = { ...form };
+    const payload = {
+  ...form,
+  address: normalizeAddress(form.address),
+};
 
     if (payload.website && !payload.website.startsWith("http")) {
       payload.website = `https://${payload.website}`;
@@ -452,21 +471,76 @@ const seoPreview = useMemo(() => {
           subtitle="Business address and geo data"
         >
 
-          <FormField
-            label="Address"
-            required
-            error={errors.address}
-          >
+        <FormField
+  label="Business Location Address"
+  required
+  error={
+ errors.address ||
+ errors.area
+}
+>
 
-            <textarea
-              name="address"
-              value={form.address}
-              onChange={handleChange}
-              placeholder="Enter full address"
-              className="border rounded-xl p-3 w-full"
-            />
+<div className="space-y-3">
 
-          </FormField>
+<input
+  name="street"
+  value={form.address?.street || ""}
+  onChange={(e)=>{
+
+    updateForm({
+      ...form,
+      address:{
+        ...form.address,
+        street:e.target.value
+      }
+    });
+
+  }}
+  placeholder="Street / Road (e.g. Mahatma Gandhi Road)"
+  className="border rounded-xl p-3 w-full"
+/>
+
+
+<input
+  name="area"
+  value={form.address?.area || ""}
+  onChange={(e)=>{
+
+    updateForm({
+      ...form,
+      address:{
+        ...form.address,
+        area:e.target.value
+      }
+    });
+
+  }}
+  placeholder="Area / Locality (e.g. Azad Nagar)"
+  className="border rounded-xl p-3 w-full"
+/>
+
+
+<input
+  name="landmark"
+  value={form.address?.landmark || ""}
+  onChange={(e)=>{
+
+    updateForm({
+      ...form,
+      address:{
+        ...form.address,
+        landmark:e.target.value
+      }
+    });
+
+  }}
+  placeholder="Landmark (e.g. Near Taj Mahal)"
+  className="border rounded-xl p-3 w-full"
+/>
+
+</div>
+
+</FormField>
 
           <FormField
             label="City"
@@ -479,7 +553,7 @@ const seoPreview = useMemo(() => {
               value={
                 cities.find(
                   (c) =>
-                    c.value === form.cityId
+                    String(c.value) === String(form.cityId)
                 ) || null
               }
               onChange={(v) =>

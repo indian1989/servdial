@@ -31,6 +31,7 @@ import {
 import BusinessFeatureFields from "../../components/business/BusinessFeatureFields";
 import BusinessMediaManager from "../../components/BusinessMediaManager";
 import BusinessHoursManager from "../../components/BusinessHoursManager";
+import { normalizeAddress, formatBusinessAddress } from "../../utils/addressHelper";
 
 import Loader from "../../components/common/Loader";
 
@@ -110,7 +111,11 @@ const EditBusiness = () => {
 
   categoryFeatures: [],
 
-  address: "",
+  address: {
+  street: "",
+  area: "",
+  landmark: "",
+},
   pincode: "",
 
   phone: "",
@@ -170,7 +175,7 @@ const EditBusiness = () => {
         /* ================= CITIES ================= */
 
         const rawCities =
-          cityRes?.data?.data?.cities ||
+          cityRes?.data?.data ||
           [];
 
         setCities(
@@ -220,7 +225,7 @@ console.log("FEATURES =", business.categoryId?.features);
             : null,
 
           address:
-            business.address || "",
+            normalizeAddress(business.address),
 
           pincode:
             business.pincode || "",
@@ -510,18 +515,60 @@ categoryFeatures:
               Address
             </label>
 
-            <input
-              type="text"
-              name="address"
-              value={
-                form.address
-              }
-              onChange={
-                handleChange
-              }
-              className="w-full border rounded-xl px-4 py-3 outline-none focus:border-indigo-500"
-            />
-          </div>
+            <div className="space-y-3">
+
+  <input
+    name="street"
+    value={form.address?.street || ""}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        address: {
+          ...form.address,
+          street: e.target.value,
+        },
+      })
+    }
+    placeholder="Street / Road"
+    className="border rounded-xl p-3 w-full"
+  />
+
+
+  <input
+    name="area"
+    value={form.address?.area || ""}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        address: {
+          ...form.address,
+          area: e.target.value,
+        },
+      })
+    }
+    placeholder="Area / Locality"
+    className="border rounded-xl p-3 w-full"
+  />
+
+
+  <input
+    name="landmark"
+    value={form.address?.landmark || ""}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        address: {
+          ...form.address,
+          landmark: e.target.value,
+        },
+      })
+    }
+    placeholder="Landmark (optional)"
+    className="border rounded-xl p-3 w-full"
+  />
+
+</div>
+</div>
 
           {/* GRID */}
 
@@ -672,6 +719,8 @@ setMenu={(v)=>
                 images: imgs,
               }))
             }
+            logo={logo}
+            onLogoChange={setLogo}
           />
 
           {/* MAP */}
@@ -769,17 +818,24 @@ setMenu={(v)=>
             <div className="mt-4 text-sm text-gray-600 space-y-1">
 
               <p>
-                📍{" "}
-                {form.address}
-              </p>
+  📍 {formatBusinessAddress(form.address) || "-"}
+</p>
+
+<p> 🏙 {form.cityId?.label || "City not selected"} </p>
+
+<p> 📂 {form.categoryId?.label || "Category not selected"} </p>
 
               <p>
                 📞 {form.phone}
               </p>
 
               <p>
-                🌐{" "}
+                🌐 {form.website ? (
+                  <a href={form.website} target="_blank" rel="noreferrer" className="text-blue-600 underline" >
                 {form.website}
+                </a>
+               ) : "-"}
+
               </p>
 
             </div>
