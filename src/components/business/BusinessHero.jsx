@@ -9,11 +9,17 @@ import {
   Bookmark,
 } from "lucide-react";
 
+const titleCase = (str = "") =>
+  str
+    .toString()
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
 
 const BusinessHero = ({
   business,
   images = [],
   activeImg = 0,
+  setActiveImg,
   setShowGallery,
   handleCall,
   handleWhatsApp,
@@ -28,7 +34,27 @@ const BusinessHero = ({
     business?.logo ||
     "/servdial-logo.png";
 
+const heroLocation = [
+  titleCase(
+    business.categoryId?.name
+  ),
 
+  titleCase(
+    business.cityName ||
+    business.cityId?.name
+  ),
+
+  titleCase(
+    business.state
+  ),
+
+  titleCase(
+    business.country || "India"
+  ),
+
+]
+.filter(Boolean)
+.join(" • ");
 
   return (
 
@@ -90,13 +116,32 @@ to-transparent
 "
 />
 
+{/* ================= PHOTO THUMBNAILS ================= */}
+{images?.length > 1 && (
+  <div className=" absolute top-4 right-4 flex gap-2 z-10
+   overflow-x-auto max-w-[75%] scrollbar-hide " >
 
-</div>
-
-
-
-
-
+{images.map((img, index) => (
+  <img
+  key={index}
+  src={img}
+  alt={`Photo ${index + 1}`}
+  onClick={() => {
+    setActiveImg(index);
+    setShowGallery?.(true);
+    }}
+    className={`w-16 h-16 rounded-lg object-cover border-2 cursor-pointer transition-
+      all ${
+     activeImg === index
+     ? "border-white scale-105 shadow-lg"
+     : "border-white/50 hover:border-white"
+     }`}
+     />
+     ))} 
+     </div>
+    )}
+  </div>
+  
 {/* ================= BUSINESS INFO ================= */}
 
 
@@ -136,14 +181,7 @@ mt-1
 text-white/90
 "
 >
-{[
- business.categoryId?.name,
- business.cityName ||
- business.cityId?.name,
- business.state
-]
-.filter(Boolean)
-.join(" • ")}
+{heroLocation}
 </p>
 
 <div

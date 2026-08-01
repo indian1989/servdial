@@ -168,6 +168,11 @@ const description =
     url
     );
 
+    console.log(
+  "LOCAL BUSINESS SCHEMA:",
+  localBusinessSchema
+);
+
   const breadcrumbSchema =
     generateBreadcrumbSchema({
       city: cityName,
@@ -177,6 +182,22 @@ const description =
       categorySlug: business.categorySlug,
       businessSlug: business.slug,
     });
+
+    const faqSchema =
+  business?.faq?.length
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": business.faq.map((item) => ({
+          "@type": "Question",
+          "name": item.question,
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": item.answer,
+          },
+        })),
+      }
+    : null;
 
   return (
     <Helmet>
@@ -245,6 +266,14 @@ const description =
       <script type="application/ld+json">
         {JSON.stringify(breadcrumbSchema)}
       </script>
+
+      {
+  faqSchema && (
+    <script type="application/ld+json">
+      {JSON.stringify(faqSchema)}
+    </script>
+  )
+}
 
     </Helmet>
   );

@@ -281,6 +281,30 @@ export const toBusinessEditDTO = (b = {}) => {
     businessHours:
       b.businessHours || {},
 
+      // SERVICES
+      services:
+      Array.isArray(b.services)
+      ? b.services.map(service => ({
+        name: service.name || "",
+        description: service.description || "",
+      }))
+      : [],
+      
+      
+      serviceTypes:
+      Array.isArray(b.serviceTypes)
+      ? b.serviceTypes
+      : [],
+      
+      
+      serviceCoverage:
+      b.serviceCoverage || { type: "",
+        mode: "selected",
+        cities: [],
+        states: [],
+        countries: [],
+      },
+
 
     tags:
       Array.isArray(b.tags)
@@ -347,6 +371,7 @@ export const normalizeBusinessPayload = (
     state: data.state || "",
 
     country: data.country || "India",
+countryCode: data.countryCode || "IN",
 
     phone: data.phone || "",
 

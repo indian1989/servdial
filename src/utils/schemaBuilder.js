@@ -80,10 +80,9 @@ export const generateLocalBusinessSchema = (
     telephone:
       business.phone || undefined,
 
-    description:
-    business.descriptionSEO ||
-    `${business.name} ${category} in ${city}`,
-
+description:
+  business.description ||
+  `${business.name} is a trusted ${category} in ${titleCase(city)}. Find address, phone number, reviews, photos and services on ServDial.`,
 
     address:{
 
@@ -116,7 +115,7 @@ streetAddress:
 
 
       addressCountry:
-        "IN"
+  business.countryCode || "IN"
 
     },
 
@@ -143,7 +142,59 @@ streetAddress:
       : {}
     ),
 
+...(business.businessHours
+  ? {
+      openingHoursSpecification:
+        Object.entries(
+          business.businessHours
+        )
+        .filter(
+          ([, value]) =>
+            value &&
+            !value.closed &&
+            value.open &&
+            value.close
+        )
+        .map(([day, value]) => ({
+          "@type":
+            "OpeningHoursSpecification",
 
+          dayOfWeek:
+            day.charAt(0).toUpperCase() +
+            day.slice(1),
+
+          opens:
+            value.open,
+
+          closes:
+            value.close,
+        })),
+    }
+  : {}
+),
+
+areaServed:
+business.serviceAreas?.length
+?
+business.serviceAreas.map(area => ({
+  "@type":
+    area.type === "city"
+      ? "City"
+      : area.type === "state"
+      ? "State"
+      : area.type === "country"
+      ? "Country"
+      : "AdministrativeArea",
+
+  name: titleCase(area.name)
+}))
+:
+[
+ {
+   "@type":"City",
+   name:titleCase(city)
+ }
+],
 
     ...(business.averageRating > 0
       ? {

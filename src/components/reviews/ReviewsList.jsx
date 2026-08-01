@@ -34,7 +34,12 @@ const ReviewsList = ({ reviews = [] }) => {
       {paginated.map((review) => (
         <div
           key={review._id}
-          className="border p-4 rounded mb-4 bg-white"
+          className="border
+rounded-xl
+p-5
+mb-4
+bg-white
+shadow-sm"
         >
           {/* HEADER */}
           <div className="flex items-center justify-between">
@@ -44,21 +49,36 @@ const ReviewsList = ({ reviews = [] }) => {
 
                 {review.isVerified && (
                   <span className="ml-2 text-green-600 text-xs">
-                    ✓ Verified
+                    ✓ Verified Customer
                   </span>
                 )}
               </p>
 
               <p className="text-xs text-gray-400 mt-1">
-                {new Date(
-                  review.createdAt
-                ).toLocaleDateString()}
+                {new Date(review.createdAt).toLocaleDateString(
+  "en-IN",
+  {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }
+)}
               </p>
             </div>
 
             {/* RATING */}
             <div className="text-yellow-500 text-sm">
-              {"⭐".repeat(review.rating || 0)}
+              <div className="flex items-center gap-1 text-sm">
+
+  <span className="text-yellow-500">
+    {"⭐".repeat(review.rating || 0)}
+  </span>
+
+  <span className="text-gray-500">
+    {Number(review.rating || 0).toFixed(1)}
+  </span>
+
+</div>
             </div>
           </div>
 
@@ -70,10 +90,15 @@ const ReviewsList = ({ reviews = [] }) => {
           )}
 
           {/* FOOTER */}
-          <div className="mt-3 text-xs text-gray-400">
-            Helpful votes:{" "}
-            {review.helpfulCount || 0}
-          </div>
+          <div className="
+mt-3
+text-xs
+text-gray-500
+">
+
+👍 Helpful ({review.helpfulCount || 0})
+
+</div>
         </div>
       ))}
 

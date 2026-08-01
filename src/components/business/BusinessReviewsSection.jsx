@@ -9,6 +9,23 @@ import ReviewForm from "../reviews/ReviewForm";
 import BusinessSection from "./BusinessSection";
 import BusinessSectionHeader from "./BusinessSectionHeader";
 
+const renderStars = (rating = 0) => {
+
+ return Array.from({length:5}).map((_,index)=>(
+   <Star
+    key={index}
+    size={16}
+    className={
+      index < Math.round(rating)
+      ?
+      "fill-yellow-400 text-yellow-400"
+      :
+      "text-gray-300"
+    }
+   />
+ ));
+
+};
 
 const BusinessReviewsSection = ({
     business,
@@ -50,11 +67,17 @@ const BusinessReviewsSection = ({
                             className="fill-yellow-400 text-yellow-400"
                         />
 
-                        {business?.averageRating || "New"}
+                        {business?.averageRating
+ ? Number(business.averageRating).toFixed(1)
+ : "New"}
 
                     </div>
 
                 </div>
+
+                <div className="flex">
+ {renderStars(business?.averageRating)}
+</div>
 
             </div>
 

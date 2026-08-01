@@ -1,9 +1,11 @@
+// src/components/business/SimilarBusinessesSection.jsx
 import { Building2, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import BusinessCard from "./BusinessCard";
 import BusinessSection from "./BusinessSection";
 import BusinessSectionHeader from "./BusinessSectionHeader";
+import { normalizeLocation } from "../../utils/locationHelper";
 
 const SimilarBusinessesSection = ({
     business,
@@ -21,9 +23,28 @@ const SimilarBusinessesSection = ({
         "Businesses";
 
     const city =
-        business?.cityId?.name ||
-        business?.city ||
-        "";
+    business?.cityId?.name ||
+    business?.city ||
+    "";
+
+
+const district =
+    business?.district ||
+    "";
+
+
+const state =
+    business?.state ||
+    "";
+
+
+const locationText =
+    normalizeLocation(
+        city,
+        district,
+        state
+    );
+
 
     return (
 
@@ -52,7 +73,7 @@ const SimilarBusinessesSection = ({
 
                         <Building2 size={22} />
 
-                        Similar Businesses
+                         Nearby Businesses
 
                     </h2>
 
@@ -64,7 +85,7 @@ const SimilarBusinessesSection = ({
                         "
                     >
 
-                        {categoryCount || similar.length}+ {category} in {city}
+                        Nearby {category} in {locationText}
 
                     </p>
 

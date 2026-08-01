@@ -16,6 +16,105 @@ import {
 } from "./businessFormSchema";
 
 import BusinessFeatureFields from "./BusinessFeatureFields";
+import CreatableSelect from "react-select/creatable";
+
+/* ================= SERVICE TYPE OPTIONS ================= */
+
+const serviceTypeOptions = [
+  {
+    value: "home",
+    label: "Home Service",
+  },
+  {
+    value: "shop",
+    label: "Shop / In-store",
+  },
+  {
+    value: "online",
+    label: "Online Service",
+  },
+  {
+    value: "onsite",
+    label: "On-site Visit",
+  },
+  {
+    value: "pickup",
+    label: "Pickup Available",
+  },
+  {
+    value: "delivery",
+    label: "Delivery Available",
+  },
+];
+
+/* ================= FOOD TYPE OPTIONS ================= */ 
+
+const foodTypeOptions = [
+  {
+    value: "veg",
+    label: "Veg",
+    color: "#16a34a",
+  },
+  
+  {
+    value: "non_veg",
+    label: "Non Veg",
+    color: "#dc2626",
+  },
+  {
+    value: "both",
+    label: "Veg & Non Veg",
+    color: "#ea580c",
+  },
+];
+
+/* ================= SERVICE OFFERED ================= */
+const serviceSuggestionsByCategory = {
+
+  electrician: [
+    "Electrical Installation",
+    "Fan Repair",
+    "Wiring Work",
+    "MCB Installation",
+    "Switch Board Repair",
+    "Inverter Installation",
+  ],
+
+
+  plumber: [
+    "Leak Repair",
+    "Tap Installation",
+    "Pipe Fitting",
+    "Bathroom Repair",
+  ],
+
+
+  salon: [
+    "Hair Cut",
+    "Facial",
+    "Hair Spa",
+    "Hair Coloring",
+  ],
+
+  restaurant: [
+    "Dine In",
+    "Takeaway",
+    "Home Delivery",
+    "Order Online",
+    "Family Dining",
+    "Party Orders",
+    "Catering Service"
+  ],
+
+
+  default: [
+    "Installation",
+    "Repair",
+    "Maintenance",
+    "Consultation",
+  ]
+
+};
 
 /* ================= CATEGORY FLATTEN ================= */
 
@@ -47,6 +146,7 @@ const flattenCategories = (
 
   return result;
 };
+
 
 /* ================= SELECT STYLE ================= */
 
@@ -95,6 +195,7 @@ const normalizeAddress = (address) => {
 
 };
 
+
 /* ================= COMPONENT ================= */
 
 const BusinessForm = ({
@@ -112,10 +213,37 @@ const BusinessForm = ({
   const [cities, setCities] = useState([]);
 
   const [form, setForm] = useState(defaultBusinessForm);
-console.log(
-  "🔥 CURRENT FORM HOURS:",
-  form.businessHours
-);
+
+
+const selectedCategoryName =
+form.categoryName ||
+  categories.find(
+    (c) => c.value === String(form.categoryId)
+  )?.label ||
+  "";
+
+
+const currentCategory =
+  selectedCategoryName
+    .toLowerCase()
+    .replace(/\s+/g, "");
+
+const isRestaurant = [
+  "restaurant",
+  "cafe",
+  "dhaba",
+  "food",
+  "fastfood",
+  "bakery",
+].includes(currentCategory);
+
+
+const suggestedServices =
+  serviceSuggestionsByCategory[currentCategory] ||
+  (isRestaurant
+    ? serviceSuggestionsByCategory.restaurant
+    : serviceSuggestionsByCategory.default);
+
 
   const [restaurantBooking, setRestaurantBooking] = useState({
   enabled: false,
@@ -144,6 +272,7 @@ console.log("CITY RESPONSE:", cityRes.data);
 
       setCategories(flattenCategories(tree));
 
+
       // ✅ FIX CITY RESPONSE
       const cityRaw = cityRes.data?.data || [];
 
@@ -155,6 +284,9 @@ console.log("CITY RESPONSE:", cityRes.data);
 
           district: c.district || "",
           state: c.state || "",
+
+          country: c.country || "India",
+          countryCode: c.countryCode || "IN",
 
           latitude: Number(c.latitude),
           longitude: Number(c.longitude),
@@ -176,25 +308,76 @@ useEffect(() => {
 
   if (!value || !value._id) return;
 
+console.log("EDIT BUSINESS VALUE:", value);
+
+console.log(
+  "EDIT SERVICE COVERAGE:",
+  value.serviceCoverage
+);
+
+console.log(
+  "EDIT SERVICE TYPES:",
+  value.serviceTypes
+);
+
+console.log(
+  "EDIT SERVICES:",
+  value.services
+);
+
   const updatedForm = {
 
-  ...defaultBusinessForm,
+    ...defaultBusinessForm,
 
-  ...value,
+    ...value,
 
-  address: normalizeAddress(
-    value.address
-  ),
 
-  businessHours:
-    value.businessHours &&
-    Object.keys(value.businessHours).length > 0
-      ? value.businessHours
-      : defaultBusinessHours,
+    address: normalizeAddress(
+      value.address
+    ),
 
-};
+country:
+ value.country || "India",
+
+countryCode:
+ value.countryCode || "IN",
+
+    services:
+      Array.isArray(value.services)
+        ? value.services.map(service => ({
+            name: service.name || "",
+            description: service.description || "",
+          }))
+        : [],
+
+
+    serviceTypes:
+ Array.isArray(value.serviceTypes)
+ ? value.serviceTypes
+ : defaultBusinessForm.serviceTypes || [],
+
+
+    serviceCoverage:
+      value.serviceCoverage || {
+        type:"",
+        mode:"",
+        cities:[],
+        states:[],
+        countries:[]
+      },
+
+
+    businessHours:
+      value.businessHours &&
+      Object.keys(value.businessHours).length > 0
+        ? value.businessHours
+        : defaultBusinessHours,
+
+  };
+
 
   setForm(updatedForm);
+
 
   setRestaurantBooking(
     value.restaurantBooking || {
@@ -205,7 +388,9 @@ useEffect(() => {
     }
   );
 
-}, [value]);
+
+}, [value, cities]);
+
 
 useEffect(() => {
 
@@ -316,12 +501,15 @@ useEffect(() => {
 }
 
   if (field === "cityId") {
+    console.log("Selected city:", selected);
     updateForm({
       ...form,
       cityId: selected.value,
       cityName: selected.label.split(" (")[0],
       district: selected.district,
       state: selected.state,
+      country: selected.country || "India",
+      countryCode: selected.countryCode || "IN",
       location: {
         type: "Point",
         coordinates: [
@@ -369,32 +557,86 @@ const seoPreview = useMemo(() => {
   /* ================= SUBMIT ================= */
 
   const handleSubmit = async (e) => {
+
+  console.log("🔥 HANDLE SUBMIT START");
+
   e.preventDefault();
 
   const validationErrors = validateBusinessForm(form);
+
+  console.log(
+    "VALIDATION ERRORS:",
+    validationErrors
+  );
+
+
   setErrors(validationErrors);
 
-  if (Object.keys(validationErrors).length) return;
+
+  if (Object.keys(validationErrors).length) {
+
+    console.log(
+      "❌ VALIDATION FAILED"
+    );
+
+    return;
+  }
+
 
   try {
+
     setLoading(true);
 
-    const payload = {
-  ...form,
-  address: normalizeAddress(form.address),
-};
 
-    if (payload.website && !payload.website.startsWith("http")) {
-      payload.website = `https://${payload.website}`;
-    }
+    const payload = {
+
+      ...form,
+
+      address: normalizeAddress(form.address),
+
+
+      serviceCoverage: {
+
+        ...form.serviceCoverage,
+
+        mode:
+          form.serviceCoverage?.mode ||
+          "selected",
+
+      },
+
+    };
+
+
+    console.log(
+      "FINAL SERVICES:",
+      payload.services
+    );
+
+
+    console.log(
+      "FINAL PAYLOAD:",
+      payload
+    );
+
 
     await onSubmit(payload);
 
+
   } catch (err) {
-    console.error(err);
+
+    console.error(
+      "SUBMIT ERROR:",
+      err
+    );
+
+
   } finally {
+
     setLoading(false);
+
   }
+
 };
 
   /* ================= UI ================= */
@@ -463,6 +705,483 @@ const seoPreview = useMemo(() => {
           </FormField>
 
         </FormSection>
+
+{/* SERVICE COVERAGE */}
+<div className="mt-6 space-y-4">
+  
+  <h3 className="font-semibold text-lg">
+    Service Coverage
+    </h3>
+
+    {/* Coverage Type */}
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      {[
+        { value: "city", label: "Cities" },
+        { value: "state", label: "States" },
+        { value: "country", label: "Countries" },
+        { value: "global", label: "Worldwide" },
+      ].map((option) => (
+      
+      <label
+      key={option.value}
+      className="border rounded-xl p-3 flex items-center gap-2 cursor-pointer hover:border-indigo-500"
+      >
+        <input
+        type="radio"
+        name="coverageType"
+        checked={form.serviceCoverage?.type === option.value}
+        onChange={() =>
+          updateForm({
+            ...form,
+            serviceCoverage: {
+              ...form.serviceCoverage,
+              type: option.value,
+            },
+            })
+            }
+            />
+            <span className="text-sm font-medium">
+              {option.label}
+              </span>
+              </label>
+            ))}
+            </div>
+
+
+            {/* Mode */}
+            {form.serviceCoverage?.type !== "global" && (
+              <div className="flex items-center gap-3">
+                
+                <label className="flex items-center gap-2">
+
+                  <input
+                  type="radio"
+                  checked={form.serviceCoverage?.mode === "selected"}
+                  onChange={() =>
+                    updateForm({
+                      ...form,
+                      serviceCoverage: {
+                        ...form.serviceCoverage,
+                        mode: "selected",
+                      },
+                    })
+                  }
+                  />
+
+                  Selected
+                  
+                   </label>
+
+                   <label className="flex items-center gap-2">
+                    
+                    <input
+                    type="radio"
+                    checked={form.serviceCoverage?.mode === "all"}
+                    onChange={() =>
+                    updateForm({
+                      ...form,
+                      serviceCoverage: {
+                        ...form.serviceCoverage,
+                        mode: "all",
+                        },
+                        })
+                        }
+                        />
+
+                        All
+                        
+                        </label>
+
+                        </div>
+                        )}
+                        
+                        
+                        {/* Cities */}
+              {form.serviceCoverage?.type === "city" && (
+                
+                <Select
+                isMulti
+                options={cities}
+                value={(form.serviceCoverage?.cities || []).map((c) => ({
+                  value: c.cityId,
+                  label: `${c.name} (${c.state})`,
+                  district: c.district,
+                  state: c.state,
+                  country: c.country,
+                  countryCode: c.countryCode,
+                })
+              )}
+              onChange={(value) =>
+                
+                updateForm({
+
+                  ...form,
+                  
+                  serviceCoverage: {
+                    ...form.serviceCoverage,
+                    cities: (value || []).map((city) => ({
+                      cityId: city.value,
+                      name: city.label.split(" (")[0],
+                      district: city.district,
+                      state: city.state,
+                      country: city.country,
+                      countryCode: city.countryCode,
+                    })),
+                    },
+                  })
+                }
+                
+                placeholder="Select cities"
+                
+                />
+              )}
+              
+              
+              {/* States */}
+              
+              {form.serviceCoverage?.type === "state" && (
+                
+                <CreatableSelect
+                isMulti
+                value={(form.serviceCoverage?.states || []).map((s) => ({
+                  value: s.name,
+                  label: s.name,
+                })
+              )}
+              
+              onChange={(value) =>
+                updateForm({
+
+                  ...form,
+
+                  serviceCoverage: {
+                    
+                    ...form.serviceCoverage,
+                    
+                    states: (value || []).map((s) => ({
+                      name: s.value,
+                      country: form.country || "India",
+                      countryCode: form.countryCode || "IN",
+                    })),
+                  },
+                })
+              }
+
+              placeholder="Select or type states"
+
+              />
+
+              )}
+              
+              
+              {/* Countries */}
+              
+              {form.serviceCoverage?.type === "country" && (
+                <CreatableSelect
+
+                isMulti
+                value={(form.serviceCoverage?.countries || []).map((c) => ({
+                  value: c.name,
+                  label: c.name,
+                })
+              )}
+              
+              onChange={(value) =>
+                
+                updateForm({
+                
+                ...form,
+                
+                serviceCoverage: {
+                  ...form.serviceCoverage,
+                  countries: (value || []).map((c) => ({
+
+                    name: c.value,
+                    code: c.value.slice(0, 2).toUpperCase(),
+                    })),
+                    },
+                    })
+                    }
+                    
+                    placeholder="Select or type countries"
+                    
+                    />
+                    )}
+                    
+                    {form.serviceCoverage?.type === "global" && (
+                      
+                      <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">
+                        
+                        This business provides services worldwide.
+
+                        </div>
+                      )}
+                      </div>
+
+
+
+
+        {/* SERVICE TYPE */}
+
+<div className="mt-6">
+
+<h3 className="font-semibold mb-3">
+  Service Type
+</h3>
+
+
+<Select
+
+isMulti
+
+options={serviceTypeOptions}
+
+
+value={
+  serviceTypeOptions.filter(
+    (opt) =>
+      form.serviceTypes?.includes(
+        opt.value
+      )
+  )
+}
+
+
+onChange={(value)=>{
+
+  updateForm({
+
+    ...form,
+
+    serviceTypes:
+      value.map(
+        (v)=>v.value
+      ),
+
+  });
+
+}}
+
+
+placeholder="Select service types"
+
+/>
+
+
+</div>
+
+{isRestaurant && (
+  <div className="mt-6">
+    
+    <h3 className="font-semibold mb-3">
+      Food Type
+      </h3>
+      
+      <div className="flex flex-wrap gap-3">
+        {foodTypeOptions.map((option) => {
+          const selected =
+          form.foodType === option.value;
+          
+          return (
+          <button
+          type="button"
+          key={option.value}
+          onClick={() =>
+            updateForm({
+              ...form,
+              foodType: option.value,
+            })
+          }
+          
+          className={`
+            flex items-center gap-2
+            px-4 py-2 rounded-full border
+            transition
+            ${selected
+              ? "border-gray-900 bg-gray-50 shadow-sm"
+              : "border-gray-200 hover:border-gray-400"}
+              `}
+              >
+                
+                <span
+                className="w-3 h-3 rounded-full"
+                style={{
+                  backgroundColor: option.color,
+                }}
+                />
+                
+                <span
+                className="text-sm font-medium">
+                  {option.label}
+                  </span>
+                  </button>
+                );
+                })}
+                </div>
+                </div>
+              )}
+
+{/* SERVICE OFFERED */}
+
+<div className="mt-6">
+
+<h3 className="font-semibold mb-3">
+  Service Offered
+</h3>
+
+
+<CreatableSelect
+
+isMulti
+
+options={suggestedServices.map(s => ({
+  value:s,
+  label:s
+}))}
+
+
+value={
+(form.services || [])
+.filter(service => service?.name)
+.map(service=>({
+  value:service.name,
+  label:service.name
+}))
+}
+
+
+onChange={(value)=>{
+
+const existing =
+form.services || [];
+
+
+const updatedServices =
+value.map(v=>{
+
+const old =
+existing.find(
+s=>s.name === v.value
+);
+
+
+return {
+name:v.value,
+description:old?.description || ""
+};
+
+});
+
+
+console.log(
+"SERVICE STATE UPDATE:",
+updatedServices
+);
+
+
+updateForm({
+
+...form,
+
+services:updatedServices
+
+});
+
+}}
+
+
+/>
+
+
+
+
+
+{/* SERVICE DESCRIPTION */}
+
+{
+(form.services || []).map(
+(service,index)=>(
+
+<div
+key={index}
+className="
+mt-3
+border
+rounded-xl
+p-3
+bg-gray-50
+"
+>
+
+
+<label className="
+text-sm
+font-medium
+"
+>
+
+{service.name} Description
+
+</label>
+
+
+
+<textarea
+
+value={
+service.description || ""
+}
+
+onChange={(e)=>{
+
+
+const updated =
+[...form.services];
+
+
+updated[index] = {
+
+...updated[index],
+
+description:e.target.value
+
+};
+
+
+updateForm({
+
+...form,
+
+services:updated
+
+});
+
+
+}}
+
+
+placeholder={`Describe ${service.name} service...`}
+
+rows={2}
+
+className="
+border
+rounded-lg
+p-2
+w-full
+mt-2
+"
+
+/>
+
+
+</div>
+
+))
+}
+
+
+</div>
 
         {/* LOCATION */}
 
@@ -568,7 +1287,7 @@ const seoPreview = useMemo(() => {
 
           </FormField>
 
-          <div className="grid md:grid-cols-2 gap-4">
+          <div className="grid md:grid-cols-3 gap-4">
 
             <input
               value={form.district}
@@ -581,6 +1300,14 @@ const seoPreview = useMemo(() => {
               value={form.state}
               readOnly
               placeholder="State"
+              className="bg-gray-100 rounded-xl p-3"
+            />
+
+            <input
+              type="text"
+              value={form.country || ""}
+              readOnly
+              placeholder="Country"
               className="bg-gray-100 rounded-xl p-3"
             />
 
@@ -686,8 +1413,7 @@ const seoPreview = useMemo(() => {
             </div>
 
           </FormField>
-
-        </FormSection>
+          </FormSection>
 
         {/* SEO */}
 
@@ -819,6 +1545,7 @@ setRestaurantBooking={(value)=>{
         <div className="sticky bottom-0 bg-white border-t p-4 rounded-t-2xl">
 
           <button
+          type="submit"
             disabled={loading}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl p-3 font-medium"
           >

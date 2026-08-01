@@ -11,19 +11,6 @@ import {
 
 const QuickInfoBar = ({ business }) => {
 
-const cityName =
-  (business?.cityName || "")
-    .toLowerCase()
-    .replace(/\b\w/g, (l) => l.toUpperCase());
-
-const district =
-  (business?.district || "")
-    .replace(/\b\w/g, (l) => l.toUpperCase());
-
-const state =
-  (business?.state || "")
-    .replace(/\b\w/g, (l) => l.toUpperCase());
-
   // ================= HOURS =================
 
   const getTodayStatus = () => {
@@ -117,46 +104,6 @@ Contact
 
 <p className="font-medium text-sm">
 {business.phone || "Not Available"}
-</p>
-
-
-</div>
-
-
-</div>
-
-
-
-
-{/* ADDRESS */}
-
-<div className="
-flex
-gap-3
-items-center
-">
-
-<div className="
-bg-red-50
-p-2
-rounded-xl
-text-red-600
-">
-
-<MapPin size={20}/>
-
-</div>
-
-
-<div>
-
-<p className="text-xs text-gray-500">
-Location
-</p>
-
-
-<p className="font-medium text-sm line-clamp-2">
-  {cityName}, {district}, {state}
 </p>
 
 

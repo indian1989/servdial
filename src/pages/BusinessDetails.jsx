@@ -31,6 +31,8 @@ import SimilarBusinessesSection from "../components/business/SimilarBusinessesSe
 import ShareMenu from "../components/business/ShareMenu";
 import MenuItemsSection from "../components/business/MenuItemsSection";
 import { getDistance } from "../utils/getDistance";
+import BusinessAddressCard from "../components/business/BusinessAddressCard";
+import BusinessServiceInfo from "../components/business/BusinessServiceInfo";
 
 const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
@@ -368,6 +370,10 @@ setShowLeadPopup(true);
  business={business}
 />
 
+<BusinessAddressCard
+ business={business}
+/>
+
 <BusinessTabs
  business={business}
 />
@@ -381,6 +387,10 @@ setShowLeadPopup(true);
         {/*DESCRIPTION*/}
       <BusinessDescription
     business={business}
+/>
+
+<BusinessServiceInfo
+ business={business}
 />
 
 {/* AI SUMMARY */}
@@ -414,11 +424,6 @@ setShowLeadPopup(true);
     hours={business.businessHours}
 />
 
-      {/* LOCATION MAP */}
-        <LocationMap
-  business={business}
-/>
-
 <BusinessFAQ
     faq={business.faq}
 />
@@ -429,6 +434,11 @@ setShowLeadPopup(true);
     reviews={reviews}
     refresh={refresh}
     onSubmitReview={handleReviewSubmit}
+/>
+
+{/* LOCATION MAP */}
+        <LocationMap
+  business={business}
 />
 
         {/* SIMILAR */}

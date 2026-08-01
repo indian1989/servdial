@@ -11,6 +11,17 @@ const AdminAddBusiness = () => {
   const [logo, setLogo] = useState("");
   const [formData, setFormData] = useState({});
 
+  const locationText = [
+    formData.cityName || formData.cityId?.name,
+    formData.district,
+    formData.state,
+    formData.country,
+    formData.pincode,
+
+]
+  .filter(Boolean)
+  .join(", ");
+
   return (
     <BusinessSubmitter mode="admin">
       {(submitBusiness) => (
@@ -103,7 +114,7 @@ const AdminAddBusiness = () => {
 
 <p>
   <b>Address:</b>{" "}
-  {formatBusinessAddress(formData.address) || "-"}
+  {locationText}
 </p>
 
               </div>
@@ -141,6 +152,26 @@ const AdminAddBusiness = () => {
 
                 </div>
               )}
+
+              <p>
+<b>Service Areas:</b>
+</p>
+
+{
+formData.isAllIndiaService
+?
+<p>All India</p>
+:
+<p>
+{
+formData.serviceAreas
+?.map(x=>x.name)
+.join(", ")
+||
+"-"
+}
+</p>
+}
 
               <div className="mt-5">
 

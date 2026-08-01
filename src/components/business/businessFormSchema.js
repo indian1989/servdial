@@ -15,16 +15,32 @@ export const defaultBusinessHours = {
 export const defaultBusinessForm = {
   name: "",
   categoryId: "",
-  cityId: "",
 
-  district: "",
-  state: "",
+  serviceTypes: [],
+  
+  services: [],
+  
+  serviceCoverage: {
+    type: "city",
+    mode: "selected",
+    countries: [],
+    states: [],
+    cities: [],
+  },
 
   address: {
   street: "",
   area: "",
   landmark: "",
 },
+
+  cityId: "",
+
+  district: "",
+  state: "",
+   country: "",
+  countryCode: "",
+
   pincode: "",
 
   phone: "",

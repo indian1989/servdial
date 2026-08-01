@@ -24,11 +24,11 @@ const BusinessTabs = ({ business }) => {
 
   const featureTabs = {
 
-    services: {
-      id: "services",
-      label: "Services",
-      icon: Briefcase,
-    },
+   services: {
+ id:"services",
+ label:"Services",
+ icon:Briefcase
+},
 
 
     pricing: {

@@ -129,6 +129,35 @@ export const normalizeBusinessPayload = (
         ? data.services
         : [],
 
+        /* ================= SERVICE COVERAGE ================= */
+
+serviceCoverage:
+  data.serviceCoverage || {
+    type: "city",
+    mode: "selected",
+    cities: [],
+    states: [],
+    countries: [],
+  },
+
+
+/* ================= SERVICE TYPES ================= */
+
+serviceTypes:
+  Array.isArray(data.serviceTypes)
+    ? data.serviceTypes
+    : [],
+
+
+
+/* ================= COUNTRY ================= */
+
+country:
+  data.country || "India",
+
+countryCode:
+  data.countryCode || "IN",
+  
     catalog:
       Array.isArray(data.catalog)
         ? data.catalog
