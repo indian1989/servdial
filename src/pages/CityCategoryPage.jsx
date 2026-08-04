@@ -6,6 +6,7 @@ import { Helmet } from "react-helmet-async";
 
 import API from "../api/axios";
 import BusinessCard from "../components/business/BusinessCard";
+import { normalizeLocation } from "../utils/locationHelper";
 
 const CityCategoryPage = () => {
   // ================= URL PARAMS =================
@@ -15,6 +16,7 @@ const CityCategoryPage = () => {
   const [loading, setLoading] = useState(true);
   const [subCategories, setSubCategories] = useState([]);
 const [categoryInfo, setCategoryInfo] = useState(null);
+const [cityInfo,setCityInfo] = useState(null);
 
   // ================= FETCH BUSINESSES =================
   useEffect(() => {
@@ -29,9 +31,11 @@ const [categoryInfo, setCategoryInfo] = useState(null);
   try {
     setLoading(true);
 
-    const { data } = await API.get(
-      `/seo/${citySlug}/${categorySlug}`
-    );
+    const response = await API.get(
+  `/seo/${citySlug}/${categorySlug}`
+);
+
+const data = response.data;
 
 
     // ================= BUSINESSES =================
@@ -54,6 +58,9 @@ const [categoryInfo, setCategoryInfo] = useState(null);
       data?.category || null
     );
 
+    setCityInfo(
+ data?.city || null
+);
 
   } catch (error) {
 
@@ -78,20 +85,33 @@ const [categoryInfo, setCategoryInfo] = useState(null);
   }, [citySlug, categorySlug]);
 
   // ================= FORMATTERS =================
-  const formattedCity =
-    citySlug
-      ?.replace(/-/g, " ")
-      ?.replace(/\b\w/g, (l) => l.toUpperCase()) || "";
+const formattedCity =
+cityInfo
+? normalizeLocation(
+    cityInfo.name,
+    cityInfo.district,
+    cityInfo.state
+  )
+: "";
 
-  const formattedCategory =
-    categorySlug
-      ?.replace(/-/g, " ")
-      ?.replace(/\b\w/g, (l) => l.toUpperCase()) || "";
+
+const formattedCategory =
+  categorySlug === "all"
+    ? "All Businesses"
+    : categorySlug
+        ?.replace(/-/g, " ")
+        ?.replace(/\b\w/g, (l) => l.toUpperCase()) || "";
 
   // ================= SEO =================
-  const title = `${formattedCategory} in ${formattedCity} | ServDial`;
+const title =
+  categorySlug === "all"
+    ? `Businesses in ${formattedCity} | ServDial`
+    : `${formattedCategory} in ${formattedCity} | ServDial`;
 
-  const description = `Find trusted ${formattedCategory} services in ${formattedCity}. Browse verified local businesses, contact details, ratings and more on ServDial.`;
+  const description =
+  categorySlug === "all"
+    ? `Find trusted local businesses in ${formattedCity}. Explore restaurants, hotels, electricians, plumbers, salons, hospitals and more on ServDial.`
+    : `Find trusted ${formattedCategory} services in ${formattedCity}. Browse verified local businesses, contact details, ratings and more on ServDial.`;
 
   const canonicalUrl = `https://servdial.com/${citySlug}/${categorySlug}`;
 
@@ -241,11 +261,15 @@ const [categoryInfo, setCategoryInfo] = useState(null);
                 {formattedCity}
               </Link>
 
+              {categorySlug !== "all" && (
+              <>
               <span>/</span>
 
               <span className="text-white font-medium capitalize">
-                {formattedCategory}
+              {formattedCategory}
               </span>
+              </>
+              )}
 
             </div>
 
@@ -253,14 +277,28 @@ const [categoryInfo, setCategoryInfo] = useState(null);
 
             {/* HEADING */}
             <h1 className="text-3xl md:text-5xl font-bold capitalize leading-tight">
-              {formattedCategory} in {formattedCity}
-            </h1>
+
+                {
+                categorySlug === "all"
+                ?
+                `Businesses in ${formattedCity}`
+                :
+                `${formattedCategory} in ${formattedCity}`
+                }
+
+                </h1>
 
             <p className="mt-4 text-blue-100 max-w-2xl text-base md:text-lg">
-              Discover verified and trusted{" "}
-              {formattedCategory.toLowerCase()} businesses
-              near you in {formattedCity}.
-            </p>
+
+              {
+              categorySlug === "all"
+              ?
+              `Discover verified and trusted local businesses near you in ${formattedCity}.`
+              :
+              `Discover verified and trusted ${formattedCategory.toLowerCase()} businesses near you in ${formattedCity}.`
+              }
+
+              </p>
 
             {/* STATS */}
             <div className="flex flex-wrap gap-4 mt-7">
@@ -293,71 +331,79 @@ const [categoryInfo, setCategoryInfo] = useState(null);
 
         {/* ================= CONTENT ================= */}
         <div className="max-w-7xl mx-auto px-4 py-10">
-   {
-subCategories.length > 0 && (
+          {
+        subCategories.length > 0 && (
 
-<div className="max-w-7xl mx-auto px-4 py-8">
-
-
-<h2 className="text-2xl font-bold mb-5">
-Explore Home Services
-</h2>
+        <div className="max-w-7xl mx-auto px-4 py-8">
 
 
-<div className="
-grid
-grid-cols-2
-md:grid-cols-4
-gap-4
-">
+        <h2 className="text-2xl font-bold mb-5">
+        Explore Home Services
+        </h2>
 
 
-{
-subCategories.map((sub)=>(
-
-<Link
-key={sub._id}
-to={`/${citySlug}/${sub.slug}`}
-className="
-bg-white
-border
-rounded-xl
-p-4
-hover:shadow-lg
-transition
-"
->
-
-<h3 className="font-semibold capitalize">
-{sub.name}
-</h3>
+        <div className="
+        grid
+        grid-cols-2
+        md:grid-cols-4
+        gap-4
+        ">
 
 
-<p className="text-sm text-gray-500 mt-1">
-View Services
-</p>
+        {
+        subCategories.map((sub)=>(
+
+        <Link
+        key={sub._id}
+        to={`/${citySlug}/${sub.slug}`}
+        className="
+        bg-white
+        border
+        rounded-xl
+        p-4
+        hover:shadow-lg
+        transition
+        "
+        >
+
+        <h3 className="font-semibold capitalize">
+        {sub.name}
+        </h3>
 
 
-</Link>
-
-))
-}
-
-
-</div>
+        <p className="text-sm text-gray-500 mt-1">
+        View Services
+        </p>
 
 
-</div>
+        </Link>
 
-)
-}
+        ))
+        }
+
+
+        </div>
+
+
+        </div>
+
+        )
+        }
           {/* RESULTS TOPBAR */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
 
             <div>
               <h2 className="text-2xl font-bold text-gray-900">
-                Top {formattedCategory} Businesses in {formattedCity}
-              </h2>
+
+                {
+                categorySlug === "all"
+                ?
+                `Popular Businesses in ${formattedCity}`
+                :
+                `Top ${formattedCategory} Businesses in ${formattedCity}`
+                }
+
+                </h2>
 
               <p className="text-gray-500 mt-1">
                 Showing {businesses.length} businesses in{" "}
@@ -423,8 +469,16 @@ View Services
           <div className="mt-16 bg-white rounded-3xl border border-gray-200 p-8 md:p-10 shadow-sm">
 
             <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Best {formattedCategory} Services in {formattedCity}
-            </h2>
+
+              {
+              categorySlug === "all"
+              ?
+              `Explore Local Businesses in ${formattedCity}`
+              :
+              `Best ${formattedCategory} Services in ${formattedCity}`
+              }
+
+              </h2>
 
             <div className="space-y-4 text-gray-600 leading-7">
 

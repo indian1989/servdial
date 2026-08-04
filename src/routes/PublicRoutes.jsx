@@ -14,6 +14,8 @@ import CityPage from "../pages/CityPage";
 import SEOLandingPage from "../pages/seo/SEOLandingPage";
 import ClaimBusiness from "../pages/ClaimBusiness";
 import RecommendedPage from "../pages/RecommendedPage";
+import GetBusinessWebsite from "../pages/static/GetBusinessWebsite";
+
 
 const PublicRoutes = () => {
   return (
@@ -45,6 +47,12 @@ const PublicRoutes = () => {
 
 {/* CATEGORY DETAILS */}
 <Route path="/category/:slug" element={<CategoryDetails />} />
+
+{/* WEBSITE SERVICE LANDING */}
+<Route
+path="/business-website"
+element={<GetBusinessWebsite />}
+/>
 
   {/* SEO LANDING */}
 <Route

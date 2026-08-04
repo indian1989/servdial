@@ -13,7 +13,11 @@ import Terms from "../pages/static/Terms";
 import Disclaimer from "../pages/static/Disclaimer";
 import Advertise from "../pages/static/Advertise";
 import FAQ from "../pages/static/FAQ";
+import RefundPolicy from "../pages/static/RefundPolicy";
+import ProviderAgreement from "../pages/static/ProviderAgreement";
+
 import ProviderAddBusiness from "../pages/provider/ProviderAddBusiness";
+import CommunityGuidelines from "../pages/static/CommunityGuidelines";
 
 const Unauthorized = lazy(() => import("../pages/Unauthorized"));
 const NotFound = lazy(() => import("../pages/NotFound"));
@@ -44,8 +48,9 @@ function AppRoutes() {
         <Route path="/disclaimer" element={<Disclaimer />} />
         <Route path="/advertise" element={<Advertise />} />
         <Route path="/faq" element={<FAQ />} />
-        <Route path="/provider-add-business" element={<ProviderAddBusiness />} />
-
+        <Route path="/refund-policy" element={<RefundPolicy />} /> <Route path="/disclaimer" element={<Disclaimer />} />
+        <Route path="/provider-agreement" element={<ProviderAgreement />} />
+        <Route path="/community-guidelines" element={<CommunityGuidelines />} />
 
       </Routes>
     </Suspense>

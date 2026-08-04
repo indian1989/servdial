@@ -10,29 +10,37 @@ import {
 import { Link } from "react-router-dom";
 
 const Footer = () => {
-  const categories = [
-    "Restaurants",
-    "Hospitals",
-    "Plumbers",
-    "Electricians",
-    "Hotels",
-    "Beauty Salons",
-    "Gyms",
-    "Real Estate",
-  ];
+  
+   /* CATEGORIES */
+   
+   const categories = [
+    { name: "Restaurants & Food", slug: "restaurants-food" },
+    { name: "Health & Medical", slug: "health-medical" },
+    { name: "Automobiles", slug: "automobiles" },
+    { name: "Electricians", slug: "electrician" },
+    { name: "Hotels & Accommondation", slug: "hotels-accommondation" },
+    { name: "Beauty Parlours", slug: "beauty-parlour" },
+    { name: "Gyms", slug: "gym" },
+    { name: "Real Estate", slug: "real-estate" },
+  
+];
 
-  const cities = [
-    "Delhi",
-    "Mumbai",
-    "Bangalore",
-    "Hyderabad",
-    "Chennai",
-    "Kolkata",
-    "Patna",
-    "Pune",
-  ];
-
-  return (
+    /* CITIES */
+    
+    const cities = [
+      
+      { name: "Delhi", slug: "delhi-new-delhi-delhi" },
+      { name: "Mumbai", slug: "mumbai" },
+      { name: "Bangalore", slug: "bangalore" },
+      { name: "Hyderabad", slug: "hyderabad" },
+      { name: "Chennai", slug: "chennai" },
+      { name: "Kolkata", slug: "kolkata" },
+      { name: "Patna", slug: "patna-patna-bihar" },
+      { name: "Pune", slug: "pune-pune-maharashtra" },
+    ];
+    
+    return (
+    
     <footer className="bg-gray-900 text-gray-300 mt-20">
 
       <div className="max-w-7xl mx-auto px-4 py-12 grid md:grid-cols-4 gap-8">
@@ -90,6 +98,12 @@ const Footer = () => {
               </Link>
             </li>
 
+             <li>
+              <Link to="/advertise" className="hover:text-white">
+                Advertise Wth Us
+              </Link>
+            </li>
+
             <li>
               <Link to="/privacy-policy" className="hover:text-white">
                 Privacy Policy
@@ -103,14 +117,25 @@ const Footer = () => {
             </li>
 
             <li>
-              <Link to="/advertise" className="hover:text-white">
-                Advertise Wth Us
+              <Link to="/community-guidelines" className="hover:text-white">
+                Community Guidelines
+              </Link>
+            </li>
+
+            <li>
+              <Link to="/disclaimer" className="hover:text-white">
+                Disclaimer
               </Link>
             </li>
 
              <li>
-              <Link to="/disclaimer" className="hover:text-white">
-                Disclaimer
+              <Link to="/provider-agreement" className="hover:text-white">
+                Provider Agreement
+              </Link>
+            </li>
+             <li>
+              <Link to="/refund-policy" className="hover:text-white">
+                Refund Policy
               </Link>
             </li>
 
@@ -125,51 +150,51 @@ const Footer = () => {
         </div>
 
         {/* CATEGORIES */}
+        
         <div>
+
           <h3 className="text-white font-semibold mb-3">
             Popular Categories
+            </h3>
+            
+            <ul className="space-y-2 text-sm">
+              {categories.map((cat) => (
+                <li key={cat.slug}>
+                  <Link to={`/category/${cat.slug}`}
+                  className="hover:text-white transition-colors" >
+                    {cat.name}
+                    </Link>
+                    </li>
+                  ))}
+                  </ul>
+                  
+                  </div>
+
+      {/* CITIES */}
+      
+      <div>
+        
+        <h3 className="text-white font-semibold mb-3">
+         
+          Popular Cities
+          
           </h3>
-
+          
           <ul className="space-y-2 text-sm">
-
-            {categories.map((cat, i) => (
-              <li key={i}>
-                <Link
-                  to={`/search?q=${cat}`}
-                  className="hover:text-white"
-                >
-                  {cat}
-                </Link>
-              </li>
-            ))}
-
-          </ul>
-        </div>
-
-        {/* CITIES */}
-        <div>
-          <h3 className="text-white font-semibold mb-3">
-            Popular Cities
-          </h3>
-
-          <ul className="space-y-2 text-sm">
-
-            {cities.map((city, i) => (
-              <li key={i}>
-                <Link
-                  to={`/search?city=${city?.name}`}
-                  className="hover:text-white"
-                >
-                  {city?.name}
-                </Link>
-              </li>
-            ))}
-
-          </ul>
-        </div>
-
-      </div>
-
+            {cities.map((city) => (
+              
+              <li key={city.slug}>
+                <Link to={`/${city.slug}/all`}
+                className="hover:text-white transition-colors" >
+                  {city.name}
+                  </Link>
+                  </li>
+                ))}
+                </ul>
+                
+                </div>
+        
+</div>
       {/* SOCIAL + COPYRIGHT */}
       <div className="border-t border-gray-800">
 
@@ -212,6 +237,6 @@ const Footer = () => {
 
     </footer>
   );
-};
+  };
 
 export default Footer;

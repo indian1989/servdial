@@ -38,6 +38,13 @@ const Navbar = () => {
           All Business
         </NavLink>
 
+        <NavLink 
+          to="/business-website" 
+          className={linkStyle}
+        >
+          🌐 Get Your Business Website
+        </NavLink>
+
         {user &&
           ["provider", "admin", "superadmin"].includes(user.role) && (
             <NavLink to="/add-business" className={linkStyle}>
@@ -96,6 +103,14 @@ const Navbar = () => {
           <NavLink to="/business" className={linkStyle} onClick={() => setMenuOpen(false)}>
             All Business
           </NavLink>
+
+          <NavLink
+              to="/business-website"
+              className={linkStyle}
+              onClick={() => setMenuOpen(false)}
+            >
+              🌐 Get Your Business Website
+            </NavLink>
 
           {user &&
             ["provider", "admin", "superadmin"].includes(user.role) && (
