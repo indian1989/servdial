@@ -7,7 +7,6 @@
     "preinstall": "npm config set legacy-peer-deps true",
     "dev": "vite",
     "build": "vite build && shx cp public/_redirects dist/_redirects",
-    
     "lint": "eslint .",
     "preview": "vite preview"
   },

@@ -152,6 +152,60 @@ const title =
   ],
 };
 
+// ================= FAQ DATA =================
+  const faqItems = categorySlug === 'restaurant'
+  ? [
+    {
+      question: `How do I find the best restaurants in ${formattedCity}?`,
+      answer: `Browse verified restaurant listings on ServDial,
+      compare ratings, photos, menus and customer reviews,
+      and contact restaurants directly.`,
+    },
+    {
+      question: `Are the restaurants listed on ServDial verified?`,
+      answer: `We show local businesses with contact details and
+      profile information to help users discover trusted restaurants
+      in ${formattedCity}.`,
+    },
+    {
+      question: `Can I contact restaurants directly from ServDial?`,
+      answer: `Yes. You can call the restaurant, open WhatsApp if
+      available, and get directions from the listing page.`,
+    },
+  ] : [
+    {
+      question: `How do I find the best ${formattedCategory.toLowerCase()}
+      services in ${formattedCity}?`,
+      answer: `Browse verified local businesses on ServDial, compare ratings,
+      reviews, contact details and service information before choosing a
+      provider.`,
+    },
+    {
+      question: `Are the businesses on ServDial verified?`,
+      answer: `We show local businesses with contact details and profile
+      information to help users discover trusted providers in
+      ${formattedCity}.`,
+    },
+    {
+      question: `Can I contact businesses directly from ServDial?`,
+      answer: `Yes. You can call the business, open WhatsApp if available, and
+      get directions from the listing page.`,
+    },
+  ];
+  
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqItems.map((item) => ({
+      '@type': 'Question',
+      name: item.question,
+      acceptedAnswer: {
+        '@type': 'Answer',
+        text: item.answer,
+      },
+    })),
+  };
+
   // ================= LOADING =================
   if (loading) {
     return (
@@ -233,6 +287,11 @@ const title =
   <script type="application/ld+json">
   {JSON.stringify(breadcrumbSchema)}
 </script>
+
+{/* FAQ SCHEMA */}
+         <script type="application/ld+json">
+         {JSON.stringify(faqSchema)}
+         </script>
 </Helmet>
 
       <div className="min-h-screen bg-gray-50">
@@ -272,8 +331,6 @@ const title =
               )}
 
             </div>
-
-         
 
             {/* HEADING */}
             <h1 className="text-3xl md:text-5xl font-bold capitalize leading-tight">
@@ -500,6 +557,35 @@ const title =
             </div>
 
           </div>
+
+          {/* ================= FAQ SECTION ================= */}
+          <div
+          className="mt-10 bg-white rounded-3xl border
+          border-gray-200 p-8 md:p-10 shadow-sm">
+            
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              Frequently Asked Questions
+              </h2>
+              
+              <div className="space-y-6">
+                {faqItems.map((item, index) => (
+                  
+                  <div
+                  key={index}
+                  className="border-b border-gray-100 pb-5
+                  last:border-0 last:pb-0"
+                  >
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {item.question}
+                      </h3>
+                      
+                      <p className="text-gray-600 leading-7">
+                        {item.answer}
+                        </p>
+                        </div>
+                      ))}
+                      </div>
+                      </div>
 
         </div>
 
