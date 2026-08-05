@@ -88,25 +88,25 @@ const Footer = () => {
 
             <li>
               <Link to="/about" className="hover:text-white">
-                About Us
+                About ServDial
               </Link>
             </li>
 
             <li>
               <Link to="/contact" className="hover:text-white">
-                Contact Us
+                Contact ServDial
               </Link>
             </li>
 
              <li>
               <Link to="/advertise" className="hover:text-white">
-                Advertise Wth Us
+                Advertise With ServDial
               </Link>
             </li>
 
             <li>
               <Link to="/privacy-policy" className="hover:text-white">
-                Privacy Policy
+               Privacy Policy
               </Link>
             </li>
 
@@ -141,7 +141,7 @@ const Footer = () => {
 
             <li>
               <Link to="/faq" className="hover:text-white">
-                FAQ's
+                ServDial FAQ's
               </Link>
             </li>
 
@@ -154,7 +154,7 @@ const Footer = () => {
         <div>
 
           <h3 className="text-white font-semibold mb-3">
-            Popular Categories
+            Popular Categories on ServDial
             </h3>
             
             <ul className="space-y-2 text-sm">
@@ -176,7 +176,7 @@ const Footer = () => {
         
         <h3 className="text-white font-semibold mb-3">
          
-          Popular Cities
+          Popular Cities on ServDial
           
           </h3>
           

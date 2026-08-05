@@ -7,10 +7,13 @@ import { Helmet } from "react-helmet-async";
 import API from "../api/axios";
 import BusinessCard from "../components/business/BusinessCard";
 import { normalizeLocation } from "../utils/locationHelper";
+import NotFound from "./NotFound";
 
 const CityCategoryPage = () => {
   // ================= URL PARAMS =================
   const { citySlug, categorySlug } = useParams();
+  
+  const [notFound, setNotFound] = useState(false);
 
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,11 +41,24 @@ const [cityInfo,setCityInfo] = useState(null);
 const data = response.data;
 
 
-    // ================= BUSINESSES =================
+if (
+  !data?.category &&
+  categorySlug !== "all"
+) {
+  setNotFound(true);
+  return;
+}
 
-    setBusinesses(
-      data?.data || []
-    );
+if (
+  categorySlug !== "all" &&
+  !data?.category?.slug
+) {
+  setNotFound(true);
+  return;
+}
+
+
+setBusinesses(data?.data || []);
 
 
     // ================= SUB CATEGORIES =================
@@ -64,14 +80,25 @@ const data = response.data;
 
   } catch (error) {
 
-    console.error(
-      "SEO PAGE ERROR:",
-      error
-    );
+  console.error(
+    "SEO PAGE ERROR:",
+    error
+  );
 
-    setBusinesses([]);
 
-    setSubCategories([]);
+  if (error?.response?.status === 404) {
+
+   setNotFound(true);
+
+    return;
+
+  }
+
+
+  setBusinesses([]);
+  setSubCategories([]);
+
+
 
   } finally {
 
@@ -90,7 +117,8 @@ cityInfo
 ? normalizeLocation(
     cityInfo.name,
     cityInfo.district,
-    cityInfo.state
+    cityInfo.state,
+    cityInfo.country
   )
 : "";
 
@@ -116,16 +144,34 @@ const title =
   const canonicalUrl = `https://servdial.com/${citySlug}/${categorySlug}`;
 
   const schema = {
-    "@context": "https://schema.org",
-    "@type": "ItemList",
-    name: `${formattedCategory} in ${formattedCity}`,
-    itemListElement: businesses.map((biz, index) => ({
-      "@type": "ListItem",
-      position: index + 1,
+  "@context": "https://schema.org",
+  "@type": "ItemList",
+  name: `${formattedCategory} in ${formattedCity}`,
+  itemListElement: businesses.map((biz, index) => ({
+    "@type": "ListItem",
+    position: index + 1,
+
+    item: {
+      "@type": "LocalBusiness",
+
       name: biz?.name,
-      url: `https://servdial.com/${citySlug}/${categorySlug}/${biz?.slug}`,
-    })),
-  };
+
+      image:
+        biz?.images?.[0] ||
+        "https://servdial.com/default-business.jpg",
+
+      url:
+        `https://servdial.com/${citySlug}/${categorySlug}/${biz?.slug}`,
+
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: cityInfo?.name || "",
+        addressRegion: cityInfo?.state || "",
+        addressCountry: "IN"
+      }
+    }
+  })),
+};
 
   const breadcrumbSchema = {
   "@context": "https://schema.org",
@@ -220,6 +266,11 @@ const title =
       </div>
     );
   }
+
+  // ================= NOT FOUND =================
+if (notFound) {
+  return <NotFound />;
+}
 
   return (
     <>

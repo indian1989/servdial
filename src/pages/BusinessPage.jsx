@@ -6,6 +6,7 @@ import API from "../api/axios";
 import { Helmet } from "react-helmet-async";
 
 import BusinessDetails from "./BusinessDetails";
+import NotFound from "./NotFound";
 
 const BusinessPage = () => {
   const { citySlug, categorySlug, slug } = useParams();
@@ -14,8 +15,8 @@ const BusinessPage = () => {
   const [reviews, setReviews] = useState([]);
   const [similar, setSimilar] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
-  // ================= FETCH BUSINESS =================
   // ================= FETCH BUSINESS =================
 const fetchBusiness = async () => {
   try {
@@ -28,7 +29,20 @@ const fetchBusiness = async () => {
       res?.data?.data ||
       null;
 
-    setBusiness(biz);
+    if (!biz) {
+  setNotFound(true);
+  return;
+}
+
+if (
+  biz.citySlug !== citySlug ||
+  biz.categorySlug !== categorySlug
+) {
+  setNotFound(true);
+  return;
+}
+
+setBusiness(biz);
 
 
     const reviewsData =
@@ -51,10 +65,17 @@ const fetchBusiness = async () => {
 
   } catch (err) {
 
-    console.error(
-      "Business error:",
-      err
-    );
+  console.error(
+    "Business error:",
+    err
+  );
+
+
+  if (err?.response?.status === 404) {
+    setNotFound(true);
+  }
+
+
 
   } finally {
 
@@ -88,6 +109,11 @@ const fetchBusiness = async () => {
         Loading business...
       </div>
     );
+  }
+
+   // ================= NOT FOUND =================
+  if (notFound) {
+    return <NotFound />;
   }
 
   if (!business) {

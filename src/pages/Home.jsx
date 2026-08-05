@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCity } from "../context/CityContext";
 import API from "../api/axios";
 import { Helmet } from "react-helmet-async";
@@ -18,7 +19,10 @@ import BecomeProvider from "../components/home/BecomeProvider";
 import BannerAd from "../components/ads/BannerAd";
 
 const Home = () => {
-  const { city, loadingCity } = useCity();
+
+const navigate = useNavigate();
+
+const { city, loadingCity } = useCity();
 
   const [data, setData] = useState({
     featured: [],
@@ -122,13 +126,19 @@ useEffect(() => {
 useEffect(() => {
   if (loadingCity) return;
 
-  const citySlug = city?.slug || "india";
+  const citySlug = city?.slug || null;
 
-  fetchHomepageData({
-    citySlug,
-    lat: userLocation.lat || undefined,
-    lng: userLocation.lng || undefined,
-  });
+
+if (!citySlug && !userLocation.lat) {
+  return;
+}
+
+
+fetchHomepageData({
+  citySlug,
+  lat: userLocation.lat || undefined,
+  lng: userLocation.lng || undefined,
+});
 
 }, [city, loadingCity, userLocation.lat, userLocation.lng]);
 
@@ -139,27 +149,32 @@ const cityName = city?.name || "your area";
     <>
   <Helmet>
     <title>
-      ServDial - Find Trusted Local Businesses & Services in {cityName}
+      
+      ServDial - Find Verified Local Businesses & Services Across India
+
     </title>
 
     <meta
-      name="description"
-      content={`Discover trusted local businesses, home services, electricians, plumbers, salons, AC repair, restaurants and more in ${cityName} with ServDial.`}
-    />
+name="description"
+content="Discover verified local businesses, services, restaurants, home services and professionals across India on ServDial. Search, compare and connect with trusted businesses near you."
+/>
 
     <meta
       name="keywords"
-      content="local business directory, electricians, plumbers, salons, AC repair, nearby services, trusted businesses, ServDial"
+      content="local business directory India, trusted businesses, home services, restaurants, hotels, professionals, ServDial"
     />
 
     <link rel="canonical" href="https://servdial.com/" />
 
     {/* Open Graph */}
     <meta property="og:type" content="website" />
-    <meta property="og:title" content={`ServDial - Trusted Services in ${cityName}`} />
+    <meta
+ property="og:title"
+ content="ServDial - Find Verified Local Businesses & Services Across India"
+/>
     <meta
       property="og:description"
-      content={`Find verified businesses and local services in ${cityName} with ServDial.`}
+      content="Find verified local businesses, services, restaurants, professionals and home services across India with ServDial."
     />
     <meta property="og:url" content="https://servdial.com/" />
     <meta property="og:site_name" content="ServDial" />
@@ -178,11 +193,11 @@ const cityName = city?.name || "your area";
     <meta name="twitter:card" content="summary_large_image" />
     <meta
       name="twitter:title"
-      content={`ServDial - Trusted Services in ${cityName}`}
+      content="ServDial - Find Verified Local Businesses & Services Across India"
     />
     <meta
       name="twitter:description"
-      content={`Find trusted local businesses and services in ${cityName}.`}
+      content="Discover trusted businesses, services and professionals near you with ServDial."
     />
 
     {/* JSON-LD */}
@@ -204,10 +219,6 @@ const cityName = city?.name || "your area";
 
     <div className="bg-gray-50 min-h-screen">
 
-      {/* SEO H1 */}
-<h1 className="sr-only">
-  ServDial - Find Trusted Local Businesses and Services in {cityName}
-</h1>
 
 {/* HERO */}
 <HeroSearch city={city} />
@@ -296,12 +307,17 @@ const cityName = city?.name || "your area";
     </h2>
 
     <button
-      onClick={() => window.location.href = `/recommendations?city=${city?.slug || "india"}`}
-      className="text-blue-600 font-semibold hover:underline"
-    >
-      View All →
-    </button>
-  </div>
+  onClick={() =>
+    navigate(
+      `/recommendations?city=${city?.slug || ""}`
+    )
+  }
+  className="text-blue-600 font-semibold hover:underline"
+>
+  View All →
+</button>
+
+</div>
 
   <PopularBusinesses
     businesses={data.recommended}

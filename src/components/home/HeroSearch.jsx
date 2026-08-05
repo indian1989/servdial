@@ -136,15 +136,17 @@ const HeroSearch = ({ city }) => {
     <div className="bg-gradient-to-b from-blue-50 to-white py-14 px-4">
       {/* HEADLINE */}
       <div className="max-w-4xl mx-auto text-center mb-8">
-        <h1 className="text-3xl md:text-5xl font-bold text-gray-800 leading-tight">
-          Find Trusted Services in{" "}
-          <span className="text-blue-600">
-            {currentCity?.name || "your city"}
-          </span>
-        </h1>
+     <h1 className="text-3xl md:text-5xl font-bold text-gray-800 leading-tight">
+  Find Verified Local Businesses
+  <br />
+  & Services in{" "}
+  <span className="text-blue-600">
+    {currentCity?.name || "your city"}
+  </span>
+</h1>
 
         <p className="text-gray-500 mt-3 text-sm md:text-base">
-          Discover verified professionals for home services, repairs, and more
+          Search restaurants, services, professionals and businesses across India on ServDial
         </p>
       </div>
 
