@@ -35,6 +35,11 @@ const { city, loadingCity } = useCity();
   });
 
   const [userLocation, setUserLocation] = useState({ lat: null, lng: null });
+
+  console.log("🔥 USER LOCATION:", {
+ lat: userLocation.lat,
+ lng: userLocation.lng
+});
   const [loading, setLoading] = useState(false);
 
   const lastFetchKey = useRef(null);

@@ -1,5 +1,4 @@
 import {
-  Phone,
   MapPin,
   Clock,
   MessageCircle,
@@ -11,53 +10,68 @@ import {
 
 const QuickInfoBar = ({ business }) => {
 
+
   // ================= HOURS =================
+  const formatTime = (time) => {
+
+  if (!time) return "";
+
+  const [hour, minute] = time.split(":");
+
+  const h = Number(hour);
+
+  const suffix = h >= 12 ? "PM" : "AM";
+
+  return `${h % 12 || 12}:${minute} ${suffix}`;
+
+};
 
   const getTodayStatus = () => {
 
-  const hours = business?.businessHours;
+    const hours = business?.businessHours;
 
 
-  if (!hours) {
+    if (!hours) {
+      return "Hours not available";
+    }
+
+
+    const today =
+      new Date()
+        .toLocaleDateString(
+          "en-US",
+          {
+            weekday: "long"
+          }
+        )
+        .toLowerCase();
+
+
+    const todayHours = hours[today];
+
+
+    if (!todayHours) {
+      return "Closed today";
+    }
+
+
+    if (todayHours.closed) {
+      return "Closed today";
+    }
+
+
+    if (
+  todayHours.open &&
+  todayHours.close
+) {
+  return `${formatTime(todayHours.open)} - ${formatTime(todayHours.close)}`;
+}
+
+
     return "Hours not available";
-  }
 
+  };
 
-  const today =
-    new Date()
-      .toLocaleDateString(
-        "en-US",
-        {
-          weekday: "long"
-        }
-      )
-      .toLowerCase();
-
-
-  const todayHours = hours[today];
-
-
-  if (!todayHours) {
-    return "Closed today";
-  }
-
-
-  if (todayHours.closed) {
-    return "Closed today";
-  }
-
-
-  if (
-    todayHours.open &&
-    todayHours.close
-  ) {
-    return `${todayHours.open} - ${todayHours.close}`;
-  }
-
-
-  return "Hours not available";
-
-};
 
 
 return (
@@ -73,47 +87,6 @@ grid-cols-2
 md:grid-cols-4
 gap-4
 ">
-
-
-{/* PHONE */}
-
-<div className="
-flex
-gap-3
-items-center
-">
-
-<div className="
-bg-blue-50
-p-2
-rounded-xl
-text-blue-600
-">
-
-<Phone size={20}/>
-
-</div>
-
-
-<div>
-
-<p className="text-xs text-gray-500">
-Contact
-</p>
-
-
-<p className="font-medium text-sm">
-{business.phone || "Not Available"}
-</p>
-
-
-</div>
-
-
-</div>
-
-
-
 
 
 {/* HOURS */}
@@ -138,7 +111,6 @@ text-green-600
 
 
 <div>
-
 
 <p className="text-xs text-gray-500">
 Opening Hours
@@ -214,6 +186,7 @@ business.responseTime
 
 
 
+
 {/* HOME SERVICE */}
 
 {
@@ -259,6 +232,7 @@ Home Service Available
 </div>
 
 }
+
 
 
 
@@ -310,6 +284,7 @@ business.paymentOptions.join(", ")
 </div>
 
 }
+
 
 
 

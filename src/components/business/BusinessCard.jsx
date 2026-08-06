@@ -22,6 +22,12 @@ const BusinessCard = ({ business }) => {
 
 const b = toBusinessListDTO(business) || {};
 
+console.log("🔥 CARD LOCATION CHECK:", {
+  name: b.name,
+  location: b.location,
+  coordinates: b.location?.coordinates,
+});
+
 const businessStatus = getBusinessStatus(b);
 
 // User GPS coordinates
@@ -223,9 +229,7 @@ font-semibold shadow-lg backdrop-blur-sm ${
       `}
     >
       📍{" "}
-      {realDistance < 0.1
-        ? "Nearby"
-        : `${realDistance.toFixed(1)} km away`}
+      {realDistance < 0.3 ? "Nearby" : realDistance < 1 ? `${Math.round(realDistance * 1000)} m away` : `${realDistance.toFixed(1)} km away`}
     </span>
   </div>
 )}

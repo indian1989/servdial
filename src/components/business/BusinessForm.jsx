@@ -16,6 +16,7 @@ import {
 } from "./businessFormSchema";
 
 import BusinessFeatureFields from "./BusinessFeatureFields";
+import BusinessLocationPicker from "./BusinessLocationPicker";
 import CreatableSelect from "react-select/creatable";
 
 /* ================= SERVICE TYPE OPTIONS ================= */
@@ -435,16 +436,78 @@ useEffect(() => {
   updateForm(updated);
 };
 
+const generateBusinessCoordinates = async () => {
+
+  let coordinates = [
+    form.location?.coordinates?.[0],
+    form.location?.coordinates?.[1],
+  ];
+
+
+  try {
+
+    const response = await API.post(
+      "/geocode",
+      {
+
+        address:[
+          form.address?.street,
+          form.address?.area,
+          form.address?.landmark,
+        ]
+        .filter(Boolean)
+        .join(", "),
+
+        city: form.cityName,
+
+        district: form.district,
+
+        state: form.state,
+
+        pincode: form.pincode,
+
+      }
+    );
+
+
+    if(response.data?.location?.coordinates){
+
+      coordinates =
+      response.data.location.coordinates;
+
+
+      console.log(
+        "✅ UPDATED GEO:",
+        coordinates
+      );
+
+    }
+
+
+  } catch(err){
+
+    console.log(
+      "Geocode failed",
+      err.message
+    );
+
+  }
+
+
+  return coordinates;
+
+};
+
   /* ================= SELECT ================= */
 
-  const handleSelect = (field, selected) => {
+  const handleSelect = async (field, selected) => {
+
   if (!selected) return;
+
 
   if (field === "categoryId") {
 
-  const loadCategory = async()=>{
-
-    try{
+    try {
 
       const res = await API.get(
         `/categories/${selected.value}`
@@ -452,17 +515,16 @@ useEffect(() => {
 
 
       const category =
-  res.data.data || res.data;
+        res.data.data || res.data;
 
 
       updateForm({
 
         ...form,
 
-        categoryId:selected.value,
+        categoryId: selected.value,
 
-        categoryName:selected.label,
-
+        categoryName: selected.label,
 
         categoryFeatures:
           category.features || [],
@@ -470,7 +532,7 @@ useEffect(() => {
       });
 
 
-    }catch(err){
+    } catch(err) {
 
       console.log(
         "Category feature load error",
@@ -492,33 +554,114 @@ useEffect(() => {
 
     }
 
-  };
+
+    return;
+  }
 
 
-  loadCategory();
-
-  return;
-}
 
   if (field === "cityId") {
-    console.log("Selected city:", selected);
+
+
+    const cityName =
+      selected.label.split(" (")[0];
+
+
+    let coordinates = [
+      selected.longitude,
+      selected.latitude
+    ];
+
+    try {
+
+      const response = await API.post(
+        "/geocode",
+        {
+
+          address:[
+            form.address?.street,
+            form.address?.area,
+            form.address?.landmark,
+          ]
+          .filter(Boolean)
+          .join(", "),
+
+
+          city: cityName,
+
+          district:selected.district,
+
+          state:selected.state,
+
+          pincode:form.pincode,
+
+        }
+      );
+
+
+
+      if(
+        response.data?.location?.coordinates
+      ){
+
+        coordinates =
+          response.data.location.coordinates;
+
+
+        console.log(
+         "✅ EXACT BUSINESS LOCATION",
+          coordinates
+        );
+
+      }
+
+
+    } catch(err){
+
+
+      console.log(
+    "Geocode failed",
+    err.message
+   );
+
+
+    }
+
     updateForm({
+
       ...form,
-      cityId: selected.value,
-      cityName: selected.label.split(" (")[0],
-      district: selected.district,
-      state: selected.state,
-      country: selected.country || "India",
-      countryCode: selected.countryCode || "IN",
-      location: {
-        type: "Point",
-        coordinates: [
-          selected.longitude,
-          selected.latitude,
-        ],
-      },
+
+      cityId:selected.value,
+
+      cityName,
+
+
+      district:selected.district,
+
+      state:selected.state,
+
+      country:
+        selected.country || "India",
+
+
+      countryCode:
+        selected.countryCode || "IN",
+
+
+      location:{
+
+        type:"Point",
+
+        coordinates
+
+      }
+
+
     });
+
+
   }
+
 };
 
   /* ================= SEO PREVIEW ================= */
@@ -1207,14 +1350,20 @@ mt-2
   onChange={(e)=>{
 
     updateForm({
+
       ...form,
+
       address:{
         ...form.address,
+
         street:e.target.value
+
       }
+
     });
 
   }}
+
   placeholder="Street / Road (e.g. Mahatma Gandhi Road)"
   className="border rounded-xl p-3 w-full"
 />
@@ -1328,6 +1477,23 @@ mt-2
             />
 
           </FormField>
+
+                  {form.cityId && (
+          <FormField label="Adjust Exact Location">
+            <BusinessLocationPicker
+              value={form.location?.coordinates}
+              onChange={(coordinates) =>
+                updateForm({
+                  ...form,
+                  location: {
+                    type: "Point",
+                    coordinates,
+                  },
+                })
+              }
+            />
+          </FormField>
+        )}
 
         </FormSection>
 

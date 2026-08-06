@@ -3,13 +3,13 @@ export const DESCRIPTION_MAX = 1500;
 export const TAGS_MAX = 15;
 
 export const defaultBusinessHours = {
-  monday: { open: "", close: "", closed: false, open24h: false },
-  tuesday: { open: "", close: "", closed: false, open24h: false },
-  wednesday: { open: "", close: "", closed: false, open24h: false },
-  thursday: { open: "", close: "", closed: false, open24h: false },
-  friday: { open: "", close: "", closed: false, open24h: false },
-  saturday: { open: "", close: "", closed: false, open24h: false },
-  sunday: { open: "", close: "", closed: false, open24h: false },
+  monday: { open: "", close: "", closed: false, is24h: false },
+  tuesday: { open: "", close: "", closed: false, is24h: false },
+  wednesday: { open: "", close: "", closed: false, is24h: false },
+  thursday: { open: "", close: "", closed: false, is24h: false },
+  friday: { open: "", close: "", closed: false, is24h: false },
+  saturday: { open: "", close: "", closed: false, is24h: false },
+  sunday: { open: "", close: "", closed: false, is24h: false },
 };
 
 export const defaultBusinessForm = {

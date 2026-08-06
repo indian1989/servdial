@@ -17,13 +17,26 @@ const BusinessAISummary = ({ business, reviews = [] }) => {
     if (!business) return null;
 
     if (!reviews.length) {
-      return {
-        text: `${business.name} is a ${business.categoryId?.name || "business"} located in ${
-          business.city || "your city"
-        }. Customer reviews are not available yet.`,
-        sentiment: "neutral",
-      };
-    }
+
+  const city =
+    
+    business.cityId?.name ||
+    business.city ||
+    "your city";
+
+  const category =
+    business.categoryId?.name ||
+    "business";
+
+
+  return {
+    text:
+      `${business.name} is a ${category} located in ${city}. ` +
+      `No customer reviews are available yet. Be the first customer to share your experience.`,
+    sentiment: "neutral",
+  };
+
+}
 
     let positive = 0;
     let negative = 0;
