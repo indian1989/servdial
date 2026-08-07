@@ -112,7 +112,7 @@ const seoLocation = normalizeLocation(
 
 
 const description =
-`${business.name} is a trusted & Verified ${categoryName} in ${seoLocation}. Find address, phone number, reviews, photos, services and contact details on ServDial.`
+`${business.name} is a Verified ${categoryName} in ${seoLocation}. Find address, phone number, reviews, photos, services and contact details on ServDial.`
 .replace(/\s+/g, " ")
 .slice(0, 250);
 

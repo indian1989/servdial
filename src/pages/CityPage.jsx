@@ -65,7 +65,7 @@ const CityPage = () => {
 
   const description = `Find trusted local businesses, professionals and service providers in ${formattedCity}. Browse all popular categories on ServDial.`;
 
-  const url = `https://servdial.com/city/${citySlug}`;
+  const url = `https://servdial.com/${citySlug}`;
 
   const schema = {
     "@context": "https://schema.org",
@@ -197,7 +197,7 @@ const CityPage = () => {
 
                 <Link
                   key={cat._id}
-                  to={`/category/${cat.slug}`}
+                  to={`/${citySlug}/${cat.slug}`}
                   className="group bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-xl hover:border-blue-200 transition-all duration-300"
                 >
 

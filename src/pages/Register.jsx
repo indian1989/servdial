@@ -3,36 +3,37 @@ import { toast } from "react-toastify";
 import { useNavigate, Link } from "react-router-dom";
 import API from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
+import Select from "react-select";
+
 
 const Register = () => {
   const { setUser } = useContext(AuthContext);
   const navigate = useNavigate();
-
+  
   const [formData, setFormData] = useState({
 
-  name: "",
-  email: "",
-  phone: "",
-  password: "",
-  confirmPassword: "",
-  role: "user",
+    name:"",
+    email:"",
+    phone:"",
+    password:"",
+    confirmPassword:"",
+    role:"user",
 
-  emailOtp: "",
-  phoneOtp: ""
+    businessName:"",
+    categoryId:"",
+    cityId:"",
 
-});
+    emailOtp:"",
+
+    });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [emailSent, setEmailSent] = useState(false);
-  const [phoneSent, setPhoneSent] = useState(false);
 
   const [emailVerified, setEmailVerified] = useState(false);
-  const [phoneVerified, setPhoneVerified] = useState(false);
   const [emailTimer,setEmailTimer] = useState(0);
-  const [phoneTimer,setPhoneTimer] = useState(0);
   const [emailLoading,setEmailLoading] = useState(false);
-  const [phoneLoading,setPhoneLoading] = useState(false);
 
 
     useEffect(()=>{
@@ -53,22 +54,71 @@ const Register = () => {
       },[emailTimer]);
 
 
+      const [categories,setCategories] = useState([]);
+      const [cities,setCities] = useState([]);
+
+      
+      const categoryOptions = categories.map(cat => ({
+        value: cat._id,
+        label: cat.name
+      }));
+
+      const cityOptions = cities.map(city => ({
+        value: city._id,
+        label: city.displayName
+      }));
+
       useEffect(()=>{
 
-      if(phoneTimer > 0){
+      const loadOptions = async()=>{
 
-      const timer = setTimeout(()=>{
+      try{
 
-      setPhoneTimer(prev=>prev-1);
+      const [catRes,cityRes] = await Promise.all([
 
-      },1000);
+      API.get("/categories"),
+
+      API.get("/cities")
+
+      ]);
 
 
-      return ()=>clearTimeout(timer);
+      const allCategories = catRes.data.data || [];
+
+      const subCategories = allCategories.filter(
+ cat =>
+   cat.parentCategory !== null ||
+   cat.level === 1
+);
+
+      setCategories(subCategories);
+
+
+      setCities(
+      (cityRes.data.data || []).map(city=>({
+        ...city,
+        displayName:`${city.name} (${city.state})`
+      }))
+      );
+
+
+      }
+      catch(err){
+
+      console.log(
+      "Dropdown load error",
+      err
+      );
 
       }
 
-      },[phoneTimer]);
+      };
+
+
+      loadOptions();
+
+
+      },[]);
 
       const handleChange = (e) => {
 
@@ -86,21 +136,16 @@ const Register = () => {
 
       if(name==="email"){
 
-      setEmailVerified(false);
-      setEmailSent(false);
-      setEmailTimer(0);
+        setEmailVerified(false);
+        setEmailSent(false);
+        setEmailTimer(0);
 
-      }
+        setFormData(prev=>({
+        ...prev,
+        emailOtp:""
+        }));
 
-
-      if(name==="phone"){
-
-      setPhoneVerified(false);
-      setPhoneSent(false);
-      setPhoneTimer(0);
-
-      }
-
+        }
 
       };
 
@@ -154,62 +199,6 @@ const Register = () => {
 
     };
 
-  const sendPhoneOTP = async()=>{
-
-    try{
-
-    setPhoneLoading(true);
-    setError("");
-
-
-    setFormData(prev=>({
-    ...prev,
-    phoneOtp:""
-    }));
-
-
-    await API.post(
-    "/auth/send-phone-otp",
-    {
-    phone:formData.phone
-    }
-    );
-
-    setPhoneSent(true);
-    startTimer(setPhoneTimer);
-
-    toast.success(
-    "Phone OTP sent successfully"
-    );
-
-
-    }
-    catch(err){
-
-    setPhoneSent(false);
-    setPhoneTimer(0);
-
-
-    setError(
-    err.response?.data?.message ||
-    "Failed to send phone OTP"
-    );
-
-    }
-    finally{
-
-    setPhoneLoading(false);
-
-    }
-
-    };
-
-
-  const startTimer = (setter)=>{
-
-    setter(60);
-
-    };
 
   const verifyEmailOTP = async()=>{
 
@@ -228,6 +217,7 @@ const Register = () => {
 
 
   setEmailVerified(true);
+  setEmailTimer(0);
 
 
   }
@@ -244,38 +234,6 @@ const Register = () => {
   };
 
 
-  const verifyPhoneOTP = async()=>{
-
-
-  try{
-
-
-  await API.post(
-  "/auth/verify-otp",
-  {
-  phone:formData.phone,
-  otp:formData.phoneOtp,
-  type:"phone_verification"
-  }
-  );
-
-
-  setPhoneVerified(true);
-
-
-  }
-  catch(err){
-
-  setError(
-  err.response?.data?.message ||
-  "Invalid phone OTP"
-  );
-
-  }
-
-
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -291,16 +249,6 @@ const Register = () => {
   }
 
 
-  if(!phoneVerified){
-
-  setError(
-  "Please verify phone first"
-  );
-
-  return;
-
-  }
-
     // Password match validation
     if (formData.password !== formData.confirmPassword) {
       setError("Passwords do not match");
@@ -311,25 +259,45 @@ const Register = () => {
 
     try {
       const { data } = await API.post(
-      "/auth/register",
-      {
+        "/auth/register",
+        {
 
-      name: formData.name,
+        name: formData.name,
 
-      email: formData.email,
+        email: formData.email,
 
-      phone: formData.phone,
+        phone:
+        formData.phone
+        .trim()
+        .replace(/\D/g,"")
+        .slice(-10),
 
-      password: formData.password,
+        password: formData.password,
 
-      role: formData.role,
+        role: formData.role,
 
-      emailOtp: formData.emailOtp,
 
-      phoneOtp: formData.phoneOtp
+        businessName:
+        formData.businessName,
 
-      }
-      );
+        categoryId:
+        formData.role==="provider"
+        ?
+        formData.categoryId
+        :
+        undefined,
+
+        cityId:
+        formData.role==="provider"
+        ?
+        formData.cityId
+        :
+        undefined,
+
+        emailOtp: formData.emailOtp
+
+        }
+        );
 
       toast.success(
   "Registration successful! Welcome to ServDial 🎉"
@@ -503,97 +471,6 @@ navigate("/");
             />
           </div>
 
-         <div className="flex gap-2">
-
-          <input
-          type="text"
-          name="phoneOtp"
-          placeholder="Phone OTP"
-          onChange={handleChange}
-          className="w-full border rounded-lg px-3 py-2"
-          />
-
-
-          {
-          !phoneVerified && (
-
-          <button
-            type="button"
-            disabled={
-            phoneLoading || phoneVerified
-            }
-            onClick={
-            phoneSent
-            ?
-            verifyPhoneOTP
-            :
-            sendPhoneOTP
-            }
-            className="bg-blue-600 text-white px-4 rounded-lg disabled:bg-gray-400"
-            >
-
-            {
-            phoneLoading
-            ?
-            "Sending..."
-            :
-            phoneSent
-            ?
-            "Verify"
-            :
-            "Send OTP"
-            }
-
-            </button>
-
-          )
-
-          }
-
-
-
-          {
-          phoneSent && !phoneVerified && phoneTimer===0 && (
-
-          <button
-          type="button"
-          onClick={sendPhoneOTP}
-          className="bg-green-600 text-white px-4 rounded-lg"
-          >
-
-          Resend OTP
-
-          </button>
-
-          )
-
-          }
-
-
-
-          {
-          phoneVerified && (
-
-          <span className="text-green-600 font-semibold px-3 flex items-center">
-
-          Verified ✅
-
-          </span>
-
-          )
-
-          }
-
-
-          </div>
-
-          {
-            phoneTimer > 0 && !phoneVerified && (
-            <span className="text-sm text-gray-500 px-2">
-            00:{phoneTimer}
-            </span>
-            )
-            }
 
           {/* Password */}
           <div>
@@ -636,6 +513,126 @@ navigate("/");
               <option value="provider">Provider</option>
             </select>
           </div>
+
+          {/* Provider Details */}
+
+        {
+        formData.role==="provider" && (
+
+        <div className="space-y-5">
+
+
+        <div>
+        <label className="block text-sm font-medium mb-1">
+        Business Name <span className="text-red-500">*</span>
+        </label>
+
+        <input
+
+        type="text"
+
+        name="businessName"
+
+        value={formData.businessName}
+
+        onChange={handleChange}
+
+        required
+
+        className="w-full border rounded-lg px-3 py-2"
+
+        />
+
+        </div>
+
+        <div>
+
+        <label className="block text-sm font-medium mb-1">
+
+        Business Category <span className="text-red-500">*</span>
+
+        </label>
+
+
+        <Select
+
+          options={categoryOptions}
+
+          value={
+          categoryOptions.find(
+          option =>
+          option.value === formData.categoryId
+          )
+          }
+
+          onChange={(selected)=>{
+
+          setFormData(prev=>({
+
+          ...prev,
+
+          categoryId:selected?.value || ""
+
+          }));
+
+          }}
+
+          placeholder="Search Category..."
+
+          isSearchable
+
+          />
+
+
+        </div>
+
+
+
+        <div>
+
+        <label className="block text-sm font-medium mb-1">
+
+        City <span className="text-red-500">*</span>
+
+        </label>
+
+
+        <Select
+
+          options={cityOptions}
+
+          value={
+          cityOptions.find(
+          option =>
+          option.value === formData.cityId
+          )
+          }
+
+          onChange={(selected)=>{
+
+          setFormData(prev=>({
+
+          ...prev,
+
+          cityId:selected?.value || ""
+
+          }));
+
+          }}
+
+          placeholder="Search City..."
+
+          isSearchable
+
+          />
+
+
+        </div>
+
+        </div>
+
+        )
+        }
 
           {/* Submit Button */}
           <button

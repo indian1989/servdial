@@ -57,7 +57,7 @@ function SidebarContent({ location }) {
               >
                 {/* Icon if provided */}
                 {route.icon && <route.icon className="w-5 h-5" />}
-                <span>{route.name}</span>
+                <span>{route.label}</span>
               </Link>
             </li>
           );

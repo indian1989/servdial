@@ -39,14 +39,18 @@ const PublicRoutes = () => {
   {/* CITY + CATEGORY */}
   <Route path="/:citySlug/:categorySlug" element={<CityCategoryPage />} />
 
-  {/* CITY */}
-  <Route path="/city/:citySlug" element={<CityPage />} />
 
   {/* CATEGORIES (GLOBAL) */}
 <Route path="/categories" element={<CategoryPage />} />
 
 {/* CATEGORY DETAILS */}
 <Route path="/category/:slug" element={<CategoryDetails />} />
+
+{/* CITY */}
+<Route 
+ path="/:citySlug" 
+ element={<CityPage />} 
+/>
 
 {/* WEBSITE SERVICE LANDING */}
 <Route
