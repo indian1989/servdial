@@ -12,7 +12,8 @@ import {
   FaChartBar,
   FaCog,
   FaBars,
-  FaTimes
+  FaTimes,
+  FaInbox
 } from "react-icons/fa";
 
 function AdminSidebar({ onClose }) {
@@ -117,6 +118,18 @@ function AdminSidebar({ onClose }) {
         <NavLink to="/admin/users" className={linkClass}>
           <FaUsers /> {!collapsed && "Users"}
         </NavLink>
+
+          <p className={section}>
+            {!collapsed && "Lead Management"}
+          </p>
+
+          <NavLink
+            to="/admin/leads"
+            className={linkClass}
+          >
+            <FaInbox />
+            {!collapsed && "Leads"}
+          </NavLink>
 
         {/* SUPERADMIN ONLY */}
         {role === "superadmin" && (

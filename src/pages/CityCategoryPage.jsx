@@ -6,7 +6,7 @@ import { Helmet } from "react-helmet-async";
 
 import API from "../api/axios";
 import BusinessCard from "../components/business/BusinessCard";
-import { normalizeLocation } from "../utils/locationHelper";
+import { normalizeLocation } from "../utils/addressHelper";
 import NotFound from "./NotFound";
 
 const CityCategoryPage = () => {

@@ -22,12 +22,6 @@ const BusinessCard = ({ business }) => {
 
 const b = toBusinessListDTO(business) || {};
 
-console.log("🔥 CARD LOCATION CHECK:", {
-  name: b.name,
-  location: b.location,
-  coordinates: b.location?.coordinates,
-});
-
 const businessStatus = getBusinessStatus(b);
 
 // User GPS coordinates
@@ -97,7 +91,10 @@ const realDistance =
     window.location.href = `tel:${phone}`;
 
     try {
-      await API.put(`/businesses/${_id}/phone`);
+      await API.post(`/businesses/analytics/${_id}`,
+        {
+          type: "call",
+      });
     } catch {}
   };
 
@@ -113,7 +110,10 @@ const realDistance =
     );
 
     try {
-      await API.put(`/businesses/${_id}/whatsapp`);
+      await API.post(`/businesses/analytics/${_id}`,
+        {
+          type: "whatsapp",
+        });
     } catch {}
   };
 
@@ -185,23 +185,23 @@ const realDistance =
 
         </div>
 
-{/* OPEN STATUS BADGE */}
+      {/* OPEN STATUS BADGE */}
 
-{businessStatus && ( <div className=
-{` absolute bottom-3 left-3
-z-20 inline-flex items-center gap-1
-px-3 py-1 rounded-full text-xs
-font-semibold shadow-lg backdrop-blur-sm ${
-  businessStatus.status === "open" ?
-"bg-green-500/90 text-white" :
-   "bg-red-500/90 text-white" } `} >
-<span>
-  {businessStatus.status === "open" ? "🟢" : "🔴"}
+      {businessStatus && ( <div className=
+      {` absolute bottom-3 left-3
+      z-20 inline-flex items-center gap-1
+      px-3 py-1 rounded-full text-xs
+      font-semibold shadow-lg backdrop-blur-sm ${
+        businessStatus.status === "open" ?
+      "bg-green-500/90 text-white" :
+        "bg-red-500/90 text-white" } `} >
+      <span>
+        {businessStatus.status === "open" ? "🟢" : "🔴"}
 
-</span>
-{businessStatus.text}
-</div>
-)}
+      </span>
+      {businessStatus.text}
+      </div>
+      )}
 
 
      {/* DISTANCE BADGE */}
@@ -222,7 +222,7 @@ font-semibold shadow-lg backdrop-blur-sm ${
         gap-1
         whitespace-nowrap
         ${
-          realDistance < 0.1
+          realDistance < 0.3
             ? "bg-green-500/90 text-white"
             : "bg-black/70 text-white"
         }

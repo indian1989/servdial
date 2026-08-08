@@ -1,6 +1,8 @@
 import { MapPin } from "lucide-react";
-import { formatBusinessAddress } from "../../utils/addressHelper";
-import { normalizeLocation } from "../../utils/locationHelper";
+import {
+  formatBusinessAddress,
+  normalizeLocation
+ } from "../../utils/addressHelper";
 
 
 const titleCase = (str = "") =>

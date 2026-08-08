@@ -4,6 +4,7 @@ import Select from "react-select";
 import API from "../../api/axios";
 
 import { buildCategoryTree } from "../../utils/adminUtils";
+import { normalizeAddress } from "../../utils/addressHelper";
 
 import FormSection from "./FormSection";
 import FormField from "./FormField";
@@ -166,34 +167,6 @@ const styles = {
       borderColor: "#6366f1",
     },
   }),
-};
-
-const normalizeAddress = (address) => {
-
-  if (!address) {
-    return {
-      street:"",
-      area:"",
-      landmark:"",
-    };
-  }
-
-
-  if (typeof address === "string") {
-    return {
-      street: address,
-      area:"",
-      landmark:"",
-    };
-  }
-
-
-  return {
-    street: address.street || "",
-    area: address.area || "",
-    landmark: address.landmark || "",
-  };
-
 };
 
 

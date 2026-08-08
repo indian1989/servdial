@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import BusinessCard from "./BusinessCard";
 import BusinessSection from "./BusinessSection";
 import BusinessSectionHeader from "./BusinessSectionHeader";
-import { normalizeLocation } from "../../utils/locationHelper";
+import { normalizeLocation } from "../../utils/addressHelper";
 
 const SimilarBusinessesSection = ({
     business,

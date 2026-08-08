@@ -6,13 +6,11 @@ import {
 } from "lucide-react";
 
 
-const ShareMenu = ({ business }) => {
+const ShareMenu = ({ business, open, onClose }) => {
 
-  const [copied, setCopied] = useState(false);
-
-
+  const [copied, setCopied] = useState(false)
+  if (!open) return null;
   const shareUrl = window.location.href;
-
 
   const copyLink = async () => {
 
@@ -85,36 +83,58 @@ const ShareMenu = ({ business }) => {
   };
 
 
-
 return (
+
+<div
+className="
+fixed
+inset-0
+bg-black/40
+flex
+items-center
+justify-center
+z-[200]
+px-4
+"
+>
 
 <div
 className="
 bg-white
 rounded-xl
-shadow
-p-4
+shadow-xl
+p-5
+w-full
+max-w-md
 "
 >
 
 
-<div className="flex items-center gap-2 mb-4">
+<div className="flex justify-between items-center mb-4">
+
+<div className="flex items-center gap-2">
 
 <Share2
 size={20}
 className="text-blue-600"
 />
 
-
 <h3 className="font-semibold">
-
 Share Business
-
 </h3>
-
 
 </div>
 
+
+<button
+onClick={onClose}
+className="text-gray-500"
+>
+✕
+</button>
+
+
+</div>
 
 
 <div className="flex flex-wrap gap-3">
@@ -219,7 +239,7 @@ Copy Link
 
 
 </div>
-
+</div>
 
 </div>
 

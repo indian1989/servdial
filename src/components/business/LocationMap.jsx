@@ -1,6 +1,8 @@
 import { MapPin, Navigation } from "lucide-react";
-import { formatBusinessAddress } from "../../utils/addressHelper";
-import { normalizeLocation } from "../../utils/locationHelper";
+import {
+  formatBusinessAddress,
+  normalizeLocation
+} from "../../utils/addressHelper";
 
 const titleCase = (str = "") =>
   str
@@ -46,7 +48,7 @@ const locationText = normalizeLocation(
       business?.state
     ),
 
-    business.country || "India",
+    business?.country || "India",
 
     business?.pincode
 

@@ -20,23 +20,6 @@ const fetchBusinesses = async () => {
     const { data } = await API.get("/businesses");
 
 
-    console.log(
-      "🔥 BUSINESS LIST API RAW:",
-      data
-    );
-
-    console.log(
-  "🔥 BUSINESSES WITH HOURS:",
-  data?.data
-    ?.filter(b =>
-      b.businessHours?.monday?.open
-    )
-    .map(b => ({
-      name: b.name,
-      hours: b.businessHours
-    }))
-);
-
     if(Array.isArray(data?.data)){
 
       setBusinesses(data.data);

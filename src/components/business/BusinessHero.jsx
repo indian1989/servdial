@@ -7,6 +7,7 @@ import {
   ShieldCheck,
   Share2,
   Bookmark,
+  BookmarkCheck,
 } from "lucide-react";
 
 const titleCase = (str = "") =>
@@ -26,6 +27,8 @@ const BusinessHero = ({
   handleDirections,
   setShowShareMenu,
   distance,
+  handleSave,
+  isSaved,
 }) => {
 
 
@@ -316,8 +319,9 @@ Direction
 
 
 
-
 <button
+
+onClick={handleSave}
 
 aria-label="Save business"
 
@@ -332,10 +336,18 @@ justify-center
 
 >
 
+{
+isSaved
+?
+<BookmarkCheck 
+size={18}
+className="text-yellow-400"
+/>
+:
 <Bookmark size={18}/>
+}
 
 </button>
-
 
 
 <button
@@ -483,14 +495,14 @@ Premium
       whitespace-nowrap
 
       ${
-        distance < 0.1
+        distance < 0.3
           ? "bg-green-500/90 text-white"
           : "bg-black/70 text-white"
       }
     `}
   >
     📍{" "}
-    {distance < 0.1
+    {distance < 0.3
       ? "Nearby"
       : `${distance.toFixed(1)} km away`}
   </span>

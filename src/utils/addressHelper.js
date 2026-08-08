@@ -1,4 +1,6 @@
 // frontend/src/utils/addressHelper.js
+
+// ================= NORMALIZE ADDRESS =================
 export const normalizeAddress = (address) => {
 if (!address) {
 
@@ -12,7 +14,7 @@ return {
 //Old string data
 if (typeof address === "string") {
   return {
-    street: address,
+    street: address.trim(),
      area: "",
      landmark: "",
    };
@@ -20,43 +22,84 @@ if (typeof address === "string") {
 
 // New object data
 return {
-  street: address.street || "",
-  area: address.area || "",
-  landmark: address.landmark || "",
+  street: address.street?.trim() || "",
+  area: address.area?.trim() || "",
+  landmark: address.landmark?.trim() || "",
   };
  };
 
 
- 
+ // ================= FORMAT BUSINESS ADDRESS =================
 export const formatBusinessAddress = (address = {}) => {
 
-  if (!address) return "";
-
-
-  // New object structure
-  if (typeof address === "object") {
+  const normalized = normalizeAddress(address);
 
     return [
-      address.street,
-      address.area,
-      address.landmark,
+      normalized.street,
+      normalized.area,
+      normalized.landmark,
     ]
-      .filter(
-        item =>
-          item &&
-          typeof item === "string" &&
-          item.trim()
-      )
+      .filter(Boolean)
       .join(", ");
-  }
+  };
+
+// ================= NORMALIZE LOCATION =================
+  export const normalizeLocation = (...parts) => {
+
+  return parts
+    .flat()
+    .filter(Boolean)
+    .map((item) =>
+        typeof item === "string"
+        ? item.trim()
+        : String(item).trim()
+)
+    .filter(
+      (item, index, arr) =>
+        arr.findIndex(
+          (x) =>
+            x.toLowerCase() === item.toLowerCase()
+        ) === index
+    )
+    .join(", ");
+
+};
 
 
-  // Old string data compatibility
-  if (typeof address === "string") {
-    return address.trim();
-  }
+// ================= NORMALIZE CITY (for comparison/search only) =================
+export const normalizeCity = (city) => {
+  if (!city) return "";
+
+  return city
+    .toString()
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " "); // remove extra spaces
+};
 
 
-  return "";
+// ================= FORMAT LOCATION FOR DISPLAY =================
+// Display purpose only.
+// Keeps proper capitalization without changing stored/search values.
 
+export const formatLocationDisplay = (...parts) => {
+  return parts
+    .flat()
+    .filter(Boolean)
+    .map((item) =>
+      String(item)
+        .trim()
+        .replace(/\s+/g, " ")
+        .toLowerCase()
+        .replace(/\b\w/g, (char) => char.toUpperCase())
+    )
+    .filter(Boolean)
+    .filter(
+      (item, index, arr) =>
+        arr.findIndex(
+          (x) =>
+            x.toLowerCase() === item.toLowerCase()
+        ) === index
+    )
+    .join(", ");
 };

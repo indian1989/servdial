@@ -219,7 +219,6 @@ const res = await API.get(
     setLoadingCity(false);
   }, []);
 
-  console.log("🔥 CityContext ACTIVE INSTANCE LOADED");
 
   return (
     <CityContext.Provider

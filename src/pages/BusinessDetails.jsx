@@ -1,12 +1,7 @@
 import {
-    useState,
     useMemo,
-    useEffect,
-    useCallback,
-    useRef
 } from "react";
 import { useNavigate } from "react-router-dom";
-import API from "../api/axios";
 
 import TrackBusinessView from "../components/analytics/TrackBusinessView";
 import BusinessTabs from "../components/business/BusinessTabs";
@@ -30,13 +25,32 @@ import BusinessSEO from "../components/business/BusinessSEO";
 import SimilarBusinessesSection from "../components/business/SimilarBusinessesSection";
 import ShareMenu from "../components/business/ShareMenu";
 import MenuItemsSection from "../components/business/MenuItemsSection";
-import { getDistance } from "../utils/getDistance";
+import useBusinessDistance from "../hooks/useBusinessDistance";
 import BusinessAddressCard from "../components/business/BusinessAddressCard";
 import BusinessServiceInfo from "../components/business/BusinessServiceInfo";
+import useBusinessAnalytics from "../hooks/useBusinessAnalytics";
+import useToastMessage from "../hooks/useToastMessage";
+import useBusinessDirections from "../hooks/useBusinessDirections";
+import useSaveBusiness from "../hooks/useSaveBusiness";
+import useLeadBooking from "../hooks/useLeadBooking";
+import useBusinessReview from "../hooks/useBusinessReview";
+import useCategoryBusinessCount from "../hooks/useCategoryBusinessCount";
+import useStickyLead from "../hooks/useStickyLead";
+import useBusinessActions from "../hooks/useBusinessActions";
+import useBusinessShare from "../hooks/useBusinessShare";
+import LoginPromptModal from "../components/common/LoginPromptModal";
+import useGallery from "../hooks/useGallery";
+
 
 const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
   const navigate = useNavigate();
+
+  const {
+    trackEvent
+    }=useBusinessAnalytics(
+    business?._id
+    );
   let user = null;
 
 try {
@@ -45,279 +59,130 @@ try {
   localStorage.removeItem("servdial_user");
 }
 
-  // ================= STATE =================
-  const [activeImg, setActiveImg] = useState(0);
-  const [showGallery, setShowGallery] = useState(false);
-  const [showLeadPopup, setShowLeadPopup] = useState(false);
-const [showBookingPopup, setShowBookingPopup] = useState(false);
-  const [showToast, setShowToast] = useState("");
-  const [phoneRevealed, setPhoneRevealed] = useState(false);
-  const [loadingLead, setLoadingLead] = useState(false);
-  const [categoryCount, setCategoryCount] = useState(null);
-  const [showShareMenu, setShowShareMenu] = useState(false);
-  const [bookingType, setBookingType] = useState("");
-
-  const [leadData, setLeadData] = useState({
-    name: "",
-    phone: "",
-    message: ""
-  });
-
-  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
-  const [pendingReview, setPendingReview] = useState(null);
-
-  const analyticsRef = useRef({});
-
-  // ================= DISTANCE =================
-  const [distance, setDistance] = useState(null);
-
-  useEffect(() => {
-    if (!business) return;
-
-    const userLat = Number(localStorage.getItem("user_lat"));
-    const userLng = Number(localStorage.getItem("user_lng"));
-
-    const businessLng = business?.location?.coordinates?.[0];
-    const businessLat = business?.location?.coordinates?.[1];
-
-    if (userLat && userLng && businessLat && businessLng) {
-      const d = getDistance(userLat, userLng, businessLat, businessLng);
-      setDistance(d);
-      } else {
-        setDistance(null);
-        }
-        }, [business]);
   
+  // ================= HOOKS =================
+  const distance = useBusinessDistance(business);
+  const { showToast, showToastMsg } = useToastMessage();
+  const {
+  handleDirections,
+    } = useBusinessDirections(
+      business,
+      trackEvent,
+      showToastMsg
+    );
 
-  // ================= SAFE DATA =================
+    const {
+
+      handleCall,
+      handleWhatsApp,
+      }=useBusinessActions({
+      business,
+      trackEvent,
+      showToastMsg
+      });
+
+    const {
+    isSaved,
+    setIsSaved,
+    handleSave
+    }=useSaveBusiness({
+    businessId:business?._id,
+    navigate,
+    showToastMsg
+    });
+
+    const {
+
+    showLeadPopup,
+    setShowLeadPopup,
+
+    showBookingPopup,
+    setShowBookingPopup,
+
+    bookingType,
+    setBookingType,
+
+    leadData,
+    setLeadData,
+
+    loadingLead,
+
+    openPrimaryModal,
+
+    handleLeadSubmit,
+
+    handleBookingSubmit
+
+    }=useLeadBooking({
+
+    businessId:business?._id,
+
+    showToastMsg
+
+    });
+
+    const {
+
+    showLoginPrompt,
+
+    setShowLoginPrompt,
+
+    handleReviewSubmit,
+
+    handleLoginRedirect
+
+    }=useBusinessReview({
+
+    businessId:business?._id,
+
+    user,
+
+    navigate,
+
+    refresh
+
+    });
+
+
+    const categoryCount =
+    useCategoryBusinessCount(business);
+  
+    const showStickyLead =
+    useStickyLead(500);
+
+
+    const {
+
+      showShareMenu,
+
+      setShowShareMenu,
+
+      currentUrl
+
+      }=useBusinessShare(
+      business
+      );
+
+      const {
+        activeImg,
+        setActiveImg,
+        showGallery,
+        setShowGallery,
+        closeGallery,
+      } = useGallery();
+
+    // ================= SAFE DATA =================
   const images = useMemo(() => {
     return business?.images?.length ? business.images : ["/no-image.png"];
   }, [business]);
 
 
-  const lat = business?.location?.coordinates?.[1];
-  const lng = business?.location?.coordinates?.[0];
-
-  const whatsappNumber =
-    (business?.whatsapp || business?.phone || "").replace(/\D/g, "");
-
-    const currentUrl =
-  typeof window !== "undefined"
-    ? window.location.href
-    : "https://servdial.com";
-
-  // ================ Sticky Lead ========
-const [showStickyLead, setShowStickyLead] = useState(false);
-
-  // ================= ANALYTICS =================
-  const trackEvent = useCallback((type) => {
-  if (!business?._id) return;
-
-  const key = `${business._id}-${type}`;
-
-  // prevent spam within 10 sec
-  if (
-    analyticsRef.current[key] &&
-    Date.now() - analyticsRef.current[key] < 10000
-  ) {
-    return;
-  }
-
-  analyticsRef.current[key] = Date.now();
-
-  API.post(`/businesses/analytics/${business._id}`, {
-    type,
-  }).catch(() => {});
-}, [business]);
-
-  // ================= CATEGORY COUNT =================
-useEffect(() => {
-  if (!business?.categoryId?._id || !business?.cityId?._id) return;
-
-  API.get("/businesses/count/all", {
-    params: {
-      categoryId: business.categoryId._id,
-      cityId: business.cityId._id,
-    },
-  })
-    .then((res) => {
-      setCategoryCount(res.data?.data?.count || 0);
-    })
-    .catch((err) => {
-      console.error("❌ Count API error:", err);
-    });
-
-}, [
-  business?.categoryId?._id,
-  business?.cityId?._id,
-]);
-
-// ============ Sticky Lead Use Effect ============
-useEffect(() => {
-  const handleScroll = () => {
-    setShowStickyLead(window.scrollY > 500);
-  };
-
-  window.addEventListener("scroll", handleScroll);
-
-  return () => window.removeEventListener("scroll", handleScroll);
-}, []);
-
-  // ================= TOAST =================
-  useEffect(() => {
-  if (!showToast) return;
-
-  const timer = setTimeout(() => {
-    setShowToast("");
-  }, 2000);
-
-  return () => clearTimeout(timer);
-}, [showToast]);
-
-const showToastMsg = useCallback((msg) => {
-  setShowToast(msg);
-}, []);
-
   // ================= ACTIONS =================
-  const handleCall = () => {
-  trackEvent("call");
-
-  if (!phoneRevealed) {
-    setPhoneRevealed(true);
-    showToastMsg("Number revealed 👇");
-    return;
-  }
-
-  if (business.phone) {
-    showToastMsg("Connecting...");
-    setTimeout(() => {
-      window.location.href = `tel:${business.phone}`;
-    }, 500);
-  }
-};
-
-  const handleWhatsApp = () => {
-    trackEvent("whatsapp");
-    if (whatsappNumber) {
-      window.open(`https://wa.me/91${whatsappNumber}`, "_blank");
-    }
-  };
-
-  const openGoogleMaps = (lat, lng) => {
-  window.open(
-    `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
-    "_blank"
-  );
-};
-
-const openLeafletDirections = (lat, lng) => {
-  const url = `https://www.openstreetmap.org/directions?to=${lat},${lng}`;
-  window.open(url, "_blank");
-};
-
-const handleDirections = () => {
-  trackEvent("direction");
-
-  if (!lat || !lng) {
-    return showToastMsg("Location not available");
-  }
-
-  try {
-    openGoogleMaps(lat, lng);
-  } catch (err) {
-    console.log("⚠️ Google Maps failed → switching to OSM");
-    openLeafletDirections(lat, lng);
-  }
-};
-
-
-  const handleReviewSubmit = (data) => {
-    if (!user) {
-      setPendingReview(data);
-      setShowLoginPrompt(true);
-      return;
-    }
-    API.post("/reviews", {
-  businessId: business._id,
-  ...data,
-}).then(() => refresh?.());
-  };
-
-  const handleLoginRedirect = () => {
-  setShowLoginPrompt(false);
-
-  navigate("/login", {
-    state: {
-      from: window.location.pathname,
-      pendingReview,
-    },
-  });
-};
 
 const uiType =
   business?.categoryId?.uiType ||
   business?.category?.uiType ||
   "service";
-
-  const openPrimaryModal=(type="lead")=>{
-
-setBookingType(type);
-
-switch(type){
-
-case "table_booking":
-  setBookingType("table_booking");
-  setShowBookingPopup(true);
-  break;
-
-case "party_booking":
-  setBookingType("party_booking");
-  setShowBookingPopup(true);
-  break;
-
-case "room_booking":
-  setBookingType("room_booking");
-  setShowBookingPopup(true);
-  break;
-
-case "appointment_booking":
-  setBookingType("appointment_booking");
-  setShowBookingPopup(true);
-  break;
-
-default:
-
-setShowLeadPopup(true);
-
-}
-
-};
-
-  const handleLeadSubmit = async () => {
-    try {
-      setLoadingLead(true);
-      await API.post("/leads", {
-        businessId: business._id,
-        ...leadData
-      });
-      showToastMsg("Request sent!");
-      setShowLeadPopup(false);
-    } catch {
-      showToastMsg("Failed!");
-    } finally {
-      setLoadingLead(false);
-    }
-  };
-
-  const handleBookingSubmit = async (bookingData) => {
-  try {
-    await API.post("/leads", bookingData);
-
-    showToastMsg("Booking Request Sent!");
-  } catch {
-    showToastMsg("Booking Failed");
-  }
-};
 
   
  if (!business?._id) {
@@ -342,16 +207,18 @@ setShowLeadPopup(true);
 
 {/* BUSINESS HERO */}
   <BusinessHero
-  business={business}
-  images={images}
-  activeImg={activeImg}
-  setActiveImg={setActiveImg}
-  setShowGallery={setShowGallery}
-  handleCall={handleCall}
-  handleWhatsApp={handleWhatsApp}
-  handleDirections={handleDirections}
-  setShowShareMenu={setShowShareMenu}
-  distance={distance}
+business={business}
+images={images}
+activeImg={activeImg}
+setActiveImg={setActiveImg}
+setShowGallery={setShowGallery}
+handleCall={handleCall}
+handleWhatsApp={handleWhatsApp}
+handleDirections={handleDirections}
+setShowShareMenu={setShowShareMenu}
+distance={distance}
+handleSave={handleSave}
+isSaved={isSaved}
 />
 
 {/* PHOTO GALLERY */}
@@ -360,7 +227,7 @@ setShowLeadPopup(true);
   images={images}
   activeImg={activeImg}
   setActiveImg={setActiveImg}
-  onClose={() => setShowGallery(false)}
+  onClose={closeGallery}
 />
 
       {/* CONTENT */}
@@ -448,47 +315,20 @@ setShowLeadPopup(true);
     categoryCount={categoryCount}
 />
 
-<ShareMenu
- open={showShareMenu}
- url={currentUrl}
- business={business}
-/>
+    <ShareMenu
+    open={showShareMenu}
+    business={business}
+    onClose={()=>setShowShareMenu(false)}
+    />
 
 {/* LOGIN REQUIRED POPUP */}
-{showLoginPrompt && (
-  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[100] px-4">
-    <div className="bg-white rounded-2xl p-6 w-full max-w-sm text-center shadow-2xl">
-
-      <div className="text-4xl mb-3">🔐</div>
-
-      <h2 className="text-xl font-bold mb-2">
-        Login Required
-      </h2>
-
-      <p className="text-sm text-gray-600 mb-5">
-        Please login to submit your review and help other customers.
-      </p>
-
-      <div className="flex gap-3">
-        <button
-          onClick={() => setShowLoginPrompt(false)}
-          className="flex-1 border border-gray-300 py-2 rounded-lg"
-        >
-          Cancel
-        </button>
-
-        <button
-          onClick={handleLoginRedirect}
-          className="flex-1 bg-blue-600 text-white py-2 rounded-lg"
-        >
-          Login
-        </button>
-      </div>
-
-    </div>
+          
+ <LoginPromptModal
+ open={showLoginPrompt}
+ onClose={() => setShowLoginPrompt(false)}
+ onLogin={handleLoginRedirect}
+ />
   </div>
-)}          
- </div>
 
 {/* SMART ACTION BAR */}
   <SmartActionBar

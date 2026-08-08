@@ -12,6 +12,7 @@ import ManageBannerAds from "../pages/admin/ManageBannerAds";
 import AdminAddBanner from "../pages/admin/AdminAddBanner";
 import ManageUsers from "../pages/admin/ManageUsers";
 import ManageAdmins from "../pages/admin/ManageAdmins";
+import AdminLeads from "../pages/admin/AdminLeads";
 
 import Analytics from "../pages/admin/Analytics";
 import Reports from "../pages/admin/Reports";
@@ -37,7 +38,9 @@ const AdminRoutes = () => {
       <Route path="banners" element={<ManageBannerAds />} />
       <Route path="banners/add" element={<AdminAddBanner />} />
       <Route path="users" element={<ManageUsers />} />
+      <Route path="leads" element={<AdminLeads />} />
       <Route path="admins" element={<ManageAdmins />} />
+      
       <Route path="analytics" element={<Analytics />} />
       <Route path="reports" element={<Reports />} />
       <Route path="system-settings" element={<SystemSettings />} />
