@@ -157,232 +157,229 @@ const BusinessServiceInfo = ({ business }) => {
 }
 
 
-      {/* ================= SERVICE TYPES ================= */}
+      {/* ================= SERVICE COVERAGE ================= */}
 
+{
+  hasCoverage && (
+
+    <div>
+
+      <div className="flex items-center gap-2 mb-4">
+
+        <MapPin
+          size={20}
+          className="text-green-600"
+        />
+
+        <h3 className="font-semibold text-lg">
+          Service Coverage
+        </h3>
+
+      </div>
+
+
+      {/* ================= GLOBAL ================= */}
 
       {
-        serviceTypes.length > 0 && (
+        coverage.type === "global" ? (
 
-          <div className="mb-8">
+          <div
+            className="
+              flex
+              items-center
+              gap-2
+              rounded-xl
+              bg-green-50
+              border
+              border-green-200
+              p-4
+              text-green-700
+            "
+          >
 
+            <Globe size={18} />
 
-            <div className="flex items-center gap-2 mb-4">
-
-
-              <Truck
-                size={20}
-                className="text-indigo-600"
-              />
-
-
-              <h3 className="font-semibold text-lg">
-                Service Type
-              </h3>
-
-
-            </div>
-
-
-
-            <div className="flex flex-wrap gap-3">
-
-
-              {
-                serviceTypes.map(
-                  (type,index)=>(
-
-                  <span
-
-                    key={index}
-
-                    className="
-                    px-4
-                    py-2
-                    rounded-full
-                    bg-indigo-50
-                    text-indigo-700
-                    text-sm
-                    font-medium
-                    "
-
-                  >
-
-                    {
-                      serviceTypeLabels[type]
-                      ||
-                      type
-                    }
-
-                  </span>
-
-
-                ))
-              }
-
-
-            </div>
-
+            <span>
+              Worldwide Service Available
+            </span>
 
           </div>
 
-        )
-      }
+        ) : (
+
+          <div className="space-y-4">
 
 
-
-
-
-      {/* ================= SERVICE COVERAGE ================= */}
-
-
-      {
-        hasCoverage && (
-
-          <div>
-
-
-            <div className="flex items-center gap-2 mb-4">
-
-
-              <MapPin
-                size={20}
-                className="text-green-600"
-              />
-
-
-              <h3 className="font-semibold text-lg">
-                Service Coverage
-              </h3>
-
-
-            </div>
-
-
-
+            {/* ================= ALL MODE ================= */}
 
             {
-              coverage.type === "global" ? (
+              coverage.mode === "all" && (
 
                 <div
                   className="
-                  flex
-                  items-center
-                  gap-2
-                  rounded-xl
-                  bg-green-50
-                  border
-                  border-green-200
-                  p-4
-                  text-green-700
+                    rounded-xl
+                    bg-blue-50
+                    border
+                    border-blue-200
+                    p-4
+                    text-blue-700
                   "
                 >
 
-                  <Globe size={18}/>
+                  Service available in all{" "}
 
-                  Worldwide Service Available
-
+                  {
+                    coverage.type === "city"
+                      ? "cities"
+                      : coverage.type === "state"
+                      ? "states"
+                      : coverage.type === "country"
+                      ? "countries"
+                      : "locations"
+                  }
 
                 </div>
 
-
-              ) : (
-
-
-                <div className="flex flex-wrap gap-3">
+              )
+            }
 
 
+            {/* ================= SELECTED CITIES ================= */}
 
-                  {
-                    coverage.cities?.map(
-                      (city,index)=>(
+            {
+              coverage.type === "city" &&
+              coverage.mode !== "all" &&
+              coverage.cities?.length > 0 && (
 
-                      <span
+                <div>
 
-                        key={`city-${index}`}
+                  <h4 className="text-sm font-semibold mb-2 text-gray-700">
+                    Cities
+                  </h4>
 
-                        className="
-                        px-4
-                        py-2
-                        rounded-full
-                        bg-green-50
-                        text-green-700
-                        text-sm
-                        "
+                  <div className="flex flex-wrap gap-3">
 
-                      >
+                    {
+                      coverage.cities.map(
+                        (city, index) => (
 
-                        {city.name}
+                          <span
+                            key={`city-${index}`}
+                            className="
+                              px-4
+                              py-2
+                              rounded-full
+                              bg-green-50
+                              text-green-700
+                              text-sm
+                            "
+                          >
 
+                            {city.name}
 
-                      </span>
+                          </span>
 
-                    ))
-                  }
+                        )
+                      )
+                    }
 
-
-
-
-                  {
-                    coverage.states?.map(
-                      (state,index)=>(
-
-                      <span
-
-                        key={`state-${index}`}
-
-                        className="
-                        px-4
-                        py-2
-                        rounded-full
-                        bg-yellow-50
-                        text-yellow-700
-                        text-sm
-                        "
-
-                      >
-
-                        {state.name}
-
-
-                      </span>
-
-                    ))
-                  }
-
-
-
-
-
-                  {
-                    coverage.countries?.map(
-                      (country,index)=>(
-
-                      <span
-
-                        key={`country-${index}`}
-
-                        className="
-                        px-4
-                        py-2
-                        rounded-full
-                        bg-blue-50
-                        text-blue-700
-                        text-sm
-                        "
-
-                      >
-
-                        {country.name}
-
-
-                      </span>
-
-                    ))
-                  }
-
+                  </div>
 
                 </div>
 
+              )
+            }
+
+
+            {/* ================= SELECTED STATES ================= */}
+
+            {
+              coverage.type === "state" &&
+              coverage.mode !== "all" &&
+              coverage.states?.length > 0 && (
+
+                <div>
+
+                  <h4 className="text-sm font-semibold mb-2 text-gray-700">
+                    States
+                  </h4>
+
+                  <div className="flex flex-wrap gap-3">
+
+                    {
+                      coverage.states.map(
+                        (state, index) => (
+
+                          <span
+                            key={`state-${index}`}
+                            className="
+                              px-4
+                              py-2
+                              rounded-full
+                              bg-yellow-50
+                              text-yellow-700
+                              text-sm
+                            "
+                          >
+
+                            {state.name}
+
+                          </span>
+
+                        )
+                      )
+                    }
+
+                  </div>
+
+                </div>
+
+              )
+            }
+
+
+            {/* ================= SELECTED COUNTRIES ================= */}
+
+            {
+              coverage.type === "country" &&
+              coverage.mode !== "all" &&
+              coverage.countries?.length > 0 && (
+
+                <div>
+
+                  <h4 className="text-sm font-semibold mb-2 text-gray-700">
+                    Countries
+                  </h4>
+
+                  <div className="flex flex-wrap gap-3">
+
+                    {
+                      coverage.countries.map(
+                        (country, index) => (
+
+                          <span
+                            key={`country-${index}`}
+                            className="
+                              px-4
+                              py-2
+                              rounded-full
+                              bg-blue-50
+                              text-blue-700
+                              text-sm
+                            "
+                          >
+
+                            {country.name}
+
+                          </span>
+
+                        )
+                      )
+                    }
+
+                  </div>
+
+                </div>
 
               )
             }
@@ -393,9 +390,12 @@ const BusinessServiceInfo = ({ business }) => {
         )
       }
 
+    </div>
 
+  )
+}
 
-    </BusinessSection>
+</BusinessSection>
 
   );
 

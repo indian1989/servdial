@@ -119,35 +119,95 @@ export const normalizeBusinessPayload = (
 
     /* ================= OPTIONAL ================= */
 
-    pricing:
-      Array.isArray(data.pricing)
-        ? data.pricing
+pricing:
+  Array.isArray(data.pricing)
+    ? data.pricing
+    : [],
+
+/* ================= SERVICES ================= */
+
+services:
+  Array.isArray(data.services)
+    ? data.services.map((service) => ({
+        name: service?.name || "",
+        description: service?.description || "",
+      }))
+    : [],
+
+/* ================= SERVICE COVERAGE ================= */
+
+serviceCoverage: (() => {
+  const coverage = data.serviceCoverage || {};
+
+  return {
+    type: coverage.type || "city",
+
+    mode:
+      coverage.mode ||
+      "selected",
+
+    cities:
+      Array.isArray(coverage.cities)
+        ? coverage.cities.map((city) => ({
+            cityId:
+              city?.cityId ||
+              city?.value ||
+              "",
+            name:
+              city?.name ||
+              "",
+            district:
+              city?.district ||
+              "",
+            state:
+              city?.state ||
+              "",
+            country:
+              city?.country ||
+              "India",
+            countryCode:
+              city?.countryCode ||
+              "IN",
+          }))
         : [],
 
-    services:
-      Array.isArray(data.services)
-        ? data.services
+    states:
+      Array.isArray(coverage.states)
+        ? coverage.states.map((state) => ({
+            name:
+              state?.name ||
+              state?.value ||
+              "",
+            country:
+              state?.country ||
+              "India",
+            countryCode:
+              state?.countryCode ||
+              "IN",
+          }))
         : [],
 
-        /* ================= SERVICE COVERAGE ================= */
-
-serviceCoverage:
-  data.serviceCoverage || {
-    type: "city",
-    mode: "selected",
-    cities: [],
-    states: [],
-    countries: [],
-  },
-
+    countries:
+      Array.isArray(coverage.countries)
+        ? coverage.countries.map((country) => ({
+            name:
+              country?.name ||
+              country?.value ||
+              "",
+            code:
+              country?.code ||
+              "",
+          }))
+        : [],
+  };
+})(),
 
 /* ================= SERVICE TYPES ================= */
 
 serviceTypes:
   Array.isArray(data.serviceTypes)
-    ? data.serviceTypes
+    ? data.serviceTypes.filter(Boolean)
     : [],
-
 
 
 /* ================= COUNTRY ================= */

@@ -33,9 +33,6 @@ const AdminAddBusiness = () => {
 
             <BusinessForm
               mode="admin"
-              initialData={{
-                isVerified: true,
-              }}
               onChange={(data) =>
                 setFormData((prev) => ({
                   ...prev,

@@ -19,6 +19,61 @@ import {
 import BusinessFeatureFields from "./BusinessFeatureFields";
 import BusinessLocationPicker from "./BusinessLocationPicker";
 import CreatableSelect from "react-select/creatable";
+import BusinessHoursManager from "../BusinessHoursManager";
+
+
+/* ================= DEFAULT BUSINESS HOURS ================= */
+
+const defaultBusinessHours = {
+  monday: {
+    open: "",
+    close: "",
+    closed: false,
+    is24h: false,
+  },
+
+  tuesday: {
+    open: "",
+    close: "",
+    closed: false,
+    is24h: false,
+  },
+
+  wednesday: {
+    open: "",
+    close: "",
+    closed: false,
+    is24h: false,
+  },
+
+  thursday: {
+    open: "",
+    close: "",
+    closed: false,
+    is24h: false,
+  },
+
+  friday: {
+    open: "",
+    close: "",
+    closed: false,
+    is24h: false,
+  },
+
+  saturday: {
+    open: "",
+    close: "",
+    closed: false,
+    is24h: false,
+  },
+
+  sunday: {
+    open: "",
+    close: "",
+    closed: false,
+    is24h: false,
+  },
+};
 
 /* ================= SERVICE TYPE OPTIONS ================= */
 
@@ -172,13 +227,19 @@ const styles = {
 
 /* ================= COMPONENT ================= */
 
+const EMPTY_OBJECT = {};
+
 const BusinessForm = ({
-  value = {},
+  value,
+  initialData,
   onChange,
   onSubmit,
   children,
   mode = "provider",
 }) => {
+  const safeValue = value || EMPTY_OBJECT;
+  const safeInitialData = initialData || EMPTY_OBJECT;
+
   const [loading, setLoading] = useState(false);
 
   const [errors, setErrors] = useState({});
@@ -186,8 +247,10 @@ const BusinessForm = ({
   const [categories, setCategories] = useState([]);
   const [cities, setCities] = useState([]);
 
-  const [form, setForm] = useState(defaultBusinessForm);
-
+  const [form, setForm] = useState(() => ({
+  ...defaultBusinessForm,
+  ...safeInitialData,
+}));
 
 const selectedCategoryName =
 form.categoryName ||
@@ -277,98 +340,75 @@ console.log("CITY RESPONSE:", cityRes.data);
   init();
 }, []);
 
-/* ================= INITIAL DATA ================= */
+/* ================= INITIAL DATA / EDIT ================= */
+
 useEffect(() => {
+  // ADD MODE
+  // AdminAddBusiness me value nahi hoti,
+  // isliye yahan form ko dobara set nahi karna hai.
+  if (!safeValue?._id) {
+    return;
+  }
 
-  if (!value || !value._id) return;
-
-console.log("EDIT BUSINESS VALUE:", value);
-
-console.log(
-  "EDIT SERVICE COVERAGE:",
-  value.serviceCoverage
-);
-
-console.log(
-  "EDIT SERVICE TYPES:",
-  value.serviceTypes
-);
-
-console.log(
-  "EDIT SERVICES:",
-  value.services
-);
+  console.log("EDIT BUSINESS VALUE:", safeValue);
 
   const updatedForm = {
-
     ...defaultBusinessForm,
 
-    ...value,
-
+    ...safeValue,
 
     address: normalizeAddress(
-      value.address
+      safeValue.address
     ),
 
-country:
- value.country || "India",
+    country:
+      safeValue.country || "India",
 
-countryCode:
- value.countryCode || "IN",
+    countryCode:
+      safeValue.countryCode || "IN",
 
     services:
-      Array.isArray(value.services)
-        ? value.services.map(service => ({
+      Array.isArray(safeValue.services)
+        ? safeValue.services.map((service) => ({
             name: service.name || "",
-            description: service.description || "",
+            description:
+              service.description || "",
           }))
         : [],
 
-
     serviceTypes:
- Array.isArray(value.serviceTypes)
- ? value.serviceTypes
- : defaultBusinessForm.serviceTypes || [],
-
+      Array.isArray(safeValue.serviceTypes)
+        ? safeValue.serviceTypes
+        : [],
 
     serviceCoverage:
-      value.serviceCoverage || {
-        type:"",
-        mode:"",
-        cities:[],
-        states:[],
-        countries:[]
+      safeValue.serviceCoverage || {
+        type: "city",
+        mode: "selected",
+        cities: [],
+        states: [],
+        countries: [],
       },
 
-
     businessHours:
-      value.businessHours &&
-      Object.keys(value.businessHours).length > 0
-        ? value.businessHours
+      safeValue.businessHours &&
+      Object.keys(safeValue.businessHours).length > 0
+        ? safeValue.businessHours
         : defaultBusinessHours,
-
   };
-
 
   setForm(updatedForm);
 
-
   setRestaurantBooking(
-    value.restaurantBooking || {
-      enabled:false,
-      totalTables:"",
-      seatingCapacity:"",
-      advanceBookingDays:""
+    safeValue.restaurantBooking || {
+      enabled: false,
+      totalTables: "",
+      seatingCapacity: "",
+      advanceBookingDays: "",
     }
   );
 
-
-}, [value, cities]);
-
-
-useEffect(() => {
-
-}, [form.businessHours]);
+}, [safeValue?._id]);
 
   /* ================= HELPERS ================= */
 
@@ -1035,9 +1075,8 @@ const seoPreview = useMemo(() => {
                       </div>
 
 
+{/* ================= SERVICE TYPE ================= */}
 
-
-        {/* SERVICE TYPE */}
 
 <div className="mt-6">
 
@@ -1523,6 +1562,22 @@ mt-2
           </FormField>
 
         </FormSection>
+
+        {/* ================= BUSINESS HOURS ================= */}
+
+          <BusinessHoursManager
+            value={
+              form.businessHours ||
+              defaultBusinessHours
+            }
+            onChange={(businessHours) =>
+              updateForm({
+                ...form,
+                businessHours,
+              })
+            }
+          />
+
 
         {/* DESCRIPTION */}
 

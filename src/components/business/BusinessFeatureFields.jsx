@@ -108,10 +108,6 @@ const BusinessFeatureFields = ({
 
 }) => {
 
-console.log(
-  "🔥 BusinessFeatureFields FEATURES:",
-  features
-);
 
   if(
     !Array.isArray(features) ||

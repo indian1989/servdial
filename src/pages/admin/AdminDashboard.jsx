@@ -69,15 +69,12 @@ function AdminDashboard() {
         API.get("/admin/cities"),
       ]);
 
-      console.log("BUSINESS RESPONSE:", businessRes.data);
-
+     
     const adminData =
   adminRes?.data?.data ||   // ✅ YOUR CURRENT API FORMAT
   adminRes?.data?.stats || // fallback (future safe)
   adminRes?.data ||
   {};
-
-    console.log("ADMIN DATA:", adminData);
 
     const usersList =
       usersRes?.data?.users ||
