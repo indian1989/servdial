@@ -101,6 +101,7 @@ const EditBusiness = () => {
   const [location, setLocation] =
     useState([26.1209, 85.3647]);
 
+    const [logo, setLogo] = useState("");
   const [form, setForm] = useState({
 
   name: "",
@@ -240,7 +241,7 @@ console.log("FEATURES =", business.categoryId?.features);
             business.website || "",
 
           logo: business.logo || "",
-
+          
           images:
             business.images || [],
 
@@ -270,6 +271,8 @@ menu:
 categoryFeatures:
   business.categoryId?.features || [],
         });
+
+        setLogo(business.logo || "");
 
         if (
           business.location
@@ -796,9 +799,9 @@ setMenu={(v)=>
 
           <div className="mt-4">
 
-            {form.logo && (
+            {logo && (
               <img
-                src={form.logo}
+                src={logo}
                 alt={form.name}
                 className="w-24 h-24 rounded-2xl object-cover border mb-4"
               />
