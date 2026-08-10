@@ -521,9 +521,10 @@ cat.uiType || "service"
   <option value="service">Service</option>
   <option value="sell-service">Sell & Service</option>
   <option value="appointment">Appointment</option>
-  <option value="hotel">Booking</option>
+  <option value="booking">Booking</option>
   <option value="restaurant">Restaurant</option>
   <option value="shopping">Shopping</option>
+  <option value="consultation">Consultation</option>
 </select>
 
         <button
