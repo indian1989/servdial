@@ -13,6 +13,9 @@ import API from "../../api/axios";
 import { toBusinessListDTO } from "../../dto/businessDTO";
 import { getBusinessStatus } from "../../utils/getBusinessStatus";
 import { getDistance } from "../../utils/getDistance";
+import {
+  formatCityLocation,
+} from "../../utils/addressHelper";
 
 const BusinessCard = ({ business }) => {
   if (!business) return null;
@@ -63,6 +66,12 @@ const realDistance =
     phoneClicks = 0,
     whatsappClicks = 0,
   } = b;
+
+  const displayLocation = formatCityLocation(
+  cityName,
+  district,
+  state
+);
 
   // HARD GUARD
   if (!_id || !slug || !citySlug || !categorySlug) {
@@ -261,8 +270,8 @@ const realDistance =
         <div className="flex items-center text-sm text-gray-500 mt-3">
           <MapPin size={15} className="mr-1 shrink-0" />
           <span className="line-clamp-1">
-  {[cityName, district, state].filter(Boolean).join(", ")}
-</span>
+          {displayLocation}
+        </span>
         </div>
 
         {/* REVIEWS */}

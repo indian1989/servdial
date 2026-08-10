@@ -1,25 +1,14 @@
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
-import { useCity } from "../context/CityContext";
 
 const useFilters = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { city: globalCity } = useCity();
-
-  // ✅ SAFE CITY SLUG
-  const globalCitySlug =
-    typeof globalCity === "object"
-      ? globalCity?.slug
-      : globalCity || "";
-
   const [filters, setFilters] = useState({
     q: searchParams.get("q") || "",
 
     // ✅ ALWAYS STRING
     city:
-      searchParams.get("city") ||
-      globalCitySlug ||
-      "",
+  searchParams.get("city") || "",
 
     category: searchParams.get("category") || "",
     rating: searchParams.get("rating") || "",
@@ -40,49 +29,47 @@ const useFilters = () => {
       Number(searchParams.get("page")) || 1,
   });
 
-  // ================= SYNC GLOBAL CITY =================
-  useEffect(() => {
-    if (
-      globalCitySlug &&
-      globalCitySlug !== filters.city
-    ) {
-      setFilters((prev) => ({
-        ...prev,
-        city: globalCitySlug,
-        page: 1,
-      }));
-    }
-  }, [globalCitySlug]);
 
   // ================= SYNC URL =================
   useEffect(() => {
-    const cleaned = {};
+  console.log("🌐 URL SYNC FILTERS:", filters);
 
-    Object.entries(filters).forEach(([key, value]) => {
-      if (
-        value !== "" &&
-        value !== null &&
-        value !== undefined
-      ) {
-        cleaned[key] = value;
-      }
-    });
+  const cleaned = {};
 
-    cleaned.openNow = filters.openNow
-      ? "true"
-      : "false";
+  Object.entries(filters).forEach(([key, value]) => {
+    if (
+      value !== "" &&
+      value !== null &&
+      value !== undefined
+    ) {
+      cleaned[key] = value;
+    }
+  });
 
-    setSearchParams(cleaned);
-  }, [filters]);
+  cleaned.openNow = filters.openNow
+    ? "true"
+    : "false";
+
+  console.log("🌐 URL WILL BECOME:", cleaned);
+
+  setSearchParams(cleaned);
+}, [filters]);
 
   // ================= UPDATE FILTER =================
   const updateFilter = (key, value) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value,
-      page: 1,
-    }));
-  };
+  console.log("🔥 FILTER UPDATE:", {
+    key,
+    value,
+    currentFilters: filters,
+    stack: new Error().stack,
+  });
+
+  setFilters((prev) => ({
+    ...prev,
+    [key]: value,
+    page: 1,
+  }));
+};
 
   return {
     filters,
