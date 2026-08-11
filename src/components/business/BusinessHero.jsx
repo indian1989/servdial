@@ -59,6 +59,24 @@ const heroLocation = [
 .filter(Boolean)
 .join(" • ");
 
+// ================= SEO H1 =================
+
+const heroH1 =
+  business?.seo?.h1 ||
+  `${business?.name || "Business"} - ${
+    titleCase(
+      business?.categoryId?.name ||
+      business?.categoryName ||
+      "Business"
+    )
+  } in ${
+    titleCase(
+      business?.cityName ||
+      business?.cityId?.name ||
+      ""
+    )
+  }`;
+
   return (
 
 <section className="relative w-full">
@@ -78,16 +96,16 @@ overflow-hidden
 
 
 <img
-
-src={heroImage}
-
-alt={`${business.name} ${
-  business.categoryId?.name || "business"
-} in ${
-  business.cityName ||
-  business.cityId?.name ||
-  ""
-}`}
+  src={heroImage}
+  alt={`${business.name} ${
+    business.categoryId?.name ||
+    business.categoryName ||
+    "business"
+  } in ${
+    business.cityName ||
+    business.cityId?.name ||
+    ""
+  }`}
 
 loading="eager"
 

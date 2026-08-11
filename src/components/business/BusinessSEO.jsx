@@ -1,48 +1,44 @@
 // src/components/business/BusinessSEO.jsx
 
 import { Helmet } from "react-helmet-async";
+
 import {
   generateLocalBusinessSchema,
   generateBreadcrumbSchema,
 } from "../../utils/schemaBuilder";
 
+
 const FRONTEND_URL =
   import.meta.env.VITE_FRONTEND_URL ||
   "https://servdial.com";
 
+
+// =========================================================
+// ABSOLUTE IMAGE URL
+// =========================================================
+
 const absoluteUrl = (url) => {
-  if (!url) return `${FRONTEND_URL}/logo.png`;
-  return url.startsWith("http") ? url : `${FRONTEND_URL}${url}`;
+
+  if (!url) {
+    return `${FRONTEND_URL}/logo.png`;
+  }
+
+  return url.startsWith("http")
+    ? url
+    : `${FRONTEND_URL}${url}`;
 };
 
-const BusinessSEO = ({ business, currentUrl }) => {
 
- 
-  if (!business) return null;
-
-  /* ================= LOCATION ================= */
-const cityName =
-  business?.cityId?.name ||
-  business?.cityName ||
-  "";
-
-const districtName =
-  business?.district ||
-  "";
-
-const stateName =
-  business?.state ||
-  "";
-
-const countryName =
-  business?.country ||
-  "India";
-
+// =========================================================
+// NORMALIZE LOCATION
+// =========================================================
 
 const normalizeLocation = (...parts) => {
+
   return parts
     .filter(Boolean)
-    .map((item) => item.trim())
+    .map((item) => item.toString().trim())
+    .filter(Boolean)
     .filter(
       (item, index, arr) =>
         arr.findIndex(
@@ -53,187 +49,398 @@ const normalizeLocation = (...parts) => {
     .join(", ");
 };
 
-/* ================= ADDRESS ================= */
 
-const street =
-  business?.address?.street ||
-  "";
+// =========================================================
+// BUSINESS SEO
+// =========================================================
 
-const area =
-  business?.address?.area ||
-  "";
+const BusinessSEO = ({
+  business,
+  currentUrl,
+}) => {
 
-const landmark =
-  business?.address?.landmark ||
-  "";
+  if (!business) return null;
 
 
-const addressText = normalizeLocation(
-  street,
-  area,
-  landmark
-);
+  // =======================================================
+  // LOCATION
+  // =======================================================
+
+  const cityName =
+    business?.cityId?.name ||
+    business?.cityName ||
+    "";
+
+  const districtName =
+    business?.district ||
+    business?.cityId?.district ||
+    "";
+
+  const stateName =
+    business?.state ||
+    business?.cityId?.state ||
+    "";
+
+  const countryName =
+    business?.country ||
+    "India";
 
 
-/* ================= SEO LOCATION ================= */
+  // =======================================================
+  // ADDRESS
+  // =======================================================
 
-const locationText = normalizeLocation(
-  area,
-  cityName,
-  districtName,
-  stateName
-);
+  const street =
+    business?.address?.street ||
+    "";
 
-  /* ================= CATEGORY ================= */
+  const area =
+    business?.address?.area ||
+    "";
+
+  const landmark =
+    business?.address?.landmark ||
+    "";
+
+
+  const addressText =
+    normalizeLocation(
+      street,
+      area,
+      landmark
+    );
+
+
+  // =======================================================
+  // SEO LOCATION
+  // =======================================================
+
+  const locationText =
+    normalizeLocation(
+      area,
+      cityName,
+      districtName,
+      stateName
+    );
+
+
+  // =======================================================
+  // CATEGORY
+  // =======================================================
 
   const categoryName =
     business?.categoryId?.name ||
     business?.categoryName ||
     "Business";
 
-  /* ================= TITLE ================= */
 
-const titleLocation = locationText
-  ? ` in ${locationText}`
-  : "";
+  // =======================================================
+  // BUSINESS NAME
+  // =======================================================
 
-const title =
-  `${business.name} - ${categoryName}${titleLocation} | ServDial`;
-
-
-/* ================= DESCRIPTION ================= */
-
-const seoLocation = normalizeLocation(
-  area,
-  cityName,
-  districtName,
-  stateName
-);
+  const businessName =
+    business?.name ||
+    "Business";
 
 
-const description =
-`${business.name} is a Verified ${categoryName} in ${seoLocation}. Find address, phone number, reviews, photos, services and contact details on ServDial.`
-.replace(/\s+/g, " ")
-.slice(0, 250);
+  // =======================================================
+  // BACKEND GENERATED SEO
+  // =======================================================
 
-  /* ================= IMAGE ================= */
+  const seo =
+    business?.seo || {};
 
-  const image = absoluteUrl(
-    business?.images?.[0] ||
+
+  // =======================================================
+  // FALLBACK TITLE
+  // =======================================================
+
+  const fallbackTitle =
+    locationText
+      ? `${businessName} - ${categoryName} in ${locationText} | ServDial`
+      : `${businessName} - ${categoryName} | ServDial`;
+
+
+  // =======================================================
+  // FALLBACK DESCRIPTION
+  // =======================================================
+
+  const fallbackDescription =
+    `${businessName} is a ${
+      business?.isVerified
+        ? "Verified "
+        : ""
+    }${categoryName} in ${
+      locationText || countryName
+    }. Find address, phone number, business hours, ratings, reviews, photos, services and contact details on ServDial.`
+      .replace(/\s+/g, " ")
+      .slice(0, 250);
+
+
+  // =======================================================
+  // SEO META — BACKEND FIRST
+  // =======================================================
+
+  const title =
+    seo?.title ||
+    fallbackTitle;
+
+
+  const description =
+    seo?.description ||
+    fallbackDescription;
+
+
+  const keywords =
+    Array.isArray(seo?.keywords)
+      ? seo.keywords
+          .filter(Boolean)
+          .join(", ")
+      : seo?.keywords ||
+        [
+          businessName,
+          categoryName,
+          area,
+          cityName,
+          districtName,
+          stateName,
+          `${categoryName} in ${cityName}`,
+          `Best ${categoryName} in ${cityName}`,
+          `Verified ${categoryName} in ${cityName}`,
+          `${businessName} phone number`,
+          `${businessName} address`,
+          "ServDial",
+        ]
+          .filter(Boolean)
+          .join(", ");
+
+
+  // =======================================================
+  // SEO H1
+  // =======================================================
+
+  const h1 =
+    seo?.h1 ||
+    fallbackTitle.replace(
+      " | ServDial",
+      ""
+    );
+
+
+  // =======================================================
+  // IMAGE
+  // =======================================================
+
+  const image =
+    absoluteUrl(
+      business?.images?.[0] ||
       business?.logo
-  );
+    );
 
-  /* ================= URL ================= */
+
+  // =======================================================
+  // CANONICAL URL
+  // =======================================================
 
   const url =
     currentUrl ||
-    `${FRONTEND_URL}/${business.citySlug}/${business.categorySlug}/${business.slug}`;
+    `${FRONTEND_URL}/${
+      business?.citySlug ||
+      business?.cityId?.slug ||
+      ""
+    }/${
+      business?.categorySlug ||
+      business?.categoryId?.slug ||
+      ""
+    }/${business?.slug || ""}`;
 
-  /* ================= KEYWORDS ================= */
 
-  const keywords = [
-  business.name,
-  categoryName,
-
-  area,
-  cityName,
-  districtName,
-  stateName,
-
-  area && `${categoryName} in ${area}`,
-  cityName && `${categoryName} in ${cityName}`,
-  `Best ${categoryName} in ${cityName}`,
-  `Verified ${categoryName} in ${cityName}`,
-
-  `${business.name} phone number`,
-  `${business.name} address`,
-
-  "ServDial",
-]
-.filter(Boolean)
-.join(", ");
-
-  /* ================= SCHEMAS ================= */
+  // =======================================================
+  // LOCAL BUSINESS SCHEMA
+  // =======================================================
 
   const localBusinessSchema =
-    generateLocalBusinessSchema(
-    {
-    ...business,
-    categoryName,
-    cityName,
-    state: stateName,
-    image,
-    descriptionSEO: description,
-    },
-    url
-    );
+    generateLocalBusinessSchema({
 
-    console.log(
-  "LOCAL BUSINESS SCHEMA:",
-  localBusinessSchema
-);
+      ...business,
+
+      categoryName,
+
+      cityName,
+
+      state: stateName,
+
+      country: countryName,
+
+      image,
+
+      url,
+
+      descriptionSEO:
+        description,
+
+    });
+
+
+  // =======================================================
+  // BREADCRUMB SCHEMA
+  // =======================================================
 
   const breadcrumbSchema =
     generateBreadcrumbSchema({
-      city: cityName,
-      category: categoryName,
-      businessName: business.name,
-      citySlug: business.citySlug,
-      categorySlug: business.categorySlug,
-      businessSlug: business.slug,
+
+      city:
+        cityName,
+
+      category:
+        categoryName,
+
+      businessName,
+
+      citySlug:
+        business?.citySlug ||
+        business?.cityId?.slug,
+
+      categorySlug:
+        business?.categorySlug ||
+        business?.categoryId?.slug,
+
+      businessSlug:
+        business?.slug,
+
     });
 
-    const faqSchema =
-  business?.faq?.length
-    ? {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        "mainEntity": business.faq.map((item) => ({
-          "@type": "Question",
-          "name": item.question,
-          "acceptedAnswer": {
-            "@type": "Answer",
-            "text": item.answer,
-          },
-        })),
-      }
-    : null;
+
+  // =======================================================
+  // FAQ SCHEMA
+  // =======================================================
+
+  const faqSchema =
+    Array.isArray(business?.faq) &&
+    business.faq.length > 0
+      ? {
+
+          "@context":
+            "https://schema.org",
+
+          "@type":
+            "FAQPage",
+
+          mainEntity:
+            business.faq
+              .filter(
+                (item) =>
+                  item?.question &&
+                  item?.answer
+              )
+              .map((item) => ({
+
+                "@type":
+                  "Question",
+
+                name:
+                  item.question,
+
+                acceptedAnswer: {
+
+                  "@type":
+                    "Answer",
+
+                  text:
+                    item.answer,
+
+                },
+
+              })),
+
+        }
+      : null;
+
+
+  // =======================================================
+  // RENDER
+  // =======================================================
 
   return (
+
     <Helmet>
 
-      {/* ================= BASIC ================= */}
+      {/* ================= BASIC SEO ================= */}
 
-      <title>{title}</title>
+      <title>
+        {title}
+      </title>
+
 
       <meta
         name="description"
         content={description}
       />
 
+
       <meta
         name="keywords"
         content={keywords}
       />
+
 
       <meta
         name="robots"
         content="index, follow, max-image-preview:large"
       />
 
+
       <link
         rel="canonical"
         href={url}
       />
 
+
+      {/* ================= H1 ================= */}
+
+      {/* 
+        H1 is intentionally NOT rendered here.
+        Use `business.seo.h1` in the actual page content.
+      */}
+
+
       {/* ================= OPEN GRAPH ================= */}
 
-      <meta property="og:type" content="website" />
-      <meta property="og:title" content={title} />
-      <meta property="og:description" content={description} />
-      <meta property="og:image" content={image} />
-      <meta property="og:url" content={url} />
-      <meta property="og:site_name" content="ServDial" />
+      <meta
+        property="og:type"
+        content="business.business"
+      />
+
+
+      <meta
+        property="og:title"
+        content={title}
+      />
+
+
+      <meta
+        property="og:description"
+        content={description}
+      />
+
+
+      <meta
+        property="og:image"
+        content={image}
+      />
+
+
+      <meta
+        property="og:url"
+        content={url}
+      />
+
+
+      <meta
+        property="og:site_name"
+        content="ServDial"
+      />
+
 
       {/* ================= TWITTER ================= */}
 
@@ -242,41 +449,75 @@ const description =
         content="summary_large_image"
       />
 
+
       <meta
         name="twitter:title"
         content={title}
       />
+
 
       <meta
         name="twitter:description"
         content={description}
       />
 
+
       <meta
         name="twitter:image"
         content={image}
       />
 
-      {/* ================= STRUCTURED DATA ================= */}
 
-      <script type="application/ld+json">
-        {JSON.stringify(localBusinessSchema)}
-      </script>
+      {/* ================= LOCAL BUSINESS SCHEMA ================= */}
 
-      <script type="application/ld+json">
-        {JSON.stringify(breadcrumbSchema)}
-      </script>
+      {localBusinessSchema && (
 
-      {
-  faqSchema && (
-    <script type="application/ld+json">
-      {JSON.stringify(faqSchema)}
-    </script>
-  )
-}
+        <script
+          type="application/ld+json"
+        >
+          {JSON.stringify(
+            localBusinessSchema
+          )}
+        </script>
+
+      )}
+
+
+      {/* ================= BREADCRUMB SCHEMA ================= */}
+
+      {breadcrumbSchema && (
+
+        <script
+          type="application/ld+json"
+        >
+          {JSON.stringify(
+            breadcrumbSchema
+          )}
+        </script>
+
+      )}
+
+
+      {/* ================= FAQ SCHEMA ================= */}
+
+      {faqSchema &&
+        faqSchema.mainEntity?.length > 0 && (
+
+          <script
+            type="application/ld+json"
+          >
+            {JSON.stringify(
+              faqSchema
+            )}
+          </script>
+
+        )}
 
     </Helmet>
+
   );
+
 };
+
 
 export default BusinessSEO;

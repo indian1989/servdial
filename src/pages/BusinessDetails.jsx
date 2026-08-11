@@ -192,7 +192,7 @@ const uiType =
   </div>
  );
 }
-<BusinessSEO />
+
 
   return (
   <>
