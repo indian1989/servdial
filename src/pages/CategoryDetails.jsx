@@ -13,11 +13,14 @@ import {
   Search,
 } from "lucide-react";
 
+import BusinessCard from "../components/business/BusinessCard";
+
 const CategoryDetails = () => {
   const { citySlug, slug } = useParams();
   const navigate = useNavigate();
 
   const [category, setCategory] = useState(null);
+  const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
 
   // ================= FETCH CATEGORY =================
@@ -36,6 +39,19 @@ const CategoryDetails = () => {
         console.log("CATEGORY RESPONSE:", data);
 
         setCategory(data);
+
+        // If leaf category → fetch businesses
+        if ((data.children || []).length === 0) {
+          try {
+            const businessRes = await API.get(`/businesses?category=${slug}&limit=50`);
+            setBusinesses(businessRes.data?.data || []);
+          } catch (e) {
+            console.error("Business fetch error:", e);
+            setBusinesses([]);
+          }
+        } else {
+          setBusinesses([]);
+        }
 
       } catch (err) {
         console.error("Category fetch error:", err);
@@ -204,11 +220,13 @@ const CategoryDetails = () => {
             <div>
 
               <h2 className="text-2xl font-bold text-gray-800">
-                Sub Categories
+                {category.children?.length > 0 ? "Sub Categories" : "Businesses"}
               </h2>
 
               <p className="text-gray-500 mt-1">
-                {category.children?.length || 0} sub categories available
+                {category.children?.length > 0
+                ? `${category.children.length} sub categories available`
+                : `${businesses.length} businesses available`}
               </p>
 
             </div>
@@ -229,99 +247,62 @@ const CategoryDetails = () => {
           </div>
 
           {/* ================= CHILDREN ================= */}
-          {category.children &&
-          category.children.length > 0 ? (
-
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-
-              {category.children.map((child) => (
-
-                <button
-                  key={child._id}
-                  onClick={() => {
-                    if (citySlug) {
-                      navigate(`/${citySlug}/${child.slug}`);
-                    } else {
-                      navigate(`/search?category=${child.slug}`);
-                    }
-                  }}
-                  className="group bg-white border border-gray-100 rounded-2xl p-5 text-left hover:shadow-xl hover:border-blue-200 transition-all duration-300"
-                >
-
-                  <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition">
-
-                    {child.icon ? (
-                      <img
-                        src={child.icon}
-                        alt={child.name}
-                        className="w-8 h-8 object-contain"
-                      />
-                    ) : (
-                      <Layers3
-                        size={24}
-                        className="text-blue-600"
-                      />
-                    )}
-
-                  </div>
-
-                  <h3 className="font-semibold text-gray-800 text-sm leading-6 group-hover:text-blue-600 transition min-h-[48px]">
-                    {child.name}
-                  </h3>
-
-                  <div className="flex items-center justify-between mt-4">
-
-                    <span className="text-xs text-gray-500">
-                      Explore businesses
-                    </span>
-
-                    <ArrowRight
-                      size={16}
-                      className="text-gray-400 group-hover:text-blue-600 transition"
-                    />
-
-                  </div>
-
-                </button>
-
-              ))}
-
-            </div>
-
+{category.children?.length > 0 ? (
+  // ===== MAIN CATEGORY → SHOW SUBCATEGORIES =====
+  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+    
+    {category.children.map((sub) => (
+      <Link
+      key={sub._id}
+      to={`/category/${sub.slug}`}
+      className="group bg-white border border-gray-100 rounded-2xl p-5
+      hover:shadow-xl hover:border-blue-200 transition-all duration-300" >
+        
+        <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-
+        center justify-center mb-4 group-hover:bg-blue-100 transition">
+          
+          {sub.icon ? (
+            <img
+            src={sub.icon}
+            alt={sub.name}
+            className="w-8 h-8 object-contain"
+            />
           ) : (
-
-            <div className="bg-white border rounded-3xl p-10 text-center shadow-sm">
-
-              <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
-
-                <Layers3
-                  size={28}
-                  className="text-gray-400"
-                />
-
+          <Layers3 size={24} className="text-blue-600" />
+        )}
+        </div>
+        
+        <h3 className="font-semibold text-gray-800 text-sm leading-6
+        group-hover:text-blue-600 transition min-h-[48px]">
+          {sub.name}
+          </h3>
+          
+          <div className="flex items-center justify-between mt-4">
+            
+            <span className="text-xs text-gray-500">
+              Explore businesses
+              </span>
+              
+              <ArrowRight
+              size={16}
+              className="text-gray-400 group-hover:text-blue-600
+              transition"
+              />
               </div>
-
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">
-                No Sub Categories Found
-              </h3>
-
-              <p className="text-gray-500 mb-6">
-                Businesses will appear here once sub categories are added.
-              </p>
-
-              <button
-                onClick={() =>
-                  navigate(`/search?category=${slug}`)
-                }
-                className="px-5 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition"
-              >
-                View Businesses
-              </button>
-
-            </div>
-
-          )}
-
+              </Link>
+              ))}
+              </div>
+              
+            ) : businesses.length > 0 ? (
+              
+              // ===== LEAF CATEGORY → SHOW BUSINESSES =====
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+         {businesses.map((b) => ( <BusinessCard key={b._id} business={b} /> ))}
+                  </div>
+                  ) : (
+                    
+                    // ===== TRULY EMPTY =====
+                    <div className="bg-white border rounded-3xl p-10 text-center shadow-sm"> <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-5"> <Layers3 size={28} className="text-gray-400" /> </div> <h3 className="text-xl font-semibold text-gray-700 mb-2"> No Businesses Found </h3> <p className="text-gray-500"> No businesses are available in this category right now. </p> </div> )}
           {/* ================= SEO CONTENT ================= */}
           <div className="bg-white border rounded-3xl p-8 mt-14 shadow-sm">
 

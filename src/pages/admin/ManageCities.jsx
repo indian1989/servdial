@@ -90,7 +90,7 @@ const toggleFeatured = async (city) => {
     console.log("🔥 FULL RESPONSE:", res);
     console.log("🔥 DATA:", res.data);
 
-    setCities(res.data?.data?.cities || []);
+    setCities(res.data?.data || []);
   } catch (err) {
     console.error("❌ FETCH ERROR:", err);
     alert("Failed to fetch cities");

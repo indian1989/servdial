@@ -294,7 +294,7 @@ const CategoryPage = () => {
 
                   <Link
                     key={city._id}
-                    to={`/city/${city.slug}`}
+                    to={`/${city.slug}`}
                     className="group bg-white border rounded-2xl px-5 py-4 hover:shadow-lg hover:border-blue-200 transition"
                   >
 
