@@ -10,6 +10,8 @@ import {
   Grid2X2,
 } from "lucide-react";
 
+import NotFound from "./NotFound";
+
 const CityPage = () => {
   const { citySlug } = useParams();
 
@@ -92,6 +94,10 @@ const CityPage = () => {
       </div>
     );
   }
+
+  if (!cityData) {
+  return <NotFound />;
+}
 
   return (
     <>

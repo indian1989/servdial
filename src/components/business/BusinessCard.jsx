@@ -46,6 +46,8 @@ const realDistance =
     slug,
     name = "Business",
     image,
+    logo,
+    images,
     categoryName,
     cityName,
     citySlug,
@@ -66,6 +68,12 @@ const realDistance =
     phoneClicks = 0,
     whatsappClicks = 0,
   } = b;
+
+  const businessImage =
+  image ||
+  logo ||
+  (Array.isArray(images) && images.length > 0 ? images[0] : null) ||
+  "/no-image.png";
 
   const displayLocation = formatCityLocation(
   cityName,
@@ -147,11 +155,12 @@ const realDistance =
       {/* IMAGE */}
       <div className="relative h-52 overflow-hidden bg-gray-100">
         <img
-          src={
-            image ||
-            "https://images.unsplash.com/photo-1521791136064-7986c2920216?q=80&w=1200"
-          }
+          src={businessImage}
           alt={name}
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "/no-image.png";
+          }}
           className="
             w-full
             h-full

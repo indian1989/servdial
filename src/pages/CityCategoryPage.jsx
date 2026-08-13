@@ -11,8 +11,10 @@ import NotFound from "./NotFound";
 
 const CityCategoryPage = () => {
   // ================= URL PARAMS =================
-  const { citySlug, categorySlug } = useParams();
-  
+  const params = useParams();
+  const citySlug = params.citySlug;
+  const categorySlug = params.categorySlug || "all";
+
   const [notFound, setNotFound] = useState(false);
 
   const [businesses, setBusinesses] = useState([]);
@@ -41,18 +43,8 @@ const [cityInfo,setCityInfo] = useState(null);
 const data = response.data;
 
 
-if (
-  !data?.category &&
-  categorySlug !== "all"
-) {
-  setNotFound(true);
-  return;
-}
-
-if (
-  categorySlug !== "all" &&
-  !data?.category?.slug
-) {
+// "all" page is valid even without category
+if (categorySlug !== "all" && !data?.category?.slug) {
   setNotFound(true);
   return;
 }
@@ -71,8 +63,9 @@ setBusinesses(data?.data || []);
     // ================= CATEGORY INFO =================
 
     setCategoryInfo(
-      data?.category || null
-    );
+      categorySlug === "all"
+       ? null : (data?.category || null) 
+      );
 
     setCityInfo(
  data?.city || null
@@ -112,91 +105,95 @@ setBusinesses(data?.data || []);
   }, [citySlug, categorySlug]);
 
   // ================= FORMATTERS =================
-const formattedCity =
-cityInfo
+const formattedCity = cityInfo?.name
 ? normalizeLocation(
-    cityInfo.name,
-    cityInfo.district,
-    cityInfo.state,
-    cityInfo.country
-  )
-: "";
+  cityInfo.name,
+  cityInfo.district,
+  cityInfo.state,
+  cityInfo.country
+)
+: citySlug
+?.replace(/-/g, " ")
+?.replace(/\b\w/g, (l) => l.toUpperCase()) || "";
 
+const isAllPage = categorySlug === "all";
 
-const formattedCategory =
-  categorySlug === "all"
+console.log({ citySlug, categorySlug, isAllPage, categoryInfo });
+
+const formattedCategory = isAllPage
+  
     ? "All Businesses"
-    : categorySlug
-        ?.replace(/-/g, " ")
-        ?.replace(/\b\w/g, (l) => l.toUpperCase()) || "";
+    : (categoryInfo?.name ||
+      categorySlug
+      ?.replace(/-/g, " ")
+      ?.replace(/\b\w/g, (l) => l.toUpperCase())) || "Businesses";
 
   // ================= SEO =================
-const title =
-  categorySlug === "all"
+const title = isAllPage
     ? `Businesses in ${formattedCity} | ServDial`
     : `${formattedCategory} in ${formattedCity} | ServDial`;
 
-  const description =
-  categorySlug === "all"
-    ? `Find trusted local businesses in ${formattedCity}. Explore restaurants, hotels, electricians, plumbers, salons, hospitals and more on ServDial.`
-    : `Find trusted ${formattedCategory} services in ${formattedCity}. Browse verified local businesses, contact details, ratings and more on ServDial.`;
+
+  const description = isAllPage
+    ? `Find trusted local businesses in ${formattedCity}. Explore
+    restaurants, hotels, electricians, plumbers, salons, hospitals and more on ServDial.`
+    : `Find trusted ${formattedCategory} services in ${formattedCity}.
+    Browse verified local businesses, contact details, ratings and more on ServDial.`;
 
   const canonicalUrl = `https://servdial.com/${citySlug}/${categorySlug}`;
 
+   
   const schema = {
   "@context": "https://schema.org",
   "@type": "ItemList",
-  name: `${formattedCategory} in ${formattedCity}`,
+  name: isAllPage
+  ? `Businesses in ${formattedCity}`
+  : `${formattedCategory} in ${formattedCity}`,
   itemListElement: businesses.map((biz, index) => ({
     "@type": "ListItem",
     position: index + 1,
-
     item: {
-      "@type": "LocalBusiness",
-
-      name: biz?.name,
-
-      image:
-        biz?.images?.[0] ||
-        "https://servdial.com/default-business.jpg",
-
-      url:
-        `https://servdial.com/${citySlug}/${categorySlug}/${biz?.slug}`,
-
-      address: {
-        "@type": "PostalAddress",
-        addressLocality: cityInfo?.name || "",
-        addressRegion: cityInfo?.state || "",
-        addressCountry: "IN"
-      }
+    "@type": "LocalBusiness",
+    name: biz?.name,
+    image:
+    biz?.images?.[0] ||
+    "https://servdial.com/default-business.jpg",
+    url: `https://servdial.com/${citySlug}/${biz?.categorySlug ||
+    biz?.categoryId?.slug}/${biz?.slug}`,
+    address: {
+    "@type": "PostalAddress",
+    addressLocality: cityInfo?.name || "",
+    addressRegion: cityInfo?.state || "",
+    addressCountry: "IN"
     }
-  })),
-};
-
-  const breadcrumbSchema = {
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  itemListElement: [
+    }
+    })),
+    };
+    
+    const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
     {
-      "@type": "ListItem",
-      position: 1,
-      name: "Home",
-      item: "https://servdial.com",
+    "@type": "ListItem",
+    position: 1,
+    name: "Home",
+    item: "https://servdial.com",
     },
     {
-      "@type": "ListItem",
-      position: 2,
-      name: formattedCity,
-      item: `https://servdial.com/city/${citySlug}`,
+    "@type": "ListItem",
+    position: 2,
+    name: formattedCity,
+    item: `https://servdial.com/${citySlug}`,
     },
     {
-      "@type": "ListItem",
-      position: 3,
-      name: formattedCategory,
-      item: canonicalUrl,
+    "@type": "ListItem",
+    position: 3,
+    name: formattedCategory,
+    item: canonicalUrl,
     },
-  ],
-};
+    ],
+    };
 
 // ================= FAQ DATA =================
   const faqItems = categorySlug === 'restaurant'
@@ -365,8 +362,7 @@ if (notFound) {
               <span>/</span>
 
               <Link
-                to={`/city/${citySlug}`}
-                className="hover:text-white transition capitalize"
+              to={`/${citySlug}`} className="hover:text-white transition capitalize"
               >
                 {formattedCity}
               </Link>
@@ -386,8 +382,7 @@ if (notFound) {
             {/* HEADING */}
             <h1 className="text-3xl md:text-5xl font-bold capitalize leading-tight">
 
-                {
-                categorySlug === "all"
+                {isAllPage
                 ?
                 `Businesses in ${formattedCity}`
                 :
@@ -399,11 +394,11 @@ if (notFound) {
             <p className="mt-4 text-blue-100 max-w-2xl text-base md:text-lg">
 
               {
-              categorySlug === "all"
+              isAllPage
               ?
-              `Discover verified and trusted local businesses near you in ${formattedCity}.`
+              `Discover verified local businesses near you in ${formattedCity}.`
               :
-              `Discover verified and trusted ${formattedCategory.toLowerCase()} businesses near you in ${formattedCity}.`
+              `Discover verified ${formattedCategory.toLowerCase()} near you in ${formattedCity}.`
               }
 
               </p>
@@ -445,9 +440,7 @@ if (notFound) {
         <div className="max-w-7xl mx-auto px-4 py-8">
 
 
-        <h2 className="text-2xl font-bold mb-5">
-        Explore Home Services
-        </h2>
+        <div className="flex items-center justify-between mb-5"> <div> <h2 className="text-2xl font-bold text-gray-900"> Explore {formattedCategory} </h2> <p className="text-gray-500 mt-1"> {subCategories.length} subcategories available </p> </div> </div>
 
 
         <div className="
@@ -464,24 +457,10 @@ if (notFound) {
         <Link
         key={sub._id}
         to={`/${citySlug}/${sub.slug}`}
-        className="
-        bg-white
-        border
-        rounded-xl
-        p-4
-        hover:shadow-lg
-        transition
-        "
+        className=" bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-lg hover:border-blue-200 transition-all duration-300 group "
         >
 
-        <h3 className="font-semibold capitalize">
-        {sub.name}
-        </h3>
-
-
-        <p className="text-sm text-gray-500 mt-1">
-        View Services
-        </p>
+        <div className="flex items-start justify-between"> <div> <h3 className="font-semibold text-gray-900 capitalize group-hover:text-blue-600 transition"> {sub.name} </h3> <p className="text-sm text-gray-500 mt-2"> Browse businesses and services </p> </div> <span className="text-blue-600 group-hover:translate-x-1 transition-transform"> → </span> </div>
 
 
         </Link>
@@ -501,27 +480,12 @@ if (notFound) {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
 
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">
-
-                {
-                categorySlug === "all"
-                ?
-                `Popular Businesses in ${formattedCity}`
-                :
-                `Top ${formattedCategory} Businesses in ${formattedCity}`
-                }
-
-                </h2>
-
-              <p className="text-gray-500 mt-1">
-                Showing {businesses.length} businesses in{" "}
-                {formattedCategory}
-              </p>
+             <h2 className="text-2xl font-bold text-gray-900"> {subCategories.length > 0 ? `Related ${formattedCategory} Businesses in ${formattedCity}` : categorySlug === "all" ? `Popular Businesses in ${formattedCity}` : `Top ${formattedCategory} Businesses in ${formattedCity}`} </h2>
+              <p className="text-gray-500 mt-1"> {subCategories.length > 0 ? `${businesses.length} related businesses from subcategories` : `Showing ${businesses.length} businesses in ${formattedCategory}`} </p>
             </div>
 
             <Link
-              to={`/city/${citySlug}`}
-              className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 transition text-sm font-medium"
+            to={`/${citySlug}`} className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 transition text-sm font-medium"
             >
               ← Explore More Categories
             </Link>
@@ -562,7 +526,7 @@ if (notFound) {
 
               <div className="mt-8">
                 <Link
-                  to={`/city/${citySlug}`}
+                  to={`/${citySlug}`}
                   className="inline-flex items-center px-6 py-3 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 transition font-medium"
                 >
                   Browse Other Categories

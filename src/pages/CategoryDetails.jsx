@@ -22,6 +22,7 @@ const CategoryDetails = () => {
   const [category, setCategory] = useState(null);
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
+  
 
   // ================= FETCH CATEGORY =================
   useEffect(() => {
@@ -72,13 +73,23 @@ const CategoryDetails = () => {
     slug?.replace(/-/g, " ") ||
     "Category";
 
-  const formattedCity =
-    citySlug?.replace(/-/g, " ") || "India";
+    const hasChildren = (category?.children || []).length > 0;
 
-  const title = `${categoryName} Services | ServDial`;
+  const formattedCity = citySlug
+  ? citySlug
+  .split("-")
+  .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+  .join(" ")
+  : "India";
 
-  const description = `Explore sub categories and businesses under ${categoryName} on ServDial.`;
+  const title = hasChildren
+    ? `${categoryName} in India | ServDial`
+    : `Top ${categoryName} Listings in India | ServDial`;
 
+const description = hasChildren
+? `Browse subcategories and discover trusted listings and service providers in the ${categoryName} category across India on ServDial.`
+: `Discover verified ${categoryName} listings and trusted local providers in the ${categoryName} category on ServDial. Compare ratings, reviews, distance and contact details from cities across India.`
+  
   const canonicalUrl = citySlug
     ? `https://servdial.com/${citySlug}/${slug}`
     : `https://servdial.com/category/${slug}`;
@@ -198,12 +209,15 @@ const CategoryDetails = () => {
               </div>
 
               <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
-                {category.name}
-              </h1>
+                {hasChildren ? `${category.name} in India`
+                : `Top ${category.name} Listings in India`}
+                </h1>
 
               <p className="text-blue-100 text-lg leading-relaxed">
-                Browse all sub categories and discover trusted local businesses related to {category.name}.
-              </p>
+                {hasChildren
+                ? `Browse subcategories and discover trusted listings and service providers in the ${category.name} category on ServDial.`
+                : `Discover verified listings and trusted local providers in the ${category.name} category on ServDial. Compare ratings, reviews, distance and contact details from cities across India.`}
+                </p>
 
             </div>
 

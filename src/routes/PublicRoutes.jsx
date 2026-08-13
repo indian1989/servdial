@@ -1,6 +1,6 @@
 // frontend/src/routes/PublicRoutes.jsx
 
-import { Route } from "react-router-dom";
+import { Route, Navigate } from "react-router-dom";
 import PublicLayout from "../layouts/PublicLayout";
 
 import Home from "../pages/Home";
@@ -11,7 +11,6 @@ import CategoryPage from "../pages/CategoryPage";
 import CategoryDetails from "../pages/CategoryDetails";
 import CityCategoryPage from "../pages/CityCategoryPage";
 import CityPage from "../pages/CityPage";
-import SEOLandingPage from "../pages/seo/SEOLandingPage";
 import ClaimBusiness from "../pages/ClaimBusiness";
 import RecommendedPage from "../pages/RecommendedPage";
 import GetBusinessWebsite from "../pages/static/GetBusinessWebsite";
@@ -36,15 +35,17 @@ const PublicRoutes = () => {
   {/* BUSINESS (MOST SPECIFIC FIRST) */}
   <Route path="/:citySlug/:categorySlug/:slug" element={<BusinessPage />} />
 
-  {/* CITY + CATEGORY */}
+  <Route path="/:citySlug/all" element={<CityCategoryPage />} />
   <Route path="/:citySlug/:categorySlug" element={<CityCategoryPage />} />
-
 
   {/* CATEGORIES (GLOBAL) */}
 <Route path="/categories" element={<CategoryPage />} />
 
 {/* CATEGORY DETAILS */}
 <Route path="/category/:slug" element={<CategoryDetails />} />
+
+
+<Route path="/recommendation" element={<Navigate to="/recommendations" replace />} />
 
 {/* CITY */}
 <Route 
@@ -58,11 +59,6 @@ path="/business-website"
 element={<GetBusinessWebsite />}
 />
 
-  {/* SEO LANDING */}
-<Route
-  path="/seo/:citySlug/:categorySlug"
-  element={<SEOLandingPage />}
-/>
 
   {/* CLAIM */}
   <Route path="/claim-business/:businessId" element={<ClaimBusiness />} />

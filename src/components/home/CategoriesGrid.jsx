@@ -69,7 +69,7 @@ const CategoriesGrid = ({ categories = [], city, loading = false }) => {
   .sort((a, b) => (a.order || 0) - (b.order || 0))
   .slice(0, 20);
 
-  if (!loading && (!categories || categories.length === 0)) {
+  if (!loading && topCategories.length === 0) {
   return (
     <div className="text-center py-10 text-gray-400">
       No categories found
