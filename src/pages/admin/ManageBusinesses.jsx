@@ -70,16 +70,12 @@ const [categoryOptions, setCategoryOptions] = useState([]);
   const [editBusiness, setEditBusiness] = useState(null);
 
   const openEdit = (b) => {
-
   const dto = toBusinessEditDTO(b);
-
-  setLogo(dto.logo || "");
 
   setEditBusiness({
     ...dto,
-
-    image: dto.image,
-    logo: dto.logo,
+    images: dto.images || [],
+    logo: dto.logo || "",
     pricing: dto.pricing || [],
     services: dto.services || [],
     catalog: dto.catalog || [],
@@ -88,6 +84,8 @@ const [categoryOptions, setCategoryOptions] = useState([]);
     menu: dto.menu || [],
     businessHours: dto.businessHours || defaultHours,
   });
+
+  setLogo(dto.logo || "");
 };
 
   // ================= FETCH =================
@@ -291,22 +289,21 @@ console.error(error);
     );
 
     const payload = normalizeBusinessPayload({
-      ...formData,
+  ...formData,
 
-      // ✅ MEDIA FROM EDIT STATE
-      images: editBusiness?.images || formData.images || [],
-      logo: editBusiness?.logo || logo || formData.logo || "",
+  images: editBusiness?.images || [],
+  logo: editBusiness?.logo || "",
 
-      pricing: formData.pricing || [],
-      services: formData.services || [],
-      catalog: formData.catalog || [],
-      faq: formData.faq || [],
-      offers: formData.offers || [],
-      menu: formData.menu || [],
+  pricing: formData.pricing || [],
+  services: formData.services || [],
+  catalog: formData.catalog || [],
+  faq: formData.faq || [],
+  offers: formData.offers || [],
+  menu: formData.menu || [],
 
-      businessHours:
-        formData.businessHours || defaultHours,
-    });
+  businessHours:
+    formData.businessHours || defaultHours,
+});
 
     console.log(
       "🔥 FINAL PAYLOAD IMAGES:",
