@@ -87,15 +87,19 @@ const PartyBookingManager = ({
   onChange,
 }) => {
 
-  const [form, setForm] = useState(
-    value || DEFAULT_DATA
-  );
+  const [form, setForm] = useState({
+    ...DEFAULT_DATA,
+    ...(value || {}),
+  });
 
   useEffect(() => {
 
     if (value) {
 
-      setForm(value);
+      setForm({
+        ...DEFAULT_DATA,
+        ...value,
+      });
 
     }
 
@@ -233,53 +237,92 @@ const PartyBookingManager = ({
 
   };
 
+  const [expanded, setExpanded] = useState(form.enabled);
+  useEffect(() => {
+    if (form.enabled) {
+      setExpanded(true);
+    }
+  }, [form.enabled]);
+
   return (
+  <div className="border border-gray-200 rounded-2xl bg-white overflow-hidden shadow-sm">
 
-    <div className="bg-white border rounded-xl p-6 shadow-sm space-y-6">
+    {/* Header */}
 
-      <div className="border-b pb-3">
+    <button
+      type="button"
+      onClick={() => setExpanded(!expanded)}
+      className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition text-left"
+    >
 
-        <h2 className="text-xl font-semibold">
+      <div className="flex items-center gap-4">
 
-          🎉 Party Booking Settings
+        <div className="w-12 h-12 rounded-xl bg-pink-100 flex items-center justify-center text-2xl">
+          🎉
+        </div>
 
-        </h2>
+        <div>
 
-        <p className="text-sm text-gray-500 mt-1">
+          <h3 className="font-semibold text-lg text-gray-900">
+            Party Booking
+          </h3>
 
-          Configure party booking options for this business.
+          <p className="text-sm text-gray-500">
+            {form.bookingTypes.length > 0
+              ? `${form.bookingTypes.length} booking types selected`
+              : "Configure party booking options"}
+          </p>
 
-        </p>
-
-      </div>
-
-      {/* Enable */}
-
-      <div>
-
-        <label className="flex items-center gap-3">
-
-          <input
-            type="checkbox"
-            checked={form.enabled}
-            onChange={(e) =>
-              updateField(
-                "enabled",
-                e.target.checked
-              )
-            }
-          />
-
-          <span className="font-medium">
-
-            Enable Party Booking
-
-          </span>
-
-        </label>
+        </div>
 
       </div>
 
+      <div className="flex items-center gap-3">
+
+        <span
+          className={`text-sm font-medium ${
+            form.enabled ? "text-green-600" : "text-gray-400"
+          }`}
+        >
+          {form.enabled ? "Enabled" : "Disabled"}
+        </span>
+
+        <div className="w-8 h-8 rounded-lg border flex items-center justify-center text-gray-500">
+          {expanded ? "−" : "+"}
+        </div>
+
+      </div>
+
+    </button>
+
+    {/* Enable */}
+
+    <div className="px-5 pb-5">
+
+      <label className="flex items-center gap-3 text-sm font-medium text-gray-700">
+
+        <input
+          type="checkbox"
+          checked={form.enabled}
+          onChange={(e) => {
+            updateField("enabled", e.target.checked);
+            if (e.target.checked) setExpanded(true);
+          }}
+          className="w-4 h-4 rounded border-gray-300 text-pink-600 focus:ring-pink-500"
+        />
+
+        Enable Party Booking
+
+      </label>
+
+    </div>
+
+    {/* Expandable Content */}
+
+    {form.enabled && expanded && (
+      <div className="border-t px-5 py-5 space-y-6">
+
+  
             {/* ================= BOOKING TYPES ================= */}
 
       <div>
@@ -713,37 +756,32 @@ const PartyBookingManager = ({
 
       {/* ================= CANCELLATION POLICY ================= */}
 
-      <div>
+<div>
 
-        <h3 className="font-semibold mb-3">
+  <h3 className="font-semibold mb-3">
+    Cancellation Policy
+  </h3>
 
-          Cancellation Policy
+  <textarea
+    rows={4}
+    value={form.cancellationPolicy}
+    onChange={(e) =>
+      updateField(
+        "cancellationPolicy",
+        e.target.value
+      )
+    }
+    placeholder="Advance non-refundable. Cancellation before 48 hours eligible for 50% refund."
+    className="w-full border rounded-lg p-3"
+  />
 
-        </h3>
-
-        <textarea
-          rows={4}
-          value={form.cancellationPolicy}
-          onChange={(e) =>
-            updateField(
-              "cancellationPolicy",
-              e.target.value
-            )
-          }
-          placeholder="Advance non-refundable. Cancellation before 48 hours eligible for 50% refund."
-          className="w-full border rounded-lg p-3"
-        />
-
-      </div>
+</div>
 
       {/* ================= PAYMENT MODES ================= */}
-
       <div>
 
         <h3 className="font-semibold mb-3">
-
           Accepted Payment Modes
-
         </h3>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -758,22 +796,18 @@ const PartyBookingManager = ({
               <input
                 type="checkbox"
                 checked={form.paymentModes.includes(mode)}
-                onChange={() =>
-                  togglePaymentMode(mode)
-                }
+                onChange={() => togglePaymentMode(mode)}
               />
 
-              <span>
-
-                {mode}
-
-              </span>
+              <span>{mode}</span>
 
             </label>
 
           ))}
 
         </div>
+
+      </div>
 
               {/* ================= VENUE FACILITIES ================= */}
 
@@ -1032,7 +1066,10 @@ const PartyBookingManager = ({
 
       </div>
 
+       )}
+
     </div>
+        
 
   );
 

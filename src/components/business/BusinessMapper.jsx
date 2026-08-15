@@ -13,6 +13,8 @@ export const normalizeBusinessPayload = (
 
     description: data.description || "",
 
+    foodType: data.foodType || "",
+
     categoryId:
       data.categoryId?.value ||
       data.categoryId ||
@@ -53,10 +55,26 @@ export const normalizeBusinessPayload = (
       data.phone ||
       "",
 
+    alternatePhone:
+    data.alternatePhone || "",
+    
+    landline:
+    data.landline || "",
+    
+    phoneCountryCode:
+    data.phoneCountryCode || "+91",
+    
+    whatsappCountryCode:
+    data.whatsappCountryCode || "+91",
+    
+    alternatePhoneCountryCode:
+    data.alternatePhoneCountryCode || "+91",
+    
+    landlineCountryCode:
+    data.landlineCountryCode || "+91",
+
     website:
       data.website || "",
-
-
 
     /* ================= MEDIA ================= */
 
@@ -115,6 +133,32 @@ export const normalizeBusinessPayload = (
         notes: "",
       },
 
+    /* ================= ROOM BOOKING ================= */
+
+roomBooking:
+  data.roomBooking || {
+    enabled: false,
+    roomTypes: [],
+    checkInTime: "",
+    checkOutTime: "",
+    advanceBookingDays: "",
+    contactNumber: "",
+    notes: "",
+  },
+
+  /* ================= APPOINTMENT BOOKING ================= */
+
+appointmentBooking:
+  data.appointmentBooking || {
+    enabled: false,
+    consultationModes: [],
+    slotDuration: 30,
+    advanceBookingDays: 7,
+    sameDayBooking: true,
+    bufferBetweenAppointments: 0,
+    contactNumber: "",
+    notes: "",
+  },
 
 
     /* ================= OPTIONAL ================= */
@@ -264,8 +308,6 @@ countryCode:
     /* ================= ADMIN ONLY ================= */
 
     ...(mode === "admin" && {
-
-      role: "admin",
 
       isVerified: true,
 

@@ -105,14 +105,21 @@ const AdminAddBusiness = () => {
     .join(", ") || "-"}
 </p>
 
-<p className="mt-2">
-  <b>Location:</b>
-</p>
-
-<p>
-  <b>Address:</b>{" "}
-  {locationText}
-</p>
+<div className="mt-4">
+  <h4 className="font-semibold mb-2">
+    Location
+    </h4>
+    <p className="text-sm">
+      <b>Address:</b> {locationText || "-"}
+      </p>
+      <p className="text-sm mt-1">
+        <b>Coordinates:</b>{" "}
+        {formData.location?.coordinates?.length === 2
+        ? `${formData.location.coordinates[1].toFixed(6)},
+        ${formData.location.coordinates[0].toFixed(6)}`
+        : "-"}
+        </p>
+        </div>
 
               </div>
 
@@ -150,25 +157,38 @@ const AdminAddBusiness = () => {
                 </div>
               )}
 
-              <p>
-<b>Service Areas:</b>
-</p>
 
-{
-formData.isAllIndiaService
-?
-<p>All India</p>
-:
-<p>
-{
-formData.serviceAreas
-?.map(x=>x.name)
-.join(", ")
-||
-"-"
-}
-</p>
-}
+{/* ================= SERVICE AREAS PREVIEW ================= */}
+<div className="mt-5">
+  <h4 className="font-semibold mb-2">
+    Service Areas
+    </h4>
+    
+    {formData.serviceCoverage?.type === "all_india" ? (
+      <p>
+        All India
+        </p>
+      ) : formData.serviceCoverage?.type === "state" ? (
+      <p>
+        {formData.serviceCoverage?.states
+        ?.map((s) => s.name)
+        .join(", ") || "-"}
+        </p>
+      
+      ) : formData.serviceCoverage?.type === "country" ? (
+      <p>
+        {formData.serviceCoverage?.countries
+        ?.map((c) => c.name)
+        .join(", ") || "-"}
+        </p>
+      ) : (
+      <p>
+        {formData.serviceCoverage?.cities
+        ?.map((c) => c.name)
+        .join(", ") || "-"}
+        </p>
+      )}
+      </div>
 
               <div className="mt-5">
 

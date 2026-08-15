@@ -1,0 +1,122 @@
+// frontend/src/utils/business/serviceConfig.js
+
+export const SERVICE_SUGGESTIONS_BY_CATEGORY = {
+
+  electrician: [
+    "Electrical Installation",
+    "Fan Repair",
+    "Wiring Work",
+    "MCB Installation",
+    "Switch Board Repair",
+    "Inverter Installation",
+    "Meter Connection",
+    "Light Fitting",
+  ],
+
+  plumber: [
+    "Leak Repair",
+    "Tap Installation",
+    "Pipe Fitting",
+    "Bathroom Repair",
+    "Water Tank Connection",
+    "Drainage Cleaning",
+  ],
+
+  salon: [
+    "Hair Cut",
+    "Facial",
+    "Hair Spa",
+    "Hair Coloring",
+    "Beard Styling",
+    "Bridal Makeup",
+  ],
+
+  restaurant: [
+    "Dine In",
+    "Takeaway",
+    "Home Delivery",
+    "Order Online",
+    "Family Dining",
+    "Party Orders",
+    "Catering Service",
+  ],
+
+  gym: [
+    "Weight Training",
+    "Cardio Workout",
+    "Personal Training",
+    "Fat Loss Program",
+    "Muscle Gain Program",
+    "Functional Training",
+  ],
+
+  hotel: [
+    "AC Rooms",
+    "Family Rooms",
+    "Room Service",
+    "Parking",
+    "24 Hour Reception",
+    "Online Booking",
+  ],
+
+  dentalclinic: [
+    "Tooth Cleaning",
+    "Root Canal Treatment",
+    "Dental Filling",
+    "Braces Consultation",
+    "Tooth Extraction",
+    "Teeth Whitening",
+  ],
+
+  advocate: [
+    "Legal Consultation",
+    "Civil Case",
+    "Criminal Case",
+    "Property Dispute",
+    "Documentation",
+    "Court Representation",
+  ],
+
+  printingpress: [
+    "Visiting Card Printing",
+    "Wedding Card Printing",
+    "Flex Printing",
+    "Banner Printing",
+    "Offset Printing",
+    "Digital Printing",
+  ],
+
+  mobilephone: [
+    "Mobile Sales",
+    "Mobile Repair",
+    "Screen Replacement",
+    "Battery Replacement",
+    "Accessories",
+    "Software Update",
+  ],
+
+  default: [
+    "Installation",
+    "Repair",
+    "Maintenance",
+    "Consultation",
+  ],
+};
+
+export const FOOD_TYPE_OPTIONS = [
+  {
+    value: "veg",
+    label: "Veg",
+    color: "#16a34a",
+  },
+  {
+    value: "non_veg",
+    label: "Non Veg",
+    color: "#dc2626",
+  },
+  {
+    value: "both",
+    label: "Veg & Non Veg",
+    color: "#ea580c",
+  },
+];

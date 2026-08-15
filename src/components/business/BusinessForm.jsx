@@ -13,190 +13,52 @@ import {
   BUSINESS_NAME_MAX,
   DESCRIPTION_MAX,
   defaultBusinessForm,
+  defaultBusinessHours,
   validateBusinessForm,
 } from "./businessFormSchema";
 
 import BusinessFeatureFields from "./BusinessFeatureFields";
 import BusinessLocationPicker from "./BusinessLocationPicker";
-import CreatableSelect from "react-select/creatable";
 import BusinessHoursManager from "../BusinessHoursManager";
+import BusinessServiceFields from "./service/BusinessServiceFields";
+import { FOOD_TYPE_OPTIONS } from '../../utils/business/serviceConfig';
+import {
+  isRestaurantCategory,
+  getSuggestedServices,
+} from '../../utils/business/serviceHelpers';
 
-
-/* ================= DEFAULT BUSINESS HOURS ================= */
-
-const defaultBusinessHours = {
-  monday: {
-    open: "",
-    close: "",
-    closed: false,
-    is24h: false,
-  },
-
-  tuesday: {
-    open: "",
-    close: "",
-    closed: false,
-    is24h: false,
-  },
-
-  wednesday: {
-    open: "",
-    close: "",
-    closed: false,
-    is24h: false,
-  },
-
-  thursday: {
-    open: "",
-    close: "",
-    closed: false,
-    is24h: false,
-  },
-
-  friday: {
-    open: "",
-    close: "",
-    closed: false,
-    is24h: false,
-  },
-
-  saturday: {
-    open: "",
-    close: "",
-    closed: false,
-    is24h: false,
-  },
-
-  sunday: {
-    open: "",
-    close: "",
-    closed: false,
-    is24h: false,
-  },
-};
-
-/* ================= SERVICE TYPE OPTIONS ================= */
-
-const serviceTypeOptions = [
-  {
-    value: "home",
-    label: "Home Service",
-  },
-  {
-    value: "shop",
-    label: "Shop / In-store",
-  },
-  {
-    value: "online",
-    label: "Online Service",
-  },
-  {
-    value: "onsite",
-    label: "On-site Visit",
-  },
-  {
-    value: "pickup",
-    label: "Pickup Available",
-  },
-  {
-    value: "delivery",
-    label: "Delivery Available",
-  },
-];
-
-/* ================= FOOD TYPE OPTIONS ================= */ 
-
-const foodTypeOptions = [
-  {
-    value: "veg",
-    label: "Veg",
-    color: "#16a34a",
-  },
-  
-  {
-    value: "non_veg",
-    label: "Non Veg",
-    color: "#dc2626",
-  },
-  {
-    value: "both",
-    label: "Veg & Non Veg",
-    color: "#ea580c",
-  },
-];
-
-/* ================= SERVICE OFFERED ================= */
-const serviceSuggestionsByCategory = {
-
-  electrician: [
-    "Electrical Installation",
-    "Fan Repair",
-    "Wiring Work",
-    "MCB Installation",
-    "Switch Board Repair",
-    "Inverter Installation",
-  ],
-
-
-  plumber: [
-    "Leak Repair",
-    "Tap Installation",
-    "Pipe Fitting",
-    "Bathroom Repair",
-  ],
-
-
-  salon: [
-    "Hair Cut",
-    "Facial",
-    "Hair Spa",
-    "Hair Coloring",
-  ],
-
-  restaurant: [
-    "Dine In",
-    "Takeaway",
-    "Home Delivery",
-    "Order Online",
-    "Family Dining",
-    "Party Orders",
-    "Catering Service"
-  ],
-
-
-  default: [
-    "Installation",
-    "Repair",
-    "Maintenance",
-    "Consultation",
-  ]
-
-};
+import {
+  COUNTRY_CODE_OPTIONS,
+  DEFAULT_COUNTRY_CODE,
+} from '../../constants/countryCodes';
 
 /* ================= CATEGORY FLATTEN ================= */
 
 const flattenCategories = (
   tree = [],
-  parent = ""
+  parent = null
 ) => {
   let result = [];
 
   tree.forEach((cat) => {
     const children = cat.subcategories || [];
 
-    const label = cat.name;
-
-    // ONLY LEAF SUBCATEGORIES
     if (children.length === 0) {
       result.push({
         value: cat._id,
-        label,
+        label: cat.name,
+
+        parentName: parent?.name || "",
+        parentSlug: parent?.slug || "",
       });
     }
 
     if (children.length > 0) {
       result = result.concat(
-        flattenCategories(children, cat.name)
+        flattenCategories(children, {
+          name: cat.name,
+          slug: cat.slug,
+        })
       );
     }
   });
@@ -241,6 +103,7 @@ const BusinessForm = ({
   const safeInitialData = initialData || EMPTY_OBJECT;
 
   const [loading, setLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
 
   const [errors, setErrors] = useState({});
 
@@ -260,34 +123,39 @@ form.categoryName ||
   "";
 
 
-const currentCategory =
-  selectedCategoryName
-    .toLowerCase()
-    .replace(/\s+/g, "");
+  const isRestaurant = isRestaurantCategory({
+    categoryName: form.categoryName,
+    parentName: form.categoryParentName,
+    parentSlug: form.categoryParentSlug,
+  });
 
-const isRestaurant = [
-  "restaurant",
-  "cafe",
-  "dhaba",
-  "food",
-  "fastfood",
-  "bakery",
-].includes(currentCategory);
+const suggestedServices = getSuggestedServices({
+  categoryName: form.categoryName,
+  parentName: form.categoryParentName,
+  parentSlug: form.categoryParentSlug,
+});
 
+// ================= APPOINTMENT BOOKING =================
+const [appointmentBooking, setAppointmentBooking] = useState({
+  enabled: false,
+  consultationModes: [],
+  slotDuration: 30,
+  advanceBookingDays: 7,
+  sameDayBooking: true,
+  bufferBetweenAppointments: 0,
+  contactNumber: "",
+  notes: "",
+});
 
-const suggestedServices =
-  serviceSuggestionsByCategory[currentCategory] ||
-  (isRestaurant
-    ? serviceSuggestionsByCategory.restaurant
-    : serviceSuggestionsByCategory.default);
-
-
-  const [restaurantBooking, setRestaurantBooking] = useState({
+const [restaurantBooking, setRestaurantBooking] = useState({
   enabled: false,
   totalTables: "",
   seatingCapacity: "",
   advanceBookingDays: "",
 });
+
+const [locationManuallyAdjusted, setLocationManuallyAdjusted] =
+  useState(false);
 
   /* ================= FETCH ================= */
 
@@ -376,6 +244,38 @@ useEffect(() => {
           }))
         : [],
 
+    // ================= CATEGORY FEATURES =================
+
+categoryFeatures:
+  Array.isArray(safeValue.categoryFeatures)
+    ? safeValue.categoryFeatures
+    : Array.isArray(
+        safeValue.categoryId?.features
+      )
+      ? safeValue.categoryId.features
+      : [],
+
+    // ================= FEATURE DATA =================
+    pricing: Array.isArray(safeValue.pricing)
+    ? safeValue.pricing
+    : [],
+    
+    catalog: Array.isArray(safeValue.catalog)
+    ? safeValue.catalog
+    : [],
+    
+    menu: Array.isArray(safeValue.menu)
+    ? safeValue.menu
+    : [],
+
+    faq: Array.isArray(safeValue.faq)
+    ? safeValue.faq
+    : [],
+    
+    offers: Array.isArray(safeValue.offers)
+    ? safeValue.offers
+    : [],
+
     serviceTypes:
       Array.isArray(safeValue.serviceTypes)
         ? safeValue.serviceTypes
@@ -399,36 +299,349 @@ useEffect(() => {
 
   setForm(updatedForm);
 
-  setRestaurantBooking(
-    safeValue.restaurantBooking || {
-      enabled: false,
-      totalTables: "",
-      seatingCapacity: "",
-      advanceBookingDays: "",
-    }
-  );
+onChange?.(updatedForm);
+
+setAppointmentBooking(
+  safeValue.appointmentBooking || {
+    enabled: false,
+    consultationModes: [],
+    slotDuration: 30,
+    advanceBookingDays: 7,
+    sameDayBooking: true,
+    bufferBetweenAppointments: 0,
+    contactNumber: "",
+    notes: "",
+  }
+);
+
+setRestaurantBooking(
+  safeValue.restaurantBooking || {
+    enabled: false,
+    totalTables: "",
+    seatingCapacity: "",
+    advanceBookingDays: "",
+  }
+);
 
 }, [safeValue?._id]);
 
   /* ================= HELPERS ================= */
 
-  const updateForm = (updated) => {
-  setForm(updated);
-  onChange?.(updated);
+const updateForm = (updates) => {
+  setForm((prev) => {
+    const next = {
+      ...prev,
+      ...updates,
+    };
+
+    onChange?.(next);
+
+    return next;
+  });
 };
 
-  /* ================= INPUT ================= */
 
-  const handleChange = (e) => {
+/* ================= BUSINESS COORDINATES ================= */
+
+const generateBusinessCoordinates = async ({
+  cityName = form.cityName,
+  district = form.district,
+  state = form.state,
+  pincode = form.pincode,
+  address = form.address,
+} = {}) => {
+
+  let coordinates = null;
+
+  try {
+
+    const response = await API.post(
+      "/geocode",
+      {
+        address: [
+          address?.street,
+          address?.area,
+          address?.landmark,
+        ]
+          .filter(Boolean)
+          .join(", "),
+
+        city: cityName,
+        district,
+        state,
+        pincode,
+      }
+    );
+
+    const geocodedCoordinates =
+      response.data?.location?.coordinates;
+
+    if (
+      Array.isArray(geocodedCoordinates) &&
+      geocodedCoordinates.length === 2 &&
+      geocodedCoordinates.every(
+        (value) => Number.isFinite(Number(value))
+      )
+    ) {
+      coordinates = geocodedCoordinates;
+
+      console.log(
+        "✅ BUSINESS GEO:",
+        coordinates
+      );
+    }
+
+    console.log("📍 GEOCODE REQUEST:", {
+  address,
+  city: cityName,
+  district,
+  state,
+  pincode,
+});
+
+  } catch (err) {
+
+    console.error(
+      "❌ Geocode failed:",
+      err.message
+    );
+
+  }
+
+  return coordinates;
+};
+
+
+const updateMapFromAddress = async () => {
+
+  if (!form.cityName) {
+    return;
+  }
+
+  setLocating(true);
+
+  try {
+
+    const coordinates =
+      await generateBusinessCoordinates({
+        cityName: form.cityName,
+        district: form.district,
+        state: form.state,
+        pincode: form.pincode,
+        address: form.address,
+      });
+
+    if (
+      Array.isArray(coordinates) &&
+      coordinates.length === 2 &&
+      coordinates.every(
+        (value) =>
+          Number.isFinite(Number(value))
+      )
+    ) {
+
+      setLocationManuallyAdjusted(false);
+
+      updateForm({
+        location: {
+          type: "Point",
+          coordinates,
+        },
+      });
+
+      setErrors((prev) => ({
+        ...prev,
+        location: "",
+      }));
+
+      console.log(
+        "📍 ADDRESS LOCATION UPDATED:",
+        coordinates
+      );
+
+    } else {
+
+      setErrors((prev) => ({
+        ...prev,
+        location:
+          "We couldn't determine the exact location from the address. Please adjust the marker on the map or use GPS.",
+      }));
+
+    }
+
+  } finally {
+
+    setLocating(false);
+
+  }
+};
+
+/* ================= FIND CURRENT LOCATION ================= */
+
+const findCurrentLocation = () => {
+
+  if (!navigator.geolocation) {
+    setErrors((prev) => ({
+      ...prev,
+      location:
+        "Geolocation is not supported by this browser.",
+    }));
+
+    return;
+  }
+
+  setLocating(true);
+
+  navigator.geolocation.getCurrentPosition(
+
+    (position) => {
+
+      const lat =
+        Number(position.coords.latitude);
+
+      const lng =
+        Number(position.coords.longitude);
+
+      const accuracy =
+        Number(position.coords.accuracy);
+
+      console.log(
+        "📍 CURRENT GPS LOCATION:",
+        {
+          latitude: lat,
+          longitude: lng,
+          accuracy,
+        }
+      );
+
+      if (
+        !Number.isFinite(lat) ||
+        !Number.isFinite(lng)
+      ) {
+
+        setErrors((prev) => ({
+          ...prev,
+          location:
+            "Unable to determine your current location.",
+        }));
+
+        setLocating(false);
+
+        return;
+      }
+
+      /*
+      ==========================================
+      GPS LOCATION FOUND
+
+      GPS accuracy may be 100m, 400m, 1000m etc.
+      Do NOT reject it here.
+
+      User can adjust the exact business
+      location using the map marker.
+      ==========================================
+      */
+
+      setLocationManuallyAdjusted(true);
+
+      updateForm({
+        location: {
+          type: "Point",
+          coordinates: [
+            lng,
+            lat,
+          ],
+        },
+      });
+
+      /*
+      ==========================================
+      CLEAR OLD LOCATION ERROR
+      ==========================================
+      */
+
+      setErrors((prev) => ({
+        ...prev,
+        location: "",
+      }));
+
+      setLocating(false);
+
+    },
+
+    (error) => {
+
+      console.error(
+        "❌ GPS LOCATION ERROR:",
+        error
+      );
+
+      let message =
+        "Unable to get your current location.";
+
+      if (error.code === 1) {
+
+        message =
+          "Location permission denied. Please allow location access.";
+
+      } else if (error.code === 2) {
+
+        message =
+          "Current location is unavailable. Please try again.";
+
+      } else if (error.code === 3) {
+
+        message =
+          "Location request timed out. Please try again.";
+
+      }
+
+      setErrors((prev) => ({
+        ...prev,
+        location: message,
+      }));
+
+      setLocating(false);
+    },
+
+    {
+      enableHighAccuracy: true,
+      timeout: 30000,
+      maximumAge: 0,
+    }
+
+  );
+};
+
+/* ================= INPUT ================= */
+
+const handleChange = (e) => {
   const { name, value, type, checked } = e.target;
+
+  // Address/pincode change means previous manual
+  // map location may no longer be valid
+  if (
+    name === "pincode"
+  ) {
+    setLocationManuallyAdjusted(false);
+  }
 
   let nextValue;
 
   if (type === "checkbox") {
     nextValue = checked;
 
-  } else if (name === "phone" || name === "whatsapp") {
-    nextValue = value.replace(/\D/g, "").slice(0, 10);
+  } else if (
+  [
+    "phone",
+    "whatsapp",
+    "alternatePhone",
+    "landline",
+  ].includes(name)
+) {
+  // allow international numbers
+  nextValue = value.replace(/\D/g, "").slice(0, 15);
+
 
   } else if (name === "pincode") {
     nextValue = value.replace(/\D/g, "").slice(0, 6);
@@ -449,232 +662,116 @@ useEffect(() => {
   updateForm(updated);
 };
 
-const generateBusinessCoordinates = async () => {
-
-  let coordinates = [
-    form.location?.coordinates?.[0],
-    form.location?.coordinates?.[1],
-  ];
-
-
-  try {
-
-    const response = await API.post(
-      "/geocode",
-      {
-
-        address:[
-          form.address?.street,
-          form.address?.area,
-          form.address?.landmark,
-        ]
-        .filter(Boolean)
-        .join(", "),
-
-        city: form.cityName,
-
-        district: form.district,
-
-        state: form.state,
-
-        pincode: form.pincode,
-
-      }
-    );
-
-
-    if(response.data?.location?.coordinates){
-
-      coordinates =
-      response.data.location.coordinates;
-
-
-      console.log(
-        "✅ UPDATED GEO:",
-        coordinates
-      );
-
-    }
-
-
-  } catch(err){
-
-    console.log(
-      "Geocode failed",
-      err.message
-    );
-
-  }
-
-
-  return coordinates;
-
-};
 
   /* ================= SELECT ================= */
-
-  const handleSelect = async (field, selected) => {
+const handleSelect = async (field, selected) => {
 
   if (!selected) return;
 
 
+  /* ================= CATEGORY ================= */
+
   if (field === "categoryId") {
+  try {
+    const res = await API.get(
+      `/categories/${selected.value}`
+    );
 
-    try {
-
-      const res = await API.get(
-        `/categories/${selected.value}`
-      );
-
-
-      const category =
-        res.data.data || res.data;
-
-
-      updateForm({
-
-        ...form,
-
-        categoryId: selected.value,
-
-        categoryName: selected.label,
-
-        categoryFeatures:
-          category.features || [],
-
-      });
-
-
-    } catch(err) {
-
-      console.log(
-        "Category feature load error",
-        err
-      );
-
-
-      updateForm({
-
-        ...form,
-
-        categoryId:selected.value,
-
-        categoryName:selected.label,
-
-        categoryFeatures:[]
-
-      });
-
-    }
-
-
-    return;
-  }
-
-
-
-  if (field === "cityId") {
-
-
-    const cityName =
-      selected.label.split(" (")[0];
-
-
-    let coordinates = [
-      selected.longitude,
-      selected.latitude
-    ];
-
-    try {
-
-      const response = await API.post(
-        "/geocode",
-        {
-
-          address:[
-            form.address?.street,
-            form.address?.area,
-            form.address?.landmark,
-          ]
-          .filter(Boolean)
-          .join(", "),
-
-
-          city: cityName,
-
-          district:selected.district,
-
-          state:selected.state,
-
-          pincode:form.pincode,
-
-        }
-      );
-
-
-
-      if(
-        response.data?.location?.coordinates
-      ){
-
-        coordinates =
-          response.data.location.coordinates;
-
-
-        console.log(
-         "✅ EXACT BUSINESS LOCATION",
-          coordinates
-        );
-
-      }
-
-
-    } catch(err){
-
-
-      console.log(
-    "Geocode failed",
-    err.message
-   );
-
-
-    }
+    const category =
+      res.data?.data || res.data || {};
 
     updateForm({
-
       ...form,
 
-      cityId:selected.value,
+      categoryId: selected.value,
 
-      cityName,
+      categoryName:
+        category.name || selected.label,
 
+      categoryParentName:
+        category.parentCategory?.name ||
+        selected.parentName ||
+        "",
 
-      district:selected.district,
+      categoryParentSlug:
+        category.parentCategory?.slug ||
+        selected.parentSlug ||
+        "",
 
-      state:selected.state,
-
-      country:
-        selected.country || "India",
-
-
-      countryCode:
-        selected.countryCode || "IN",
-
-
-      location:{
-
-        type:"Point",
-
-        coordinates
-
-      }
-
-
+      // ⭐ IMPORTANT:
+      // Category ke features yahin se BusinessForm me aayenge
+      categoryFeatures: Array.isArray(category.features)
+        ? category.features
+        : [],
     });
 
+  } catch (err) {
+    console.error(
+      "Category feature load error:",
+      err
+    );
 
+    // API fail hone par bhi existing category
+    // selection break nahi honi chahiye.
+    updateForm({
+      ...form,
+
+      categoryId: selected.value,
+
+      categoryName:
+        selected.label || "",
+
+      categoryParentName:
+        selected.parentName || "",
+
+      categoryParentSlug:
+        selected.parentSlug || "",
+
+      categoryFeatures: [],
+    });
   }
 
+  return;
+}
+
+
+  /* ================= CITY ================= */
+
+    if (field === "cityId") {
+
+  setLocationManuallyAdjusted(false);
+
+  const cityName =
+    selected.label.split(" (")[0];
+
+  const cityCoordinates = [
+    Number(selected.longitude),
+    Number(selected.latitude),
+  ];
+
+  updateForm({
+    ...form,
+
+    cityId: selected.value,
+
+    cityName,
+
+    district: selected.district || "",
+
+    state: selected.state || "",
+
+    country: selected.country || "India",
+
+    countryCode: selected.countryCode || "IN",
+
+    location: {
+      type: "Point",
+      coordinates: cityCoordinates,
+    },
+  });
+
+  return;
+}
 };
 
   /* ================= SEO PREVIEW ================= */
@@ -712,7 +809,7 @@ const seoPreview = useMemo(() => {
 
   /* ================= SUBMIT ================= */
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
 
   console.log("🔥 HANDLE SUBMIT START");
 
@@ -725,31 +822,103 @@ const seoPreview = useMemo(() => {
     validationErrors
   );
 
-
   setErrors(validationErrors);
 
-
   if (Object.keys(validationErrors).length) {
-
-    console.log(
-      "❌ VALIDATION FAILED"
-    );
-
+    console.log("❌ VALIDATION FAILED");
     return;
   }
-
 
   try {
 
     setLoading(true);
 
+    /* ================= GENERATE EXACT BUSINESS COORDINATES ================= */
+
+let coordinates = form.location?.coordinates || [];
+
+if (!locationManuallyAdjusted) {
+
+  coordinates =
+    await generateBusinessCoordinates({
+      cityName: form.cityName,
+      district: form.district,
+      state: form.state,
+      pincode: form.pincode,
+      address: form.address,
+    });
+
+  /*
+  ==========================================
+  IMPORTANT
+  Geocoded coordinates ko FORM STATE mein
+  bhi save karo.
+  ==========================================
+  */
+
+  if (
+    Array.isArray(coordinates) &&
+    coordinates.length === 2
+  ) {
+
+    updateForm({
+      location: {
+        type: "Point",
+        coordinates,
+      },
+    });
+
+  }
+}
+
+if (
+  !Array.isArray(coordinates) ||
+  coordinates.length !== 2 ||
+  coordinates.some(
+    (value) => !Number.isFinite(Number(value))
+  )
+) {
+  setErrors({
+    ...validationErrors,
+    location:
+      "Unable to determine exact business location. Please adjust the location on the map.",
+  });
+
+  console.error(
+    "❌ INVALID BUSINESS COORDINATES:",
+    coordinates
+  );
+
+  return;
+}
+
+    /* ================= FINAL PAYLOAD ================= */
 
     const payload = {
 
       ...form,
 
-      address: normalizeAddress(form.address),
+      // ================= FEATURE DATA =================
+      pricing: form.pricing || [],
+      catalog: form.catalog || [],
+      menu: form.menu || [],
+      faq: form.faq || [],
+      offers: form.offers || [],
 
+      appointmentBooking: appointmentBooking || {},
+      restaurantBooking: restaurantBooking || {},
+      roomBooking: form.roomBooking || {},
+      partyBooking: form.partyBooking || {},
+
+      address: normalizeAddress(
+        form.address
+      ),
+
+      
+      location: {
+        type: "Point",
+        coordinates,
+      },
 
       serviceCoverage: {
 
@@ -765,27 +934,31 @@ const seoPreview = useMemo(() => {
 
 
     console.log(
-      "FINAL SERVICES:",
+      "📦 FINAL SERVICES:",
       payload.services
     );
 
+    console.log(
+      "📍 FINAL LOCATION:",
+      payload.location
+    );
 
     console.log(
-      "FINAL PAYLOAD:",
+      "🚀 FINAL PAYLOAD:",
       payload
     );
 
 
-    await onSubmit(payload);
+    /* ================= SUBMIT ================= */
 
+    await onSubmit(payload);
 
   } catch (err) {
 
     console.error(
-      "SUBMIT ERROR:",
+      "❌ SUBMIT ERROR:",
       err
     );
-
 
   } finally {
 
@@ -862,481 +1035,241 @@ const seoPreview = useMemo(() => {
 
         </FormSection>
 
-{/* SERVICE COVERAGE */}
-<div className="mt-6 space-y-4">
-  
-  <h3 className="font-semibold text-lg">
-    Service Coverage
+{/* ================= BUSINESS SERVICES ================= */}
+
+<BusinessServiceFields
+  serviceCoverage={form.serviceCoverage}
+  serviceTypes={form.serviceTypes || []}
+  services={form.services || []}
+
+  cities={cities}
+
+  country={form.country}
+  countryCode={form.countryCode}
+
+  suggestedServices={suggestedServices}
+
+  onServiceCoverageChange={(serviceCoverage) =>
+    updateForm({
+      ...form,
+      serviceCoverage,
+    })
+  }
+
+  onServiceTypesChange={(serviceTypes) =>
+    updateForm({
+      ...form,
+      serviceTypes,
+    })
+  }
+
+  onServicesChange={(services) =>
+    updateForm({
+      ...form,
+      services,
+    })
+  }
+/>
+
+{/* ================= FOOD TYPE ================= */}
+
+{isRestaurant && (
+  <div className="mt-6">
+
+    <h3 className="font-semibold mb-3">
+      Food Type
     </h3>
 
-    {/* Coverage Type */}
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-      {[
-        { value: "city", label: "Cities" },
-        { value: "state", label: "States" },
-        { value: "country", label: "Countries" },
-        { value: "global", label: "Worldwide" },
-      ].map((option) => (
-      
-      <label
-      key={option.value}
-      className="border rounded-xl p-3 flex items-center gap-2 cursor-pointer hover:border-indigo-500"
-      >
-        <input
-        type="radio"
-        name="coverageType"
-        checked={form.serviceCoverage?.type === option.value}
-        onChange={() =>
-          updateForm({
-            ...form,
-            serviceCoverage: {
-              ...form.serviceCoverage,
-              type: option.value,
-            },
-            })
+    <div className="flex flex-wrap gap-3">
+
+      {FOOD_TYPE_OPTIONS.map((option) => {
+
+        const selected =
+          form.foodType === option.value;
+
+        return (
+          <button
+            type="button"
+            key={option.value}
+            onClick={() =>
+              updateForm({
+                ...form,
+                foodType: option.value,
+              })
             }
+            className={`
+              flex items-center gap-2
+              px-4 py-2 rounded-full border
+              transition
+              ${
+                selected
+                  ? "border-gray-900 bg-gray-50 shadow-sm"
+                  : "border-gray-200 hover:border-gray-400"
+              }
+            `}
+          >
+
+            <span
+              className="w-3 h-3 rounded-full"
+              style={{
+                backgroundColor: option.color,
+              }}
             />
+
             <span className="text-sm font-medium">
               {option.label}
-              </span>
-              </label>
-            ))}
-            </div>
+            </span>
 
+          </button>
+        );
 
-            {/* Mode */}
-            {form.serviceCoverage?.type !== "global" && (
-              <div className="flex items-center gap-3">
-                
-                <label className="flex items-center gap-2">
+      })}
 
-                  <input
-                  type="radio"
-                  checked={form.serviceCoverage?.mode === "selected"}
-                  onChange={() =>
-                    updateForm({
-                      ...form,
-                      serviceCoverage: {
-                        ...form.serviceCoverage,
-                        mode: "selected",
-                      },
-                    })
-                  }
-                  />
+    </div>
 
-                  Selected
-                  
-                   </label>
+  </div>
+)}
 
-                   <label className="flex items-center gap-2">
-                    
-                    <input
-                    type="radio"
-                    checked={form.serviceCoverage?.mode === "all"}
-                    onChange={() =>
-                    updateForm({
-                      ...form,
-                      serviceCoverage: {
-                        ...form.serviceCoverage,
-                        mode: "all",
-                        },
-                        })
-                        }
-                        />
+<BusinessFeatureFields
 
-                        All
-                        
-                        </label>
+features={
+  form.categoryFeatures || []
+}
 
-                        </div>
-                        )}
-                        
-                        
-                        {/* Cities */}
-              {form.serviceCoverage?.type === "city" && (
-                
-                <Select
-                isMulti
-                options={cities}
-                value={(form.serviceCoverage?.cities || []).map((c) => ({
-                  value: c.cityId,
-                  label: `${c.name} (${c.state})`,
-                  district: c.district,
-                  state: c.state,
-                  country: c.country,
-                  countryCode: c.countryCode,
-                })
-              )}
-              onChange={(value) =>
-                
-                updateForm({
+form={form}
 
-                  ...form,
-                  
-                  serviceCoverage: {
-                    ...form.serviceCoverage,
-                    cities: (value || []).map((city) => ({
-                      cityId: city.value,
-                      name: city.label.split(" (")[0],
-                      district: city.district,
-                      state: city.state,
-                      country: city.country,
-                      countryCode: city.countryCode,
-                    })),
-                    },
-                  })
-                }
-                
-                placeholder="Select cities"
-                
-                />
-              )}
-              
-              
-              {/* States */}
-              
-              {form.serviceCoverage?.type === "state" && (
-                
-                <CreatableSelect
-                isMulti
-                value={(form.serviceCoverage?.states || []).map((s) => ({
-                  value: s.name,
-                  label: s.name,
-                })
-              )}
-              
-              onChange={(value) =>
-                updateForm({
+setForm={setForm}
 
-                  ...form,
+pricing={
+  form.pricing || []
+}
 
-                  serviceCoverage: {
-                    
-                    ...form.serviceCoverage,
-                    
-                    states: (value || []).map((s) => ({
-                      name: s.value,
-                      country: form.country || "India",
-                      countryCode: form.countryCode || "IN",
-                    })),
-                  },
-                })
-              }
-
-              placeholder="Select or type states"
-
-              />
-
-              )}
-              
-              
-              {/* Countries */}
-              
-              {form.serviceCoverage?.type === "country" && (
-                <CreatableSelect
-
-                isMulti
-                value={(form.serviceCoverage?.countries || []).map((c) => ({
-                  value: c.name,
-                  label: c.name,
-                })
-              )}
-              
-              onChange={(value) =>
-                
-                updateForm({
-                
-                ...form,
-                
-                serviceCoverage: {
-                  ...form.serviceCoverage,
-                  countries: (value || []).map((c) => ({
-
-                    name: c.value,
-                    code: c.value.slice(0, 2).toUpperCase(),
-                    })),
-                    },
-                    })
-                    }
-                    
-                    placeholder="Select or type countries"
-                    
-                    />
-                    )}
-                    
-                    {form.serviceCoverage?.type === "global" && (
-                      
-                      <div className="rounded-xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">
-                        
-                        This business provides services worldwide.
-
-                        </div>
-                      )}
-                      </div>
-
-
-{/* ================= SERVICE TYPE ================= */}
-
-
-<div className="mt-6">
-
-<h3 className="font-semibold mb-3">
-  Service Type
-</h3>
-
-
-<Select
-
-isMulti
-
-options={serviceTypeOptions}
-
-
-value={
-  serviceTypeOptions.filter(
-    (opt) =>
-      form.serviceTypes?.includes(
-        opt.value
-      )
-  )
+setPricing={(value)=>
+ updateForm({
+   ...form,
+   pricing:value
+ })
 }
 
 
-onChange={(value)=>{
+services={
+  form.services || []
+}
+
+setServices={(value)=>
+ updateForm({
+   ...form,
+   services:value
+ })
+}
+
+
+catalog={
+  form.catalog || []
+}
+
+setCatalog={(value)=>
+ updateForm({
+   ...form,
+   catalog:value
+ })
+}
+
+
+menu={
+  form.menu || []
+}
+
+setMenu={(value)=>
+ updateForm({
+   ...form,
+   menu:value
+ })
+}
+
+// ================= FAQ =================
+faq={
+  form.faq || []
+}
+
+setFaq={(value)=>
+  updateForm({
+    ...form,
+    faq: value,
+  })
+}
+// ================= OFFERS =================
+offers={
+  form.offers || []
+}
+setOffers={(value)=>
+  updateForm({
+    ...form,
+    offers: value,
+  })
+}
+// ================= ROOM BOOKING =================
+roomBooking={
+  form.roomBooking || null
+}
+
+setRoomBooking={(value)=>
+  updateForm({
+    ...form,
+    roomBooking: value,
+  })
+}
+
+// ================= PARTY BOOKING =================
+partyBooking={
+  form.partyBooking || null
+}
+
+setPartyBooking={(value)=>
+  updateForm({
+    ...form,
+    partyBooking: value,
+  })
+}
+
+// ================= APPOINTMENT BOOKING =================
+appointmentBooking={appointmentBooking}
+
+setAppointmentBooking={(value) => {
+  setAppointmentBooking(value);
 
   updateForm({
-
     ...form,
+    appointmentBooking: value,
+  });
+}}
 
-    serviceTypes:
-      value.map(
-        (v)=>v.value
-      ),
+hours={
+  form.businessHours || {}
+}
 
+setHours={(value)=>
+ updateForm({
+   ...form,
+   businessHours:value
+ })
+}
+
+restaurantBooking={restaurantBooking}
+
+setRestaurantBooking={(value)=>{
+
+  setRestaurantBooking(value);
+
+  updateForm({
+    ...form,
+    restaurantBooking:value
   });
 
 }}
 
-
-placeholder="Select service types"
-
 />
 
-
-</div>
-
-{isRestaurant && (
-  <div className="mt-6">
-    
-    <h3 className="font-semibold mb-3">
-      Food Type
-      </h3>
-      
-      <div className="flex flex-wrap gap-3">
-        {foodTypeOptions.map((option) => {
-          const selected =
-          form.foodType === option.value;
-          
-          return (
-          <button
-          type="button"
-          key={option.value}
-          onClick={() =>
-            updateForm({
-              ...form,
-              foodType: option.value,
-            })
-          }
-          
-          className={`
-            flex items-center gap-2
-            px-4 py-2 rounded-full border
-            transition
-            ${selected
-              ? "border-gray-900 bg-gray-50 shadow-sm"
-              : "border-gray-200 hover:border-gray-400"}
-              `}
-              >
-                
-                <span
-                className="w-3 h-3 rounded-full"
-                style={{
-                  backgroundColor: option.color,
-                }}
-                />
-                
-                <span
-                className="text-sm font-medium">
-                  {option.label}
-                  </span>
-                  </button>
-                );
-                })}
-                </div>
-                </div>
-              )}
-
-{/* SERVICE OFFERED */}
-
-<div className="mt-6">
-
-<h3 className="font-semibold mb-3">
-  Service Offered
-</h3>
-
-
-<CreatableSelect
-
-isMulti
-
-options={suggestedServices.map(s => ({
-  value:s,
-  label:s
-}))}
-
-
-value={
-(form.services || [])
-.filter(service => service?.name)
-.map(service=>({
-  value:service.name,
-  label:service.name
-}))
-}
-
-
-onChange={(value)=>{
-
-const existing =
-form.services || [];
-
-
-const updatedServices =
-value.map(v=>{
-
-const old =
-existing.find(
-s=>s.name === v.value
-);
-
-
-return {
-name:v.value,
-description:old?.description || ""
-};
-
-});
-
-
-console.log(
-"SERVICE STATE UPDATE:",
-updatedServices
-);
-
-
-updateForm({
-
-...form,
-
-services:updatedServices
-
-});
-
-}}
-
-
-/>
-
-
-
-
-
-{/* SERVICE DESCRIPTION */}
-
-{
-(form.services || []).map(
-(service,index)=>(
-
-<div
-key={index}
-className="
-mt-3
-border
-rounded-xl
-p-3
-bg-gray-50
-"
->
-
-
-<label className="
-text-sm
-font-medium
-"
->
-
-{service.name} Description
-
-</label>
-
-
-
-<textarea
-
-value={
-service.description || ""
-}
-
-onChange={(e)=>{
-
-
-const updated =
-[...form.services];
-
-
-updated[index] = {
-
-...updated[index],
-
-description:e.target.value
-
-};
-
-
-updateForm({
-
-...form,
-
-services:updated
-
-});
-
-
-}}
-
-
-placeholder={`Describe ${service.name} service...`}
-
-rows={2}
-
-className="
-border
-rounded-lg
-p-2
-w-full
-mt-2
-"
-
-/>
-
-
-</div>
-
-))
-}
-
-
-</div>
 
         {/* LOCATION */}
 
@@ -1356,26 +1289,21 @@ mt-2
 
 <div className="space-y-3">
 
-<input
+    <input
   name="street"
   value={form.address?.street || ""}
-  onChange={(e)=>{
+  onChange={(e) => {
+    setLocationManuallyAdjusted(false);
 
     updateForm({
-
       ...form,
-
-      address:{
+      address: {
         ...form.address,
-
-        street:e.target.value
-
-      }
-
+        street: e.target.value,
+      },
     });
-
   }}
-
+  
   placeholder="Street / Road (e.g. Mahatma Gandhi Road)"
   className="border rounded-xl p-3 w-full"
 />
@@ -1384,17 +1312,20 @@ mt-2
 <input
   name="area"
   value={form.address?.area || ""}
-  onChange={(e)=>{
+  onChange={(e) => {
 
-    updateForm({
-      ...form,
-      address:{
-        ...form.address,
-        area:e.target.value
-      }
-    });
+  setLocationManuallyAdjusted(false);
 
-  }}
+  updateForm({
+    ...form,
+    address: {
+      ...form.address,
+      area: e.target.value
+    }
+  });
+
+}}
+  
   placeholder="Area / Locality (e.g. Azad Nagar)"
   className="border rounded-xl p-3 w-full"
 />
@@ -1403,17 +1334,20 @@ mt-2
 <input
   name="landmark"
   value={form.address?.landmark || ""}
-  onChange={(e)=>{
+  onChange={(e) => {
 
-    updateForm({
-      ...form,
-      address:{
-        ...form.address,
-        landmark:e.target.value
-      }
-    });
+  setLocationManuallyAdjusted(false);
 
-  }}
+  updateForm({
+    ...form,
+    address: {
+      ...form.address,
+      landmark: e.target.value
+    }
+  });
+
+}}
+  
   placeholder="Landmark (e.g. Near Taj Mahal)"
   className="border rounded-xl p-3 w-full"
 />
@@ -1484,28 +1418,130 @@ mt-2
               name="pincode"
               value={form.pincode}
               onChange={handleChange}
+              
               placeholder="Enter pincode"
               className="border rounded-xl p-3 w-full"
             />
 
           </FormField>
 
-                  {form.cityId && (
-          <FormField label="Adjust Exact Location">
-            <BusinessLocationPicker
-              value={form.location?.coordinates}
-              onChange={(coordinates) =>
-                updateForm({
-                  ...form,
-                  location: {
-                    type: "Point",
-                    coordinates,
-                  },
-                })
-              }
-            />
-          </FormField>
-        )}
+        {form.cityId && (
+  <FormField
+    label="Exact Business Location"
+    error={errors.location}
+  >
+
+    {/* =================================================
+        LOCATION ACTIONS
+    ================================================= */}
+
+    <div className="flex flex-wrap items-center gap-3 mb-4">
+
+      <button
+        type="button"
+        onClick={findCurrentLocation}
+        disabled={locating}
+        className="
+          inline-flex
+          items-center
+          gap-2
+          px-4
+          py-2.5
+          rounded-xl
+          border
+          border-indigo-200
+          bg-indigo-50
+          text-indigo-700
+          font-medium
+          hover:bg-indigo-100
+          transition
+          disabled:opacity-50
+          disabled:cursor-not-allowed
+        "
+      >
+
+        <span className="text-lg">
+          📍
+        </span>
+
+        {locating
+          ? "Finding Location..."
+          : "Use My Current Location"}
+
+      </button>
+
+      <button
+        type="button"
+        onClick={updateMapFromAddress}
+        disabled={locating}
+        className="
+          inline-flex
+          items-center
+          gap-2
+          px-4
+          py-2.5
+          rounded-xl
+          border
+          border-gray-200
+          bg-white
+          text-gray-700
+          font-medium
+          hover:bg-gray-50
+          transition
+          disabled:opacity-50
+        "
+      >
+
+        <span>
+          🧭
+        </span>
+
+        Find from Address
+
+      </button>
+
+    </div>
+
+    <p className="text-xs text-gray-500 mb-4">
+      Address se location automatically find karein,
+      ya GPS se current location use karein.
+      Map par marker drag karke exact business location
+      bhi set kar sakte hain.
+    </p>
+
+
+    {/* =================================================
+        MAP
+    ================================================= */}
+
+    <BusinessLocationPicker
+
+      value={
+        form.location?.coordinates || []
+      }
+
+      onChange={(coordinates) => {
+
+        setLocationManuallyAdjusted(true);
+
+        updateForm({
+          location: {
+            type: "Point",
+            coordinates,
+          },
+        });
+
+        setErrors((prev) => ({
+          ...prev,
+          location: "",
+        }));
+
+      }}
+
+    />
+
+  </FormField>
+)}
 
         </FormSection>
 
@@ -1517,34 +1553,162 @@ mt-2
         >
 
           <FormField
-            label="Phone Number"
-            required
-            error={errors.phone}
-          >
+  label="Phone Number"
+  required
+  error={errors.phone}
+>
+  <div className="flex gap-3">
 
-            <input
-              name="phone"
-              value={form.phone}
-              onChange={handleChange}
-              placeholder="Enter phone number"
-              className="border rounded-xl p-3 w-full"
-            />
+    <div className="w-44 shrink-0">
+      <Select
+        options={COUNTRY_CODE_OPTIONS}
+        value={
+          COUNTRY_CODE_OPTIONS.find(
+            (option) =>
+              option.value ===
+              (form.phoneCountryCode || DEFAULT_COUNTRY_CODE)
+          )
+        }
+        onChange={(selected) =>
+          updateForm({
+            ...form,
+            phoneCountryCode: selected?.value || DEFAULT_COUNTRY_CODE,
+          })
+        }
+        isSearchable
+        placeholder="Code"
+        styles={styles}
+      />
+    </div>
 
-          </FormField>
+    <input
+      name="phone"
+      value={form.phone || ""}
+      onChange={handleChange}
+      inputMode="numeric"
+      placeholder="Mobile number"
+      className="border rounded-xl p-3 flex-1"
+    />
 
-          <FormField
-            label="WhatsApp Number"
-          >
+  </div>
+</FormField>
 
-            <input
-              name="whatsapp"
-              value={form.whatsapp}
-              onChange={handleChange}
-              placeholder="Enter WhatsApp number"
-              className="border rounded-xl p-3 w-full"
-            />
+          <FormField label="WhatsApp Number">
+  <div className="flex gap-3">
 
-          </FormField>
+    <div className="w-44 shrink-0">
+      <Select
+        options={COUNTRY_CODE_OPTIONS}
+        value={
+          COUNTRY_CODE_OPTIONS.find(
+            (option) =>
+              option.value ===
+              (form.whatsappCountryCode || DEFAULT_COUNTRY_CODE)
+          )
+        }
+        onChange={(selected) =>
+          updateForm({
+            ...form,
+            whatsappCountryCode: selected?.value || DEFAULT_COUNTRY_CODE,
+          })
+        }
+        isSearchable
+        placeholder="Code"
+        styles={styles}
+      />
+    </div>
+
+    <input
+      name="whatsapp"
+      value={form.whatsapp || ""}
+      onChange={handleChange}
+      inputMode="numeric"
+      placeholder="WhatsApp number"
+      className="border rounded-xl p-3 flex-1"
+    />
+
+  </div>
+</FormField>
+
+        {/* ================= ALTERNATE MOBILE ================= */}
+
+<FormField label="Alternate Mobile Number (Optional)">
+  <div className="flex gap-3">
+
+    <div className="w-44 shrink-0">
+      <Select
+        options={COUNTRY_CODE_OPTIONS}
+        value={
+          COUNTRY_CODE_OPTIONS.find(
+            (option) =>
+              option.value ===
+              (form.alternatePhoneCountryCode || DEFAULT_COUNTRY_CODE)
+          )
+        }
+        onChange={(selected) =>
+          updateForm({
+            ...form,
+            alternatePhoneCountryCode:
+              selected?.value || DEFAULT_COUNTRY_CODE,
+          })
+        }
+        isSearchable
+        placeholder="Code"
+        styles={styles}
+      />
+    </div>
+
+    <input
+      name="alternatePhone"
+      value={form.alternatePhone || ""}
+      onChange={handleChange}
+      inputMode="numeric"
+      placeholder="Alternate mobile number"
+      className="border rounded-xl p-3 flex-1"
+    />
+
+  </div>
+</FormField>
+
+{/* ================= LANDLINE ================= */}
+
+<FormField label="Landline Number (Optional)">
+  <div className="flex gap-3">
+
+    <div className="w-44 shrink-0">
+      <Select
+        options={COUNTRY_CODE_OPTIONS}
+        value={
+          COUNTRY_CODE_OPTIONS.find(
+            (option) =>
+              option.value ===
+              (form.landlineCountryCode || DEFAULT_COUNTRY_CODE)
+          )
+        }
+        onChange={(selected) =>
+          updateForm({
+            ...form,
+            landlineCountryCode:
+              selected?.value || DEFAULT_COUNTRY_CODE,
+          })
+        }
+        isSearchable
+        placeholder="Code"
+        styles={styles}
+      />
+    </div>
+
+    <input
+      name="landline"
+      value={form.landline || ""}
+      onChange={handleChange}
+      inputMode="numeric"
+      placeholder="STD / Landline number"
+      className="border rounded-xl p-3 flex-1"
+    />
+
+  </div>
+</FormField>
 
           <FormField
             label="Website"
@@ -1648,90 +1812,7 @@ mt-2
           </FormSection>
         )}
 
-        <BusinessFeatureFields
-
-features={
-  form.categoryFeatures || []
-}
-
-form={form}
-
-setForm={setForm}
-
-pricing={
-  form.pricing || []
-}
-
-setPricing={(value)=>
- updateForm({
-   ...form,
-   pricing:value
- })
-}
-
-
-services={
-  form.services || []
-}
-
-setServices={(value)=>
- updateForm({
-   ...form,
-   services:value
- })
-}
-
-
-catalog={
-  form.catalog || []
-}
-
-setCatalog={(value)=>
- updateForm({
-   ...form,
-   catalog:value
- })
-}
-
-
-menu={
-  form.menu || []
-}
-
-setMenu={(value)=>
- updateForm({
-   ...form,
-   menu:value
- })
-}
-
-
-hours={
-  form.businessHours || {}
-}
-
-setHours={(value)=>
- updateForm({
-   ...form,
-   businessHours:value
- })
-}
-
-restaurantBooking={restaurantBooking}
-
-setRestaurantBooking={(value)=>{
-
-  setRestaurantBooking(value);
-
-  updateForm({
-    ...form,
-    restaurantBooking:value
-  });
-
-}}
-
-/>
-
+        
 {/* Extra Admin Components */}
 {children}
         {/* SUBMIT */}

@@ -437,6 +437,25 @@ countryCode: data.countryCode || "IN",
       ? data.services
       : [],
 
+      // ================= SERVICE TYPES =================
+
+    serviceTypes:
+      Array.isArray(data.serviceTypes)
+        ? data.serviceTypes
+        : [],
+
+
+    // ================= SERVICE COVERAGE =================
+
+    serviceCoverage:
+      data.serviceCoverage || {
+        type: "city",
+        mode: "selected",
+        cities: [],
+        states: [],
+        countries: [],
+      },
+
     catalog: Array.isArray(data.catalog)
       ? data.catalog
       : [],

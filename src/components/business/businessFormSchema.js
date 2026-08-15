@@ -17,9 +17,8 @@ export const defaultBusinessForm = {
   categoryId: "",
 
   serviceTypes: [],
-  
   services: [],
-  
+
   serviceCoverage: {
     type: "city",
     mode: "selected",
@@ -28,43 +27,81 @@ export const defaultBusinessForm = {
     cities: [],
   },
 
+  // ================= ADDRESS =================
+
   address: {
-  street: "",
-  area: "",
-  landmark: "",
-},
+    street: "",
+    area: "",
+    landmark: "",
+  },
 
   cityId: "",
-
   district: "",
   state: "",
-   country: "",
-  countryCode: "",
+
+  country: "India",
+  countryCode: "IN",
 
   pincode: "",
 
+  // ================= CONTACT =================
+
+  phoneCountryCode: "+91",
   phone: "",
+
+  whatsappCountryCode: "+91",
   whatsapp: "",
+
+  landlineCountryCode: "+91",
+  landline: "",
+
+  alternatePhoneCountryCode: "+91",
+  alternatePhone: "",
 
   website: "",
 
-  restaurantBooking:{
-  enabled:false,
-  totalTables:"",
-  seatingCapacity:"",
-  advanceBookingDays:""
-},
+  // ================= FEATURES =================
+
+  pricing: [],
+  catalog: [],
+  menu: [],
+  faq: [],
+  offers: [],
+
+  // ================= BOOKING =================
+
+  restaurantBooking: {
+    enabled: false,
+    totalTables: "",
+    seatingCapacity: "",
+    advanceBookingDays: "",
+  },
+
+  roomBooking: null,
+  partyBooking: null,
+
+  // ================= DESCRIPTION =================
 
   description: "",
 
+  // ================= LOCATION =================
+
   location: null,
+
+  // ================= MEDIA =================
 
   images: [],
   logo: "",
 
+  // ================= SEO / TAGS =================
+
   tags: [],
 
+  // ================= HOURS =================
+
   businessHours: defaultBusinessHours,
+
+  // ================= PROMOTION =================
 
   boost: false,
 

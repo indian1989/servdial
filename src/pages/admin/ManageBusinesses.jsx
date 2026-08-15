@@ -73,10 +73,13 @@ const [categoryOptions, setCategoryOptions] = useState([]);
 
   const dto = toBusinessEditDTO(b);
 
+  setLogo(dto.logo || "");
 
   setEditBusiness({
     ...dto,
 
+    image: dto.image,
+    logo: dto.logo,
     pricing: dto.pricing || [],
     services: dto.services || [],
     catalog: dto.catalog || [],
@@ -282,15 +285,17 @@ console.error(error);
   // ================= FULL EDIT SAVE =================
   const handleUpdateBusiness = async (formData) => {
   try {
-
     console.log(
       "🔥 UPDATE FORM HOURS BEFORE NORMALIZE:",
       formData.businessHours
     );
 
-
     const payload = normalizeBusinessPayload({
       ...formData,
+
+      // ✅ MEDIA FROM EDIT STATE
+      images: editBusiness?.images || formData.images || [],
+      logo: editBusiness?.logo || logo || formData.logo || "",
 
       pricing: formData.pricing || [],
       services: formData.services || [],
@@ -303,44 +308,49 @@ console.error(error);
         formData.businessHours || defaultHours,
     });
 
+    console.log(
+      "🔥 FINAL PAYLOAD IMAGES:",
+      payload.images
+    );
+
+    console.log(
+      "🔥 FINAL PAYLOAD LOGO:",
+      payload.logo
+    );
 
     console.log(
       "🔥 FINAL PAYLOAD HOURS:",
       payload.businessHours
     );
 
+    const res = await updateBusiness(
+      editBusiness._id,
+      payload
+    );
 
+    const updated =
+      res?.data?.data ||
+      res?.data?.business;
 
-            const res = await updateBusiness(
-              editBusiness._id,
-              payload
-            );
+    setBusinesses((prev) =>
+      prev.map((b) =>
+        b._id === updated._id
+          ? updated
+          : b
+      )
+    );
 
-            const updated =
-              res?.data?.data ||
-              res?.data?.business;
+    setEditBusiness(null);
 
-            setBusinesses((prev) =>
-              prev.map((b) =>
-                b._id === updated._id
-                  ? updated
-                  : b
-              )
-            );
+  } catch (err) {
+    console.error(err);
 
-            setEditBusiness(null);
-
-          } catch (err) {
-
-            console.error(err);
-
-            alert(
-              err?.response?.data?.message ||
-              "Update failed"
-            );
-
-          }
-        };
+    alert(
+      err?.response?.data?.message ||
+      "Update failed"
+    );
+  }
+};
 
         const handleBulkPlan = async(plan)=>{
 
@@ -444,7 +454,7 @@ const filtered = businesses
       :(
         b.categoryId?.name ||
         b.categoryName) === categoryFilter
-  })
+  })  
   .filter((b) => {
     return planFilter === "all"
       ? true
@@ -652,24 +662,17 @@ const filtered = businesses
       }))
     }
     logo={logo}
-    onLogoChange={setLogo}
-  />
+    onLogoChange={(newLogo) => {
+      setLogo(newLogo);
 
-  {/* HOURS */}
-  <BusinessHoursManager
-    value={
-      editBusiness?.businessHours &&
-      Object.keys(editBusiness.businessHours).length
-        ? editBusiness.businessHours
-        : defaultHours
-    }
-    onChange={(hrs) =>
       setEditBusiness((prev) => ({
         ...prev,
-        businessHours: hrs
-      }))
-    }
+        logo: newLogo,
+        }));
+        }}
   />
+
+  
 </BusinessForm>
 
             <button

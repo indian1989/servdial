@@ -67,7 +67,7 @@ const CategoriesGrid = ({ categories = [], city, loading = false }) => {
   const topCategories = (categories || [])
   .filter((c) => !c.parentCategory) // ONLY PARENTS
   .sort((a, b) => (a.order || 0) - (b.order || 0))
-  .slice(0, 20);
+  .slice(0, 16);
 
   if (!loading && topCategories.length === 0) {
   return (

@@ -18,6 +18,7 @@ import {
 
 import { toTitleCase } from "../../utils/adminUtils";
 
+
 /* ================= TREE BUILDER ================= */
 const buildTree = (categories, parentId = null) => {
   return categories
@@ -142,16 +143,22 @@ if (existingCategory) {
     try {
       await addCategory({
   name: toTitleCase(newCategory.name),
+
   description: newCategory.description,
+
   order:
     newCategory.order === "" || newCategory.order === null
       ? 0
       : Number(newCategory.order),
-  parentCategory: newCategory.parentCategory || null,
-  uiType: newCategory.uiType,
+
+  parentCategory:
+    newCategory.parentCategory || null,
+
+  uiType:
+    newCategory.uiType,
 });
 
-      setNewCategory({
+   setNewCategory({
   name: "",
   description: "",
   order: 0,
@@ -178,7 +185,8 @@ if (existingCategory) {
         order: Number(editingData.order),
         isTrending: editingData.isTrending,
         uiType: editingData.uiType,
-      });
+});
+      
 
       setEditingId(null);
       fetchCategories();
