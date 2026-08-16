@@ -290,52 +290,124 @@ business.paymentOptions.join(", ")
 
 
 
-{/* VERIFIED */}
+{/* ================= VERIFIED BUSINESS ================= */}
+
+<div
+  className="
+    flex
+    gap-3
+    items-center
+  "
+>
+
+  <div
+    className="
+      bg-green-50
+      p-2
+      rounded-xl
+      text-green-600
+    "
+  >
+    <ShieldCheck size={20} />
+  </div>
+
+  <div>
+
+    <p className="text-xs text-gray-500">
+      Trust
+    </p>
+
+    <p className="font-medium text-sm text-green-600">
+      Verified Business
+    </p>
+
+  </div>
+
+</div>
+
+
+{/* ================= TRUSTED PARTNER ================= */}
 
 {
-business.isVerified &&
+  business.plan === "trusted" && (
 
-<div className="
-flex
-gap-3
-items-center
-">
+    <div
+      className="
+        flex
+        gap-3
+        items-center
+      "
+    >
 
+      <div
+        className="
+          bg-purple-50
+          p-2
+          rounded-xl
+          text-purple-600
+        "
+      >
+        <ShieldCheck size={20} />
+      </div>
 
-<div className="
-bg-green-50
-p-2
-rounded-xl
-text-green-600
-">
+      <div>
 
-<ShieldCheck size={20}/>
+        <p className="text-xs text-gray-500">
+          Status
+        </p>
 
-</div>
+        <p className="font-medium text-sm text-purple-600">
+          Trusted Partner
+        </p>
 
+      </div>
 
-<div>
+    </div>
 
-<p className="text-xs text-gray-500">
-Trust
-</p>
-
-
-<p className="font-medium text-sm">
-
-Verified Business
-
-</p>
-
-
-</div>
-
-
-</div>
-
+  )
 }
 
 
+{/* ================= PREMIUM PARTNER ================= */}
+
+{
+  business.plan === "premium" && (
+
+    <div
+      className="
+        flex
+        gap-3
+        items-center
+      "
+    >
+
+      <div
+        className="
+          bg-yellow-50
+          p-2
+          rounded-xl
+          text-yellow-600
+        "
+      >
+        <ShieldCheck size={20} />
+      </div>
+
+      <div>
+
+        <p className="text-xs text-gray-500">
+          Status
+        </p>
+
+        <p className="font-medium text-sm text-yellow-600">
+          Premium Partner
+        </p>
+
+      </div>
+
+    </div>
+
+  )
+}
 
 </div>
 

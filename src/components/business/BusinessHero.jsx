@@ -3,11 +3,10 @@ import {
   MessageCircle,
   Navigation,
   BadgeCheck,
-  Crown,
-  ShieldCheck,
   Share2,
   Bookmark,
   BookmarkCheck,
+  MapPin,
 } from "lucide-react";
 
 const titleCase = (str = "") =>
@@ -30,516 +29,831 @@ const BusinessHero = ({
   handleSave,
   isSaved,
 }) => {
-
+  // =========================================================
+  // HERO IMAGE
+  // =========================================================
 
   const heroImage =
     images?.[activeImg] ||
     business?.logo ||
     "/servdial-logo.png";
 
-const heroLocation = [
-  titleCase(
-    business.categoryId?.name
-  ),
+  // =========================================================
+  // BUSINESS DATA
+  // =========================================================
 
-  titleCase(
-    business.cityName ||
-    business.cityId?.name
-  ),
+  const businessName =
+    business?.name || "Business";
 
-  titleCase(
-    business.state
-  ),
+  const categoryName =
+    business?.categoryId?.name ||
+    business?.categoryName ||
+    "Business";
 
-  titleCase(
-    business.country || "India"
-  ),
+  const cityName =
+    business?.cityName ||
+    business?.cityId?.name ||
+    "";
 
-]
-.filter(Boolean)
-.join(" • ");
+  const stateName =
+    business?.state ||
+    "";
 
-// ================= SEO H1 =================
+  const countryName =
+    business?.country ||
+    "India";
 
-const heroH1 =
-  business?.seo?.h1 ||
-  `${business?.name || "Business"} - ${
-    titleCase(
-      business?.categoryId?.name ||
-      business?.categoryName ||
-      "Business"
-    )
-  } in ${
-    titleCase(
-      business?.cityName ||
-      business?.cityId?.name ||
-      ""
-    )
-  }`;
+  // =========================================================
+  // VERIFICATION
+  // =========================================================
+
+  const isVerified =
+    Boolean(business?.isVerified);
+
+  const isTrusted =
+    business?.plan === "trusted";
+
+  const isPremium =
+    business?.plan === "premium";
+
+  /*
+    Priority:
+
+    Verified + Premium -> Gold
+    Verified + Trusted -> Purple
+    Verified          -> Blue
+  */
+
+  const verificationType =
+    isVerified && isPremium
+      ? "premium"
+      : isVerified && isTrusted
+      ? "trusted"
+      : isVerified
+      ? "verified"
+      : null;
+
+  // =========================================================
+  // VERIFICATION BADGE
+  // =========================================================
+
+  const VerificationBadge = () => {
+    if (!verificationType) return null;
+
+    const badgeClass =
+      verificationType === "premium"
+        ? "bg-yellow-400 text-black"
+        : verificationType === "trusted"
+        ? "bg-purple-600 text-white"
+        : "bg-blue-600 text-white";
+
+    return (
+      <span
+        className={`
+          inline-flex
+          items-center
+          justify-center
+
+          w-6
+          h-6
+
+          sm:w-7
+          sm:h-7
+
+          rounded-full
+
+          ${badgeClass}
+
+          shadow-md
+          flex-shrink-0
+        `}
+        title={
+          verificationType === "premium"
+            ? "Verified Premium Business"
+            : verificationType === "trusted"
+            ? "Verified Trusted Business"
+            : "Verified Business"
+        }
+      >
+        <BadgeCheck
+          size={18}
+          strokeWidth={2.5}
+        />
+      </span>
+    );
+  };
+
+  // =========================================================
+  // HERO LOCATION
+  // =========================================================
+
+  const heroLocation = [
+    titleCase(cityName),
+    titleCase(stateName),
+    titleCase(countryName),
+  ]
+    .filter(Boolean)
+    .join(" • ");
+
+  // =========================================================
+  // SEO H1
+  // =========================================================
+
+  const heroH1 =
+    business?.seo?.h1 ||
+    `${businessName} - ${titleCase(
+      categoryName
+    )} in ${titleCase(cityName)}`;
+
+  // Prevent unused warning while keeping SEO variable available
+  void heroH1;
+
+  // =========================================================
+  // RATING
+  // =========================================================
+
+  const rating =
+    business?.averageRating || "New";
+
+  const totalReviews =
+    business?.totalReviews || 0;
+
+  // =========================================================
+  // RENDER
+  // =========================================================
 
   return (
+    <section className="relative w-full">
 
-<section className="relative w-full">
+      {/* =====================================================
+          HERO IMAGE
+      ===================================================== */}
 
+      <div
+        className="
+          relative
+          h-[430px]
+          sm:h-[430px]
+          md:h-[430px]
+          overflow-hidden
+        "
+      >
 
-{/* ================= HERO IMAGE ================= */}
+        {/* =================================================
+            HERO IMAGE
+        ================================================= */}
+
+        <img
+          src={heroImage}
+          alt={`${businessName} ${categoryName} in ${cityName}`}
+          loading="eager"
+          fetchPriority="high"
+          decoding="async"
+          className="
+            absolute
+            inset-0
+            w-full
+            h-full
+            object-cover
+            cursor-pointer
+          "
+          onClick={() =>
+            setShowGallery?.(true)
+          }
+        />
+
+        {/* =================================================
+            DARK GRADIENT
+        ================================================= */}
+
+        <div
+          className="
+            absolute
+            inset-0
+            bg-gradient-to-t
+            from-black/95
+            via-black/45
+            to-black/10
+          "
+        />
+
+        {/* =================================================
+            PHOTO THUMBNAILS
+        ================================================= */}
+
+        {images?.length > 1 && (
+          <div
+            className="
+              absolute
+              top-4
+              right-4
+
+              flex
+              gap-2
+
+              z-20
+
+              overflow-x-auto
+              max-w-[75%]
+              scrollbar-hide
+            "
+          >
+            {images.map((img, index) => (
+              <img
+                key={index}
+                src={img}
+                alt={`Photo ${index + 1}`}
+                onClick={() => {
+                  setActiveImg(index);
+                  setShowGallery?.(true);
+                }}
+                className={`
+                  w-16
+                  h-16
+                  rounded-lg
+                  object-cover
+                  border-2
+                  cursor-pointer
+                  transition-all
+
+                  ${
+                    activeImg === index
+                      ? "border-white scale-105 shadow-lg"
+                      : "border-white/50 hover:border-white"
+                  }
+                `}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* =================================================
+            BUSINESS INFO
+
+            Logo + Name + Category + Location
+            stays ABOVE
+        ================================================= */}
+
+        <div
+          className="
+            absolute
+            left-0
+            right-0
+            top-[110px]
+            z-10
+
+            px-4
+            sm:px-6
+            md:px-8
+          "
+        >
+
+          {/* LOGO + BUSINESS DETAILS */}
+
+          <div className="flex items-center gap-3">
+
+            {/* LOGO */}
+
+            {business?.logo && (
+              <img
+                src={business.logo}
+                alt={`${businessName} logo`}
+                className="
+                  w-16
+                  h-16
+
+                  sm:w-20
+                  sm:h-20
+
+                  md:w-24
+                  md:h-24
+
+                  rounded-2xl
+                  object-cover
+
+                  bg-white
+                  border-2
+                  border-white
+
+                  shadow-xl
+
+                  flex-shrink-0
+                "
+              />
+            )}
+
+            {/* NAME / CATEGORY / LOCATION */}
+
+            <div className="min-w-0">
+
+              {/* BUSINESS NAME + VERIFIED TICK */}
+
+              <div className="flex items-center gap-2">
+
+               {/* BUSINESS NAME + VERIFIED TICK */}
 
 <div
-className="
-relative
-h-64
-sm:h-72
-md:h-[430px]
-overflow-hidden
-"
+  className="
+    flex
+    items-center
+    gap-2
+    min-w-0
+    w-full
+  "
 >
 
+  <h1
+    className="
+      text-xl
+      sm:text-3xl
+      md:text-5xl
 
-<img
-  src={heroImage}
-  alt={`${business.name} ${
-    business.categoryId?.name ||
-    business.categoryName ||
-    "business"
-  } in ${
-    business.cityName ||
-    business.cityId?.name ||
-    ""
-  }`}
+      font-bold
+      text-white
+      leading-tight
 
-loading="eager"
+      whitespace-normal
+      break-words
 
-fetchPriority="high"
+      min-w-0
+      flex-1
+    "
+  >
+    {businessName}
+  </h1>
 
-decoding="async"
-
-className="
-w-full
-h-full
-object-cover
-cursor-pointer
-"
-
-onClick={() => setShowGallery?.(true)}
-
-/>
-
-
-
-<div
-className="
-absolute
-inset-0
-bg-gradient-to-t
-from-black/90
-via-black/40
-to-transparent
-"
-/>
-
-{/* ================= PHOTO THUMBNAILS ================= */}
-{images?.length > 1 && (
-  <div className=" absolute top-4 right-4 flex gap-2 z-10
-   overflow-x-auto max-w-[75%] scrollbar-hide " >
-
-{images.map((img, index) => (
-  <img
-  key={index}
-  src={img}
-  alt={`Photo ${index + 1}`}
-  onClick={() => {
-    setActiveImg(index);
-    setShowGallery?.(true);
-    }}
-    className={`w-16 h-16 rounded-lg object-cover border-2 cursor-pointer transition-
-      all ${
-     activeImg === index
-     ? "border-white scale-105 shadow-lg"
-     : "border-white/50 hover:border-white"
-     }`}
-     />
-     ))} 
-     </div>
-    )}
-  </div>
-  
-{/* ================= BUSINESS INFO ================= */}
-
-
-<div
-className="
-absolute
-bottom-0
-left-0
-right-0
-p-4
-sm:p-6
-text-white
-"
->
-
-
-
-<h1
-className="
-text-2xl
-sm:text-3xl
-md:text-5xl
-font-bold
-leading-tight
-"
->
-
-{business.name}
-
-</h1>
-
-<p
-className="
-text-sm
-sm:text-base
-mt-1
-text-white/90
-"
->
-{heroLocation}
-</p>
-
-<div
-className="
-flex
-items-center
-gap-2
-mt-2
-text-sm
-sm:text-base
-"
->
-
-<span>
-
-⭐ {business.averageRating || "New"}
-
-</span>
-
-
-<span>
-
-({business.totalReviews || 0} Reviews)
-
-</span>
-
+  <VerificationBadge />
 
 </div>
-
-
-
-
-
-{/* ================= ACTION BUTTONS ================= */}
-
-
-<div
-className="
-grid
-grid-cols-2
-sm:flex
-gap-2
-mt-4
-"
->
-
-
-
-<button
-
-onClick={handleCall}
-
-aria-label="Call business"
-
-className="
-bg-blue-600
-px-4
-py-2
-rounded-xl
-flex
-justify-center
-items-center
-gap-2
-text-sm
-"
-
->
-
-<Phone size={18}/>
-
-Call
-
-</button>
-
-
-
-
-<button
-
-onClick={handleWhatsApp}
-
-aria-label="WhatsApp business"
-
-className="
-bg-green-600
-px-4
-py-2
-rounded-xl
-flex
-justify-center
-items-center
-gap-2
-text-sm
-"
-
->
-
-<MessageCircle size={18}/>
-
-WhatsApp
-
-</button>
-
-
-
-
-<button
-
-onClick={handleDirections}
-
-aria-label="Get directions"
-
-className="
-bg-gray-800
-px-4
-py-2
-rounded-xl
-flex
-justify-center
-items-center
-gap-2
-text-sm
-"
-
->
-
-<Navigation size={18}/>
-
-Direction
-
-</button>
-
-
-
-<button
-
-onClick={handleSave}
-
-aria-label="Save business"
-
-className="
-bg-white/20
-px-4
-py-2
-rounded-xl
-flex
-justify-center
-"
-
->
-
-{
-isSaved
-?
-<BookmarkCheck 
-size={18}
-className="text-yellow-400"
-/>
-:
-<Bookmark size={18}/>
-}
-
-</button>
-
-
-<button
-
-onClick={()=>setShowShareMenu(true)}
-
-aria-label="Share business"
-
-className="
-bg-white/20
-px-4
-py-2
-rounded-xl
-flex
-justify-center
-"
-
->
-
-<Share2 size={18}/>
-
-</button>
-
-
-
 </div>
-
-
-
-
-
-{/* ================= BADGES ================= */}
-
+              {/* CATEGORY + LOCATION */}
 
 <div
-className="
-flex
-flex-wrap
-gap-2
-mt-3
-"
+  className="
+    flex
+    items-center
+    gap-2
+
+    text-sm
+    sm:text-base
+
+    text-white
+    mt-1
+
+    whitespace-nowrap
+    overflow-hidden
+  "
 >
 
+  {/* CATEGORY */}
 
-{
-business.isVerified &&
+  <span className="truncate">
+    {titleCase(categoryName)}
+  </span>
 
-<span
-className="
-bg-green-500
-px-3
-py-1
-rounded-full
-text-xs
-font-semibold
-flex
-items-center
-gap-1
-"
->
+  {/* SEPARATOR */}
 
-<BadgeCheck size={14}/>
+  <span className="text-white/70">
+    •
+  </span>
 
-Verified
+  {/* LOCATION */}
 
-</span>
-
-}
-
-
-
-
-{
-business.plan==="trusted" &&
-
-<span
-className="
-bg-purple-600
-px-3
-py-1
-rounded-full
-text-xs
-font-semibold
-flex
-items-center
-gap-1
-"
->
-
-<ShieldCheck size={14}/>
-
-Trusted
-
-</span>
-
-}
-
-
-
-
-
-{
-business.plan==="premium" &&
-
-<span
-
-className="
-bg-yellow-400
-text-black
-px-3
-py-1
-rounded-full
-text-xs
-font-semibold
-flex
-items-center
-gap-1
-"
-
->
-
-<Crown size={14}/>
-
-Premium
-
-</span>
-
-}
-
-  {/* RIGHT SIDE DISTANCE */}
-{typeof distance === "number" && (
-  <span
-    className={`
-      backdrop-blur
-      text-xs
-      px-3
-      py-1
-      rounded-full
-      shadow-lg
-      font-semibold
-      ml-auto
+  <div
+    className="
       flex
       items-center
       gap-1
-      whitespace-nowrap
-
-      ${
-        distance < 0.3
-          ? "bg-green-500/90 text-white"
-          : "bg-black/70 text-white"
-      }
-    `}
+      min-w-0
+    "
   >
-    📍{" "}
-    {distance < 0.3
-      ? "Nearby"
-      : `${distance.toFixed(1)} km away`}
-  </span>
-)}
+    <MapPin
+      size={15}
+      className="flex-shrink-0"
+    />
+
+    <span className="truncate">
+      {heroLocation}
+    </span>
+
+  </div>
 
 </div>
-
-
-
 </div>
+</div>
+</div>
+        {/* =================================================
+            BOTTOM CONTENT
 
+            ONLY:
+            Rating
+            Buttons
+            Distance
+        ================================================= */}
 
+        <div
+          className="
+            absolute
+            left-0
+            right-0
+            bottom-0
 
-</section>
+            z-10
 
+            px-4
+            pb-4
+
+            sm:px-6
+            sm:pb-5
+
+            md:px-8
+            md:pb-7
+          "
+        >
+
+          {/* =================================================
+              RATING
+          ================================================= */}
+
+          <div
+            className="
+              flex
+              items-center
+              gap-2
+
+              text-sm
+              sm:text-base
+
+              mb-3
+            "
+          >
+            <span
+              className="
+                text-yellow-300
+                text-lg
+              "
+            >
+              ⭐
+            </span>
+
+            <span
+              className="
+                font-semibold
+                text-white
+              "
+            >
+              {rating}
+            </span>
+
+            <span className="text-white/90">
+              ({totalReviews} Reviews)
+            </span>
+          </div>
+
+          {/* =================================================
+              ACTION BUTTONS
+
+              MOBILE:
+              [ Call ] [ WhatsApp ]
+
+              [ Direction ] [ Save ] [ Share ]
+
+              DESKTOP:
+              [ Call ] [ WhatsApp ] [ Direction ] [ Save ] [ Share ]
+          ================================================= */}
+
+          <div
+            className="
+              grid
+              grid-cols-2
+              md:grid-cols-5
+
+              gap-2
+              sm:gap-3
+            "
+          >
+
+            {/* =================================================
+                MOBILE GROUP 1
+
+                On mobile:
+                Call + WhatsApp = one row
+
+                On desktop:
+                md:contents makes both buttons participate
+                directly in the 5-column parent grid.
+            ================================================= */}
+
+            <div
+              className="
+                grid
+                grid-cols-2
+                gap-2
+                sm:gap-3
+
+                md:contents
+              "
+            >
+
+              {/* CALL */}
+
+              <button
+                type="button"
+                onClick={handleCall}
+                aria-label="Call business"
+                className="
+                  bg-blue-600
+                  hover:bg-blue-700
+                  active:scale-[0.98]
+
+                  text-white
+
+                  px-3
+                  py-2.5
+
+                  sm:py-3
+
+                  rounded-xl
+
+                  flex
+                  justify-center
+                  items-center
+
+                  gap-2
+
+                  text-sm
+                  sm:text-base
+
+                  md:text-sm
+
+                  font-medium
+
+                  transition
+                "
+              >
+                <Phone size={18} />
+
+                <span>
+                  Call
+                </span>
+              </button>
+
+              {/* WHATSAPP */}
+
+              <button
+                type="button"
+                onClick={handleWhatsApp}
+                aria-label="WhatsApp business"
+                className="
+                  bg-green-600
+                  hover:bg-green-700
+                  active:scale-[0.98]
+
+                  text-white
+
+                  px-3
+                  py-2.5
+
+                  sm:py-3
+
+                  rounded-xl
+
+                  flex
+                  justify-center
+                  items-center
+
+                  gap-2
+
+                  text-sm
+                  sm:text-base
+
+                  md:text-sm
+
+                  font-medium
+
+                  transition
+                "
+              >
+                <MessageCircle size={18} />
+
+                <span>
+                  WhatsApp
+                </span>
+              </button>
+
+            </div>
+
+            {/* =================================================
+                MOBILE GROUP 2
+
+                On mobile:
+                Direction + Save + Share = one row
+
+                On desktop:
+                md:contents makes all 3 participate directly
+                in the 5-column parent grid.
+            ================================================= */}
+
+            <div
+              className="
+                grid
+                grid-cols-3
+
+                gap-2
+                sm:gap-3
+
+                md:contents
+              "
+            >
+
+              {/* DIRECTION */}
+
+              <button
+                type="button"
+                onClick={handleDirections}
+                aria-label="Get directions"
+                className="
+                  bg-black/65
+                  hover:bg-black/75
+
+                  backdrop-blur-md
+
+                  text-white
+
+                  px-2
+                  py-2.5
+
+                  sm:py-3
+
+                  rounded-xl
+
+                  flex
+                  justify-center
+                  items-center
+
+                  gap-1.5
+
+                  text-xs
+                  sm:text-sm
+                  md:text-sm
+
+                  font-medium
+
+                  transition
+                "
+              >
+                <Navigation size={17} />
+
+                <span>
+                  Direction
+                </span>
+              </button>
+
+              {/* SAVE */}
+
+              <button
+                type="button"
+                onClick={handleSave}
+                aria-label="Save business"
+                className="
+                  bg-black/65
+                  hover:bg-black/75
+
+                  backdrop-blur-md
+
+                  text-white
+
+                  px-2
+                  py-2.5
+
+                  sm:py-3
+
+                  rounded-xl
+
+                  flex
+                  justify-center
+                  items-center
+
+                  gap-1.5
+
+                  text-xs
+                  sm:text-sm
+                  md:text-sm
+
+                  font-medium
+
+                  transition
+                "
+              >
+
+                {isSaved ? (
+                  <BookmarkCheck
+                    size={17}
+                    className="text-yellow-400"
+                  />
+                ) : (
+                  <Bookmark size={17} />
+                )}
+
+                <span>
+                  Save
+                </span>
+
+              </button>
+
+              {/* SHARE */}
+
+              <button
+                type="button"
+                onClick={() =>
+                  setShowShareMenu?.(true)
+                }
+                aria-label="Share business"
+                className="
+                  bg-black/65
+                  hover:bg-black/75
+
+                  backdrop-blur-md
+
+                  text-white
+
+                  px-2
+                  py-2.5
+
+                  sm:py-3
+
+                  rounded-xl
+
+                  flex
+                  justify-center
+                  items-center
+
+                  gap-1.5
+
+                  text-xs
+                  sm:text-sm
+                  md:text-sm
+
+                  font-medium
+
+                  transition
+                "
+              >
+                <Share2 size={17} />
+
+                <span>
+                  Share
+                </span>
+              </button>
+
+            </div>
+
+          </div>
+
+          {/* =================================================
+              DISTANCE
+          ================================================= */}
+
+          {typeof distance === "number" && (
+            <div
+              className="
+                flex
+                justify-end
+
+                mt-2
+              "
+            >
+              <span
+                className="
+                  bg-black/80
+                  backdrop-blur-md
+
+                  text-white
+
+                  text-xs
+
+                  px-3
+                  py-1.5
+
+                  rounded-full
+
+                  font-semibold
+                "
+              >
+                📍{" "}
+                {distance < 0.3
+                  ? "Nearby"
+                  : `${distance.toFixed(1)} km away`}
+              </span>
+            </div>
+          )}
+
+        </div>
+
+      </div>
+
+    </section>
   );
-
 };
-
-
 
 export default BusinessHero;

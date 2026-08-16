@@ -1,4 +1,4 @@
-import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
 
 const serviceTypeOptions = [
   {
@@ -16,6 +16,14 @@ const serviceTypeOptions = [
   {
     value: "onsite",
     label: "On-site Visit",
+  },
+  {
+    value: "mobile-sale",
+    label: "Mobile Sales & Accessories",
+  },
+  {
+    value: "sale-service",
+    label: "Sale & Service",
   },
   {
     value: "pickup",
@@ -44,11 +52,43 @@ const ServiceType = ({
   onChange,
 }) => {
 
-  const selectedValues =
-    serviceTypeOptions.filter(
-      (option) =>
-        value.includes(option.value)
+  /*
+   * Existing values ko options ke saath merge kar rahe hain.
+   * Isse agar database me custom service type already saved hai
+   * to wo bhi select me properly show hoga.
+   */
+  const customOptions = value
+    .filter(
+      (item) =>
+        item &&
+        !serviceTypeOptions.some(
+          (option) => option.value === item
+        )
+    )
+    .map((item) => ({
+      value: item,
+      label: item,
+    }));
+
+  const allOptions = [
+    ...serviceTypeOptions,
+    ...customOptions,
+  ];
+
+  const selectedValues = value.map((item) => {
+
+    const existingOption = allOptions.find(
+      (option) => option.value === item
     );
+
+    return (
+      existingOption || {
+        value: item,
+        label: item,
+      }
+    );
+
+  });
 
   const handleChange = (selected) => {
 
@@ -67,13 +107,26 @@ const ServiceType = ({
         Service Type
       </h3>
 
-      <Select
+      <CreatableSelect
         isMulti
-        options={serviceTypeOptions}
+        options={allOptions}
         value={selectedValues}
         onChange={handleChange}
-        placeholder="Select service types"
+        placeholder="Search or type service type..."
+        isClearable
+        formatCreateLabel={(inputValue) =>
+          `Add "${inputValue}"`
+        }
+        noOptionsMessage={({ inputValue }) =>
+          inputValue
+            ? `Press Enter to add "${inputValue}"`
+            : "No service type found"
+        }
       />
+
+      <p className="text-xs text-gray-500 mt-2">
+        Search an existing service type or type your own and press Enter.
+      </p>
 
     </div>
   );
