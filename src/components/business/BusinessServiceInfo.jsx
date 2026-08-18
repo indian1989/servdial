@@ -7,7 +7,6 @@ import {
 
 import BusinessSection from "./BusinessSection";
 
-
 const serviceTypeLabels = {
 
   home: "Home Service",
@@ -71,92 +70,7 @@ const BusinessServiceInfo = ({ business }) => {
         Services
       </h2>
 
-
-
- {/* ================= SERVICES OFFERED ================= */}
-
-{
-  services?.length > 0 && (
-
-    <div className="mb-8">
-
-
-      <div className="flex items-center gap-2 mb-4">
-
-        <Briefcase
-          size={20}
-          className="text-blue-600"
-        />
-
-        <h3 className="font-semibold text-lg">
-          Services Offered
-        </h3>
-
-      </div>
-
-
-
-      <div className="
-        grid
-        sm:grid-cols-2
-        lg:grid-cols-3
-        gap-3
-      ">
-
-
-        {
-          services.map((service,index)=>(
-
-            <div
-              key={index}
-              className="
-                px-4
-                py-3
-                rounded-xl
-                bg-blue-50
-                text-blue-700
-                text-sm
-                font-medium
-                border
-                border-blue-100
-              "
-            >
-
-              <div>
-                {service.name}
-              </div>
-
-
-              {
-                service.description && (
-
-                  <p className="
-                    text-xs
-                    text-gray-500
-                    mt-1
-                  ">
-                    {service.description}
-                  </p>
-
-                )
-              }
-
-
-            </div>
-
-          ))
-        }
-
-
-      </div>
-
-
-    </div>
-
-  )
-}
-
-
+  
       {/* ================= SERVICE COVERAGE ================= */}
 
 {
@@ -394,6 +308,159 @@ const BusinessServiceInfo = ({ business }) => {
 
   )
 }
+
+      {/* ================= SERVICE TYPES ================= */}
+
+{
+  serviceTypes?.length > 0 && (
+
+    <div className="mb-8">
+
+      <div className="flex items-center gap-2 mb-4">
+
+        <Truck
+          size={20}
+          className="text-purple-600"
+        />
+
+        <h3 className="font-semibold text-lg">
+          Service Type
+        </h3>
+
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+
+        {
+          serviceTypes.map((type, index) => {
+
+            const key =
+              typeof type === "string"
+                ? type
+                : type?.value || type?.type || type?.name;
+
+            if (!key) {
+              return null;
+            }
+
+            return (
+              <span
+                key={`${key}-${index}`}
+                className="
+                  px-4
+                  py-2
+                  rounded-full
+                  bg-purple-50
+                  text-purple-700
+                  text-sm
+                  font-medium
+                  border
+                  border-purple-100
+                "
+              >
+                {
+                  serviceTypeLabels[key] ||
+                  key
+                }
+              </span>
+            );
+
+          })
+        }
+
+      </div>
+
+    </div>
+
+  )
+}
+
+
+
+ {/* ================= SERVICES OFFERED ================= */}
+
+{
+  services?.length > 0 && (
+
+    <div className="mb-8">
+
+
+      <div className="flex items-center gap-2 mb-4">
+
+        <Briefcase
+          size={20}
+          className="text-blue-600"
+        />
+
+        <h3 className="font-semibold text-lg">
+          Services Offered
+        </h3>
+
+      </div>
+
+
+
+      <div className="
+        grid
+        sm:grid-cols-2
+        lg:grid-cols-3
+        gap-3
+      ">
+
+
+        {
+          services.map((service,index)=>(
+
+            <div
+              key={index}
+              className="
+                px-4
+                py-3
+                rounded-xl
+                bg-blue-50
+                text-blue-700
+                text-sm
+                font-medium
+                border
+                border-blue-100
+              "
+            >
+
+              <div>
+                {service.name}
+              </div>
+
+
+              {
+                service.description && (
+
+                  <p className="
+                    text-xs
+                    text-gray-500
+                    mt-1
+                  ">
+                    {service.description}
+                  </p>
+
+                )
+              }
+
+
+            </div>
+
+          ))
+        }
+
+
+      </div>
+
+
+    </div>
+
+  )
+}
+
+
 
 </BusinessSection>
 

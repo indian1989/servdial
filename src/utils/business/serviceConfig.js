@@ -1,5 +1,16 @@
 // frontend/src/utils/business/serviceConfig.js
 
+import {
+  UNIQUE_SERVICE_LIBRARY,
+} from "./serviceLibrary";
+
+/* =========================================================
+   CATEGORY-SPECIFIC SERVICE SUGGESTIONS
+   ---------------------------------------------------------
+   These are the most relevant services shown first
+   for a particular category.
+========================================================= */
+
 export const SERVICE_SUGGESTIONS_BY_CATEGORY = {
 
   electrician: [
@@ -95,13 +106,77 @@ export const SERVICE_SUGGESTIONS_BY_CATEGORY = {
     "Software Update",
   ],
 
-  default: [
-    "Installation",
-    "Repair",
-    "Maintenance",
-    "Consultation",
-  ],
 };
+
+
+/* =========================================================
+   DEFAULT / COMMON SERVICES
+   ---------------------------------------------------------
+   Only common services remain here.
+   Large 400–800 service library stays in serviceLibrary.js.
+========================================================= */
+
+export const DEFAULT_SERVICE_SUGGESTIONS = [
+  "Installation",
+  "Repair",
+  "Maintenance",
+  "Consultation",
+  "Inspection",
+  "Replacement",
+  "Service",
+  "Cleaning",
+  "Emergency Service",
+  "On-Site Service",
+];
+
+
+/* =========================================================
+   GET CATEGORY SERVICES
+   ---------------------------------------------------------
+   Category services + common library
+   ---------------------------------------------------------
+   Note:
+   serviceLibrary.js can contain 400–800 services.
+   We don't blindly show all of them in the dropdown.
+========================================================= */
+
+export const getCategoryServiceSuggestions = (
+  categoryKey = ""
+) => {
+
+  const categoryServices =
+    SERVICE_SUGGESTIONS_BY_CATEGORY[categoryKey] || [];
+
+  return [
+    ...new Set([
+      ...categoryServices,
+      ...DEFAULT_SERVICE_SUGGESTIONS,
+    ]),
+  ];
+};
+
+
+/* =========================================================
+   FULL SERVICE LIBRARY
+   ---------------------------------------------------------
+   Used when searching/typing services.
+========================================================= */
+
+export const ALL_SERVICE_SUGGESTIONS = [
+  ...new Set([
+    ...Object.values(
+      SERVICE_SUGGESTIONS_BY_CATEGORY
+    ).flat(),
+
+    ...DEFAULT_SERVICE_SUGGESTIONS,
+
+    ...UNIQUE_SERVICE_LIBRARY,
+  ]),
+];
+
+/* =========================================================
+   FOOD TYPE OPTIONS
+========================================================= */
 
 export const FOOD_TYPE_OPTIONS = [
   {
@@ -109,11 +184,13 @@ export const FOOD_TYPE_OPTIONS = [
     label: "Veg",
     color: "#16a34a",
   },
+
   {
     value: "non_veg",
     label: "Non Veg",
     color: "#dc2626",
   },
+
   {
     value: "both",
     label: "Veg & Non Veg",

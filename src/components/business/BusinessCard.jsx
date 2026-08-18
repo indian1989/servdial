@@ -6,6 +6,7 @@ import {
   MessageCircle,
   Eye,
   BadgeCheck,
+  ShieldCheck,
 } from "lucide-react";
 
 import { memo } from "react";
@@ -257,18 +258,43 @@ const realDistance =
       <div className="p-5 flex flex-col flex-1">
 
         {/* NAME */}
-        <div className="flex items-start justify-between gap-2">
-          <h2 className="text-lg font-bold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition">
-            {name}
-          </h2>
+        <div className="flex items-center justify-between gap-2">
 
-          {rating > 0 && (
-            <div className="flex items-center bg-yellow-50 text-yellow-700 px-2 py-1 rounded-lg text-xs font-semibold shrink-0">
-              <Star size={12} className="fill-yellow-400 mr-1" />
-              {rating.toFixed(1)}
-            </div>
-          )}
-        </div>
+  <div className="flex items-center gap-1.5 min-w-0">
+
+    <h2 className="text-lg font-bold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition">
+      {name}
+    </h2>
+
+    {/* TRUSTED / PREMIUM SHIELD */}
+    {isVerified && plan === "trusted" && (
+      <ShieldCheck
+        size={18}
+        strokeWidth={2.5}
+        className="text-purple-600 shrink-0"
+        title="Trusted Business"
+      />
+    )}
+
+    {isVerified && plan === "premium" && (
+      <ShieldCheck
+        size={18}
+        strokeWidth={2.5}
+        className="text-yellow-500 shrink-0"
+        title="Premium Partner"
+      />
+    )}
+
+  </div>
+
+  {rating > 0 && (
+    <div className="flex items-center bg-yellow-50 text-yellow-700 px-2 py-1 rounded-lg text-xs font-semibold shrink-0">
+      <Star size={12} className="fill-yellow-400 mr-1" />
+      {rating.toFixed(1)}
+    </div>
+  )}
+
+</div>
 
         {/* CATEGORY */}
         <p className="text-sm text-blue-600 font-medium mt-1">

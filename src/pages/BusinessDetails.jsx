@@ -41,7 +41,6 @@ import useBusinessShare from "../hooks/useBusinessShare";
 import LoginPromptModal from "../components/common/LoginPromptModal";
 import useGallery from "../hooks/useGallery";
 
-
 const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
   const navigate = useNavigate();
@@ -184,9 +183,14 @@ const uiType =
   business?.category?.uiType ||
   "service";
 
-  
+  console.log(
+  "💰 BUSINESS PRICING:",
+  business?.pricing
+);
+
  if (!business?._id) {
  return (
+
   <div className="min-h-screen flex items-center justify-center">
     Loading...
   </div>
@@ -260,6 +264,7 @@ isSaved={isSaved}
  business={business}
 />
 
+
 {/* AI SUMMARY */}
         <BusinessAISummary
     business={business}
@@ -282,6 +287,7 @@ isSaved={isSaved}
     />
   )
 }
+
 
 <OffersSection
   business={business}

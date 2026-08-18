@@ -1,3 +1,4 @@
+// frontend/src/components/business/service/BusinessServiceFields.jsx
 import ServiceCoverage from "./ServiceCoverage";
 import ServiceType from "./ServiceType";
 import ServicesOffered from "./ServicesOffered";

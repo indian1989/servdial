@@ -4,9 +4,8 @@ import API from "../../api/axios";
 const BannerAd = ({
   placement = "homepage_top",
   cityId,
-  categoryId
+  categoryId,
 }) => {
-
   const [banners, setBanners] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -19,12 +18,11 @@ const BannerAd = ({
             placement,
             cityId,
             categoryId,
-          }
+          },
         });
 
         setBanners(res?.data?.data || []);
         setCurrentIndex(0);
-
       } catch (err) {
         console.error("Banner fetch error:", err);
         setBanners([]);
@@ -47,6 +45,18 @@ const BannerAd = ({
     return () => clearInterval(interval);
   }, [banners.length]);
 
+  // ================= BANNER CLICK TRACKING =================
+  const handleBannerClick = async (banner) => {
+    try {
+      await API.post(`/banners/${banner._id}/click`);
+    } catch (error) {
+      console.error(
+        "Banner click tracking failed:",
+        error
+      );
+    }
+  };
+
   if (banners.length === 0) return null;
 
   const current = banners[currentIndex];
@@ -55,7 +65,13 @@ const BannerAd = ({
     <div className="w-full bg-gray-100 py-6 flex justify-center">
       <div className="relative max-w-6xl w-full px-4">
 
-        <a href={current.link || "#"} target="_blank" rel="noreferrer">
+        {/* ================= BANNER ================= */}
+        <a
+          href={current.link || "#"}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => handleBannerClick(current)}
+        >
           <img
             src={current.image}
             alt={current.title}
@@ -63,26 +79,52 @@ const BannerAd = ({
           />
         </a>
 
-        {/* Prev */}
+        {/* ================= PREVIOUS ================= */}
         <button
+          type="button"
           onClick={() =>
             setCurrentIndex(
-              currentIndex === 0 ? banners.length - 1 : currentIndex - 1
+              currentIndex === 0
+                ? banners.length - 1
+                : currentIndex - 1
             )
           }
-          className="absolute top-1/2 left-6 -translate-y-1/2 bg-white px-3 py-2 rounded-full shadow"
+          className="
+            absolute
+            top-1/2
+            left-6
+            -translate-y-1/2
+            bg-white
+            px-3
+            py-2
+            rounded-full
+            shadow
+          "
         >
           ◀
         </button>
 
-        {/* Next */}
+        {/* ================= NEXT ================= */}
         <button
+          type="button"
           onClick={() =>
             setCurrentIndex(
-              currentIndex === banners.length - 1 ? 0 : currentIndex + 1
+              currentIndex === banners.length - 1
+                ? 0
+                : currentIndex + 1
             )
           }
-          className="absolute top-1/2 right-6 -translate-y-1/2 bg-white px-3 py-2 rounded-full shadow"
+          className="
+            absolute
+            top-1/2
+            right-6
+            -translate-y-1/2
+            bg-white
+            px-3
+            py-2
+            rounded-full
+            shadow
+          "
         >
           ▶
         </button>

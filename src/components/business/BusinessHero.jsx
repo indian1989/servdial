@@ -2,7 +2,7 @@ import {
   Phone,
   MessageCircle,
   Navigation,
-  BadgeCheck,
+  ShieldCheck,
   Share2,
   Bookmark,
   BookmarkCheck,
@@ -67,81 +67,68 @@ const BusinessHero = ({
   // VERIFICATION
   // =========================================================
 
-  const isVerified =
-    Boolean(business?.isVerified);
-
   const isTrusted =
-    business?.plan === "trusted";
+  business?.isVerified &&
+  business?.plan === "trusted";
 
-  const isPremium =
-    business?.plan === "premium";
+const isPremium =
+  business?.isVerified &&
+  business?.plan === "premium";
 
-  /*
-    Priority:
-
-    Verified + Premium -> Gold
-    Verified + Trusted -> Purple
-    Verified          -> Blue
-  */
-
-  const verificationType =
-    isVerified && isPremium
-      ? "premium"
-      : isVerified && isTrusted
-      ? "trusted"
-      : isVerified
-      ? "verified"
-      : null;
+const verificationType =
+  isPremium
+    ? "premium"
+    : isTrusted
+    ? "trusted"
+    : null;
 
   // =========================================================
   // VERIFICATION BADGE
   // =========================================================
 
   const VerificationBadge = () => {
-    if (!verificationType) return null;
+  if (!verificationType) return null;
 
-    const badgeClass =
-      verificationType === "premium"
-        ? "bg-yellow-400 text-black"
-        : verificationType === "trusted"
-        ? "bg-purple-600 text-white"
-        : "bg-blue-600 text-white";
+  const isPremium =
+    verificationType === "premium";
 
-    return (
-      <span
-        className={`
-          inline-flex
-          items-center
-          justify-center
+  return (
+    <span
+      className={`
+        inline-flex
+        items-center
+        justify-center
 
-          w-6
-          h-6
+        w-6
+        h-6
+        sm:w-7
+        sm:h-7
 
-          sm:w-7
-          sm:h-7
+        rounded-full
 
-          rounded-full
+        flex-shrink-0
 
-          ${badgeClass}
+        shadow-md
 
-          shadow-md
-          flex-shrink-0
-        `}
-        title={
-          verificationType === "premium"
-            ? "Verified Premium Business"
-            : verificationType === "trusted"
-            ? "Verified Trusted Business"
-            : "Verified Business"
+        ${
+          isPremium
+            ? "bg-yellow-400 text-yellow-900"
+            : "bg-purple-600 text-white"
         }
-      >
-        <BadgeCheck
-          size={18}
-          strokeWidth={2.5}
-        />
-      </span>
-    );
-  };
+      `}
+      title={
+        isPremium
+          ? "Premium Partner"
+          : "Trusted Business"
+      }
+    >
+      <ShieldCheck
+        size={18}
+        strokeWidth={2.5}
+      />
+    </span>
+  );
+};
 
   // =========================================================
   // HERO LOCATION
@@ -348,17 +335,13 @@ const BusinessHero = ({
 
               {/* BUSINESS NAME + VERIFIED TICK */}
 
-              <div className="flex items-center gap-2">
-
-               {/* BUSINESS NAME + VERIFIED TICK */}
-
 <div
   className="
     flex
     items-center
     gap-2
     min-w-0
-    w-full
+    max-w-full
   "
 >
 
@@ -376,7 +359,6 @@ const BusinessHero = ({
       break-words
 
       min-w-0
-      flex-1
     "
   >
     {businessName}
@@ -384,7 +366,6 @@ const BusinessHero = ({
 
   <VerificationBadge />
 
-</div>
 </div>
               {/* CATEGORY + LOCATION */}
 
@@ -825,20 +806,15 @@ const BusinessHero = ({
             >
               <span
                 className="
-                  bg-black/80
-                  backdrop-blur-md
-
-                  text-white
-
-                  text-xs
-
-                  px-3
-                  py-1.5
-
-                  rounded-full
-
-                  font-semibold
-                "
+                bg-green-600
+                text-white
+                text-xs
+                px-3
+                py-1.5
+                rounded-full
+                font-semibold
+                shadow-md
+              "
               >
                 📍{" "}
                 {distance < 0.3

@@ -1,4 +1,13 @@
+import { useMemo, useState } from "react";
 import CreatableSelect from "react-select/creatable";
+
+import {
+  normalizeServiceText,
+  uniqueServices,
+  mapServicesToSelectOptions,
+  searchServices,
+} from "../../../utils/business/serviceHelpers";
+
 
 const ServicesOffered = ({
   value = [],
@@ -10,41 +19,175 @@ const ServicesOffered = ({
     ? value
     : [];
 
-  const options = suggestions.map((service) => ({
-    value: service,
-    label: service,
-  }));
+  const [inputValue, setInputValue] = useState("");
 
-  const selectedValues = services
-    .filter((service) => service?.name)
-    .map((service) => ({
-      value: service.name,
-      label: service.name,
-    }));
+
+  /* =========================================================
+     SERVICE OPTIONS
+
+     Empty search:
+     → Category-specific suggestions
+
+     User types:
+     → Search complete service library
+  ========================================================= */
+
+  const options = useMemo(() => {
+
+    const query =
+      normalizeServiceText(inputValue);
+
+
+    /* -----------------------------------------
+       NO SEARCH
+       Show category suggestions
+    ----------------------------------------- */
+
+    if (!query) {
+
+      return mapServicesToSelectOptions(
+        suggestions
+      );
+
+    }
+
+
+    /* -----------------------------------------
+       SEARCH MASTER LIBRARY
+    ----------------------------------------- */
+
+    const libraryResults =
+      searchServices(query);
+
+
+    /* -----------------------------------------
+       Remove already selected services
+    ----------------------------------------- */
+
+    const selectedNames =
+      new Set(
+        services.map((service) =>
+          normalizeServiceText(
+            service?.name
+          ).toLowerCase()
+        )
+      );
+
+
+    const filteredResults =
+      libraryResults.filter((service) => {
+
+        const name =
+          typeof service === "string"
+            ? service
+            : service?.name;
+
+        return !selectedNames.has(
+          normalizeServiceText(name)
+            .toLowerCase()
+        );
+
+      });
+
+
+    return mapServicesToSelectOptions(
+      filteredResults
+    );
+
+  }, [
+    inputValue,
+    suggestions,
+    services,
+  ]);
+
+
+  /* =========================================================
+     SELECTED OPTIONS
+  ========================================================= */
+
+  const selectedValues =
+    uniqueServices(services)
+      .map((service) => {
+
+        const name =
+          normalizeServiceText(
+            service?.name
+          );
+
+        if (!name) {
+          return null;
+        }
+
+        return {
+          value: name,
+          label: name,
+        };
+
+      })
+      .filter(Boolean);
+
+
+  /* =========================================================
+     SERVICE CHANGE
+  ========================================================= */
 
   const handleServicesChange = (selected) => {
 
-    const existingServices = services;
+    const selectedOptions =
+      selected || [];
 
-    const updatedServices = (selected || []).map(
-      (option) => {
 
-        const existingService =
-          existingServices.find(
-            (service) =>
-              service.name === option.value
-          );
+    const updatedServices =
+      selectedOptions
+        .map((option) => {
 
-        return {
-          name: option.value,
-          description:
-            existingService?.description || "",
-        };
-      }
+          const name =
+            normalizeServiceText(
+              option?.value
+            );
+
+          if (!name) {
+            return null;
+          }
+
+
+          /* -----------------------------------------
+             Preserve existing description
+          ----------------------------------------- */
+
+          const existingService =
+            services.find(
+              (service) =>
+                normalizeServiceText(
+                  service?.name
+                ).toLowerCase() ===
+                name.toLowerCase()
+            );
+
+
+          return {
+            name,
+
+            description:
+              existingService?.description || "",
+          };
+
+        })
+        .filter(Boolean);
+
+
+    onChange?.(
+      uniqueServices(
+        updatedServices
+      )
     );
 
-    onChange?.(updatedServices);
   };
+
+
+  /* =========================================================
+     DESCRIPTION CHANGE
+  ========================================================= */
 
   const handleDescriptionChange = (
     index,
@@ -55,13 +198,71 @@ const ServicesOffered = ({
       ...services,
     ];
 
+
+    if (!updatedServices[index]) {
+      return;
+    }
+
+
     updatedServices[index] = {
       ...updatedServices[index],
       description,
     };
 
-    onChange?.(updatedServices);
+
+    onChange?.(
+      updatedServices
+    );
+
   };
+
+
+  /* =========================================================
+     INPUT CHANGE
+  ========================================================= */
+
+  const handleInputChange = (
+    newValue,
+    actionMeta
+  ) => {
+
+    if (
+      actionMeta.action ===
+      "input-change"
+    ) {
+
+      setInputValue(
+        newValue
+      );
+
+    }
+
+    return newValue;
+
+  };
+
+
+  /* =========================================================
+     CREATE LABEL
+  ========================================================= */
+
+  const formatCreateLabel = (
+    inputValue
+  ) => {
+
+    const name =
+      normalizeServiceText(
+        inputValue
+      );
+
+    return `Add "${name}"`;
+
+  };
+
+
+  /* =========================================================
+     RENDER
+  ========================================================= */
 
   return (
     <div className="mt-6">
@@ -70,67 +271,125 @@ const ServicesOffered = ({
         Services Offered
       </h3>
 
+
       <CreatableSelect
+
         isMulti
+
         options={options}
+
         value={selectedValues}
+
         onChange={handleServicesChange}
+
+        onInputChange={
+          handleInputChange
+        }
+
+        inputValue={inputValue}
+
         placeholder="Select or type services"
+
+        formatCreateLabel={
+          formatCreateLabel
+        }
+
+        isClearable
+
+        isSearchable
+
+        noOptionsMessage={() => {
+
+          if (
+            normalizeServiceText(
+              inputValue
+            )
+          ) {
+
+            return "No matching service found — type to add a custom service";
+
+          }
+
+          return "No services available";
+
+        }}
+
       />
 
-      {/* ================= SERVICE DESCRIPTIONS ================= */}
+
+      {/* =====================================================
+          SERVICE DESCRIPTIONS
+      ===================================================== */}
 
       {services.map(
-        (service, index) => (
+        (service, index) => {
 
-          <div
-            key={`${service.name}-${index}`}
-            className="
-              mt-3
-              border
-              rounded-xl
-              p-3
-              bg-gray-50
-            "
-          >
+          const serviceName =
+            normalizeServiceText(
+              service?.name
+            );
 
-            <label
+
+          if (!serviceName) {
+            return null;
+          }
+
+
+          return (
+            <div
+              key={`${serviceName}-${index}`}
               className="
-                text-sm
-                font-medium
+                mt-3
+                border
+                rounded-xl
+                p-3
+                bg-gray-50
               "
             >
-              {service.name} Description
-            </label>
 
-            <textarea
-              value={
-                service.description || ""
-              }
-              onChange={(e) =>
-                handleDescriptionChange(
-                  index,
-                  e.target.value
-                )
-              }
-              placeholder={`Describe ${service.name} service...`}
-              rows={2}
-              className="
-                border
-                rounded-lg
-                p-2
-                w-full
-                mt-2
-              "
-            />
+              <label
+                className="
+                  text-sm
+                  font-medium
+                  block
+                "
+              >
+                {serviceName} Description
+              </label>
 
-          </div>
 
-        )
+              <textarea
+                value={
+                  service?.description || ""
+                }
+                onChange={(e) =>
+                  handleDescriptionChange(
+                    index,
+                    e.target.value
+                  )
+                }
+                placeholder={`Describe ${serviceName} service...`}
+                rows={2}
+                className="
+                  border
+                  rounded-lg
+                  p-2
+                  w-full
+                  mt-2
+                  resize-y
+                "
+              />
+
+            </div>
+          );
+
+        }
       )}
 
     </div>
   );
+
 };
+
 
 export default ServicesOffered;
