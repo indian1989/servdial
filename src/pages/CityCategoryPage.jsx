@@ -1,7 +1,7 @@
 // frontend/src/pages/CityCategoryPage.jsx
 
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
 import API from "../api/axios";
@@ -12,6 +12,7 @@ import NotFound from "./NotFound";
 const CityCategoryPage = () => {
   // ================= URL PARAMS =================
   const params = useParams();
+  const navigate = useNavigate();
   const citySlug = params.citySlug;
   const categorySlug = params.categorySlug || "all";
 
@@ -40,7 +41,97 @@ const [cityInfo,setCityInfo] = useState(null);
   `/seo/${citySlug}/${categorySlug}`
 );
 
+
 const data = response.data;
+
+/* =====================================================
+   CANONICAL SLUG REDIRECT
+   Handles:
+   1. Old city slug -> new city slug
+   2. Old category slug -> new category slug
+   3. Old city + old category -> new canonical URL
+
+   Example:
+
+   /hajipur/hotels
+        ↓
+   /hajipur-vaishali-bihar/hotel
+
+   /old-city/electrician
+        ↓
+   /hajipur-vaishali-bihar/electrician
+===================================================== */
+
+const canonicalCitySlug =
+  data?.city?.slug ||
+  data?.canonicalCitySlug ||
+  citySlug;
+
+const canonicalCategorySlug =
+  data?.category?.slug ||
+  data?.canonicalSlug ||
+  categorySlug;
+
+
+/* =====================================================
+   REDIRECT TO CANONICAL CITY + CATEGORY URL
+===================================================== */
+
+if (
+  canonicalCitySlug !== citySlug ||
+  (
+    categorySlug !== "all" &&
+    canonicalCategorySlug !== categorySlug
+  )
+) {
+
+  const targetUrl =
+    categorySlug === "all"
+      ? `/${canonicalCitySlug}`
+      : `/${canonicalCitySlug}/${canonicalCategorySlug}`;
+
+  navigate(targetUrl, {
+    replace: true,
+  });
+
+  return;
+}
+
+
+/* =====================================================
+   CATEGORY NOT FOUND
+===================================================== */
+
+if (
+  categorySlug !== "all" &&
+  !data?.category?.slug
+) {
+  setNotFound(true);
+  return;
+}
+
+
+/* =====================================================
+   VALID CANONICAL PAGE
+===================================================== */
+
+setNotFound(false);
+
+setBusinesses(data?.data || []);
+
+setSubCategories(
+  data?.subCategories || []
+);
+
+setCategoryInfo(
+  categorySlug === "all"
+    ? null
+    : (data?.category || null)
+);
+
+setCityInfo(
+  data?.city || null
+);
 
 
 // "all" page is valid even without category

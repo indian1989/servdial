@@ -19,35 +19,49 @@ const CategoryPage = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // ================= FETCH DATA =================
+  // =====================================================
+  // FETCH CITIES + GLOBAL CATEGORIES
+  // =====================================================
+
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        const [citiesRes, categoriesRes] =
-          await Promise.all([
-            API.get("/cities"),
-            API.get("/categories"),
-          ]);
+        const [citiesRes, categoriesRes] = await Promise.all([
+          API.get("/cities"),
+          API.get("/categories"),
+        ]);
+
+        // -------------------------------------------------
+        // CITIES
+        // -------------------------------------------------
 
         setCities(
           citiesRes.data?.cities ||
-          citiesRes.data?.data ||
-          []
+            citiesRes.data?.data ||
+            []
         );
+
+        // -------------------------------------------------
+        // GLOBAL CATEGORIES
+        // -------------------------------------------------
 
         setCategories(
           categoriesRes.data?.categories ||
-          categoriesRes.data?.data ||
-          []
+            categoriesRes.data?.data ||
+            []
         );
 
       } catch (err) {
         console.error(
           "Error fetching cities or categories:",
-          err
+          err?.response?.data || err
         );
+
+        setCities([]);
+        setCategories([]);
+
       } finally {
         setLoading(false);
       }
@@ -56,15 +70,24 @@ const CategoryPage = () => {
     fetchData();
   }, []);
 
-  // ================= PARENT CATEGORIES =================
+  // =====================================================
+  // GLOBAL PARENT CATEGORIES
+  // =====================================================
+
   const parentCategories = (categories || []).filter(
-    (c) => !c.parentCategory
+    (category) => !category.parentCategory
   );
 
-  // ================= FEATURED CITIES =================
+  // =====================================================
+  // FEATURED CITIES
+  // =====================================================
+
   const featuredCities = (cities || []).slice(0, 8);
 
-  // ================= LOADING =================
+  // =====================================================
+  // LOADING
+  // =====================================================
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -83,32 +106,42 @@ const CategoryPage = () => {
     );
   }
 
+  // =====================================================
+  // PAGE
+  // =====================================================
+
   return (
     <>
       <Helmet>
+
         <title>
           Browse Categories | ServDial
         </title>
 
         <meta
           name="description"
-          content="Browse all business and service categories on ServDial. Discover trusted local businesses and professionals near you."
+          content="Browse all business and service categories on ServDial. Discover trusted local businesses and professionals across India."
         />
 
         <link
           rel="canonical"
           href="https://servdial.com/categories"
         />
+
       </Helmet>
 
       <div className="min-h-screen bg-gray-50">
 
-        {/* ================= HERO ================= */}
+        {/* =================================================
+            HERO
+        ================================================= */}
+
         <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
 
           <div className="max-w-7xl mx-auto px-4 py-14">
 
             {/* BREADCRUMB */}
+
             <div className="flex items-center gap-2 text-sm text-blue-100 mb-5">
 
               <Link
@@ -127,6 +160,7 @@ const CategoryPage = () => {
             </div>
 
             {/* HERO CONTENT */}
+
             <div className="max-w-3xl">
 
               <div className="inline-flex items-center gap-2 bg-white/10 px-4 py-2 rounded-full text-sm mb-5">
@@ -144,7 +178,8 @@ const CategoryPage = () => {
               </h1>
 
               <p className="text-blue-100 text-lg leading-relaxed">
-                Explore verified businesses, trusted professionals and local services across every category on ServDial.
+                Explore verified businesses, trusted professionals
+                and local services across every category on ServDial.
               </p>
 
             </div>
@@ -153,10 +188,16 @@ const CategoryPage = () => {
 
         </section>
 
-        {/* ================= MAIN CONTENT ================= */}
+        {/* =================================================
+            MAIN CONTENT
+        ================================================= */}
+
         <section className="max-w-7xl mx-auto px-4 py-10">
 
-          {/* ================= HEADER ================= */}
+          {/* =================================================
+              CATEGORY HEADER
+          ================================================= */}
+
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
 
             <div>
@@ -186,43 +227,53 @@ const CategoryPage = () => {
 
           </div>
 
-          {/* ================= CATEGORY GRID ================= */}
+          {/* =================================================
+              GLOBAL CATEGORY GRID
+          ================================================= */}
+
           {parentCategories.length > 0 ? (
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
 
-              {parentCategories.map((cat) => (
+              {parentCategories.map((category) => (
 
                 <Link
-                  key={cat._id}
-                  to={`/category/${cat.slug}`}
+                  key={category._id}
+                  to={`/category/${category.slug}`}
                   className="group bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-xl hover:border-blue-200 transition-all duration-300"
                 >
 
                   {/* ICON */}
+
                   <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition">
 
-                    {cat.icon ? (
+                    {category.icon ? (
+
                       <img
-                        src={cat.icon}
-                        alt={cat.name}
+                        src={category.icon}
+                        alt={category.name}
                         className="w-8 h-8 object-contain"
                       />
+
                     ) : (
+
                       <Layers3
                         size={24}
                         className="text-blue-600"
                       />
+
                     )}
 
                   </div>
 
-                  {/* TITLE */}
+                  {/* CATEGORY NAME */}
+
                   <h3 className="font-semibold text-gray-800 text-sm leading-6 group-hover:text-blue-600 transition min-h-[48px]">
-                    {cat.name}
+                    {category.name}
                   </h3>
 
                   {/* FOOTER */}
+
                   <div className="flex items-center justify-between mt-4">
 
                     <span className="text-xs text-gray-500">
@@ -267,24 +318,23 @@ const CategoryPage = () => {
 
           )}
 
-          {/* ================= FEATURED CITIES ================= */}
+          {/* =================================================
+              FEATURED CITIES
+          ================================================= */}
+
           {featuredCities.length > 0 && (
 
             <div className="mt-16">
 
-              <div className="flex items-center justify-between mb-6">
+              <div className="mb-6">
 
-                <div>
+                <h2 className="text-2xl font-bold text-gray-800">
+                  Explore by City
+                </h2>
 
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Explore by City
-                  </h2>
-
-                  <p className="text-gray-500 mt-1">
-                    Browse local businesses city wise
-                  </p>
-
-                </div>
+                <p className="text-gray-500 mt-1">
+                  Browse local businesses city wise
+                </p>
 
               </div>
 
@@ -333,7 +383,10 @@ const CategoryPage = () => {
 
           )}
 
-          {/* ================= SEO CONTENT ================= */}
+          {/* =================================================
+              SEO CONTENT
+          ================================================= */}
+
           <div className="bg-white border rounded-3xl p-8 mt-16 shadow-sm">
 
             <h2 className="text-2xl font-bold text-gray-800 mb-4">
@@ -343,15 +396,22 @@ const CategoryPage = () => {
             <div className="space-y-4 text-gray-600 leading-8">
 
               <p>
-                ServDial helps users discover reliable businesses and professionals across multiple categories including home services, restaurants, healthcare, education, repair services, travel, beauty and more.
+                ServDial helps users discover reliable businesses
+                and professionals across multiple categories including
+                home services, restaurants, healthcare, education,
+                repair services, travel, beauty and more.
               </p>
 
               <p>
-                Browse sub categories, compare local providers and connect directly with verified businesses through phone and WhatsApp.
+                Browse sub categories, compare local providers and
+                connect directly with verified businesses through
+                phone and WhatsApp.
               </p>
 
               <p>
-                Whether you are searching for daily services or professional business solutions, ServDial makes local business discovery fast, simple and reliable.
+                Whether you are searching for daily services or
+                professional business solutions, ServDial makes local
+                business discovery fast, simple and reliable.
               </p>
 
             </div>

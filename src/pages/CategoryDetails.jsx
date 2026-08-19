@@ -24,48 +24,103 @@ const CategoryDetails = () => {
   const [loading, setLoading] = useState(true);
   
 
-  // ================= FETCH CATEGORY =================
-  useEffect(() => {
-    const fetchCategory = async () => {
-      try {
-        setLoading(true);
+// ================= FETCH CATEGORY =================
+useEffect(() => {
+  const fetchCategory = async () => {
+    try {
+      setLoading(true);
 
-        const res = await API.get(`/categories/${slug}/children`);
+      const res = await API.get(
+        `/categories/${slug}/children`
+      );
 
-        const data = {
-  ...res.data?.data?.parent,
-  children: res.data?.data?.children || [],
-};
+      const parent = res.data?.data?.parent;
 
-        console.log("CATEGORY RESPONSE:", data);
+      const data = {
+        ...parent,
+        children: res.data?.data?.children || [],
+      };
 
-        setCategory(data);
+      console.log("CATEGORY RESPONSE:", data);
 
-        // If leaf category → fetch businesses
-        if ((data.children || []).length === 0) {
-          try {
-            const businessRes = await API.get(`/businesses?category=${slug}&limit=50`);
-            setBusinesses(businessRes.data?.data || []);
-          } catch (e) {
-            console.error("Business fetch error:", e);
-            setBusinesses([]);
+      // =====================================================
+      // OLD SLUG → CURRENT SLUG
+      // /category/tour-operators
+      //          ↓
+      // /category/tour-operator
+      // =====================================================
+
+      const isOldSlug =
+        data?.slug &&
+        data.slug !== slug &&
+        Array.isArray(data?.slugHistory) &&
+        data.slugHistory.some(
+          (history) => history.slug === slug
+        );
+
+      if (isOldSlug) {
+        navigate(
+          `/category/${data.slug}`,
+          {
+            replace: true,
           }
-        } else {
+        );
+
+        return;
+      }
+
+      // =====================================================
+      // CATEGORY
+      // =====================================================
+
+      setCategory(data);
+
+      // =====================================================
+      // LEAF CATEGORY → BUSINESSES
+      // =====================================================
+
+      if ((data.children || []).length === 0) {
+        try {
+          const businessRes = await API.get(
+            `/businesses?category=${slug}&limit=50`
+          );
+
+          setBusinesses(
+            businessRes.data?.data || []
+          );
+
+        } catch (e) {
+          console.error(
+            "Business fetch error:",
+            e?.response?.data || e
+          );
+
           setBusinesses([]);
         }
 
-      } catch (err) {
-        console.error("Category fetch error:", err);
-        setCategory(null);
-      } finally {
-        setLoading(false);
+      } else {
+        setBusinesses([]);
       }
-    };
 
-    if (slug) {
-      fetchCategory();
+    } catch (err) {
+      console.error(
+        "Category fetch error:",
+        err?.response?.data || err
+      );
+
+      setCategory(null);
+      setBusinesses([]);
+
+    } finally {
+      setLoading(false);
     }
-  }, [slug]);
+  };
+
+  if (slug) {
+    fetchCategory();
+  }
+
+}, [slug, navigate]);
 
   // ================= SEO =================
   const categoryName =

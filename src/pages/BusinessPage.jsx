@@ -132,6 +132,46 @@ const BusinessPage = () => {
 
       }
 
+      // =================================================
+// 🔄 OLD BUSINESS SLUG → CANONICAL SLUG
+// =================================================
+
+const canonicalBusinessSlug =
+  res?.data?.canonicalSlug ||
+  biz?.slug ||
+  "";
+
+if (
+  canonicalBusinessSlug &&
+  slug !== canonicalBusinessSlug
+) {
+
+  const canonicalCitySlug =
+    biz.citySlug ||
+    biz.cityId?.slug ||
+    "";
+
+  const canonicalCategorySlug =
+    biz.categorySlug ||
+    biz.categoryId?.slug ||
+    "";
+
+  if (
+    canonicalCitySlug &&
+    canonicalCategorySlug
+  ) {
+
+    navigate(
+      `/${canonicalCitySlug}/${canonicalCategorySlug}/${canonicalBusinessSlug}`,
+      {
+        replace: true,
+      }
+    );
+
+    return;
+  }
+}
+
 
       // =================================================
       // CANONICAL CITY SLUG
