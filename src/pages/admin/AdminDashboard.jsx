@@ -1113,12 +1113,13 @@ function AdminDashboard() {
 
 
         <div className="
-          grid
-          grid-cols-1
-          xl:grid-cols-2
-          gap-4
-          sm:gap-6
-        ">
+  grid
+  grid-cols-1
+  xl:grid-cols-2
+  gap-4
+  sm:gap-6
+  min-w-0
+">
 
 
           {/* SYSTEM OVERVIEW */}
@@ -1129,15 +1130,18 @@ function AdminDashboard() {
           >
 
             <div className="
-              h-[280px]
-              sm:h-[320px]
-              w-full
-            ">
+  h-[320px]
+  sm:h-[400px]
+  w-full
+  min-w-0
+">
 
               <ResponsiveContainer
-                width="100%"
-                height="100%"
-              >
+    width="100%"
+    height="100%"
+    minWidth={1}
+    minHeight={300}
+  >
 
                 <BarChart
                   data={barData}
@@ -1199,15 +1203,18 @@ function AdminDashboard() {
           >
 
             <div className="
-              h-[280px]
-              sm:h-[320px]
-              w-full
-            ">
+  h-[320px]
+  sm:h-[400px]
+  w-full
+  min-w-0
+">
 
               <ResponsiveContainer
-                width="100%"
-                height="100%"
-              >
+    width="100%"
+    height="100%"
+    minWidth={1}
+    minHeight={300}
+  >
 
                 <PieChart>
 
@@ -1474,14 +1481,15 @@ const ChartCard = ({
 }) => (
 
   <div className="
-    bg-white
-    border
-    border-gray-100
-    rounded-2xl
-    shadow-sm
-    p-4
-    sm:p-5
-  ">
+  bg-white
+  border
+  border-gray-100
+  rounded-2xl
+  shadow-sm
+  p-4
+  sm:p-5
+  min-w-0
+">
 
     <div className="mb-2">
 

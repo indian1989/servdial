@@ -133,56 +133,67 @@ const ServicesOffered = ({
 
   const handleServicesChange = (selected) => {
 
-    const selectedOptions =
-      selected || [];
+  const selectedOptions =
+    selected || [];
 
 
-    const updatedServices =
-      selectedOptions
-        .map((option) => {
+  const updatedServices =
+    selectedOptions
+      .map((option) => {
 
-          const name =
-            normalizeServiceText(
-              option?.value
-            );
+        const name =
+          normalizeServiceText(
+            option?.value
+          );
 
-          if (!name) {
-            return null;
-          }
-
-
-          /* -----------------------------------------
-             Preserve existing description
-          ----------------------------------------- */
-
-          const existingService =
-            services.find(
-              (service) =>
-                normalizeServiceText(
-                  service?.name
-                ).toLowerCase() ===
-                name.toLowerCase()
-            );
+        if (!name) {
+          return null;
+        }
 
 
-          return {
-            name,
+        /* -----------------------------------------
+           Preserve existing description
+        ----------------------------------------- */
 
-            description:
-              existingService?.description || "",
-          };
+        const existingService =
+          services.find(
+            (service) =>
+              normalizeServiceText(
+                service?.name
+              ).toLowerCase() ===
+              name.toLowerCase()
+          );
 
-        })
-        .filter(Boolean);
+
+        return {
+          name,
+
+          description:
+            existingService?.description || "",
+        };
+
+      })
+      .filter(Boolean);
 
 
-    onChange?.(
-      uniqueServices(
-        updatedServices
-      )
-    );
+  /* -----------------------------------------
+     Update selected services
+  ----------------------------------------- */
 
-  };
+  onChange?.(
+    uniqueServices(
+      updatedServices
+    )
+  );
+
+
+  /* -----------------------------------------
+     Clear search/input after selection
+  ----------------------------------------- */
+
+  setInputValue("");
+
+};
 
 
   /* =========================================================

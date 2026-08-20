@@ -792,37 +792,41 @@ const verificationType =
           </div>
 
           {/* =================================================
-              DISTANCE
-          ================================================= */}
+    DISTANCE
+================================================= */}
 
-          {typeof distance === "number" && (
-            <div
-              className="
-                flex
-                justify-end
+{typeof distance === "number" && (
+  <div
+    className="
+      flex
+      justify-end
+      mt-2
+    "
+  >
+    <span
+      className={`
+        ${
+          distance <= 0.3
+            ? "bg-green-600 text-white"
+            : "bg-black/80 text-white"
+        }
 
-                mt-2
-              "
-            >
-              <span
-                className="
-                bg-green-600
-                text-white
-                text-xs
-                px-3
-                py-1.5
-                rounded-full
-                font-semibold
-                shadow-md
-              "
-              >
-                📍{" "}
-                {distance < 0.3
-                  ? "Nearby"
-                  : `${distance.toFixed(1)} km away`}
-              </span>
-            </div>
-          )}
+        text-xs
+        px-3
+        py-1.5
+        rounded-full
+        font-semibold
+        shadow-md
+        backdrop-blur-sm
+      `}
+    >
+      📍{" "}
+      {distance <= 0.3
+        ? "Nearby"
+        : `${distance.toFixed(1)} km away`}
+    </span>
+  </div>
+)}
 
         </div>
 

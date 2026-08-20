@@ -14,6 +14,7 @@ import CityPage from "../pages/CityPage";
 import ClaimBusiness from "../pages/ClaimBusiness";
 import RecommendedPage from "../pages/RecommendedPage";
 import GetBusinessWebsite from "../pages/static/GetBusinessWebsite";
+import LegacyCityRedirect from "../pages/LegacyCityRedirect";
 
 
 const PublicRoutes = () => {
@@ -31,6 +32,11 @@ const PublicRoutes = () => {
 
   {/* RECOMMENDED */}
 <Route path="/recommendations" element={<RecommendedPage />} />
+
+<Route
+  path="/city/:citySlug"
+  element={<LegacyCityRedirect />}
+/>
 
   {/* BUSINESS (MOST SPECIFIC FIRST) */}
   <Route path="/:citySlug/:categorySlug/:slug" element={<BusinessPage />} />

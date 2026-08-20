@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import API from "../../api/axios";
+import Select from "react-select";
 
 import {
   BarChart,
@@ -26,6 +27,7 @@ import {
   FaChartBar,
   FaMapMarkerAlt,
   FaList,
+  FaFilter,
 } from "react-icons/fa";
 
 
@@ -66,6 +68,8 @@ function Analytics() {
   const [activeSection, setActiveSection] =
     useState("categories");
 
+  const [cityCategoryCity, setCityCategoryCity] = useState(null);
+  const [cityCategoryCategory, setCityCategoryCategory] = useState(null);
 
   /* =========================================================
      FETCH DATA
@@ -433,6 +437,227 @@ useEffect(() => {
 
   }, [businesses]);
 
+  /* =========================================================
+   CITY + CATEGORY-WISE DATA
+========================================================= */
+
+const cityCategoryData = useMemo(() => {
+
+  const map = {};
+
+  businesses.forEach((business) => {
+
+    /* =====================================================
+       CITY
+       Prefer slug for unique grouping
+    ===================================================== */
+
+    const citySlug =
+      business.cityId?.slug ||
+      business.citySlug ||
+      business.city?.slug ||
+      "";
+
+
+    const cityName =
+      business.cityId?.name ||
+      business.cityName ||
+      business.city?.name ||
+      "Unknown City";
+
+
+    /* =====================================================
+       CATEGORY
+       Prefer slug for unique grouping
+    ===================================================== */
+
+    const categorySlug =
+      business.categoryId?.slug ||
+      business.categorySlug ||
+      business.category?.slug ||
+      "";
+
+
+    const categoryName =
+      business.categoryId?.name ||
+      business.categoryName ||
+      business.category?.name ||
+      "Uncategorized";
+
+
+    /* =====================================================
+       SAFETY
+    ===================================================== */
+
+    if (!citySlug || !categorySlug) {
+      return;
+    }
+
+
+    /* =====================================================
+       UNIQUE CITY + CATEGORY KEY
+
+       Example:
+       hajipur-vaishali-bihar__hotel
+    ===================================================== */
+
+    const key =
+      `${citySlug}__${categorySlug}`;
+
+
+    if (!map[key]) {
+
+      map[key] = {
+        key,
+
+        citySlug,
+        categorySlug,
+
+        cityName,
+        categoryName,
+
+        count: 0,
+      };
+
+    }
+
+
+    map[key].count++;
+
+  });
+
+
+  return Object.values(map)
+    .sort(
+      (a, b) =>
+        b.count - a.count
+    );
+
+}, [businesses]);
+
+/* =========================================================
+   CITY + CATEGORY FILTER OPTIONS
+========================================================= */
+
+const cityCategoryCityOptions = useMemo(() => {
+
+  const map = new Map();
+
+  cityCategoryData.forEach((item) => {
+
+    if (!item.citySlug) {
+      return;
+    }
+
+    if (!map.has(item.citySlug)) {
+
+      map.set(item.citySlug, {
+        value: item.citySlug,
+        label: item.cityName,
+      });
+
+    }
+
+  });
+
+  return Array.from(map.values())
+    .sort((a, b) =>
+      a.label.localeCompare(b.label)
+    );
+
+}, [cityCategoryData]);
+
+
+const cityCategoryCategoryOptions = useMemo(() => {
+
+  const map = new Map();
+
+  cityCategoryData.forEach((item) => {
+
+    if (!item.categorySlug) {
+      return;
+    }
+
+    if (!map.has(item.categorySlug)) {
+
+      map.set(item.categorySlug, {
+        value: item.categorySlug,
+        label: item.categoryName,
+      });
+
+    }
+
+  });
+
+  return Array.from(map.values())
+    .sort((a, b) =>
+      a.label.localeCompare(b.label)
+    );
+
+}, [cityCategoryData]);
+
+
+/* =========================================================
+   FILTERED CITY + CATEGORY DATA
+========================================================= */
+
+const filteredCityCategoryData = useMemo(() => {
+
+  let result = cityCategoryData;
+
+
+  /* CITY FILTER */
+
+  if (cityCategoryCity?.value) {
+
+    result = result.filter(
+      (item) =>
+        item.citySlug ===
+        cityCategoryCity.value
+    );
+
+  }
+
+
+  /* CATEGORY FILTER */
+
+  if (cityCategoryCategory?.value) {
+
+    result = result.filter(
+      (item) =>
+        item.categorySlug ===
+        cityCategoryCategory.value
+    );
+
+  }
+
+
+  return result;
+
+}, [
+  cityCategoryData,
+  cityCategoryCity,
+  cityCategoryCategory,
+]);
+
+
+/* =========================================================
+   DISPLAY DATA
+
+   No filter:
+   → Top 40
+
+   Filter:
+   → All matching results
+========================================================= */
+
+const displayedCityCategoryData =
+  cityCategoryCity ||
+  cityCategoryCategory
+    ? filteredCityCategoryData
+    : filteredCityCategoryData.slice(0, 40);
+
+
 
   /* =========================================================
      BUSINESS STATUS DATA
@@ -678,6 +903,437 @@ useEffect(() => {
   const renderDetails = () => {
 
     /* =====================================================
+   CITY + CATEGORY
+===================================================== */
+
+if (activeSection === "cityCategories") {
+
+  return (
+
+    <div className="bg-white rounded-2xl shadow-sm border p-4 sm:p-6">
+
+      <DetailHeader
+        icon={<FaFilter />}
+        title="City + Category-wise Businesses"
+        description="Business distribution across cities and service categories"
+      />
+
+
+      {cityCategoryData.length === 0 ? (
+
+        <EmptyState
+          text="No city + category business data available."
+        />
+
+      ) : (
+
+        <>
+
+          {/* =================================================
+              CHART
+          ================================================= */}
+
+          <div className="w-full h-[320px] sm:h-[400px] min-w-0 min-h-0 relative">
+  <ResponsiveContainer
+    width="100%"
+    height="100%"
+    minWidth={0}
+    minHeight={0}
+  >
+
+              <BarChart
+                data={displayedCityCategoryData.slice(0, 40)}
+                margin={{
+                  top: 10,
+                  right: 10,
+                  left: 0,
+                  bottom: 70,
+                }}
+              >
+
+                <XAxis
+                  dataKey="key"
+                  angle={-35}
+                  textAnchor="end"
+                  interval={0}
+                  height={100}
+                  tick={{
+                    fontSize: 10,
+                  }}
+                />
+
+                <YAxis />
+
+                <Tooltip
+                  formatter={(value) => [
+                    value,
+                    "Businesses",
+                  ]}
+                  labelFormatter={(label) => {
+
+                    const item =
+                      cityCategoryData.find(
+                        (entry) =>
+                          entry.key === label
+                      );
+
+                    if (!item) {
+                      return label;
+                    }
+
+                    return `${item.cityName} — ${item.categoryName}`;
+
+                  }}
+                />
+
+                <Bar
+                  dataKey="count"
+                  name="Businesses"
+                  fill="#7c3aed"
+                  radius={[
+                    6,
+                    6,
+                    0,
+                    0,
+                  ]}
+                />
+
+              </BarChart>
+
+            </ResponsiveContainer>
+
+          </div>
+
+
+          {/* =================================================
+              DETAIL TABLE
+          ================================================= */}
+
+          <div className="mt-6">
+
+            <div className="flex items-center justify-between mb-3">
+
+              <div>
+
+                <h3 className="font-semibold">
+
+                  City + Category Details
+
+                </h3>
+
+                <p className="text-xs text-gray-500 mt-1">
+
+                  Grouped using city slug and category slug
+
+                </p>
+
+              </div>
+
+              <span className="
+                text-xs
+                px-3
+                py-1
+                rounded-full
+                bg-indigo-50
+                text-indigo-600
+                font-medium
+              ">
+
+                {displayedCityCategoryData.length} combinations
+
+              </span>
+
+            </div>
+
+            {/* =================================================
+    SEARCH FILTERS
+================================================= */}
+
+<div className="
+  grid
+  grid-cols-1
+  md:grid-cols-2
+  gap-4
+  mb-6
+">
+
+  {/* CITY */}
+
+  <div>
+
+    <label className="
+      block
+      text-sm
+      font-medium
+      text-gray-700
+      mb-2
+    ">
+      Search City
+    </label>
+
+    <Select
+      options={cityCategoryCityOptions}
+      value={cityCategoryCity}
+      onChange={setCityCategoryCity}
+      isClearable
+      isSearchable
+      placeholder="Search city..."
+      noOptionsMessage={() =>
+        "City not found"
+      }
+    />
+
+  </div>
+
+
+  {/* CATEGORY */}
+
+  <div>
+
+    <label className="
+      block
+      text-sm
+      font-medium
+      text-gray-700
+      mb-2
+    ">
+      Search Category
+    </label>
+
+    <Select
+      options={cityCategoryCategoryOptions}
+      value={cityCategoryCategory}
+      onChange={setCityCategoryCategory}
+      isClearable
+      isSearchable
+      placeholder="Search category..."
+      noOptionsMessage={() =>
+        "Category not found"
+      }
+    />
+
+  </div>
+
+</div>
+
+<div className="
+  flex
+  flex-col
+  sm:flex-row
+  sm:items-center
+  sm:justify-between
+  gap-2
+  mb-4
+">
+
+  <div>
+
+    <h3 className="font-semibold">
+      City + Category Details
+    </h3>
+
+    <p className="text-xs text-gray-500 mt-1">
+
+      {cityCategoryCity || cityCategoryCategory
+        ? `Showing ${filteredCityCategoryData.length} matching combinations`
+        : "Showing top 40 combinations"}
+
+    </p>
+
+  </div>
+
+
+  {(cityCategoryCity ||
+    cityCategoryCategory) && (
+
+    <button
+      type="button"
+      onClick={() => {
+        setCityCategoryCity(null);
+        setCityCategoryCategory(null);
+      }}
+      className="
+        text-sm
+        text-blue-600
+        hover:text-blue-800
+        font-medium
+      "
+    >
+      Clear Filters
+    </button>
+
+  )}
+
+</div>
+
+
+            <div className="overflow-x-auto">
+
+              <table className="w-full text-sm">
+
+                <thead>
+
+                  <tr className="border-b bg-gray-50">
+
+                    <th className="text-left p-3">
+                      #
+                    </th>
+
+                    <th className="text-left p-3">
+                      City
+                    </th>
+
+                    <th className="text-left p-3">
+                      Category
+                    </th>
+
+                    <th className="text-left p-3">
+                      City Slug
+                    </th>
+
+                    <th className="text-left p-3">
+                      Category Slug
+                    </th>
+
+                    <th className="text-right p-3">
+                      Businesses
+                    </th>
+
+                    <th className="text-right p-3">
+                      Share
+                    </th>
+
+                  </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                  {displayedCityCategoryData.map(
+                    (item, index) => {
+
+                      const percentage =
+                        stats.businesses > 0
+                          ? (
+                              (item.count /
+                                stats.businesses) *
+                              100
+                            ).toFixed(1)
+                          : "0.0";
+
+
+                      return (
+
+                        <tr
+                          key={item.key}
+                          className="
+                            border-b
+                            last:border-0
+                            hover:bg-gray-50
+                          "
+                        >
+
+                          <td className="
+                            p-3
+                            text-gray-500
+                          ">
+
+                            {index + 1}
+
+                          </td>
+
+
+                          <td className="
+                            p-3
+                            font-medium
+                          ">
+
+                            {item.cityName}
+
+                          </td>
+
+
+                          <td className="
+                            p-3
+                            font-medium
+                            text-blue-600
+                          ">
+
+                            {item.categoryName}
+
+                          </td>
+
+
+                          <td className="
+                            p-3
+                            text-xs
+                            text-gray-500
+                          ">
+
+                            {item.citySlug}
+
+                          </td>
+
+
+                          <td className="
+                            p-3
+                            text-xs
+                            text-gray-500
+                          ">
+
+                            {item.categorySlug}
+
+                          </td>
+
+
+                          <td className="
+                            p-3
+                            text-right
+                            font-semibold
+                          ">
+
+                            {item.count}
+
+                          </td>
+
+
+                          <td className="
+                            p-3
+                            text-right
+                            text-gray-500
+                          ">
+
+                            {percentage}%
+
+                          </td>
+
+                        </tr>
+
+                      );
+
+                    }
+                  )}
+
+                </tbody>
+
+              </table>
+
+            </div>
+
+          </div>
+
+        </>
+
+      )}
+
+    </div>
+
+  );
+
+}
+
+    /* =====================================================
        CATEGORY
     ===================================================== */
 
@@ -704,12 +1360,13 @@ useEffect(() => {
 
               {/* CHART */}
 
-              <div className="h-[300px] sm:h-[380px]">
-
-                <ResponsiveContainer
-                  width="100%"
-                  height="100%"
-                >
+              <div className="w-full h-[320px] sm:h-[400px] min-w-0 min-h-0 relative">
+  <ResponsiveContainer
+    width="100%"
+    height="100%"
+    minWidth={0}
+    minHeight={0}
+  >
 
                   <BarChart
                     data={categoryData}
@@ -879,12 +1536,13 @@ useEffect(() => {
 
             <>
 
-              <div className="h-[300px] sm:h-[380px]">
-
-                <ResponsiveContainer
-                  width="100%"
-                  height="100%"
-                >
+              <div className="w-full h-[320px] sm:h-[400px] min-w-0 min-h-0 relative">
+  <ResponsiveContainer
+    width="100%"
+    height="100%"
+    minWidth={0}
+    minHeight={0}
+  >
 
                   <BarChart
                     data={cityData.slice(0, 20)}
@@ -1626,6 +2284,14 @@ if (activeSection === "ads") {
           color="from-yellow-400 to-orange-500"
           section="categories"
         />
+
+        <StatCard 
+  title="City + Category" 
+  value={cityCategoryData.length} 
+  icon={<FaFilter />} 
+  color="from-indigo-500 to-purple-600" 
+  section="cityCategories" 
+/>
 
         <StatCard
           title="Pending"
