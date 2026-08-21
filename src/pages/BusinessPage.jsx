@@ -93,6 +93,8 @@ const BusinessPage = () => {
 
   const fetchBusiness = async () => {
 
+    let isRedirecting = false;
+
     if (!slug) {
       setNotFound(true);
       setLoading(false);
@@ -115,51 +117,65 @@ const BusinessPage = () => {
   );
 
 
-      // =================================================
-      // RESPONSE
-      // =================================================
-
-      const biz =
-        res?.data?.data?.business ||
-        res?.data?.data ||
-        null;
-
-
-      if (!biz) {
-
-        setNotFound(true);
-        return;
-
-      }
-
-      // =================================================
-// 🔄 OLD BUSINESS SLUG → CANONICAL SLUG
+     // =================================================
+// RESPONSE
 // =================================================
 
-const canonicalBusinessSlug =
-  res?.data?.canonicalSlug ||
-  biz?.slug ||
-  "";
+const data =
+  res?.data || {};
 
-if (
-  canonicalBusinessSlug &&
-  slug !== canonicalBusinessSlug
-) {
+
+// =================================================
+// 🔄 OLD BUSINESS SLUG → CANONICAL URL
+//
+// IMPORTANT:
+// Handle redirect BEFORE checking business data.
+// This prevents "Business Not Found" flash.
+// =================================================
+
+const shouldRedirect =
+  data?.redirect === true;
+
+
+if (shouldRedirect) {
+
+  const redirectBusiness =
+    data?.data?.business ||
+    null;
+
+
+  const canonicalBusinessSlug =
+    data?.canonicalSlug ||
+    redirectBusiness?.slug ||
+    "";
+
 
   const canonicalCitySlug =
-    biz.citySlug ||
-    biz.cityId?.slug ||
+    data?.canonicalCitySlug ||
+    redirectBusiness?.citySlug ||
+    redirectBusiness?.cityId?.slug ||
     "";
 
+
   const canonicalCategorySlug =
-    biz.categorySlug ||
-    biz.categoryId?.slug ||
+    data?.canonicalCategorySlug ||
+    redirectBusiness?.categorySlug ||
+    redirectBusiness?.categoryId?.slug ||
     "";
+
 
   if (
     canonicalCitySlug &&
-    canonicalCategorySlug
+    canonicalCategorySlug &&
+    canonicalBusinessSlug &&
+    (
+      citySlug !== canonicalCitySlug ||
+      categorySlug !== canonicalCategorySlug ||
+      slug !== canonicalBusinessSlug
+    )
   ) {
+
+    isRedirecting = true;
 
     navigate(
       `/${canonicalCitySlug}/${canonicalCategorySlug}/${canonicalBusinessSlug}`,
@@ -170,6 +186,25 @@ if (
 
     return;
   }
+
+}
+
+
+// =================================================
+// CURRENT BUSINESS
+// =================================================
+
+const biz =
+  data?.data?.business ||
+  data?.data ||
+  null;
+
+
+if (!biz) {
+
+  setNotFound(true);
+  return;
+
 }
 
 
@@ -245,6 +280,8 @@ if (
           businessSlug
         ) {
 
+          isRedirecting = true;
+
           navigate(
             `/${businessCitySlug}/${businessCategorySlug}/${businessSlug}`,
             {
@@ -295,6 +332,7 @@ if (
           businessCitySlug &&
           businessSlug
         ) {
+          isRedirecting = true;
 
           navigate(
             `/${businessCitySlug}/${businessCategorySlug}/${businessSlug}`,
@@ -363,9 +401,11 @@ if (
 
     } finally {
 
-      setLoading(false);
+  if (!isRedirecting) {
+    setLoading(false);
+  }
 
-    }
+}
 
   };
 
