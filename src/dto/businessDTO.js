@@ -11,7 +11,7 @@ export const toBusinessListDTO = (b = {}) => {
   return {
     _id: b._id,
 
-    slug: b.slug || b._id,
+    slug: b.slug || "",
 
     name: b.name || "Unnamed",
 
@@ -74,6 +74,17 @@ export const toBusinessListDTO = (b = {}) => {
       b.categorySlug ||
       "",
 
+       // ================= AREA =================
+
+    area: (
+      b.address?.area ||
+      b.area ||
+      ""
+    )
+      .toString()
+      .trim()
+      .replace(/\b\w/g, (l) => l.toUpperCase()),
+      
     // ================= CITY =================
 
     cityName: (
@@ -98,23 +109,24 @@ export const toBusinessListDTO = (b = {}) => {
     // ================= DISTRICT =================
 
     district: (
-      b.district || ""
+  b.district ||
+  b.cityId?.district ||
+  ""
     )
       .toString()
       .trim()
       .replace(/\b\w/g, (l) => l.toUpperCase()),
 
-    // ================= STATE =================
+// ================= STATE =================
 
-    state: (
-      b.state ||
-      b.stateName ||
-      b.citySlug?.split("-")?.pop() ||
-      ""
-    )
-      .toString()
-      .trim()
-      .replace(/\b\w/g, (l) => l.toUpperCase()),
+state: (
+  b.state ||
+  b.stateName ||
+  ""
+)
+  .toString()
+  .trim()
+  .replace(/\b\w/g, (l) => l.toUpperCase()),
 
     // ================= COUNTRY =================
 

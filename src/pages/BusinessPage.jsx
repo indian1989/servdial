@@ -110,9 +110,9 @@ const BusinessPage = () => {
       // =================================================
 
       const res =
-        await API.get(
-          `/businesses/${slug}`
-        );
+  await API.get(
+    `/businesses/${citySlug}/${categorySlug}/${slug}`
+  );
 
 
       // =================================================

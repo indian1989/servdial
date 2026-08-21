@@ -614,9 +614,9 @@ const effectiveCategory =
     );
     return;
   }
-
-  // Safe fallback
-  navigate(`/businesses/${businessSlug}`);
+ navigate(
+    `/${citySlug}/${categorySlug}/${businessSlug}`
+  );
 };
 
   /* =======================================================
@@ -728,7 +728,7 @@ const effectiveCategory =
   It is NOT used as filter.
   ======================================================= */
 
- const displayCity = useMemo(() => { const source = city || ( typeof filters.city === "object" ? filters.city : null ); if (!source) { return "All locations"; } return formatCityLocation( source.name, source.district, source.state ); }, [ city, filters.city, ]);
+ const displayCity = useMemo(() => { const source = city || ( typeof filters.city === "object" ? filters.city : null ); if (!source) { return "All locations"; } return formatCityLocation( source.name, source.district, source.state, source.country ); }, [ city, filters.city, ]);
 
   /* =======================================================
   🖥️ RENDER

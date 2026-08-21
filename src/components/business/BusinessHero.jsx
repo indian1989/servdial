@@ -49,6 +49,9 @@ const BusinessHero = ({
     business?.categoryId?.name ||
     business?.categoryName ||
     "Business";
+    
+    const areaName =
+  business?.address?.area || "";
 
   const cityName =
     business?.cityName ||
@@ -135,6 +138,7 @@ const verificationType =
   // =========================================================
 
   const heroLocation = [
+    titleCase(areaName),
     titleCase(cityName),
     titleCase(stateName),
     titleCase(countryName),

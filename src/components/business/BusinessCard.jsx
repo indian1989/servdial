@@ -26,6 +26,18 @@ const BusinessCard = ({ business }) => {
 
 const b = toBusinessListDTO(business) || {};
 
+console.log("🏢 BUSINESS RAW:", business);
+console.log("📍 DTO:", b);
+console.log("📍 AREA:", b.area);
+console.log("📍 BUSINESS BEFORE DTO:", business);
+console.log("📍 RAW ADDRESS:", business?.address);
+console.log("📍 RAW CITY:", business?.cityId);
+console.log("📍 DTO AREA:", b.area);
+console.log("📍 DISPLAY:", formatCityLocation(
+  b.area,
+  b.cityName,
+  b.state
+));
 const businessStatus = getBusinessStatus(b);
 
 // User GPS coordinates
@@ -50,6 +62,8 @@ const realDistance =
     logo,
     images,
     categoryName,
+
+    area,
     cityName,
     citySlug,
     district,
@@ -77,8 +91,8 @@ const realDistance =
   "/no-image.png";
 
   const displayLocation = formatCityLocation(
+  area,
   cityName,
-  district,
   state
 );
 
@@ -262,9 +276,20 @@ const realDistance =
 
   <div className="flex items-center gap-1.5 min-w-0">
 
-    <h2 className="text-lg font-bold text-gray-900 line-clamp-1 group-hover:text-blue-600 transition">
-      {name}
-    </h2>
+    <h2
+  className="
+    text-lg
+    font-bold
+    text-gray-900
+    leading-tight
+    line-clamp-2
+    break-words
+    group-hover:text-blue-600
+    transition
+  "
+>
+  {name}
+</h2>
 
     {/* TRUSTED / PREMIUM SHIELD */}
     {isVerified && plan === "trusted" && (

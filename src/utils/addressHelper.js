@@ -100,13 +100,13 @@ export const normalizeCity = (city) => {
 // =========================================================
 
 export const formatCityLocation = (
+  area = "",
   city = "",
-  district = "",
   state = ""
 ) => {
   const values = [
+    area,
     city,
-    district,
     state,
   ]
     .flat()
