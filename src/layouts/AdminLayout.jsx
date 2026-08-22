@@ -1,88 +1,219 @@
 import { Outlet } from "react-router-dom";
 import { useContext, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
+
 import AdminSidebar from "../components/admin/AdminSidebar";
 import AdminHeader from "../components/admin/AdminHeader";
-import { FaBars } from "react-icons/fa";
+
+
+/* =========================================================
+   ADMIN LAYOUT
+========================================================= */
 
 function AdminLayout() {
-  const { user, loading } = useContext(AuthContext);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const {
+    user,
+    loading,
+  } = useContext(AuthContext);
 
 
-  const allowedRoles = ["admin", "superadmin"];
+  const [
+    sidebarOpen,
+    setSidebarOpen,
+  ] = useState(false);
 
-  // LOADING
+
+  const allowedRoles = [
+    "admin",
+    "superadmin",
+  ];
+
+
+  /* =======================================================
+     LOADING
+  ======================================================= */
+
   if (loading) {
+
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="animate-pulse text-gray-500 text-lg">
+      <div
+        className="
+          flex
+          items-center
+          justify-center
+          h-screen
+          bg-gray-50
+        "
+      >
+
+        <div
+          className="
+            animate-pulse
+            text-gray-500
+            text-lg
+          "
+        >
           Loading admin panel...
         </div>
+
       </div>
     );
+
   }
 
-  // ACCESS CONTROL
-  if (!user || !allowedRoles.includes(user.role)) {
+
+  /* =======================================================
+     ACCESS CONTROL
+  ======================================================= */
+
+  if (
+    !user ||
+    !allowedRoles.includes(
+      user.role
+    )
+  ) {
+
     return (
-      <div className="flex items-center justify-center h-screen bg-gray-50">
-        <div className="bg-white shadow-lg rounded-xl p-6 text-center">
-          <h2 className="text-xl font-bold text-red-500">Access Denied</h2>
-          <p className="text-gray-500 mt-2">
+      <div
+        className="
+          flex
+          items-center
+          justify-center
+          h-screen
+          bg-gray-50
+          p-4
+        "
+      >
+
+        <div
+          className="
+            w-full
+            max-w-md
+            bg-white
+            shadow-lg
+            rounded-xl
+            p-6
+            text-center
+          "
+        >
+
+          <h2
+            className="
+              text-xl
+              font-bold
+              text-red-500
+            "
+          >
+            Access Denied
+          </h2>
+
+          <p
+            className="
+              text-gray-500
+              mt-2
+            "
+          >
             Admin panel is restricted to admin and superadmin only.
           </p>
+
         </div>
+
       </div>
     );
+
   }
 
+
+  /* =======================================================
+     MAIN LAYOUT
+========================================================= */
+
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div
+      className="
+        flex
+        h-screen
+        bg-gray-50
+        overflow-hidden
+      "
+    >
 
-      {/* MOBILE MENU BUTTON */}
-      <button
-        onClick={() => setSidebarOpen(true)}
-        className="md:hidden fixed top-4 left-4 z-50 bg-white p-2 rounded shadow"
+      {/* ===================================================
+          SIDEBAR
+          
+          Desktop:
+          - Fixed sidebar
+          - Independent vertical scroll
+
+          Mobile:
+          - Drawer
+          - Overlay
+          - Independent vertical scroll
+      =================================================== */}
+
+      <AdminSidebar
+        sidebarOpen={
+          sidebarOpen
+        }
+        onClose={() =>
+          setSidebarOpen(false)
+        }
+      />
+
+
+      {/* ===================================================
+          MAIN AREA
+      =================================================== */}
+
+      <div
+        className="
+          flex
+          flex-col
+          flex-1
+          min-w-0
+          h-screen
+          overflow-hidden
+        "
       >
-        <FaBars />
-      </button>
 
-      {/* SIDEBAR (DESKTOP) */}
-      <div className="hidden md:block">
-        <AdminSidebar />
-      </div>
+        {/* =================================================
+            HEADER
+        ================================================= */}
 
-      {/* MOBILE SIDEBAR OVERLAY */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          <div
-            className="w-64 bg-gray-900 text-white"
-          >
-            <AdminSidebar onClose={() => setSidebarOpen(false)} />
-          </div>
+        <AdminHeader
+          onMenuClick={() =>
+            setSidebarOpen(true)
+          }
+        />
 
-          <div
-            className="flex-1 bg-black/40"
-            onClick={() => setSidebarOpen(false)}
-          />
-        </div>
-      )}
 
-      {/* MAIN AREA */}
-      <div className="flex-1 flex flex-col min-w-0">
+        {/* =================================================
+            CONTENT AREA
+            ONLY THIS AREA SCROLLS
+        ================================================= */}
 
-        {/* HEADER */}
-        <AdminHeader />
+        <main
+          className="
+            flex-1
+            min-w-0
+            min-h-0
+            overflow-y-auto
+            overflow-x-hidden
+            p-4
+            md:p-6
+          "
+        >
 
-        {/* CONTENT */}
-        <main className="p-4 md:p-6 overflow-x-hidden">
           <Outlet />
+
         </main>
 
       </div>
+
     </div>
   );
 }
+
 
 export default AdminLayout;

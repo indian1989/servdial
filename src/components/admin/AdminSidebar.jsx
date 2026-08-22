@@ -3,7 +3,6 @@ import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
 
 import {
-  FaBars,
   FaTimes,
   FaChevronRight,
   FaHome,
@@ -18,101 +17,23 @@ import {
   FaInbox,
 } from "react-icons/fa";
 
+
+/* =========================================================
+   ADMIN SIDEBAR
+========================================================= */
+
 function AdminSidebar({
   sidebarOpen,
   onClose,
-  onToggle,
 }) {
   const { user } = useContext(AuthContext);
-  const role = user?.role;
+
+  const role =
+    user?.role;
+
 
   return (
     <>
-      {/* =====================================================
-          MOBILE TOP BAR
-      ===================================================== */}
-
-      <div
-        className="
-          md:hidden
-          sticky
-          top-0
-          z-40
-          h-16
-          bg-white
-          border-b
-          border-gray-200
-          flex
-          items-center
-          justify-between
-          px-4
-          shadow-sm
-        "
-      >
-
-        <div className="flex items-center gap-3 min-w-0">
-
-          {/* LOGO */}
-
-          <div
-            className="
-              w-9
-              h-9
-              rounded-xl
-              bg-indigo-600
-              text-white
-              flex
-              items-center
-              justify-center
-              font-bold
-              text-sm
-              shadow-sm
-              shrink-0
-            "
-          >
-            S
-          </div>
-
-          <div className="leading-tight min-w-0">
-
-            <p className="text-sm font-bold text-gray-900 truncate">
-              Admin Panel
-            </p>
-
-            <p className="text-[11px] text-gray-500 truncate">
-              ServDial Management
-            </p>
-
-          </div>
-
-        </div>
-
-
-        {/* MOBILE MENU BUTTON */}
-
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label="Open admin menu"
-          className="
-            w-10
-            h-10
-            rounded-xl
-            bg-gray-100
-            hover:bg-gray-200
-            text-gray-700
-            flex
-            items-center
-            justify-center
-            transition
-            shrink-0
-          "
-        >
-          <FaBars size={17} />
-        </button>
-
-      </div>
-
 
       {/* =====================================================
           DESKTOP SIDEBAR
@@ -126,13 +47,13 @@ function AdminSidebar({
           w-64
           shrink-0
           min-h-screen
+          h-screen
+          sticky
+          top-0
           bg-gray-950
           text-white
           border-r
           border-gray-800
-          sticky
-          top-0
-          h-screen
         "
       >
 
@@ -144,17 +65,21 @@ function AdminSidebar({
 
 
       {/* =====================================================
-          MOBILE OVERLAY
+          MOBILE OVERLAY + DRAWER
+          
+          NOTE:
+          Mobile menu button is handled by AdminHeader.
       ===================================================== */}
 
       <div
         className={`
           fixed
           inset-0
-          z-50
+          z-[60]
           md:hidden
           transition-all
           duration-300
+
           ${
             sidebarOpen
               ? "bg-black/50 backdrop-blur-[2px] pointer-events-auto"
@@ -169,21 +94,31 @@ function AdminSidebar({
         =================================================== */}
 
         <aside
-          onClick={(e) => e.stopPropagation()}
+          onClick={(event) =>
+            event.stopPropagation()
+          }
           className={`
             fixed
             inset-y-0
             left-0
-            w-[min(84vw,320px)]
+            z-[70]
+            w-[min(86vw,320px)]
+            h-screen
+            max-h-screen
+
             bg-gray-950
             text-white
             shadow-2xl
+
             flex
             flex-col
+            overflow-hidden
+
             transform
             transition-transform
             duration-300
             ease-out
+
             ${
               sidebarOpen
                 ? "translate-x-0"
@@ -201,6 +136,7 @@ function AdminSidebar({
         </aside>
 
       </div>
+
     </>
   );
 }
@@ -217,8 +153,14 @@ function SidebarContent({
 }) {
 
   return (
-    <div className="flex flex-col h-full">
-
+    <div
+      className="
+        flex
+        flex-col
+        h-full
+        min-h-0
+      "
+    >
 
       {/* ===================================================
           BRAND HEADER
@@ -226,9 +168,11 @@ function SidebarContent({
 
       <div
         className="
+          shrink-0
           flex
           items-center
           justify-between
+          gap-3
           px-5
           py-5
           border-b
@@ -236,7 +180,14 @@ function SidebarContent({
         "
       >
 
-        <div className="flex items-center gap-3 min-w-0">
+        <div
+          className="
+            flex
+            items-center
+            gap-3
+            min-w-0
+          "
+        >
 
           {/* LOGO */}
 
@@ -264,11 +215,23 @@ function SidebarContent({
 
           <div className="min-w-0">
 
-            <h2 className="text-base font-bold truncate">
+            <h2
+              className="
+                text-base
+                font-bold
+                truncate
+              "
+            >
               Admin Panel
             </h2>
 
-            <p className="text-[11px] text-gray-400 truncate">
+            <p
+              className="
+                text-[11px]
+                text-gray-400
+                truncate
+              "
+            >
               ServDial Management
             </p>
 
@@ -313,15 +276,20 @@ function SidebarContent({
       <nav
         className="
           flex-1
+          min-h-0
           overflow-y-auto
+          overscroll-contain
+
           px-3
           py-5
+
           scrollbar-thin
           scrollbar-thumb-gray-700
+          scrollbar-track-transparent
         "
       >
 
-        {/* MENU */}
+        {/* MENU LABEL */}
 
         <p
           className="
@@ -339,7 +307,6 @@ function SidebarContent({
 
 
         <ul className="space-y-1.5">
-
 
           {/* =================================================
               DASHBOARD
@@ -525,40 +492,56 @@ function SidebarContent({
 
 
       {/* ===================================================
-          SIDEBAR FOOTER
+          DESKTOP FOOTER
       =================================================== */}
 
-      <div
-        className="
-          px-4
-          py-4
-          border-t
-          border-gray-800
-        "
-      >
-
+      {!mobile && (
         <div
           className="
-            rounded-xl
-            bg-gray-900
-            border
+            shrink-0
+            px-4
+            py-4
+            border-t
             border-gray-800
-            px-3
-            py-3
           "
         >
 
-          <p className="text-xs font-semibold text-gray-300">
-            ServDial Admin
-          </p>
+          <div
+            className="
+              rounded-xl
+              bg-gray-900
+              border
+              border-gray-800
+              px-3
+              py-3
+            "
+          >
 
-          <p className="text-[11px] text-gray-500 mt-1 leading-4">
-            Manage businesses, users, locations and platform activity.
-          </p>
+            <p
+              className="
+                text-xs
+                font-semibold
+                text-gray-300
+              "
+            >
+              ServDial Admin
+            </p>
+
+            <p
+              className="
+                text-[11px]
+                text-gray-500
+                mt-1
+                leading-4
+              "
+            >
+              Manage businesses, users, locations and platform activity.
+            </p>
+
+          </div>
 
         </div>
-
-      </div>
+      )}
 
     </div>
   );
@@ -569,7 +552,10 @@ function SidebarContent({
    SECTION TITLE
 ========================================================= */
 
-function SectionTitle({ children }) {
+function SectionTitle({
+  children,
+}) {
+
   return (
     <li className="list-none">
 
@@ -610,17 +596,29 @@ function AdminNavItem({
 
       <NavLink
         to={to}
-        end={to === "/admin/dashboard"}
-        onClick={mobile ? onClose : undefined}
-        className={({ isActive }) => `
+        end={
+          to === "/admin/dashboard"
+        }
+        onClick={
+          mobile
+            ? onClose
+            : undefined
+        }
+        className={({
+          isActive,
+        }) => `
           group
           relative
+
           flex
           items-center
           gap-3
+
           min-h-[46px]
           px-3
+
           rounded-xl
+
           transition-all
           duration-200
 
@@ -641,7 +639,9 @@ function AdminNavItem({
         `}
       >
 
-        {({ isActive }) => (
+        {({
+          isActive,
+        }) => (
           <>
 
             {/* ACTIVE INDICATOR */}
@@ -668,9 +668,11 @@ function AdminNavItem({
                 w-9
                 h-9
                 rounded-lg
+
                 flex
                 items-center
                 justify-center
+
                 shrink-0
                 transition
 
@@ -683,9 +685,16 @@ function AdminNavItem({
             >
 
               {Icon ? (
-                <Icon className="w-[18px] h-[18px]" />
+                <Icon
+                  className="
+                    w-[18px]
+                    h-[18px]
+                  "
+                />
               ) : (
-                <FaChevronRight size={12} />
+                <FaChevronRight
+                  size={12}
+                />
               )}
 
             </span>
@@ -696,6 +705,7 @@ function AdminNavItem({
             <span
               className="
                 flex-1
+                min-w-0
                 text-sm
                 font-medium
                 truncate
@@ -711,6 +721,7 @@ function AdminNavItem({
               size={10}
               className={`
                 shrink-0
+
                 transition-all
                 duration-200
 
