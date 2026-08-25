@@ -36,7 +36,7 @@ const BusinessReviewsSection = ({
 
     return (
 
-        <BusinessSection id="reviews">
+       <BusinessSection id="reviews">
 
             <div className="flex items-center justify-between mb-6">
 

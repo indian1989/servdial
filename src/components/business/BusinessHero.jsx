@@ -8,6 +8,7 @@ import {
   BookmarkCheck,
   MapPin,
 } from "lucide-react";
+import { formatCityLocation } from "../../utils/addressHelper";
 
 const titleCase = (str = "") =>
   str
@@ -21,14 +22,27 @@ const BusinessHero = ({
   activeImg = 0,
   setActiveImg,
   setShowGallery,
+
   handleCall,
+  handleCallNumber,
   handleWhatsApp,
+
   handleDirections,
   setShowShareMenu,
   distance,
   handleSave,
   isSaved,
+
+  mobileNumber,
+  landlineNumber,
+  hasMobile,
+  hasWhatsApp,
+  hasLandline,
+  hasCall,
+  showCallChooser,
+  closeCallChooser,
 }) => {
+
   // =========================================================
   // HERO IMAGE
   // =========================================================
@@ -137,14 +151,12 @@ const verificationType =
   // HERO LOCATION
   // =========================================================
 
-  const heroLocation = [
-    titleCase(areaName),
-    titleCase(cityName),
-    titleCase(stateName),
-    titleCase(countryName),
-  ]
-    .filter(Boolean)
-    .join(" • ");
+  const heroLocation = formatCityLocation(
+  areaName,
+  cityName,
+  stateName,
+  countryName
+);
 
   // =========================================================
   // SEO H1
@@ -158,6 +170,7 @@ const verificationType =
 
   // Prevent unused warning while keeping SEO variable available
   void heroH1;
+
 
   // =========================================================
   // RATING
@@ -542,91 +555,92 @@ const verificationType =
 
               {/* CALL */}
 
-              <button
-                type="button"
-                onClick={handleCall}
-                aria-label="Call business"
-                className="
-                  bg-blue-600
-                  hover:bg-blue-700
-                  active:scale-[0.98]
+       {hasCall && (
+  <button
+    type="button"
+    onClick={handleCall}
+    aria-label="Call business"
+    className="
+      bg-blue-600
+      hover:bg-blue-700
+      active:scale-[0.98]
 
-                  text-white
+      text-white
 
-                  px-3
-                  py-2.5
+      px-3
+      py-2.5
 
-                  sm:py-3
+      sm:py-3
 
-                  rounded-xl
+      rounded-xl
 
-                  flex
-                  justify-center
-                  items-center
+      flex
+      justify-center
+      items-center
 
-                  gap-2
+      gap-2
 
-                  text-sm
-                  sm:text-base
+      text-sm
+      sm:text-base
+      md:text-sm
 
-                  md:text-sm
+      font-medium
 
-                  font-medium
+      transition
+    "
+  >
+    <Phone size={18} />
 
-                  transition
-                "
-              >
-                <Phone size={18} />
-
-                <span>
-                  Call
-                </span>
-              </button>
+    <span>
+      Call
+    </span>
+  </button>
+)}
 
               {/* WHATSAPP */}
 
-              <button
-                type="button"
-                onClick={handleWhatsApp}
-                aria-label="WhatsApp business"
-                className="
-                  bg-green-600
-                  hover:bg-green-700
-                  active:scale-[0.98]
+        {hasWhatsApp && (
+  <button
+    type="button"
+    onClick={handleWhatsApp}
+    aria-label="WhatsApp business"
+    className="
+      bg-green-600
+      hover:bg-green-700
+      active:scale-[0.98]
 
-                  text-white
+      text-white
 
-                  px-3
-                  py-2.5
+      px-3
+      py-2.5
 
-                  sm:py-3
+      sm:py-3
 
-                  rounded-xl
+      rounded-xl
 
-                  flex
-                  justify-center
-                  items-center
+      flex
+      justify-center
+      items-center
 
-                  gap-2
+      gap-2
 
-                  text-sm
-                  sm:text-base
+      text-sm
+      sm:text-base
+      md:text-sm
 
-                  md:text-sm
+      font-medium
 
-                  font-medium
+      transition
+    "
+  >
+    <MessageCircle size={18} />
 
-                  transition
-                "
-              >
-                <MessageCircle size={18} />
-
-                <span>
-                  WhatsApp
-                </span>
-              </button>
-
-            </div>
+    <span>
+      WhatsApp
+    </span>
+  </button>
+)}
+  </div>
 
             {/* =================================================
                 MOBILE GROUP 2
@@ -835,6 +849,307 @@ const verificationType =
         </div>
 
       </div>
+
+      {/* =========================================================
+    CALL NUMBER CHOOSER
+========================================================= */}
+
+{showCallChooser && (
+  <div
+    className="
+      fixed
+      inset-0
+      z-[100]
+      flex
+      items-end
+      sm:items-center
+      justify-center
+      bg-black/60
+      backdrop-blur-sm
+      px-4
+    "
+    onClick={closeCallChooser}
+  >
+
+    <div
+      className="
+        w-full
+        max-w-md
+        bg-white
+        rounded-2xl
+        shadow-2xl
+        p-5
+        sm:p-6
+        mb-0
+        sm:mb-0
+      "
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      {/* HEADER */}
+
+      <div className="flex items-center gap-3 mb-5">
+
+        <div
+          className="
+            w-11
+            h-11
+            rounded-full
+            bg-blue-100
+            text-blue-600
+            flex
+            items-center
+            justify-center
+            flex-shrink-0
+          "
+        >
+          <Phone size={21} />
+        </div>
+
+        <div>
+
+          <h3
+            className="
+              text-lg
+              font-bold
+              text-gray-900
+            "
+          >
+            Choose number
+          </h3>
+
+          <p
+            className="
+              text-sm
+              text-gray-500
+            "
+          >
+            Select how you want to call
+          </p>
+
+        </div>
+
+      </div>
+
+
+      {/* MOBILE */}
+
+      {hasMobile && (
+        <button
+          type="button"
+          onClick={() =>
+            handleCallNumber(mobileNumber)
+          }
+          className="
+            w-full
+            flex
+            items-center
+            justify-between
+            gap-4
+
+            px-4
+            py-4
+
+            mb-3
+
+            rounded-xl
+
+            border
+            border-gray-200
+
+            hover:border-blue-500
+            hover:bg-blue-50
+
+            transition
+          "
+        >
+
+          <div
+            className="
+              flex
+              items-center
+              gap-3
+              min-w-0
+            "
+          >
+
+            <div
+              className="
+                w-10
+                h-10
+                rounded-full
+                bg-blue-100
+                text-blue-600
+                flex
+                items-center
+                justify-center
+                flex-shrink-0
+              "
+            >
+              <Phone size={18} />
+            </div>
+
+            <div className="text-left min-w-0">
+
+              <div
+                className="
+                  text-sm
+                  font-semibold
+                  text-gray-900
+                "
+              >
+                Mobile
+              </div>
+
+              <div
+                className="
+                  text-sm
+                  text-gray-500
+                  truncate
+                "
+              >
+                {mobileNumber}
+              </div>
+
+            </div>
+
+          </div>
+
+          <span
+            className="
+              text-blue-600
+              text-sm
+              font-semibold
+              flex-shrink-0
+            "
+          >
+            Call
+          </span>
+
+        </button>
+      )}
+
+
+      {/* LANDLINE */}
+
+      {hasLandline && (
+        <button
+          type="button"
+          onClick={() =>
+            handleCallNumber(landlineNumber)
+          }
+          className="
+            w-full
+            flex
+            items-center
+            justify-between
+            gap-4
+
+            px-4
+            py-4
+
+            rounded-xl
+
+            border
+            border-gray-200
+
+            hover:border-blue-500
+            hover:bg-blue-50
+
+            transition
+          "
+        >
+
+          <div
+            className="
+              flex
+              items-center
+              gap-3
+              min-w-0
+            "
+          >
+
+            <div
+              className="
+                w-10
+                h-10
+                rounded-full
+                bg-gray-100
+                text-gray-700
+                flex
+                items-center
+                justify-center
+                flex-shrink-0
+              "
+            >
+              <Phone size={18} />
+            </div>
+
+            <div className="text-left min-w-0">
+
+              <div
+                className="
+                  text-sm
+                  font-semibold
+                  text-gray-900
+                "
+              >
+                Landline
+              </div>
+
+              <div
+                className="
+                  text-sm
+                  text-gray-500
+                  truncate
+                "
+              >
+                {landlineNumber}
+              </div>
+
+            </div>
+
+          </div>
+
+          <span
+            className="
+              text-blue-600
+              text-sm
+              font-semibold
+              flex-shrink-0
+            "
+          >
+            Call
+          </span>
+
+        </button>
+      )}
+
+
+      {/* CANCEL */}
+
+      <button
+        type="button"
+        onClick={closeCallChooser}
+        className="
+          w-full
+          mt-4
+          py-3
+          rounded-xl
+          bg-gray-100
+          hover:bg-gray-200
+          text-gray-700
+          font-medium
+          transition
+        "
+      >
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+)}
 
     </section>
   );

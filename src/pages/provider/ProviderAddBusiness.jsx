@@ -17,6 +17,10 @@ const ProviderAddBusiness = () => {
   const [catalog, setCatalog] = useState([]);
   const [faq,setFaq] = useState([]);
   const [offers,setOffers] = useState([]);
+  const [appointmentBooking, setAppointmentBooking] = useState(null);
+  const [restaurantBooking, setRestaurantBooking] = useState(null);
+  const [roomBooking, setRoomBooking] = useState(null);
+  const [partyBooking, setPartyBooking] = useState(null);
   const [formData, setFormData] = useState({});
 
   return (
@@ -55,23 +59,26 @@ const ProviderAddBusiness = () => {
 
 }}
  onSubmit={(data) =>
- submitBusiness({
+  submitBusiness({
     ...data,
 
     logo,
     images,
 
     pricing,
-
     services,
     catalog,
     faq,
     offers,
-
     menu,
 
     businessHours: hours,
-})
+
+    appointmentBooking,
+    restaurantBooking,
+    roomBooking,
+    partyBooking,
+  })
 }
       >
         <BusinessMediaManager
@@ -82,32 +89,40 @@ const ProviderAddBusiness = () => {
 />
 
 <BusinessFeatureFields
+  features={formData.categoryFeatures || []}
 
-features={
-  formData.categoryFeatures || []
-}
+  pricing={pricing}
+  setPricing={setPricing}
 
-pricing={pricing}
-setPricing={setPricing}
+  services={services}
+  setServices={setServices}
 
-services={services}
-setServices={setServices}
+  catalog={catalog}
+  setCatalog={setCatalog}
 
-catalog={catalog}
-setCatalog={setCatalog}
+  faq={faq}
+  setFaq={setFaq}
 
-faq={faq}
-setFaq={setFaq}
+  offers={offers}
+  setOffers={setOffers}
 
-offers={offers}
-setOffers={setOffers}
+  menu={menu}
+  setMenu={setMenu}
 
-menu={menu}
-setMenu={setMenu}
+  hours={hours}
+  setHours={setHours}
 
-hours={hours}
-setHours={setHours}
+  appointmentBooking={appointmentBooking}
+  setAppointmentBooking={setAppointmentBooking}
 
+  restaurantBooking={restaurantBooking}
+  setRestaurantBooking={setRestaurantBooking}
+
+  roomBooking={roomBooking}
+  setRoomBooking={setRoomBooking}
+
+  partyBooking={partyBooking}
+  setPartyBooking={setPartyBooking}
 />
 
       </BusinessForm>

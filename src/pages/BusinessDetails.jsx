@@ -40,10 +40,21 @@ import useBusinessActions from "../hooks/useBusinessActions";
 import useBusinessShare from "../hooks/useBusinessShare";
 import LoginPromptModal from "../components/common/LoginPromptModal";
 import useGallery from "../hooks/useGallery";
+import BusinessMedia from "../components/business/BusinessMedia";
+import { formatCityLocation } from "../utils/addressHelper";
 
 const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
   const navigate = useNavigate();
+
+  const normalizedLocation = useMemo(() => {
+  return formatCityLocation(
+    business?.address?.area || business?.area || "",
+    business?.cityName || "",
+    business?.state || "",
+    business?.country || "India"
+  );
+}, [business]);
 
   const {
     trackEvent
@@ -71,14 +82,22 @@ try {
     );
 
     const {
-
-      handleCall,
-      handleWhatsApp,
-      }=useBusinessActions({
-      business,
-      trackEvent,
-      showToastMsg
-      });
+  handleCall,
+  handleCallNumber,
+  handleWhatsApp,
+  mobileNumber,
+  landlineNumber,
+  hasMobile,
+  hasWhatsApp,
+  hasLandline,
+  hasCall,
+  showCallChooser,
+  closeCallChooser
+} = useBusinessActions({
+  business,
+  trackEvent,
+  showToastMsg
+});
 
     const {
     isSaved,
@@ -211,18 +230,30 @@ const uiType =
 
 {/* BUSINESS HERO */}
   <BusinessHero
-business={business}
-images={images}
-activeImg={activeImg}
-setActiveImg={setActiveImg}
-setShowGallery={setShowGallery}
-handleCall={handleCall}
-handleWhatsApp={handleWhatsApp}
-handleDirections={handleDirections}
-setShowShareMenu={setShowShareMenu}
-distance={distance}
-handleSave={handleSave}
-isSaved={isSaved}
+  business={business}
+  images={images}
+  activeImg={activeImg}
+  setActiveImg={setActiveImg}
+  setShowGallery={setShowGallery}
+
+  handleCall={handleCall}
+  handleCallNumber={handleCallNumber}
+  handleWhatsApp={handleWhatsApp}
+
+  handleDirections={handleDirections}
+  setShowShareMenu={setShowShareMenu}
+  distance={distance}
+  handleSave={handleSave}
+  isSaved={isSaved}
+
+  mobileNumber={mobileNumber}
+  landlineNumber={landlineNumber}
+  hasMobile={hasMobile}
+  hasWhatsApp={hasWhatsApp}
+  hasLandline={hasLandline}
+  hasCall={hasCall}
+  showCallChooser={showCallChooser}
+  closeCallChooser={closeCallChooser}
 />
 
 {/* PHOTO GALLERY */}
@@ -242,7 +273,8 @@ isSaved={isSaved}
 />
 
 <BusinessAddressCard
- business={business}
+  business={business}
+  normalizedLocation={normalizedLocation}
 />
 
 <BusinessTabs
@@ -301,13 +333,21 @@ isSaved={isSaved}
     faq={business.faq}
 />
 
-{/* REVIEWS */}
-        <BusinessReviewsSection
-    business={business}
-    reviews={reviews}
-    refresh={refresh}
-    onSubmitReview={handleReviewSubmit}
+<BusinessMedia
+  business={business}
+  images={images}
+  setActiveImg={setActiveImg}
+  setShowGallery={setShowGallery}
 />
+
+{/* REVIEWS */}
+    <BusinessReviewsSection
+      business={business}
+      reviews={reviews}
+      refresh={refresh}
+      onSubmitReview={handleReviewSubmit}
+    />
+  
 
 {/* LOCATION MAP */}
         <LocationMap

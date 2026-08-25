@@ -29,7 +29,6 @@ const UNIT_LABELS = {
 };
 
 const ServicePricing = ({ pricing = [] }) => {
-
   if (!Array.isArray(pricing) || pricing.length === 0) {
     return null;
   }
@@ -39,7 +38,6 @@ const ServicePricing = ({ pricing = [] }) => {
   // =========================================================
 
   const getDiscount = (originalPrice, price) => {
-
     const original = Number(originalPrice);
     const current = Number(price);
 
@@ -58,37 +56,27 @@ const ServicePricing = ({ pricing = [] }) => {
     );
   };
 
-
   // =========================================================
   // PRICE FORMAT
   // =========================================================
 
   const formatPrice = (value) => {
-
     return Number(value).toLocaleString("en-IN");
-
   };
-
 
   // =========================================================
   // UNIT DISPLAY
   // =========================================================
 
   const getUnitLabel = (item) => {
-
     if (item?.pricingUnit === "custom") {
-
       return item?.customPricingUnit?.trim() || null;
-
     }
 
     return UNIT_LABELS[item?.pricingUnit] || null;
-
   };
 
-
   return (
-
     <section
       id="pricing"
       className="
@@ -107,22 +95,21 @@ const ServicePricing = ({ pricing = [] }) => {
       <div
         className="
           px-5
-          py-5
+          py-4
           sm:px-6
-          sm:py-6
+          sm:py-5
           border-b
           border-gray-200
         "
       >
-
         <div className="flex items-center justify-between gap-4">
 
           <div className="flex items-center gap-3">
 
             <div
               className="
-                w-11
-                h-11
+                w-10
+                h-10
                 rounded-xl
                 bg-green-50
                 border border-green-100
@@ -133,7 +120,7 @@ const ServicePricing = ({ pricing = [] }) => {
               "
             >
               <IndianRupee
-                size={21}
+                size={20}
                 className="text-green-600"
               />
             </div>
@@ -159,7 +146,6 @@ const ServicePricing = ({ pricing = [] }) => {
 
           </div>
 
-
           <div
             className="
               hidden
@@ -175,7 +161,6 @@ const ServicePricing = ({ pricing = [] }) => {
               text-gray-600
             "
           >
-
             <span className="font-semibold text-gray-900">
               {pricing.length}
             </span>
@@ -185,195 +170,412 @@ const ServicePricing = ({ pricing = [] }) => {
                 ? "Service"
                 : "Services"}
             </span>
+          </div>
+
+        </div>
+      </div>
+
+      {/* =====================================================
+          DESKTOP TABLE
+          Original desktop structure retained
+      ===================================================== */}
+
+      <div className="hidden md:block p-4">
+
+        <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">
+  {pricing.map((item, index) => {
+
+    const price = Number(item?.price);
+
+    const originalPrice = Number(
+      item?.originalPrice ||
+      item?.regularPrice ||
+      item?.oldPrice ||
+      0
+    );
+
+    const discount = getDiscount(
+      originalPrice,
+      price
+    );
+
+    const hasDiscount = Boolean(discount);
+
+    const priceOnRequest =
+      item?.priceOnRequest === true ||
+      item?.price === null ||
+      item?.price === undefined ||
+      item?.price === "" ||
+      !Number.isFinite(price);
+
+    const unit = getUnitLabel(item);
+
+    return (
+      <div
+        key={item?._id || index}
+        className="
+          rounded-xl
+          border border-gray-200
+          bg-white
+          overflow-hidden
+          hover:border-gray-300
+          hover:shadow-sm
+          transition
+        "
+      >
+
+        {/* SERVICE */}
+        <div className="p-4">
+
+          <div className="flex items-start gap-3">
+
+            <div
+              className="
+                w-8 h-8
+                rounded-lg
+                bg-blue-50
+                text-blue-600
+                flex
+                items-center
+                justify-center
+                shrink-0
+                text-xs
+                font-bold
+              "
+            >
+              {index + 1}
+            </div>
+
+            <div className="min-w-0">
+
+              <h3
+                className="
+                  text-sm
+                  font-semibold
+                  text-gray-900
+                  leading-5
+                "
+              >
+                {item?.name || "Service"}
+              </h3>
+
+              {item?.description ? (
+                <p
+                  className="
+                    mt-1
+                    text-xs
+                    text-gray-500
+                    leading-5
+                    line-clamp-2
+                  "
+                >
+                  {item.description}
+                </p>
+              ) : (
+                <p className="mt-1 text-xs text-gray-400">
+                  Service details available on request
+                </p>
+              )}
+
+            </div>
+
+          </div>
+
+        </div>
+
+        {/* PRICING */}
+        <div className="border-t border-gray-100">
+
+          <div className="grid grid-cols-2 divide-x divide-gray-100">
+
+            {/* ORIGINAL PRICE */}
+            <div className="p-3">
+
+              <div
+                className="
+                  text-[10px]
+                  uppercase
+                  tracking-wide
+                  font-semibold
+                  text-gray-400
+                  mb-1
+                "
+              >
+                Original Price
+              </div>
+
+              {originalPrice > 0 ? (
+
+                <div>
+
+                  <div
+                    className={`
+                      text-sm
+                      font-semibold
+                      whitespace-nowrap
+                      ${
+                        hasDiscount
+                          ? "text-gray-400 line-through"
+                          : "text-gray-800"
+                      }
+                    `}
+                  >
+                    ₹{formatPrice(originalPrice)}
+                  </div>
+
+                  {hasDiscount && (
+                    <span
+                      className="
+                        inline-flex
+                        items-center
+                        gap-1
+                        mt-1
+                        px-1.5
+                        py-0.5
+                        rounded-md
+                        bg-red-50
+                        text-red-600
+                        text-[9px]
+                        font-bold
+                      "
+                    >
+                      <Tag size={9} />
+                      {discount}% OFF
+                    </span>
+                  )}
+
+                </div>
+
+              ) : (
+                <span className="text-sm text-gray-400">
+                  —
+                </span>
+              )}
+
+            </div>
+
+            {/* STARTING PRICE */}
+            <div className="p-3 text-right">
+
+              <div
+                className="
+                  text-[10px]
+                  uppercase
+                  tracking-wide
+                  font-semibold
+                  text-gray-400
+                  mb-1
+                "
+              >
+                Starting Price
+              </div>
+
+              {priceOnRequest ? (
+
+                <span
+                  className="
+                    inline-flex
+                    items-center
+                    gap-1
+                    px-2
+                    py-1
+                    rounded-md
+                    bg-blue-50
+                    border border-blue-100
+                    text-blue-700
+                    text-[10px]
+                    font-semibold
+                  "
+                >
+                  <Clock3 size={11} />
+                  Price on Request
+                </span>
+
+              ) : (
+
+                <>
+
+                  <div
+                    className="
+                      flex
+                      items-baseline
+                      justify-end
+                      gap-0.5
+                    "
+                  >
+
+                    <IndianRupee
+                      size={14}
+                      className="text-green-600"
+                    />
+
+                    <span
+                      className="
+                        text-lg
+                        font-bold
+                        text-green-600
+                      "
+                    >
+                      {formatPrice(price)}
+                    </span>
+
+                    {unit && (
+                      <span
+                        className="
+                          ml-1
+                          text-[10px]
+                          font-semibold
+                          text-gray-500
+                          whitespace-nowrap
+                        "
+                      >
+                        / {unit}
+                      </span>
+                    )}
+
+                  </div>
+
+                  {hasDiscount && (
+                    <span
+                      className="
+                        flex
+                        items-center
+                        justify-end
+                        gap-1
+                        mt-0.5
+                        text-[10px]
+                        text-green-600
+                        font-medium
+                      "
+                    >
+                      <Sparkles size={10} />
+
+                      Save ₹
+                      {formatPrice(
+                        originalPrice - price
+                      )}
+                    </span>
+                  )}
+
+                </>
+
+              )}
+
+            </div>
 
           </div>
 
         </div>
 
       </div>
+    );
+  })}
+</div>
 
+      </div>
 
       {/* =====================================================
-          PRICE TABLE
+          MOBILE CARDS
+          Desktop table remains unchanged
       ===================================================== */}
 
-      <div className="overflow-x-auto">
+      <div className="md:hidden p-3 space-y-3">
 
-        <table className="w-full min-w-[760px] border-collapse">
+        {pricing.map((item, index) => {
 
-          <thead>
+          const price =
+            Number(item?.price);
 
-            <tr className="bg-gray-50 border-b border-gray-200">
+          const originalPrice =
+            Number(
+              item?.originalPrice ||
+              item?.regularPrice ||
+              item?.oldPrice ||
+              0
+            );
 
-              <th
+          const discount =
+            getDiscount(
+              originalPrice,
+              price
+            );
+
+          const hasDiscount =
+            Boolean(discount);
+
+          const priceOnRequest =
+            item?.priceOnRequest === true ||
+            item?.price === null ||
+            item?.price === undefined ||
+            item?.price === "" ||
+            !Number.isFinite(price);
+
+          const unit =
+            getUnitLabel(item);
+
+          return (
+
+            <div
+              key={item?._id || index}
+              className="
+                rounded-xl
+                border border-gray-200
+                overflow-hidden
+                bg-white
+              "
+            >
+
+              {/* MOBILE SERVICE */}
+              <div
                 className="
-                  px-5 py-3.5
-                  text-left
-                  text-xs
-                  font-bold
-                  uppercase
-                  tracking-wide
-                  text-gray-500
-                  w-[27%]
+                  px-3.5
+                  py-3
+                  bg-gray-50
+                  border-b
+                  border-gray-100
                 "
               >
-                Service
-              </th>
 
-              <th
-                className="
-                  px-5 py-3.5
-                  text-left
-                  text-xs
-                  font-bold
-                  uppercase
-                  tracking-wide
-                  text-gray-500
-                  w-[35%]
-                "
-              >
-                Description
-              </th>
+                <div className="flex items-start gap-3">
 
-              <th
-                className="
-                  px-5 py-3.5
-                  text-right
-                  text-xs
-                  font-bold
-                  uppercase
-                  tracking-wide
-                  text-gray-500
-                  w-[16%]
-                "
-              >
-                Regular Price
-              </th>
+                  <div
+                    className="
+                      w-8
+                      h-8
+                      rounded-lg
+                      bg-blue-50
+                      text-blue-600
+                      flex
+                      items-center
+                      justify-center
+                      shrink-0
+                      text-xs
+                      font-bold
+                    "
+                  >
+                    {index + 1}
+                  </div>
 
-              <th
-                className="
-                  px-5 py-3.5
-                  text-right
-                  text-xs
-                  font-bold
-                  uppercase
-                  tracking-wide
-                  text-gray-500
-                  w-[22%]
-                "
-              >
-                Offer Price
-              </th>
+                  <div className="min-w-0 flex-1">
 
-            </tr>
-
-          </thead>
-
-
-          <tbody>
-
-            {pricing.map((item, index) => {
-
-              const price =
-                Number(item?.price);
-
-              const originalPrice =
-                Number(
-                  item?.originalPrice ||
-                  item?.regularPrice ||
-                  item?.oldPrice ||
-                  0
-                );
-
-              const discount =
-                getDiscount(
-                  originalPrice,
-                  price
-                );
-
-              const hasDiscount =
-                Boolean(discount);
-
-              const priceOnRequest =
-                item?.priceOnRequest === true ||
-                item?.price === null ||
-                item?.price === undefined ||
-                item?.price === "" ||
-                !Number.isFinite(price);
-
-              const unit =
-                getUnitLabel(item);
-
-
-              return (
-
-                <tr
-                  key={item?._id || index}
-                  className="
-                    border-b
-                    border-gray-100
-                    last:border-b-0
-                    hover:bg-gray-50/70
-                    transition
-                  "
-                >
-
-                  {/* SERVICE */}
-
-                  <td className="px-5 py-5 align-top">
-
-                    <div className="flex items-start gap-3">
-
-                      <div
-                        className="
-                          w-8
-                          h-8
-                          rounded-lg
-                          bg-blue-50
-                          text-blue-600
-                          flex
-                          items-center
-                          justify-center
-                          shrink-0
-                          text-xs
-                          font-bold
-                        "
-                      >
-                        {index + 1}
-                      </div>
-
-                      <div>
-
-                        <div
-                          className="
-                            font-semibold
-                            text-gray-900
-                            text-sm
-                            sm:text-base
-                          "
-                        >
-                          {item?.name || "Service"}
-                        </div>
-
-                      </div>
-
+                    <div
+                      className="
+                        text-sm
+                        font-semibold
+                        text-gray-900
+                      "
+                    >
+                      {item?.name || "Service"}
                     </div>
-
-                  </td>
-
-
-                  {/* DESCRIPTION */}
-
-                  <td className="px-5 py-5 align-top">
 
                     {item?.description ? (
 
                       <p
                         className="
-                          text-sm
+                          text-xs
                           text-gray-500
-                          leading-6
-                          max-w-md
+                          leading-5
+                          mt-0.5
                         "
                       >
                         {item.description}
@@ -381,208 +583,229 @@ const ServicePricing = ({ pricing = [] }) => {
 
                     ) : (
 
-                      <span className="text-sm text-gray-400">
+                      <p
+                        className="
+                          text-xs
+                          text-gray-400
+                          mt-0.5
+                        "
+                      >
                         Service details available on request
-                      </span>
+                      </p>
 
                     )}
 
-                  </td>
+                  </div>
 
+                </div>
 
-                  {/* REGULAR PRICE */}
+              </div>
 
-                  <td className="px-5 py-5 align-top text-right">
+              {/* MOBILE PRICES */}
+              <div
+                className="
+                  grid
+                  grid-cols-2
+                  divide-x
+                  divide-gray-100
+                "
+              >
 
-                    {hasDiscount ? (
+                {/* ORIGINAL PRICE */}
+                <div className="px-3.5 py-3">
 
-                      <div className="flex flex-col items-end">
+                  <div
+                    className="
+                      text-[10px]
+                      uppercase
+                      tracking-wide
+                      font-semibold
+                      text-gray-400
+                      mb-1
+                    "
+                  >
+                    Original Price
+                  </div>
 
-                        <span
-                          className="
-                            text-sm
-                            text-gray-400
-                            line-through
-                            whitespace-nowrap
-                          "
-                        >
-                          ₹{formatPrice(originalPrice)}
-                        </span>
+                  {originalPrice > 0 ? (
+
+                    <div>
+
+                      <span
+                        className={`
+                          text-sm
+                          whitespace-nowrap
+                          ${
+                            hasDiscount
+                              ? "text-gray-400 line-through"
+                              : "text-gray-800 font-semibold"
+                          }
+                        `}
+                      >
+                        ₹{formatPrice(originalPrice)}
+                      </span>
+
+                      {hasDiscount && (
 
                         <span
                           className="
                             inline-flex
                             items-center
                             gap-1
-                            mt-1.5
-                            px-2
-                            py-1
+                            ml-1.5
+                            px-1.5
+                            py-0.5
                             rounded-md
                             bg-red-50
                             text-red-600
-                            text-[11px]
+                            text-[9px]
                             font-bold
                           "
                         >
-                          <Tag size={11} />
-
+                          <Tag size={9} />
                           {discount}% OFF
                         </span>
 
-                      </div>
+                      )}
 
-                    ) : (
+                    </div>
 
-                      <span className="text-sm text-gray-400">
-                        —
-                      </span>
+                  ) : (
 
-                    )}
+                    <span className="text-sm text-gray-400">
+                      —
+                    </span>
 
-                  </td>
+                  )}
 
+                </div>
 
-                  {/* STARTING PRICE */}
+                {/* STARTING PRICE */}
+                <div className="px-3.5 py-3 text-right">
 
-                  <td className="px-5 py-5 align-top text-right">
+                  <div
+                    className="
+                      text-[10px]
+                      uppercase
+                      tracking-wide
+                      font-semibold
+                      text-gray-400
+                      mb-1
+                    "
+                  >
+                    Starting Price
+                  </div>
 
-                    {priceOnRequest ? (
+                  {priceOnRequest ? (
 
-                      <span
+                    <span
+                      className="
+                        inline-flex
+                        items-center
+                        gap-1
+                        px-2
+                        py-1
+                        rounded-md
+                        bg-blue-50
+                        border border-blue-100
+                        text-blue-700
+                        text-[11px]
+                        font-semibold
+                      "
+                    >
+                      <Clock3 size={11} />
+                      Price on Request
+                    </span>
+
+                  ) : (
+
+                    <>
+
+                      <div
                         className="
-                          inline-flex
-                          items-center
-                          gap-1.5
-                          px-3
-                          py-2
-                          rounded-lg
-                          bg-blue-50
-                          border border-blue-100
-                          text-blue-700
-                          text-sm
-                          font-semibold
-                          whitespace-nowrap
+                          flex
+                          items-baseline
+                          justify-end
+                          gap-0.5
+                          text-green-600
                         "
                       >
-                        <Clock3 size={14} />
 
-                        Price on Request
-                      </span>
-
-                    ) : (
-
-                      <div className="flex flex-col items-end">
+                        <IndianRupee size={14} />
 
                         <span
                           className="
-                            text-[10px]
-                            uppercase
-                            tracking-wider
-                            text-gray-400
-                            font-semibold
+                            text-lg
+                            font-bold
                           "
                         >
-                          Starting from
+                          {formatPrice(price)}
                         </span>
 
-                        <div
-                          className="
-                            flex
-                            items-baseline
-                            gap-0.5
-                            mt-0.5
-                            text-green-600
-                          "
-                        >
-
-                          <IndianRupee size={16} />
+                        {unit && (
 
                           <span
                             className="
-                              text-xl
-                              font-bold
+                              ml-1
+                              text-[10px]
+                              font-semibold
+                              text-gray-500
+                              whitespace-nowrap
                             "
                           >
-                            {formatPrice(price)}
-                          </span>
-
-                          {unit && (
-                            <span
-                              className="
-                                ml-1
-                                text-xs
-                                font-semibold
-                                text-gray-500
-                                whitespace-nowrap
-                              "
-                            >
-                              / {unit}
-                            </span>
-                          )}
-
-                        </div>
-
-                        {hasDiscount && (
-
-                          <span
-                            className="
-                              flex
-                              items-center
-                              gap-1
-                              mt-1
-                              text-xs
-                              text-green-600
-                              font-medium
-                            "
-                          >
-
-                            <Sparkles size={12} />
-
-                            Save ₹
-                            {formatPrice(
-                              originalPrice - price
-                            )}
-
+                            / {unit}
                           </span>
 
                         )}
 
                       </div>
 
-                    )}
+                      {hasDiscount && (
 
-                  </td>
+                        <span
+                          className="
+                            flex
+                            items-center
+                            justify-end
+                            gap-1
+                            mt-0.5
+                            text-[10px]
+                            text-green-600
+                            font-medium
+                          "
+                        >
 
-                </tr>
+                          <Sparkles size={10} />
 
-              );
+                          Save ₹
+                          {formatPrice(
+                            originalPrice - price
+                          )}
 
-            })}
+                        </span>
 
-          </tbody>
+                      )}
 
-        </table>
+                    </>
+
+                  )}
+
+                </div>
+
+              </div>
+
+            </div>
+
+          );
+
+        })}
 
       </div>
 
-
-      {/* MOBILE HINT */}
-
-      <div
-        className="
-          sm:hidden
-          px-5
-          py-2.5
-          bg-gray-50
-          border-t border-gray-100
-          text-[11px]
-          text-gray-400
-          text-center
-        "
-      >
-        Swipe horizontally to view the complete price chart
-      </div>
-
+      {/* =====================================================
+          MOBILE HINT
+          Removed because mobile no longer needs horizontal scroll
+      ===================================================== */}
 
       {/* =====================================================
           FOOTNOTE
@@ -591,10 +814,11 @@ const ServicePricing = ({ pricing = [] }) => {
       <div
         className="
           px-5
-          py-4
+          py-3
           sm:px-6
           bg-gray-50
-          border-t border-gray-200
+          border-t
+          border-gray-200
         "
       >
 
@@ -605,18 +829,20 @@ const ServicePricing = ({ pricing = [] }) => {
             leading-5
           "
         >
+
           <span className="font-semibold text-gray-600">
             Note:
           </span>{" "}
+
           Final charges may vary depending on work scope,
           materials, site inspection, location and specific
           service requirements.
+
         </p>
 
       </div>
 
     </section>
-
   );
 };
 

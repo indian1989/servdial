@@ -802,8 +802,23 @@ export const SERVICE_LIBRARY = [
   "Tour Assistance",
 
   // =======================================================
-  // DENTAL / HEALTHCARE
+  // HEALTHCARE
   // =======================================================
+  "Cardiac Surgery",
+  "Cardiology",
+  "Oncology",
+  "Neurology",
+  "Neurosurgery",
+  "Gastroenterology",
+  "Nephrology",
+  "Kidney Transplant",
+  "Liver Transplant",
+  "Orthopaedics",
+  "Urology",
+  "IVF",
+  "Paediatrics",
+  "Diagnostics",
+  "Emergency Care",
 
   "Dental Consultation",
   "Tooth Cleaning",

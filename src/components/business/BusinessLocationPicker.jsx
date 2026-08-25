@@ -258,7 +258,10 @@ const BusinessLocationPicker = ({
   ======================================================= */
 
   return (
-    <div className="space-y-3">
+    <div
+      id="location"
+      className="space-y-3"
+    >
 
       <div className="rounded-2xl overflow-hidden border">
 

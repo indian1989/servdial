@@ -9,7 +9,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import API from "../../api/axios";
 import { toBusinessListDTO } from "../../dto/businessDTO";
 import { getBusinessStatus } from "../../utils/getBusinessStatus";
@@ -23,21 +23,20 @@ const BusinessCard = ({ business }) => {
 
   const location = useLocation();
 
+  const [
+  isCallChooserOpen,
+  setIsCallChooserOpen
+] = useState(false);
 
 const b = toBusinessListDTO(business) || {};
 
-console.log("🏢 BUSINESS RAW:", business);
-console.log("📍 DTO:", b);
-console.log("📍 AREA:", b.area);
-console.log("📍 BUSINESS BEFORE DTO:", business);
-console.log("📍 RAW ADDRESS:", business?.address);
-console.log("📍 RAW CITY:", business?.cityId);
-console.log("📍 DTO AREA:", b.area);
-console.log("📍 DISPLAY:", formatCityLocation(
-  b.area,
-  b.cityName,
-  b.state
-));
+console.log("📞 CALL DEBUG:", {
+  rawPhone: business?.phone,
+  rawLandline: business?.landline,
+  dtoPhone: b.phone,
+  dtoLandline: b.landline,
+});
+
 const businessStatus = getBusinessStatus(b);
 
 // User GPS coordinates
@@ -72,6 +71,7 @@ const realDistance =
     rating = 0,
     reviewCount = 0,
     phone,
+    landline,
     whatsapp,
     isFeatured,
     isVerified,
@@ -101,7 +101,43 @@ const realDistance =
     return null;
   }
 
-  const cleanNumber = (whatsapp || phone || "").replace(/\D/g, "");
+  // =========================================================
+// CONTACT AVAILABILITY
+// FINAL SERVIDAL RULE
+//
+// Mobile only       → Call → mobile
+// Landline only     → Call → landline
+// Mobile + Landline → Choose number
+// Neither           → No Call button
+//
+// WhatsApp available → WhatsApp → whatsapp only
+// WhatsApp absent    → No WhatsApp button
+// =========================================================
+
+const mobileNumber =
+  phone?.toString().trim() || "";
+
+const landlineNumber =
+  landline?.toString().trim() || "";
+
+const whatsappNumber =
+  whatsapp?.toString().trim() || "";
+
+const hasMobile =
+  Boolean(mobileNumber);
+
+const hasLandline =
+  Boolean(landlineNumber);
+
+const hasCall =
+  hasMobile || hasLandline;
+
+const hasWhatsApp =
+  Boolean(whatsappNumber);
+
+const cleanWhatsApp =
+  whatsappNumber.replace(/\D/g, "");
+
 
   const handleBusinessClick = async () => {
     try {
@@ -115,41 +151,70 @@ const realDistance =
   };
 
   const handleCall = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  e.preventDefault();
+  e.stopPropagation();
 
-    if (!phone) return;
+  if (!hasCall) return;
 
-    window.location.href = `tel:${phone}`;
+  // Mobile + Landline → chooser
+  if (hasMobile && hasLandline) {
+    setIsCallChooserOpen(true);
+    return;
+  }
 
-    try {
-      await API.post(`/businesses/analytics/${_id}`,
-        {
-          type: "call",
-      });
-    } catch {}
-  };
+  // Mobile only
+  if (hasMobile) {
+    window.location.href =
+      `tel:${mobileNumber}`;
+  }
 
-  const handleWhatsApp = async (e) => {
-    e.preventDefault();
-    e.stopPropagation();
+  // Landline only
+  else if (hasLandline) {
+    window.location.href =
+      `tel:${landlineNumber}`;
+  }
 
-    if (!cleanNumber) return;
-
-    window.open(
-      `https://wa.me/${cleanNumber}`,
-      "_blank"
+  try {
+    await API.post(
+      `/businesses/analytics/${_id}`,
+      {
+        type: "call",
+      }
     );
+  } catch {}
+};
 
-    try {
-      await API.post(`/businesses/analytics/${_id}`,
-        {
-          type: "whatsapp",
-        });
-    } catch {}
-  };
+ const handleWhatsApp = async (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  // WhatsApp must use ONLY DB whatsapp
+  if (!hasWhatsApp || !cleanWhatsApp) {
+    return;
+  }
+
+  const finalWhatsApp =
+    cleanWhatsApp.startsWith("91")
+      ? cleanWhatsApp
+      : `91${cleanWhatsApp}`;
+
+  window.open(
+    `https://wa.me/${finalWhatsApp}`,
+    "_blank"
+  );
+
+  try {
+    await API.post(
+      `/businesses/analytics/${_id}`,
+      {
+        type: "whatsapp",
+      }
+    );
+  } catch {}
+};
 
   return (
+    <>
     <Link
       to={`/${citySlug}/${categorySlug}/${slug}`}
       onClick={handleBusinessClick}
@@ -367,25 +432,26 @@ const realDistance =
         {/* ACTIONS */}
         <div className="grid grid-cols-2 gap-3 mt-5">
 
-          {phone ? (
-            <button
-              onClick={handleCall}
-              className="
-                flex items-center justify-center gap-2
-                bg-blue-600 hover:bg-blue-700
-                text-white text-sm font-medium
-                py-3 rounded-xl
-                transition
-              "
-            >
-              <Phone size={16} />
-              Call
-            </button>
-          ) : (
-            <div />
-          )}
+          {hasCall ? (
+  <button
+    type="button"
+    onClick={handleCall}
+    className="
+      flex items-center justify-center gap-2
+      bg-blue-600 hover:bg-blue-700
+      text-white text-sm font-medium
+      py-3 rounded-xl
+      transition
+    "
+  >
+    <Phone size={16} />
+    Call
+  </button>
+) : (
+  <div />
+)}
 
-          {cleanNumber ? (
+         {hasWhatsApp ? (
             <button
               onClick={handleWhatsApp}
               className="
@@ -406,6 +472,333 @@ const realDistance =
         </div>
       </div>
     </Link>
+
+    {/* =========================================================
+    CALL NUMBER CHOOSER
+========================================================= */}
+
+{isCallChooserOpen && (
+  <div
+    className="
+      fixed
+      inset-0
+      z-[100]
+      flex
+      items-end
+      sm:items-center
+      justify-center
+      bg-black/60
+      backdrop-blur-sm
+      px-4
+    "
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setShowCallChooser(false);
+    }}
+  >
+
+    <div
+      className="
+        w-full
+        max-w-md
+        bg-white
+        rounded-2xl
+        shadow-2xl
+        p-5
+        sm:p-6
+      "
+      onClick={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+      }}
+    >
+
+      {/* HEADER */}
+
+      <div className="flex items-center gap-3 mb-5">
+
+        <div
+          className="
+            w-11
+            h-11
+            rounded-full
+            bg-blue-100
+            text-blue-600
+            flex
+            items-center
+            justify-center
+            flex-shrink-0
+          "
+        >
+          <Phone size={21} />
+        </div>
+
+        <div>
+
+          <h3
+            className="
+              text-lg
+              font-bold
+              text-gray-900
+            "
+          >
+            Choose number
+          </h3>
+
+          <p
+            className="
+              text-sm
+              text-gray-500
+            "
+          >
+            Select how you want to call
+          </p>
+
+        </div>
+
+      </div>
+
+      {/* MOBILE */}
+
+      {hasMobile && (
+        <button
+          type="button"
+          onClick={async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            setShowCallChooser(false);
+
+            window.location.href =
+              `tel:${mobileNumber}`;
+
+            try {
+              await API.post(
+                `/businesses/analytics/${_id}`,
+                {
+                  type: "call",
+                }
+              );
+            } catch {}
+          }}
+          className="
+            w-full
+            flex
+            items-center
+            justify-between
+            gap-4
+            px-4
+            py-4
+            mb-3
+            rounded-xl
+            border
+            border-gray-200
+            hover:border-blue-500
+            hover:bg-blue-50
+            transition
+          "
+        >
+
+          <div
+            className="
+              flex
+              items-center
+              gap-3
+              min-w-0
+            "
+          >
+
+            <div
+              className="
+                w-10
+                h-10
+                rounded-full
+                bg-blue-100
+                text-blue-600
+                flex
+                items-center
+                justify-center
+                flex-shrink-0
+              "
+            >
+              <Phone size={18} />
+            </div>
+
+            <div className="text-left min-w-0">
+
+              <div
+                className="
+                  text-sm
+                  font-semibold
+                  text-gray-900
+                "
+              >
+                Mobile
+              </div>
+
+              <div
+                className="
+                  text-sm
+                  text-gray-500
+                  truncate
+                "
+              >
+                {mobileNumber}
+              </div>
+
+            </div>
+
+          </div>
+
+          <span
+            className="
+              text-blue-600
+              text-sm
+              font-semibold
+              flex-shrink-0
+            "
+          >
+            Call
+          </span>
+
+        </button>
+      )}
+
+      {/* LANDLINE */}
+
+      {hasLandline && (
+        <button
+          type="button"
+          onClick={async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            setShowCallChooser(false);
+
+            window.location.href =
+              `tel:${landlineNumber}`;
+
+            try {
+              await API.post(
+                `/businesses/analytics/${_id}`,
+                {
+                  type: "call",
+                }
+              );
+            } catch {}
+          }}
+          className="
+            w-full
+            flex
+            items-center
+            justify-between
+            gap-4
+            px-4
+            py-4
+            rounded-xl
+            border
+            border-gray-200
+            hover:border-blue-500
+            hover:bg-blue-50
+            transition
+          "
+        >
+
+          <div
+            className="
+              flex
+              items-center
+              gap-3
+              min-w-0
+            "
+          >
+
+            <div
+              className="
+                w-10
+                h-10
+                rounded-full
+                bg-gray-100
+                text-gray-700
+                flex
+                items-center
+                justify-center
+                flex-shrink-0
+              "
+            >
+              <Phone size={18} />
+            </div>
+
+            <div className="text-left min-w-0">
+
+              <div
+                className="
+                  text-sm
+                  font-semibold
+                  text-gray-900
+                "
+              >
+                Landline
+              </div>
+
+              <div
+                className="
+                  text-sm
+                  text-gray-500
+                  truncate
+                "
+              >
+                {landlineNumber}
+              </div>
+
+            </div>
+
+          </div>
+
+          <span
+            className="
+              text-blue-600
+              text-sm
+              font-semibold
+              flex-shrink-0
+            "
+          >
+            Call
+          </span>
+
+        </button>
+      )}
+
+      {/* CANCEL */}
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setShowCallChooser(false);
+        }}
+        className="
+          w-full
+          mt-4
+          py-3
+          rounded-xl
+          bg-gray-100
+          hover:bg-gray-200
+          text-gray-700
+          font-medium
+          transition
+        "
+      >
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+)}
+</>
   );
 };
 

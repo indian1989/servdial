@@ -318,7 +318,7 @@ business.paymentOptions.join(", ")
     </p>
 
     <p className="font-medium text-sm text-green-600">
-      Verified Business
+      ServDial Verified
     </p>
 
   </div>

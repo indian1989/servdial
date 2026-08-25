@@ -136,8 +136,41 @@ export const validateBusinessForm = (form = {}) => {
     errors.pincode = "Valid 6 digit pincode required";
   }
 
-  if (!form.phone || form.phone.length !== 10) {
-    errors.phone = "Valid 10 digit phone required";
+    // ================= CONTACT VALIDATION =================
+
+  const mobile =
+    String(form.phone || "")
+      .replace(/\D/g, "");
+
+  const landline =
+    String(form.landline || "")
+      .replace(/\D/g, "");
+
+  const hasValidMobile =
+    mobile.length === 10;
+
+  const hasValidLandline =
+    landline.length >= 6 &&
+    landline.length <= 12;
+
+  // Mobile OR Landline is mandatory
+  if (!hasValidMobile && !hasValidLandline) {
+    errors.phone =
+      "Mobile Number or Landline Number is required";
+    errors.landline =
+      "Mobile Number or Landline Number is required";
+  }
+
+  // If mobile is provided, it must be valid
+  if (mobile && !hasValidMobile) {
+    errors.phone =
+      "Valid 10 digit mobile number required";
+  }
+
+  // If landline is provided, it must be valid
+  if (landline && !hasValidLandline) {
+    errors.landline =
+      "Landline number must be between 6 and 12 digits";
   }
 
   if (

@@ -39,34 +39,84 @@ const flattenCategories = (
   tree = [],
   parent = null
 ) => {
+
   let result = [];
 
   tree.forEach((cat) => {
-    const children = cat.subcategories || [];
+
+    const children =
+      Array.isArray(cat.subcategories)
+        ? cat.subcategories
+        : [];
+
+    /*
+    =====================================================
+    LEAF CATEGORY
+    =====================================================
+    */
 
     if (children.length === 0) {
+
       result.push({
+
         value: cat._id,
+
         label: cat.name,
 
-        parentName: parent?.name || "",
-        parentSlug: parent?.slug || "",
+        parentName:
+          parent?.name || "",
+
+        parentSlug:
+          parent?.slug || "",
+
+        /*
+        =================================================
+        CATEGORY FEATURES
+        IMPORTANT:
+        Keep DB features inside selected category option
+        =================================================
+        */
+
+        features:
+          Array.isArray(cat.features)
+            ? cat.features
+            : [],
+
+        uiType:
+          cat.uiType || "service",
+
       });
+
     }
 
+
+    /*
+    =====================================================
+    CHILD CATEGORIES
+    =====================================================
+    */
+
     if (children.length > 0) {
+
       result = result.concat(
-        flattenCategories(children, {
-          name: cat.name,
-          slug: cat.slug,
-        })
+
+        flattenCategories(
+          children,
+          {
+            name: cat.name,
+            slug: cat.slug,
+          }
+        )
+
       );
+
     }
+
   });
 
   return result;
-};
 
+};
 
 /* ================= SELECT STYLE ================= */
 
@@ -157,6 +207,10 @@ const [restaurantBooking, setRestaurantBooking] = useState({
 
 const [locationManuallyAdjusted, setLocationManuallyAdjusted] =
   useState(false);
+  const [initialLocation, setInitialLocation] = useState(null);
+const [initialAddress, setInitialAddress] = useState(null);
+const [initialCityId, setInitialCityId] = useState(null);
+const [initialPincode, setInitialPincode] = useState("");
 
   /* ================= FETCH ================= */
 
@@ -297,6 +351,44 @@ categoryFeatures:
         ? safeValue.businessHours
         : defaultBusinessHours,
   };
+
+  const existingLocation =
+  safeValue.location &&
+  safeValue.location.type === "Point" &&
+  Array.isArray(safeValue.location.coordinates) &&
+  safeValue.location.coordinates.length === 2 &&
+  safeValue.location.coordinates.every(
+    (value) => Number.isFinite(Number(value))
+  )
+    ? {
+        type: "Point",
+        coordinates: [
+          Number(safeValue.location.coordinates[0]),
+          Number(safeValue.location.coordinates[1]),
+        ],
+      }
+    : null;
+
+setInitialLocation(existingLocation);
+
+setInitialAddress(
+  normalizeAddress(safeValue.address)
+);
+
+setInitialCityId(
+  safeValue.cityId?._id ||
+  safeValue.cityId ||
+  null
+);
+
+setInitialPincode(
+  safeValue.pincode || ""
+);
+
+// Existing valid location ko preserve mode mein rakho
+setLocationManuallyAdjusted(
+  Boolean(existingLocation)
+);
 
   setForm(updatedForm);
 
@@ -656,9 +748,8 @@ const handleChange = (e) => {
     [name]: nextValue,
   };
 
-  if (name === "phone" && form.whatsapp === form.phone) {
-    updated.whatsapp = nextValue;
-  }
+  // WhatsApp number is always manually entered.
+// Do NOT auto-generate or copy it from mobile number.
 
   updateForm(updated);
 };
@@ -672,65 +763,67 @@ const handleSelect = async (field, selected) => {
 
   /* ================= CATEGORY ================= */
 
-  if (field === "categoryId") {
-  try {
-    const res = await API.get(
-      `/categories/${selected.value}`
-    );
+if (field === "categoryId") {
 
-    const category =
-      res.data?.data || res.data || {};
+  /*
+  =====================================================
+  CATEGORY FEATURES
+  =====================================================
 
-    updateForm({
-      ...form,
+  `selected` ab flattenCategories() se aa raha hai
+  aur usmein DB ke features already preserved hain.
+  */
 
-      categoryId: selected.value,
+  const categoryFeatures =
+    Array.isArray(selected.features)
+      ? selected.features
+      : [];
 
-      categoryName:
-        category.name || selected.label,
 
-      categoryParentName:
-        category.parentCategory?.name ||
-        selected.parentName ||
-        "",
+  updateForm({
 
-      categoryParentSlug:
-        category.parentCategory?.slug ||
-        selected.parentSlug ||
-        "",
+    ...form,
 
-      // ⭐ IMPORTANT:
-      // Category ke features yahin se BusinessForm me aayenge
-      categoryFeatures: Array.isArray(category.features)
-        ? category.features
-        : [],
-    });
+    categoryId:
+      selected.value,
 
-  } catch (err) {
-    console.error(
-      "Category feature load error:",
-      err
-    );
+    categoryName:
+      selected.label || "",
 
-    // API fail hone par bhi existing category
-    // selection break nahi honi chahiye.
-    updateForm({
-      ...form,
+    categoryParentName:
+      selected.parentName || "",
 
-      categoryId: selected.value,
+    categoryParentSlug:
+      selected.parentSlug || "",
 
-      categoryName:
-        selected.label || "",
+    /*
+    ===================================================
+    THIS IS THE IMPORTANT LINE
+    ===================================================
+    */
 
-      categoryParentName:
-        selected.parentName || "",
+    categoryFeatures,
 
-      categoryParentSlug:
-        selected.parentSlug || "",
+    /*
+    Keep uiType available as well
+    */
 
-      categoryFeatures: [],
-    });
-  }
+    uiType:
+      selected.uiType || "service",
+
+  });
+
+
+  console.log(
+    "✅ CATEGORY SELECTED:",
+    selected.label
+  );
+
+  console.log(
+    "✅ CATEGORY FEATURES:",
+    categoryFeatures
+  );
+
 
   return;
 }
@@ -808,6 +901,46 @@ const seoPreview = useMemo(() => {
   categories,
 ]);
 
+const hasAddressChanged = () => {
+  const currentAddress = normalizeAddress(
+    form.address
+  );
+
+  const originalAddress =
+    initialAddress || {
+      street: "",
+      area: "",
+      landmark: "",
+    };
+
+  const currentCityId =
+    form.cityId
+      ? String(form.cityId)
+      : "";
+
+  const originalCity =
+    initialCityId
+      ? String(initialCityId)
+      : "";
+
+  const currentPincode =
+    String(form.pincode || "");
+
+  const originalPincode =
+    String(initialPincode || "");
+
+  return (
+    JSON.stringify(currentAddress) !==
+      JSON.stringify(originalAddress) ||
+
+    currentCityId !==
+      originalCity ||
+
+    currentPincode !==
+      originalPincode
+  );
+};
+
   /* ================= SUBMIT ================= */
 
 const handleSubmit = async (e) => {
@@ -834,13 +967,91 @@ const handleSubmit = async (e) => {
 
     setLoading(true);
 
-    /* ================= GENERATE EXACT BUSINESS COORDINATES ================= */
+/* =================================================
+   BUSINESS LOCATION LOGIC
+================================================= */
 
-let coordinates = form.location?.coordinates || [];
+let coordinates =
+  Array.isArray(form.location?.coordinates)
+    ? form.location.coordinates.map(Number)
+    : [];
 
-if (!locationManuallyAdjusted) {
 
-  coordinates =
+/*
+=====================================================
+1. CHECK EXISTING VALID LOCATION
+=====================================================
+*/
+
+const hasValidExistingLocation =
+  Array.isArray(coordinates) &&
+  coordinates.length === 2 &&
+  coordinates.every(
+    (value) => Number.isFinite(Number(value))
+  );
+
+
+/*
+=====================================================
+2. CHECK WHETHER ADDRESS ACTUALLY CHANGED
+=====================================================
+*/
+
+const addressChanged =
+  hasAddressChanged();
+
+
+/*
+=====================================================
+3. MANUAL MAP LOCATION HAS HIGHEST PRIORITY
+=====================================================
+*/
+
+if (locationManuallyAdjusted) {
+
+  console.log(
+    "📍 USING MANUALLY SELECTED LOCATION:",
+    coordinates
+  );
+
+}
+
+
+/*
+=====================================================
+4. EXISTING BUSINESS + ADDRESS UNCHANGED
+   → KEEP EXISTING LOCATION
+=====================================================
+*/
+
+else if (
+  safeValue?._id &&
+  hasValidExistingLocation &&
+  !addressChanged
+) {
+
+  console.log(
+    "📍 EXISTING BUSINESS LOCATION PRESERVED:",
+    coordinates
+  );
+
+}
+
+
+/*
+=====================================================
+5. NEW BUSINESS OR ADDRESS CHANGED
+   → GEOCODE ADDRESS
+=====================================================
+*/
+
+else {
+
+  console.log(
+    "📍 ADDRESS CHANGED / NEW BUSINESS → GEOCODING"
+  );
+
+  const geocodedCoordinates =
     await generateBusinessCoordinates({
       cityName: form.cityName,
       district: form.district,
@@ -849,18 +1060,18 @@ if (!locationManuallyAdjusted) {
       address: form.address,
     });
 
-  /*
-  ==========================================
-  IMPORTANT
-  Geocoded coordinates ko FORM STATE mein
-  bhi save karo.
-  ==========================================
-  */
 
   if (
-    Array.isArray(coordinates) &&
-    coordinates.length === 2
+    Array.isArray(geocodedCoordinates) &&
+    geocodedCoordinates.length === 2 &&
+    geocodedCoordinates.every(
+      (value) =>
+        Number.isFinite(Number(value))
+    )
   ) {
+
+    coordinates =
+      geocodedCoordinates;
 
     updateForm({
       location: {
@@ -869,16 +1080,45 @@ if (!locationManuallyAdjusted) {
       },
     });
 
+    console.log(
+      "📍 GEOCODED LOCATION:",
+      coordinates
+    );
+
+  } else {
+
+    setErrors({
+      ...validationErrors,
+      location:
+        "Unable to determine exact business location. Please adjust the location on the map.",
+    });
+
+    console.error(
+      "❌ GEOCODING FAILED:",
+      geocodedCoordinates
+    );
+
+    return;
   }
+
 }
+
+
+/*
+=====================================================
+6. FINAL LOCATION VALIDATION
+=====================================================
+*/
 
 if (
   !Array.isArray(coordinates) ||
   coordinates.length !== 2 ||
   coordinates.some(
-    (value) => !Number.isFinite(Number(value))
+    (value) =>
+      !Number.isFinite(Number(value))
   )
 ) {
+
   setErrors({
     ...validationErrors,
     location:
@@ -1555,7 +1795,6 @@ setRestaurantBooking={(value)=>{
 
           <FormField
   label="Phone Number"
-  required
   error={errors.phone}
 >
   <div className="flex gap-3">
@@ -1592,6 +1831,9 @@ setRestaurantBooking={(value)=>{
     />
 
   </div>
+  <p className="text-xs text-gray-500 mt-1">
+  Mobile Number or Landline Number — at least one is required.
+</p>
 </FormField>
 
           <FormField label="WhatsApp Number">
@@ -1673,7 +1915,10 @@ setRestaurantBooking={(value)=>{
 
 {/* ================= LANDLINE ================= */}
 
-<FormField label="Landline Number (Optional)">
+<FormField
+  label="Landline Number"
+  error={errors.landline}
+>
   <div className="flex gap-3">
 
     <div className="w-44 shrink-0">

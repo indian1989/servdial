@@ -5,11 +5,27 @@ import BusinessForm from "../../components/business/BusinessForm";
 import BusinessSubmitter from "../../components/business/BusinessSubmitter";
 import BusinessMediaManager from "../../components/BusinessMediaManager";
 import { formatBusinessAddress } from "../../utils/addressHelper";
+import BusinessFeatureFields from "../../components/business/BusinessFeatureFields";
 
 const AdminAddBusiness = () => {
-  const [images, setImages] = useState([]);
-  const [logo, setLogo] = useState("");
-  const [formData, setFormData] = useState({});
+const [images, setImages] = useState([]);
+const [logo, setLogo] = useState("");
+
+const [pricing, setPricing] = useState([]);
+const [services, setServices] = useState([]);
+const [catalog, setCatalog] = useState([]);
+const [menu, setMenu] = useState([]);
+const [faq, setFaq] = useState([]);
+const [offers, setOffers] = useState([]);
+
+const [hours, setHours] = useState({});
+
+const [appointmentBooking, setAppointmentBooking] = useState(null);
+const [restaurantBooking, setRestaurantBooking] = useState(null);
+const [roomBooking, setRoomBooking] = useState(null);
+const [partyBooking, setPartyBooking] = useState(null);
+
+const [formData, setFormData] = useState({});
 
   const locationText = [
     formData.cityName || formData.cityId?.name,
@@ -32,22 +48,74 @@ const AdminAddBusiness = () => {
           <div className="w-full md:w-2/3">
 
             <BusinessForm
-              mode="admin"
-              onChange={(data) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  ...data,
-                }))
-              }
-              onSubmit={(data) =>
-                submitBusiness({
-                  ...data,
-                  logo,
-                  images,
-                })
-              }
-            >
-              <BusinessMediaManager
+  mode="admin"
+  onChange={(data) =>
+    setFormData((prev) => ({
+      ...prev,
+      ...data,
+    }))
+  }
+  onSubmit={(data) =>
+    submitBusiness({
+      ...data,
+
+      logo,
+      images,
+
+      pricing,
+      services,
+      catalog,
+      menu,
+      faq,
+      offers,
+
+      businessHours: hours,
+
+      appointmentBooking,
+      restaurantBooking,
+      roomBooking,
+      partyBooking,
+    })
+  }
+>
+  <BusinessFeatureFields
+    features={formData.categoryFeatures || []}
+
+    pricing={pricing}
+    setPricing={setPricing}
+
+    services={services}
+    setServices={setServices}
+
+    catalog={catalog}
+    setCatalog={setCatalog}
+
+    menu={menu}
+    setMenu={setMenu}
+
+    faq={faq}
+    setFaq={setFaq}
+
+    offers={offers}
+    setOffers={setOffers}
+
+    hours={hours}
+    setHours={setHours}
+
+    appointmentBooking={appointmentBooking}
+    setAppointmentBooking={setAppointmentBooking}
+
+    restaurantBooking={restaurantBooking}
+    setRestaurantBooking={setRestaurantBooking}
+
+    roomBooking={roomBooking}
+    setRoomBooking={setRoomBooking}
+
+    partyBooking={partyBooking}
+    setPartyBooking={setPartyBooking}
+  />
+
+          <BusinessMediaManager
                 value={images}
                 onChange={setImages}
                 logo={logo}
@@ -130,16 +198,26 @@ const AdminAddBusiness = () => {
                 </h4>
 
                 <p>
-                  <b>Phone:</b> {formData.phone || "-"}
-                </p>
+  <b>Phone:</b> {formData.phone || "-"}
+</p>
 
-                <p>
-                  <b>WhatsApp:</b> {formData.whatsapp || "-"}
-                </p>
+<p>
+  <b>WhatsApp:</b> {formData.whatsapp || "-"}
+</p>
 
-                <p>
-                  <b>Website:</b> {formData.website || "-"}
-                </p>
+<p>
+  <b>Alternate Mobile:</b>{" "}
+  {formData.alternatePhone || "-"}
+</p>
+
+<p>
+  <b>Landline:</b>{" "}
+  {formData.landline || "-"}
+</p>
+
+<p>
+  <b>Website:</b> {formData.website || "-"}
+</p>
 
               </div>
 
