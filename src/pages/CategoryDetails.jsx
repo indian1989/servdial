@@ -22,7 +22,6 @@ const CategoryDetails = () => {
   const [category, setCategory] = useState(null);
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(true);
-  
 
 // ================= FETCH CATEGORY =================
 useEffect(() => {
@@ -59,15 +58,17 @@ useEffect(() => {
         );
 
       if (isOldSlug) {
-        navigate(
-          `/category/${data.slug}`,
-          {
-            replace: true,
-          }
-        );
+  navigate(
+    citySlug
+      ? `/${citySlug}/${data.slug}`
+      : `/category/${data.slug}`,
+    {
+      replace: true,
+    }
+  );
 
-        return;
-      }
+  return;
+}
 
       // =====================================================
       // CATEGORY
@@ -81,9 +82,18 @@ useEffect(() => {
 
       if ((data.children || []).length === 0) {
         try {
-          const businessRes = await API.get(
-            `/businesses?category=${slug}&limit=50`
-          );
+          const businessParams = new URLSearchParams();
+
+businessParams.set("category", slug);
+businessParams.set("limit", "50");
+
+if (citySlug) {
+  businessParams.set("city", citySlug);
+}
+
+const businessRes = await API.get(
+  `/businesses?${businessParams.toString()}`
+);
 
           setBusinesses(
             businessRes.data?.data || []
@@ -120,35 +130,51 @@ useEffect(() => {
     fetchCategory();
   }
 
-}, [slug, navigate]);
+}, [slug, citySlug, navigate]);
 
   // ================= SEO =================
-  const categoryName =
-    category?.name ||
-    slug?.replace(/-/g, " ") ||
-    "Category";
+const categoryName =
+  category?.name ||
+  slug?.replace(/-/g, " ") ||
+  "Category";
 
-    const hasChildren = (category?.children || []).length > 0;
+const hasChildren =
+  (category?.children || []).length > 0;
 
-  const formattedCity = citySlug
+const formattedCity = citySlug
   ? citySlug
-  .split("-")
-  .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-  .join(" ")
+      .split("-")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ")
   : "India";
 
-  const title = hasChildren
-    ? `${categoryName} in India | ServDial`
-    : `Top ${categoryName} Listings in India | ServDial`;
+// ================= SEO TITLE =================
+const title = citySlug
+  ? hasChildren
+    ? `${categoryName} in ${formattedCity} | ServDial`
+    : `Top ${categoryName} in ${formattedCity} | ServDial`
+  : hasChildren
+    ? `${categoryName} Services & Subcategories | ServDial`
+    : `Top ${categoryName} Businesses in India | ServDial`;
 
-const description = hasChildren
-? `Browse subcategories and discover trusted listings and service providers in the ${categoryName} category across India on ServDial.`
-: `Discover verified ${categoryName} listings and trusted local providers in the ${categoryName} category on ServDial. Compare ratings, reviews, distance and contact details from cities across India.`
-  
-  const canonicalUrl = citySlug
-    ? `https://servdial.com/${citySlug}/${slug}`
-    : `https://servdial.com/category/${slug}`;
+// ================= SEO DESCRIPTION =================
+const description = citySlug
+  ? hasChildren
+    ? `Explore ${categoryName} services and subcategories in ${formattedCity}. Find trusted local businesses and service providers on ServDial.`
+    : `Find trusted ${categoryName} businesses in ${formattedCity}. Compare ratings, reviews and contact details of local providers on ServDial.`
+  : hasChildren
+    ? `Explore ${categoryName} services and subcategories across India. Discover trusted local businesses and service providers on ServDial.`
+    : `Find trusted ${categoryName} businesses across India. Compare ratings, reviews and contact details of local providers on ServDial.`;
 
+// ================= CANONICAL =================
+const canonicalUrl = citySlug
+  ? `https://servdial.com/${citySlug}/${slug}`
+  : `https://servdial.com/category/${slug}`;
+
+// ================= OG / SOCIAL SEO =================
+const ogTitle = title;
+
+const ogDescription = description;
   // ================= LOADING =================
   if (loading) {
     return (
@@ -203,18 +229,108 @@ const description = hasChildren
   return (
     <>
       <Helmet>
-        <title>{title}</title>
+  <title>{title}</title>
 
-        <meta
-          name="description"
-          content={description}
-        />
+  <meta
+    name="description"
+    content={description}
+  />
 
-        <link
-          rel="canonical"
-          href={canonicalUrl}
-        />
-      </Helmet>
+  <link
+    rel="canonical"
+    href={canonicalUrl}
+  />
+
+  {/* ================= OPEN GRAPH ================= */}
+
+  <meta
+    property="og:type"
+    content="website"
+  />
+
+  <meta
+    property="og:title"
+    content={ogTitle}
+  />
+
+  <meta
+    property="og:description"
+    content={ogDescription}
+  />
+
+  <meta
+    property="og:url"
+    content={canonicalUrl}
+  />
+
+  <meta
+    property="og:site_name"
+    content="ServDial"
+  />
+
+  {/* ================= TWITTER ================= */}
+
+  <meta
+    name="twitter:card"
+    content="summary"
+  />
+
+  <meta
+    name="twitter:title"
+    content={ogTitle}
+  />
+
+  <meta
+    name="twitter:description"
+    content={ogDescription}
+  />
+
+  {/* ================= BREADCRUMB SCHEMA ================= */}
+
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: "Home",
+          item: "https://servdial.com/",
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: "Categories",
+          item: "https://servdial.com/categories",
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: category.name,
+          item: canonicalUrl,
+        },
+      ],
+    })}
+  </script>
+
+  {/* ================= COLLECTION PAGE SCHEMA ================= */}
+
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      name: title,
+      description,
+      url: canonicalUrl,
+      isPartOf: {
+        "@type": "WebSite",
+        name: "ServDial",
+        url: "https://servdial.com/",
+      },
+    })}
+  </script>
+</Helmet>
 
       <div className="min-h-screen bg-gray-50">
 
@@ -264,15 +380,24 @@ const description = hasChildren
               </div>
 
               <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
-                {hasChildren ? `${category.name} in India`
-                : `Top ${category.name} Listings in India`}
-                </h1>
+  {citySlug
+    ? hasChildren
+      ? `${category.name} in ${formattedCity}`
+      : `Top ${category.name} in ${formattedCity}`
+    : hasChildren
+      ? `${category.name} Services in India`
+      : `Top ${category.name} Businesses in India`}
+</h1>
 
               <p className="text-blue-100 text-lg leading-relaxed">
-                {hasChildren
-                ? `Browse subcategories and discover trusted listings and service providers in the ${category.name} category on ServDial.`
-                : `Discover verified listings and trusted local providers in the ${category.name} category on ServDial. Compare ratings, reviews, distance and contact details from cities across India.`}
-                </p>
+  {citySlug
+    ? hasChildren
+      ? `Browse ${category.name} services and subcategories in ${formattedCity} on ServDial.`
+      : `Discover trusted ${category.name} businesses in ${formattedCity} on ServDial. Compare ratings, reviews and contact details to find the right local provider.`
+    : hasChildren
+      ? `Browse ${category.name} services and subcategories across India on ServDial.`
+      : `Discover trusted ${category.name} businesses across India on ServDial. Compare ratings, reviews and contact details to find the right provider.`}
+</p>
 
             </div>
 
@@ -322,8 +447,12 @@ const description = hasChildren
     
     {category.children.map((sub) => (
       <Link
-      key={sub._id}
-      to={`/category/${sub.slug}`}
+  key={sub._id}
+  to={
+    citySlug
+      ? `/${citySlug}/${category.slug}/${sub.slug}`
+      : `/category/${category.slug}/${sub.slug}`
+  }
       className="group bg-white border border-gray-100 rounded-2xl p-5
       hover:shadow-xl hover:border-blue-200 transition-all duration-300" >
         

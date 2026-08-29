@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useCity } from "../../context/CityContext";
 
 // ICONS
 import home from "../../assets/icons/home.png";
@@ -55,12 +56,23 @@ const getParentIcon = (cat) => {
 
 const CategoriesGrid = ({ categories = [], city, loading = false }) => {
   const navigate = useNavigate();
+  const { city: selectedCity } = useCity();
 
   const handleCategoryClick = (category) => {
-  if (!city?.slug || !category?.slug) return;
+  if (!category?.slug) return;
 
-  // 🔥 CITY-BASED FLOW (BUSINESS DISCOVERY)
-  navigate(`/category/${category.slug}`);
+  // =====================================================
+  // 🌍 CITY-AWARE CATEGORY NAVIGATION
+  // =====================================================
+  // City selected → /city-slug/category-slug
+  // No city       → /category/category-slug
+  // =====================================================
+
+  if (city?.slug) {
+    navigate(`/${city.slug}/${category.slug}`);
+  } else {
+    navigate(`/category/${category.slug}`);
+  }
 };
 
   // ✅ ONLY ACTIVE + TOP 20
@@ -135,11 +147,18 @@ const CategoriesGrid = ({ categories = [], city, loading = false }) => {
     {/* VIEW ALL BUTTON */}
     <div className="text-center mt-8">
       <button
-        onClick={() => navigate("/categories")}
-        className="px-6 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 transition"
-      >
-        View All Categories
-      </button>
+  onClick={() =>
+    navigate(
+      selectedCity?.slug
+        ? `/${selectedCity.slug}/categories`
+        : "/categories"
+    )
+  }
+  className="px-6 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 transition"
+>
+  View All Categories
+</button>
+
     </div>
 
   </section>

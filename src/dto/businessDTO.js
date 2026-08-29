@@ -416,7 +416,9 @@ export const toBusinessEditDTO = (b = {}) => {
       },
 
     roomBooking:
-      b.roomBooking || {},
+  Array.isArray(b.roomBooking)
+    ? b.roomBooking
+    : [],
 
     partyBooking:
       b.partyBooking || {

@@ -92,94 +92,131 @@ const BusinessDynamicSections = ({
   |--------------------------------------------------------------------------
   */
 
-  const features =
+  const categoryFeatures =
   Array.isArray(category.features)
     ? category.features
     : [];
 
-  if(features.length === 0){
-    return null;
+const features = categoryFeatures.filter((feature) => {
+
+  if (feature === "appointment_booking") {
+    return business?.appointmentBooking?.enabled === true;
   }
+
+  if (feature === "room_booking") {
+    return business?.roomBooking?.enabled === true;
+  }
+
+  if (feature === "table_booking") {
+    return business?.restaurantBooking?.enabled === true;
+  }
+
+  if (feature === "party_booking") {
+    return business?.partyBooking?.enabled === true;
+  }
+
+  return true;
+});
+
+if (features.length === 0) {
+  return null;
+}
 
   return (
 
-    <div
-      className="
-      space-y-8
-      "
-    >
+  <div
+    className="
+    space-y-8
+    "
+  >
 
+    {
+      features.map((feature) => {
 
-      {
-        features.map((feature)=>{
+        const Component =
+          featureRegistry[feature];
 
+        /*
+         * Unknown feature ignore
+         */
+        if (!Component) {
+          return null;
+        }
 
-          const Component =
-            featureRegistry[feature];
+        const isBookingFeature = [
+          "appointment_booking",
+          "room_booking",
+          "table_booking",
+          "party_booking",
+        ].includes(feature);
 
-
-          /*
-          unknown feature ignore
-          */
-
-          if(!Component){
-            return null;
-          }
-
-
-
-          return (
-
-            <div
-              key={feature}
-              className="
-              bg-white
-              rounded-2xl
-              shadow-sm
-              border
-              p-5
-              "
-            >
-
-              <Component
-
-                business={business}
-
-                pricing={
-                  business?.pricing || []
-                }
-
-
-                title={
-                  business?.catalogTitle
-                }
-
-
-                items={
-                  business?.catalog || []
-                }
-
-
-                onBooking={
-                  onBooking
-                }
-
-              />
-
-
-            </div>
-
+        /*
+         * Only the first enabled booking feature
+         * gets the common #booking anchor.
+         *
+         * This prevents duplicate HTML IDs when
+         * multiple booking features are enabled.
+         */
+        const firstBookingFeature =
+          features.find((item) =>
+            [
+              "appointment_booking",
+              "room_booking",
+              "table_booking",
+              "party_booking",
+            ].includes(item)
           );
 
+        const sectionId =
+          isBookingFeature &&
+          feature === firstBookingFeature
+            ? "booking"
+            : feature;
 
-        })
-      }
+        return (
 
+          <div
+            key={feature}
+            id={sectionId}
+            className="
+            bg-white
+            rounded-2xl
+            shadow-sm
+            border
+            p-5
+            "
+          >
 
+            <Component
+              business={business}
 
-    </div>
+              pricing={
+                business?.pricing || []
+              }
 
-  );
+              title={
+                business?.catalogTitle
+              }
+
+              items={
+                business?.catalog || []
+              }
+
+              onBooking={
+                onBooking
+              }
+            />
+
+          </div>
+
+        );
+
+      })
+    }
+
+  </div>
+
+);
 
 };
 

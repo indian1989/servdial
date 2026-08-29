@@ -112,9 +112,32 @@ const BusinessTabs = ({ business }) => {
 
   const availableFeatures = useMemo(() => {
 
-    const features = new Set(
-      business?.categoryId?.features || []
-    );
+    const categoryFeatures = new Set(
+  business?.categoryId?.features || []
+);
+
+const features = new Set(
+  [...categoryFeatures].filter((feature) => {
+
+    if (feature === "appointment_booking") {
+      return business?.appointmentBooking?.enabled === true;
+    }
+
+    if (feature === "table_booking") {
+      return business?.restaurantBooking?.enabled === true;
+    }
+
+    if (feature === "room_booking") {
+      return business?.roomBooking?.enabled === true;
+    }
+
+    if (feature === "party_booking") {
+      return business?.partyBooking?.enabled === true;
+    }
+
+    return true;
+  })
+);
 
 
     if (

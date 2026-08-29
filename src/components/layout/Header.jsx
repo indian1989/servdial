@@ -39,7 +39,13 @@ const Header = () => {
 
   const navLinks = [
     { name: "Home", path: "/", icon: Home },
-    { name: "Latest Businesses", path: "/latest-businesses", icon: Building2 },
+     { 
+    name: "Latest Businesses", 
+    path: city?.slug
+      ? `/${city.slug}/latest-businesses`
+      : "/",
+    icon: Building2 
+  },
     { name: "Get Your Business Website", path: "/business-website", icon: Globe },
     { name: "List Your Business", path: "/provider/add-business", icon: PlusCircle },
     { name: "Advertise With Us", path: "/provider/add-banner", icon: PlusCircle },

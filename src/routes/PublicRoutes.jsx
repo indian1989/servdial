@@ -15,7 +15,9 @@ import ClaimBusiness from "../pages/ClaimBusiness";
 import RecommendedPage from "../pages/RecommendedPage";
 import GetBusinessWebsite from "../pages/static/GetBusinessWebsite";
 import LegacyCityRedirect from "../pages/LegacyCityRedirect";
-
+import FeaturedBusinessesPage from "../pages/FeaturedBusinessesPage";
+import TopRatedBusinessesPage from "../pages/TopRatedBusinessesPage";
+import NearbyBusinessesPage from "../pages/NearbyBusinessesPage";
 
 const PublicRoutes = () => {
   return (
@@ -27,8 +29,26 @@ const PublicRoutes = () => {
   {/* SEARCH */}
   <Route path="/search" element={<SearchResults />} />
 
+  {/* FEATURED */}
+<Route
+  path="/:citySlug/featured-businesses"
+  element={<FeaturedBusinessesPage />}
+/>
+
+{/* TOP RATED */}
+<Route
+  path="/:citySlug/top-rated-businesses"
+  element={<TopRatedBusinessesPage />}
+/>
+
   {/* LATEST */}
-  <Route path="/latest-businesses" element={<LatestBusinesses />} />
+  <Route path="/:citySlug/latest-businesses" element={<LatestBusinesses />} />
+
+{/* NEARBY */}
+<Route
+  path="/nearby-businesses"
+  element={<NearbyBusinessesPage />}
+/>
 
   {/* RECOMMENDED */}
 <Route path="/recommendations" element={<RecommendedPage />} />
@@ -46,6 +66,11 @@ const PublicRoutes = () => {
 
   {/* CATEGORIES (GLOBAL) */}
 <Route path="/categories" element={<CategoryPage />} />
+
+<Route
+  path="/:citySlug/categories"
+  element={<CategoryPage />}
+/>
 
 {/* CATEGORY DETAILS */}
 <Route path="/category/:slug" element={<CategoryDetails />} />

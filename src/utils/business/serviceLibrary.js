@@ -781,13 +781,14 @@ export const SERVICE_LIBRARY = [
   "Room Service",
   "Housekeeping",
   "Laundry Service",
-  "24 Hour Reception",
+  "24 Hours Reception",
   "Online Booking",
   "Hotel Booking",
   "Early Check In",
   "Late Check Out",
   "Airport Pickup",
   "Airport Drop",
+  "Airport Assistance",
   "Parking",
   "WiFi",
   "Breakfast Service",
@@ -800,6 +801,8 @@ export const SERVICE_LIBRARY = [
   "Swimming Pool",
   "Travel Assistance",
   "Tour Assistance",
+  "Travel Counter",
+  "Wi-Fi",
 
   // =======================================================
   // HEALTHCARE

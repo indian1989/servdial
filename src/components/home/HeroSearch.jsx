@@ -57,8 +57,8 @@ const HeroSearch = ({ city }) => {
     return match[1].trim();
   };
 
-  // ================= SEARCH =================
-  const handleSearch = (value = query) => {
+ // ================= SEARCH =================
+const handleSearch = (value = query) => {
   const cleanValue = value?.trim();
 
   if (!cleanValue) return;
@@ -67,13 +67,35 @@ const HeroSearch = ({ city }) => {
 
   const explicitCity = extractCityFromQuery(cleanValue);
 
-  const finalCity = explicitCity
-    ? explicitCity.toLowerCase().replace(/\s+/g, "-")
-    : currentCity?.slug || "";
+  const params = new URLSearchParams();
 
-  navigate(
-    `/search?q=${encodeURIComponent(cleanValue)}&city=${encodeURIComponent(finalCity)}`
-  );
+  params.set("q", cleanValue);
+
+  // =====================================================
+  // 🌍 GLOBAL HERO SEARCH
+  // =====================================================
+  //
+  // Normal search:
+  // "Maa Hardware"
+  //
+  // Do NOT send current/detected city.
+  //
+  // Explicit location:
+  // "Maa Hardware in Hajipur"
+  //
+  // Send only the explicitly requested city.
+  // =====================================================
+
+  if (explicitCity) {
+    params.set(
+      "city",
+      explicitCity
+        .toLowerCase()
+        .replace(/\s+/g, "-")
+    );
+  }
+
+  navigate(`/search?${params.toString()}`);
 };
 
   // ================= DETECT LOCATION =================

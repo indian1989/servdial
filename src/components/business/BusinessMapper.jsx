@@ -51,9 +51,7 @@ export const normalizeBusinessPayload = (
       data.phone || "",
 
     whatsapp:
-      data.whatsapp ||
-      data.phone ||
-      "",
+      data.whatsapp || "",
 
     alternatePhone:
     data.alternatePhone || "",

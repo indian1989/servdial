@@ -1,7 +1,7 @@
 // frontend/src/pages/CityPage.jsx
 
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import API from "../api/axios";
 import { Helmet } from "react-helmet-async";
 import {
@@ -14,43 +14,101 @@ import NotFound from "./NotFound";
 
 const CityPage = () => {
   const { citySlug } = useParams();
+  const navigate = useNavigate();
 
   const [categories, setCategories] = useState([]);
   const [cityData, setCityData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // ================= FETCH =================
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
+useEffect(() => {
+  let cancelled = false;
 
-        const [categoriesRes, cityRes] = await Promise.all([
-          API.get("/categories"),
-          API.get(`/cities/${citySlug}`),
-        ]);
+  const fetchData = async () => {
+    setLoading(true);
+    setCityData(null);
+    setCategories([]);
 
-        setCategories(
-          categoriesRes.data?.categories ||
-          categoriesRes.data?.data ||
-          []
-        );
+    try {
+      // =====================================================
+      // 1. CITY FIRST
+      // =====================================================
 
-        setCityData(
-          cityRes.data?.city ||
-          cityRes.data?.data ||
-          null
-        );
+      const cityRes = await API.get(`/cities/${citySlug}`);
 
-      } catch (err) {
-        console.error("City page error:", err);
-      } finally {
-        setLoading(false);
+      if (cancelled) return;
+
+      // =====================================================
+      // 2. REDIRECT BEFORE ANY OTHER DATA / RENDER
+      // =====================================================
+
+      if (
+        cityRes.data?.redirect === true &&
+        cityRes.data?.to
+      ) {
+        navigate(`/${cityRes.data.to}`, {
+          replace: true,
+        });
+
+        // IMPORTANT:
+        // Do NOT set loading false here.
+        // New CityPage instance will take over.
+        return;
       }
-    };
 
-    fetchData();
-  }, [citySlug]);
+      // =====================================================
+      // 3. ACTIVE CITY
+      // =====================================================
+
+      const city =
+        cityRes.data?.city ||
+        cityRes.data?.data ||
+        null;
+
+      if (!city) {
+        if (!cancelled) {
+          setCityData(null);
+          setLoading(false);
+        }
+        return;
+      }
+
+      setCityData(city);
+
+      // =====================================================
+      // 4. FETCH CATEGORIES ONLY FOR VALID CITY
+      // =====================================================
+
+      const categoriesRes = await API.get("/categories");
+
+      if (cancelled) return;
+
+      setCategories(
+        categoriesRes.data?.categories ||
+        categoriesRes.data?.data ||
+        []
+      );
+
+      setLoading(false);
+
+    } catch (err) {
+      if (cancelled) return;
+
+      console.error("City page error:", err);
+
+      // API 404 = genuine city not found
+      setCityData(null);
+      setLoading(false);
+    }
+  };
+
+  fetchData();
+
+  return () => {
+    cancelled = true;
+  };
+
+}, [citySlug, navigate]);
 
   // ================= FILTER PARENT ONLY =================
   const parentCategories = (categories || []).filter(
@@ -95,7 +153,8 @@ const CityPage = () => {
     );
   }
 
-  if (!cityData) {
+
+if (!cityData) {
   return <NotFound />;
 }
 

@@ -32,6 +32,7 @@ import { toBusinessEditDTO } from "../../dto/businessDTO";
 import BusinessMediaManager from "../../components/BusinessMediaManager";
 import BusinessHoursManager from "../../components/BusinessHoursManager";
 import { formatBusinessAddress } from "../../utils/addressHelper";
+import BusinessFeatureFields from "../../components/business/BusinessFeatureFields";
 
 
 const defaultHours = {
@@ -74,15 +75,66 @@ const [categoryOptions, setCategoryOptions] = useState([]);
 
   setEditBusiness({
     ...dto,
+
+        categoryFeatures:
+      Array.isArray(dto.categoryFeatures)
+        ? dto.categoryFeatures
+        : Array.isArray(b.categoryFeatures)
+        ? b.categoryFeatures
+        : [],
+
+    /* ================= MEDIA ================= */
+
     images: dto.images || [],
     logo: dto.logo || "",
-    pricing: dto.pricing || [],
-    services: dto.services || [],
-    catalog: dto.catalog || [],
-    faq: dto.faq || [],
-    offers: dto.offers || [],
-    menu: dto.menu || [],
-    businessHours: dto.businessHours || defaultHours,
+
+    /* ================= BUSINESS FEATURES ================= */
+
+    pricing: Array.isArray(dto.pricing)
+      ? dto.pricing
+      : [],
+
+    services: Array.isArray(dto.services)
+      ? dto.services
+      : [],
+
+    catalog: Array.isArray(dto.catalog)
+      ? dto.catalog
+      : [],
+
+    menu: Array.isArray(dto.menu)
+      ? dto.menu
+      : [],
+
+    faq: Array.isArray(dto.faq)
+      ? dto.faq
+      : [],
+
+    offers: Array.isArray(dto.offers)
+      ? dto.offers
+      : [],
+
+    /* ================= BUSINESS HOURS ================= */
+
+    businessHours:
+      dto.businessHours &&
+      Object.keys(dto.businessHours).length > 0
+        ? dto.businessHours
+        : defaultHours,
+
+    /* ================= BOOKING ================= */
+
+    appointmentBooking:
+      dto.appointmentBooking || null,
+
+    restaurantBooking:
+      dto.restaurantBooking || null,
+
+    roomBooking:
+      dto.roomBooking || null,
+
+    partyBooking:
+      dto.partyBooking || null,
   });
 
   setLogo(dto.logo || "");
@@ -291,8 +343,12 @@ console.error(error);
     const payload = normalizeBusinessPayload({
   ...formData,
 
+  /* ================= MEDIA ================= */
+
   images: editBusiness?.images || [],
   logo: editBusiness?.logo || "",
+
+  /* ================= BUSINESS FEATURES ================= */
 
   pricing: formData.pricing || [],
   services: formData.services || [],
@@ -301,8 +357,27 @@ console.error(error);
   offers: formData.offers || [],
   menu: formData.menu || [],
 
+  /* ================= BUSINESS HOURS ================= */
+
   businessHours:
-    formData.businessHours || defaultHours,
+    formData.businessHours &&
+    Object.keys(formData.businessHours).length > 0
+      ? formData.businessHours
+      : defaultHours,
+
+  /* ================= BOOKING ================= */
+
+  appointmentBooking:
+    formData.appointmentBooking || null,
+
+  restaurantBooking:
+    formData.restaurantBooking || null,
+
+  roomBooking:
+    formData.roomBooking || null,
+
+  partyBooking:
+    formData.partyBooking || null,
 });
 
     console.log(
@@ -649,7 +724,143 @@ const filtered = businesses
 
   onSubmit={handleUpdateBusiness}
 >
-  {/* MEDIA */}
+  {/* ================= BUSINESS FEATURES ================= */}
+
+  <BusinessFeatureFields
+    features={editBusiness?.categoryFeatures || []}
+
+    pricing={editBusiness?.pricing || []}
+    setPricing={(value) =>
+      setEditBusiness((prev) => ({
+        ...prev,
+        pricing:
+          typeof value === "function"
+            ? value(prev.pricing || [])
+            : value,
+      }))
+    }
+
+    services={editBusiness?.services || []}
+    setServices={(value) =>
+      setEditBusiness((prev) => ({
+        ...prev,
+        services:
+          typeof value === "function"
+            ? value(prev.services || [])
+            : value,
+      }))
+    }
+
+    catalog={editBusiness?.catalog || []}
+    setCatalog={(value) =>
+      setEditBusiness((prev) => ({
+        ...prev,
+        catalog:
+          typeof value === "function"
+            ? value(prev.catalog || [])
+            : value,
+      }))
+    }
+
+    menu={editBusiness?.menu || []}
+    setMenu={(value) =>
+      setEditBusiness((prev) => ({
+        ...prev,
+        menu:
+          typeof value === "function"
+            ? value(prev.menu || [])
+            : value,
+      }))
+    }
+
+    faq={editBusiness?.faq || []}
+    setFaq={(value) =>
+      setEditBusiness((prev) => ({
+        ...prev,
+        faq:
+          typeof value === "function"
+            ? value(prev.faq || [])
+            : value,
+      }))
+    }
+
+    offers={editBusiness?.offers || []}
+    setOffers={(value) =>
+      setEditBusiness((prev) => ({
+        ...prev,
+        offers:
+          typeof value === "function"
+            ? value(prev.offers || [])
+            : value,
+      }))
+    }
+
+    hours={editBusiness?.businessHours || defaultHours}
+    setHours={(value) =>
+      setEditBusiness((prev) => ({
+        ...prev,
+        businessHours:
+          typeof value === "function"
+            ? value(prev.businessHours || defaultHours)
+            : value,
+      }))
+    }
+
+    appointmentBooking={
+      editBusiness?.appointmentBooking || null
+    }
+    setAppointmentBooking={(value) =>
+      setEditBusiness((prev) => ({
+        ...prev,
+        appointmentBooking:
+          typeof value === "function"
+            ? value(prev.appointmentBooking)
+            : value,
+      }))
+    }
+
+    restaurantBooking={
+      editBusiness?.restaurantBooking || null
+    }
+    setRestaurantBooking={(value) =>
+      setEditBusiness((prev) => ({
+        ...prev,
+        restaurantBooking:
+          typeof value === "function"
+            ? value(prev.restaurantBooking)
+            : value,
+      }))
+    }
+
+    roomBooking={
+      editBusiness?.roomBooking || null
+    }
+    setRoomBooking={(value) =>
+      setEditBusiness((prev) => ({
+        ...prev,
+        roomBooking:
+          typeof value === "function"
+            ? value(prev.roomBooking)
+            : value,
+      }))
+    }
+
+    partyBooking={
+      editBusiness?.partyBooking || null
+    }
+    setPartyBooking={(value) =>
+      setEditBusiness((prev) => ({
+        ...prev,
+        partyBooking:
+          typeof value === "function"
+            ? value(prev.partyBooking)
+            : value,
+      }))
+    }
+  />
+
+  {/* ================= MEDIA ================= */}
+
   <BusinessMediaManager
     value={editBusiness?.images || []}
     onChange={(imgs) =>

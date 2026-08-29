@@ -35,9 +35,11 @@ const BusinessHero = ({
 
   mobileNumber,
   landlineNumber,
+  alternateMobileNumber,
   hasMobile,
   hasWhatsApp,
   hasLandline,
+  hasAlternateMobile,
   hasCall,
   showCallChooser,
   closeCallChooser,
@@ -1125,6 +1127,92 @@ const verificationType =
         </button>
       )}
 
+            {/* ALTERNATE Mobile */}
+      {hasAlternateMobile && (
+        <button
+          type="button"
+          onClick={() =>
+            handleCallNumber(alternateMobileNumber)
+          }
+          className="
+            w-full
+            flex
+            items-center
+            justify-between
+            gap-4
+
+            px-4
+            py-4
+
+            rounded-xl
+            border
+            border-gray-200
+
+            hover:border-blue-500
+            hover:bg-blue-50
+
+            transition
+          "
+        >
+          <div
+            className="
+              flex
+              items-center
+              gap-3
+              min-w-0
+            "
+          >
+            <div
+              className="
+                w-10
+                h-10
+                rounded-full
+                bg-gray-100
+                text-gray-700
+                flex
+                items-center
+                justify-center
+                flex-shrink-0
+              "
+            >
+              <Phone size={18} />
+            </div>
+
+            <div className="text-left min-w-0">
+              <div
+                className="
+                  text-sm
+                  font-semibold
+                  text-gray-900
+                "
+              >
+                Alternate Mobile
+              </div>
+
+              <div
+                className="
+                  text-sm
+                  text-gray-500
+                  truncate
+                "
+              >
+                {alternateMobileNumber}
+              </div>
+            </div>
+          </div>
+
+          <span
+            className="
+              text-blue-600
+              text-sm
+              font-semibold
+              flex-shrink-0
+            "
+          >
+            Call
+          </span>
+        </button>
+      )}
 
       {/* CANCEL */}
 

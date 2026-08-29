@@ -246,63 +246,135 @@ content="Discover verified local businesses, services, restaurants, home service
       />
 
 
-      {/* ================= FEATURED ================= */}
-      <section className="my-14 max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-8">
-          Featured Businesses in {cityName}
-        </h2>
+{/* ================= FEATURED ================= */}
+<section className="my-14 max-w-7xl mx-auto px-4">
 
-        <FeaturedBusinesses
-  businesses={data.featured}
-  loading={loading || loadingCity}
-  city={city}
-/>
-      </section>
+  <div className="flex items-center justify-between mb-8">
+    <h2 className="text-3xl font-bold">
+      Featured Businesses in {cityName}
+    </h2>
+
+    <button
+      onClick={() =>
+  navigate(
+    `/${city?.slug}/featured-businesses`
+  )
+}
+      className="text-blue-600 font-semibold hover:underline whitespace-nowrap"
+    >
+      View All →
+    </button>
+  </div>
+
+  <FeaturedBusinesses
+    businesses={data.featured}
+    loading={loading || loadingCity}
+    city={city}
+  />
+
+</section>
 
       
       {/* 🔥 MIDDLE BANNER */}
 <BannerAd placement="homepage_middle" />
 
       {/* ================= TOP RATED ================= */}
-      <section className="my-14 max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-8">
-          Top Rated Businesses in {cityName}
-        </h2>
+<section className="my-14 max-w-7xl mx-auto px-4">
 
-        <PopularBusinesses
-          businesses={data.topRated}
-          loading={loading || loadingCity}
-          city={city}
-          title="top rated businesses"
-        />
-      </section>
+  <div className="flex items-center justify-between mb-8">
 
-      {/* ================= LATEST ================= */}
-      <section className="my-14 max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl font-bold text-center mb-8">
-          Newly Added Businesses in {cityName}
-        </h2>
+    <h2 className="text-3xl font-bold">
+      Top Rated Businesses in {cityName}
+    </h2>
 
-        <PopularBusinesses
-  businesses={data.latest}
-  loading={loading || loadingCity}
-  city={city}
-  title="new businesses"
-/>
-      </section>
+    <button
+      type="button"
+      onClick={() =>
+        navigate(
+  `/${city?.slug}/top-rated-businesses`
+)
+      }
+      className="text-blue-600 font-semibold hover:underline whitespace-nowrap"
+    >
+      View All →
+    </button>
+
+  </div>
+
+  <PopularBusinesses
+    businesses={data.topRated}
+    loading={loading || loadingCity}
+    city={city}
+    title="top rated businesses"
+  />
+
+</section>
+
+     {/* ================= LATEST ================= */}
+<section className="my-14 max-w-7xl mx-auto px-4">
+
+  <div className="flex items-center justify-between mb-8">
+
+    <h2 className="text-3xl font-bold">
+      Newly Added Businesses in {cityName}
+    </h2>
+
+    <button
+      type="button"
+      onClick={() =>
+        navigate(`/${city?.slug}/latest-businesses`)
+      }
+      className="text-blue-600 font-semibold hover:underline whitespace-nowrap"
+    >
+      View All →
+    </button>
+
+  </div>
+
+  <PopularBusinesses
+    businesses={data.latest}
+    loading={loading || loadingCity}
+    city={city}
+    title="new businesses"
+  />
+
+</section>
 
       {/* ================= NEARBY ================= */}
-      <section className="my-14 max-w-7xl mx-auto px-4">
-        <h2 className="text-2xl font-semibold text-center mb-8">
-          Businesses Near You
-        </h2>
+<section className="my-14 max-w-7xl mx-auto px-4">
 
-        <NearbyBusinesses
-          businesses={data.nearby}
-          userLocation={userLocation}
-          loading={loading || loadingCity}
-        />
-      </section>
+  <div className="flex items-center justify-between mb-8">
+
+    <h2 className="text-2xl font-semibold">
+      Businesses Near You
+    </h2>
+
+    {userLocation.lat &&
+      userLocation.lng && (
+
+        <button
+          type="button"
+          onClick={() =>
+            navigate(
+              `/nearby-businesses?lat=${userLocation.lat}&lng=${userLocation.lng}&page=1`
+            )
+          }
+          className="text-blue-600 font-semibold hover:underline whitespace-nowrap"
+        >
+          View All →
+        </button>
+
+      )}
+
+  </div>
+
+  <NearbyBusinesses
+    businesses={data.nearby}
+    userLocation={userLocation}
+    loading={loading || loadingCity}
+  />
+
+</section>
 
       {/* ================= RECOMMENDED ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">
@@ -340,9 +412,16 @@ content="Discover verified local businesses, services, restaurants, home service
         <FeaturedCities cities={data.cities} loading={loading} />
       </section>
 
-      <section className="my-14">
-        <PopularSearches loading={loading} />
-      </section>
+      {/* ================= POPULAR SEARCHES ================= */}
+
+<section className="my-14">
+
+  <PopularSearches
+    city={city}
+    loading={loading || loadingCity}
+  />
+
+</section>
 
       <WhyChooseServDial />
       <Testimonials loading={loading} />

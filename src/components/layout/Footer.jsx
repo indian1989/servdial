@@ -8,9 +8,10 @@ import {
   Phone,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useCity } from "../../context/CityContext";
 
 const Footer = () => {
-  
+  const { city } = useCity();
    /* CATEGORIES */
    
    const categories = [
@@ -18,7 +19,7 @@ const Footer = () => {
     { name: "Health & Medical", slug: "health-medical" },
     { name: "Automobiles", slug: "automobiles" },
     { name: "Electricians", slug: "electrician" },
-    { name: "Hotels & Accommondation", slug: "hotels-accommondation" },
+    { name: "Hotels & Accommodation", slug: "hotels-accommodation" },
     { name: "Beauty Parlours", slug: "beauty-parlour" },
     { name: "Gyms", slug: "gym" },
     { name: "Real Estate", slug: "real-estate" },
@@ -30,11 +31,11 @@ const Footer = () => {
     const cities = [
       
       { name: "Delhi", slug: "delhi-new-delhi-delhi" },
-      { name: "Mumbai", slug: "mumbai" },
-      { name: "Bangalore", slug: "bangalore" },
-      { name: "Hyderabad", slug: "hyderabad" },
-      { name: "Chennai", slug: "chennai" },
-      { name: "Kolkata", slug: "kolkata" },
+      { name: "Mumbai", slug: "mumbai-mumbai-suburban-maharashtra" },
+      { name: "Bangalore", slug: "bengaluru-bengaluru-urban-karnataka" },
+      { name: "Hyderabad", slug: "hyderabad-hyderabad-telangana" },
+      { name: "Chennai", slug: "chennai-chennai-tamil-nadu" },
+      { name: "Kolkata", slug: "kolkata-kolkata-west-bengal" },
       { name: "Patna", slug: "patna-patna-bihar" },
       { name: "Pune", slug: "pune-pune-maharashtra" },
     ];
@@ -149,26 +150,42 @@ const Footer = () => {
           </ul>
         </div>
 
-        {/* CATEGORIES */}
-        
-        <div>
+    {/* =================================================
+    CATEGORIES
+================================================= */}
 
-          <h3 className="text-white font-semibold mb-3">
-            Popular Categories on ServDial
-            </h3>
-            
-            <ul className="space-y-2 text-sm">
-              {categories.map((cat) => (
-                <li key={cat.slug}>
-                  <Link to={`/category/${cat.slug}`}
-                  className="hover:text-white transition-colors" >
-                    {cat.name}
-                    </Link>
-                    </li>
-                  ))}
-                  </ul>
-                  
-                  </div>
+<div>
+
+  <h3 className="text-white font-semibold mb-3">
+    {city?.slug
+      ? `Popular Categories in ${city.name}`
+      : "Popular Categories on ServDial"}
+  </h3>
+
+  <ul className="space-y-2 text-sm">
+
+    {categories.map((cat) => (
+
+      <li key={cat.slug}>
+
+        <Link
+          to={
+            city?.slug
+              ? `/${city.slug}/${cat.slug}`
+              : `/category/${cat.slug}`
+          }
+          className="hover:text-white transition-colors"
+        >
+          {cat.name}
+        </Link>
+
+      </li>
+
+    ))}
+
+  </ul>
+
+</div>
 
       {/* CITIES */}
       

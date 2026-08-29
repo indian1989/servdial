@@ -207,7 +207,7 @@ const [restaurantBooking, setRestaurantBooking] = useState({
 
 const [locationManuallyAdjusted, setLocationManuallyAdjusted] =
   useState(false);
-  const [initialLocation, setInitialLocation] = useState(null);
+ 
 const [initialAddress, setInitialAddress] = useState(null);
 const [initialCityId, setInitialCityId] = useState(null);
 const [initialPincode, setInitialPincode] = useState("");
@@ -368,8 +368,6 @@ categoryFeatures:
         ],
       }
     : null;
-
-setInitialLocation(existingLocation);
 
 setInitialAddress(
   normalizeAddress(safeValue.address)
@@ -706,6 +704,80 @@ const findCurrentLocation = () => {
   );
 };
 
+/* =================================================
+   CONTACT DUPLICATE CHECK
+   ================================================= */
+
+const checkContactDuplicate = async ({
+  field,
+  value,
+  updateError = true,
+}) => {
+  const number = String(value || "").trim();
+
+  if (!number) {
+    if (updateError) {
+      setErrors((prev) => ({
+        ...prev,
+        [field]: "",
+      }));
+    }
+
+    return false;
+  }
+
+  try {
+    const response = await API.get(
+      "/business/contact-duplicate-check",
+      {
+        params: {
+          field,
+          value: number,
+          businessId: safeValue?._id || "",
+        },
+      }
+    );
+
+    const result = response.data;
+
+    const isDuplicate =
+      result?.duplicate === true;
+
+    if (updateError) {
+      setErrors((prev) => ({
+        ...prev,
+        [field]: isDuplicate
+          ? (
+              result.message ||
+              "This number is already used by another business."
+            )
+          : "",
+      }));
+    }
+
+    return isDuplicate;
+
+  } catch (err) {
+
+    console.error(
+      `❌ ${field} duplicate check failed:`,
+      err
+    );
+
+    /*
+    =================================================
+    IMPORTANT
+
+    Network/API failure ko duplicate nahi maan rahe.
+    Final security backend create/update controller
+    par rahegi.
+    =================================================
+    */
+
+    return false;
+  }
+};
+
 /* ================= INPUT ================= */
 
 const handleChange = (e) => {
@@ -743,17 +815,35 @@ const handleChange = (e) => {
     nextValue = value;
   }
 
-  const updated = {
+  
+
+    const updated = {
     ...form,
     [name]: nextValue,
   };
 
   // WhatsApp number is always manually entered.
-// Do NOT auto-generate or copy it from mobile number.
+  // Do NOT auto-generate or copy it from mobile number.
 
   updateForm(updated);
-};
 
+  /*
+  =========================================================
+  PHONE / LANDLINE DUPLICATE CHECK
+  Runs while entering/changing the number.
+  Does NOT wait for submit.
+  =========================================================
+  */
+
+  if (
+    ["phone", "landline"].includes(name)
+  ) {
+    checkContactDuplicate({
+      field: name,
+      value: nextValue,
+    });
+  }
+};
 
   /* ================= SELECT ================= */
 const handleSelect = async (field, selected) => {
@@ -949,32 +1039,88 @@ const handleSubmit = async (e) => {
 
   e.preventDefault();
 
-  const validationErrors = validateBusinessForm(form);
+ const validationErrors = validateBusinessForm(form);
 
-  console.log(
-    "VALIDATION ERRORS:",
-    validationErrors
-  );
+console.log(
+  "VALIDATION ERRORS:",
+  validationErrors
+);
 
-  setErrors(validationErrors);
+setErrors(validationErrors);
 
-  if (Object.keys(validationErrors).length) {
-    console.log("❌ VALIDATION FAILED");
+if (Object.keys(validationErrors).length) {
+  console.log("❌ VALIDATION FAILED");
+  return;
+}
+
+try {
+
+  setLoading(true);
+
+  /*
+  =========================================================
+  FINAL CONTACT DUPLICATE CHECK
+  =========================================================
+
+  Live duplicate check UX ke liye hai.
+
+  Submit ke waqt fresh backend check:
+  - phone
+  - landline
+
+  Current businessId automatically bheja ja raha hai,
+  isliye edit ke waqt current business ka same number
+  duplicate nahi maana jayega.
+  =========================================================
+  */
+
+  const contactDuplicateChecks = [];
+
+  if (String(form.phone || "").trim()) {
+    contactDuplicateChecks.push(
+      checkContactDuplicate({
+        field: "phone",
+        value: form.phone,
+        updateError: true,
+      })
+    );
+  }
+
+  if (String(form.landline || "").trim()) {
+    contactDuplicateChecks.push(
+      checkContactDuplicate({
+        field: "landline",
+        value: form.landline,
+        updateError: true,
+      })
+    );
+  }
+
+  const contactDuplicateResults =
+    await Promise.all(
+      contactDuplicateChecks
+    );
+
+  const hasContactDuplicate =
+    contactDuplicateResults.includes(true);
+
+  if (hasContactDuplicate) {
+
+    console.log(
+      "❌ CONTACT DUPLICATE FOUND — SUBMIT BLOCKED"
+    );
+
     return;
   }
 
-  try {
+  /* =================================================
+     BUSINESS LOCATION LOGIC
+     ================================================= */
 
-    setLoading(true);
-
-/* =================================================
-   BUSINESS LOCATION LOGIC
-================================================= */
-
-let coordinates =
-  Array.isArray(form.location?.coordinates)
-    ? form.location.coordinates.map(Number)
-    : [];
+  let coordinates =
+    Array.isArray(form.location?.coordinates)
+      ? form.location.coordinates.map(Number)
+      : [];
 
 
 /*
@@ -1257,11 +1403,11 @@ if (
             <Select
               options={categories}
               value={
-                categories.find(
-                  (c) =>
-                    c.value === form.categoryId
-                ) || null
-              }
+  categories.find(
+    (c) =>
+      String(c.value) === String(form.categoryId)
+  ) || null
+}
               onChange={(v) =>
                 handleSelect(
                   "categoryId",

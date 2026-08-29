@@ -35,6 +35,9 @@ const useBusinessActions = ({
   const landlineNumber =
     business?.landline?.toString().trim() || "";
 
+  const alternateMobileNumber =
+    business?.alternatePhone?.toString().trim() || "";
+
   const whatsappNumber =
     business?.whatsapp?.toString().trim() || "";
 
@@ -45,8 +48,13 @@ const useBusinessActions = ({
   const hasLandline =
     Boolean(landlineNumber);
 
-  const hasCall =
-    hasMobile || hasLandline;
+  const hasAlternateMobile =
+     Boolean(alternateMobileNumber);
+
+    const hasCall =
+    hasMobile ||
+    hasLandline ||
+    hasAlternateMobile;
 
 
   // =========================================================
@@ -56,11 +64,12 @@ const useBusinessActions = ({
   // Actual selection is handled by chooser.
   // =========================================================
 
-  const callNumber =
-    hasMobile
-      ? mobileNumber
+const callNumber =
+  hasMobile
+    ? mobileNumber
+    : hasAlternateMobile
+      ? alternateMobileNumber
       : landlineNumber;
-
 
   // =========================================================
   // CALL
@@ -99,12 +108,33 @@ const useBusinessActions = ({
     // MOBILE + LANDLINE
     // =======================================================
 
-    if (
-      hasMobile &&
-      hasLandline
+        if (
+      hasMobile ||
+      hasLandline ||
+      hasAlternateMobile
     ) {
 
-      setShowCallChooser(true);
+      const availableNumbers =
+        [
+          hasMobile,
+          hasLandline,
+          hasAlternateMobile,
+        ].filter(Boolean).length;
+
+      if (availableNumbers > 1) {
+
+        setShowCallChooser(true);
+
+        return;
+      }
+
+      handleCallNumber(
+        hasMobile
+          ? mobileNumber
+          : hasLandline
+            ? landlineNumber
+            : alternateMobileNumber
+      );
 
       return;
     }
@@ -233,9 +263,13 @@ const useBusinessActions = ({
 
     landlineNumber,
 
+    alternateMobileNumber,
+
     hasMobile,
 
     hasLandline,
+
+    hasAlternateMobile,
 
     hasCall,
 

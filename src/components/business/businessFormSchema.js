@@ -132,9 +132,11 @@ export const validateBusinessForm = (form = {}) => {
     errors.area = "Area / Locality is required";
   }
 
-  if (!form.pincode || form.pincode.length !== 6) {
-    errors.pincode = "Valid 6 digit pincode required";
-  }
+  const pincode = String(form.pincode || "").replace(/\D/g, "");
+
+if (pincode.length !== 6) {
+  errors.pincode = "Valid 6 digit pincode required";
+}
 
     // ================= CONTACT VALIDATION =================
 

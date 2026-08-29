@@ -313,9 +313,29 @@ const BannerForm = ({
           Homepage Bottom
         </option>
 
-        <option value="category_page">
-          Category Page
-        </option>
+         {/* ================= BUSINESS LISTING ================= */}
+
+  <option value="business_listing_top">
+    Business Listing Top
+  </option>
+
+  <option value="business_listing_bottom">
+    Business Listing Bottom
+  </option>
+
+{/* ================= CATEGORY PAGE ================= */}
+
+        <option value="category_page_top">
+  Category Page Top
+</option>
+
+<option value="category_page_middle">
+  Category Page Middle
+</option>
+
+<option value="category_page_bottom">
+  Category Page Bottom
+</option>
 
         <option value="city_page">
           City Page

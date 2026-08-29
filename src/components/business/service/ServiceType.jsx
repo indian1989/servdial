@@ -41,6 +41,12 @@ const serviceTypeOptions = [
     value: "booking",
     label: "Booking Available",
   },
+
+  {
+    value: "accommodation",
+    label: "Hotel Accommodation",
+  },
+  
   {
     value: "consultation",
     label: "Consultation Available",

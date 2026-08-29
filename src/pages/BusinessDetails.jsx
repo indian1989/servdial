@@ -87,9 +87,11 @@ try {
   handleWhatsApp,
   mobileNumber,
   landlineNumber,
+  alternateMobileNumber,
   hasMobile,
   hasWhatsApp,
   hasLandline,
+  hasAlternateMobile,
   hasCall,
   showCallChooser,
   closeCallChooser
@@ -248,9 +250,11 @@ const uiType =
 
   mobileNumber={mobileNumber}
   landlineNumber={landlineNumber}
+  alternateMobileNumber={alternateMobileNumber}
   hasMobile={hasMobile}
   hasWhatsApp={hasWhatsApp}
   hasLandline={hasLandline}
+  hasAlternateMobile={hasAlternateMobile}
   hasCall={hasCall}
   showCallChooser={showCallChooser}
   closeCallChooser={closeCallChooser}
