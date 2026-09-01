@@ -153,3 +153,40 @@ export const updateAdmin = (id, data) =>
 
 export const deleteAdmin = (id) =>
   API.delete(`/admin/admins/${id}`);
+
+// ==================== Notifications ====================
+
+// Get all notifications
+// ADMIN / SUPERADMIN
+export const getAllNotifications = (params = {}) =>
+  API.get("/notifications/admin/all", {
+    params,
+  });
+
+
+// Create single notification
+// ADMIN / SUPERADMIN
+export const createNotification = (data) =>
+  API.post("/notifications/admin", data);
+
+
+// Bulk create notifications for selected users
+// ADMIN / SUPERADMIN
+export const createBulkNotifications = (data) =>
+  API.post("/notifications/admin/bulk", data);
+
+
+// Bulk create notifications by role
+// ADMIN / SUPERADMIN
+export const createBulkNotificationsByRole = (data) =>
+  API.post("/notifications/admin/bulk-role", data);
+
+
+// Bulk delete notifications
+// ADMIN / SUPERADMIN
+export const deleteBulkNotifications = (ids) =>
+  API.delete("/notifications/admin/bulk", {
+    data: {
+      ids,
+    },
+  });

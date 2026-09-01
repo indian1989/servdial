@@ -5,6 +5,7 @@ const BannerAd = ({
   placement = "homepage_top",
   cityId,
   categoryId,
+  businessId,
 }) => {
   const [banners, setBanners] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -13,13 +14,33 @@ const BannerAd = ({
   useEffect(() => {
     const fetchBanners = async () => {
       try {
-        const res = await API.get("/banners", {
-          params: {
-            placement,
-            cityId,
-            categoryId,
-          },
-        });
+        id="bannerad-query-patch"
+const params = {
+  placement,
+};
+
+if (cityId) {
+  params.cityId = cityId;
+}
+
+if (categoryId) {
+  params.categoryId = categoryId;
+}
+
+// businessId is applicable only to business-detail placements.
+if (
+  businessId &&
+  [
+    "business_detail_middle",
+    "business_detail_bottom",
+  ].includes(placement)
+) {
+  params.businessId = businessId;
+}
+
+const res = await API.get("/banners", {
+  params,
+});
 
         setBanners(res?.data?.data || []);
         setCurrentIndex(0);
@@ -30,7 +51,7 @@ const BannerAd = ({
     };
 
     fetchBanners();
-  }, [placement, cityId, categoryId]);
+  }, [placement, cityId, categoryId, businessId]);
 
   // ================= AUTO SLIDE =================
   useEffect(() => {
@@ -45,8 +66,10 @@ const BannerAd = ({
     return () => clearInterval(interval);
   }, [banners.length]);
 
-  // ================= BANNER CLICK TRACKING =================
+   // ================= BANNER CLICK TRACKING =================
   const handleBannerClick = async (banner) => {
+    if (!banner?._id) return;
+
     try {
       await API.post(`/banners/${banner._id}/click`);
     } catch (error) {

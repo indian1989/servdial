@@ -6,6 +6,7 @@ import PublicRoutes from "./PublicRoutes";
 import AuthRoutes from "./AuthRoutes";
 import AdminRoutes from "./AdminRoutes";
 import ProviderRoutes from "./ProviderRoutes";
+import UserRoutes from "./UserRoutes";
 import About from "../pages/static/About";
 import Contact from "../pages/static/Contact";
 import PrivacyPolicy from "../pages/static/PrivacyPolicy";
@@ -39,6 +40,9 @@ function AppRoutes() {
         {/* PROVIDER */}
         {ProviderRoutes()}
 
+        {/* USER */}
+        {UserRoutes()}
+
         <Route path="/unauthorized" element={<Unauthorized />} />
         <Route path="*" element={<NotFound />} />
         <Route path="/about" element={<About />} />
@@ -48,7 +52,7 @@ function AppRoutes() {
         <Route path="/disclaimer" element={<Disclaimer />} />
         <Route path="/advertise" element={<Advertise />} />
         <Route path="/faq" element={<FAQ />} />
-        <Route path="/refund-policy" element={<RefundPolicy />} /> <Route path="/disclaimer" element={<Disclaimer />} />
+        <Route path="/refund-policy" element={<RefundPolicy />} />
         <Route path="/provider-agreement" element={<ProviderAgreement />} />
         <Route path="/community-guidelines" element={<CommunityGuidelines />} />
 

@@ -9,9 +9,41 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useCity } from "../../context/CityContext";
+import { useEffect, useState } from "react";
+import API from "../../api/axios";
 
 const Footer = () => {
   const { city } = useCity();
+
+  const [settings, setSettings] = useState(null);
+
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const res = await API.get(
+          "/admin/system-settings"
+        );
+
+        const data = res.data?.data;
+
+        const serverSettings = Array.isArray(data)
+          ? data[0]
+          : data;
+
+        if (serverSettings) {
+          setSettings(serverSettings);
+        }
+      } catch (err) {
+        console.error(
+          "Failed to fetch footer system settings:",
+          err
+        );
+      }
+    };
+
+    fetchSettings();
+  }, []);
+
    /* CATEGORIES */
    
    const categories = [
@@ -224,29 +256,55 @@ const Footer = () => {
           {/* SOCIAL ICONS */}
           <div className="flex gap-4">
 
-            <a
-              href="https://www.facebook.com/ServDialdotcom/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-blue-500 transition-colors"
-              aria-label="ServDial Facebook Page"
-            >
-              <Facebook size={18} />
-            </a>
+  {settings?.socialLinks?.facebook && (
+    <a
+      href={settings.socialLinks.facebook}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-blue-500 transition-colors"
+      aria-label="ServDial Facebook Page"
+    >
+      <Facebook size={18} />
+    </a>
+  )}
 
-            <a href="#" className="hover:text-white">
-              <Instagram size={18} />
-            </a>
+  {settings?.socialLinks?.instagram && (
+    <a
+      href={settings.socialLinks.instagram}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-pink-500 transition-colors"
+      aria-label="ServDial Instagram Page"
+    >
+      <Instagram size={18} />
+    </a>
+  )}
 
-            <a href="#" className="hover:text-white">
-              <Twitter size={18} />
-            </a>
+  {settings?.socialLinks?.twitter && (
+    <a
+      href={settings.socialLinks.twitter}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-sky-500 transition-colors"
+      aria-label="ServDial Twitter Page"
+    >
+      <Twitter size={18} />
+    </a>
+  )}
 
-            <a href="#" className="hover:text-white">
-              <Linkedin size={18} />
-            </a>
+  {settings?.socialLinks?.linkedin && (
+    <a
+      href={settings.socialLinks.linkedin}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="hover:text-blue-600 transition-colors"
+      aria-label="ServDial LinkedIn Page"
+    >
+      <Linkedin size={18} />
+    </a>
+  )}
 
-          </div>
+</div>
 
         </div>
 

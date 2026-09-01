@@ -30,12 +30,6 @@ const BusinessCard = ({ business }) => {
 
 const b = toBusinessListDTO(business) || {};
 
-console.log("📞 CALL DEBUG:", {
-  rawPhone: business?.phone,
-  rawLandline: business?.landline,
-  dtoPhone: b.phone,
-  dtoLandline: b.landline,
-});
 
 const businessStatus = getBusinessStatus(b);
 

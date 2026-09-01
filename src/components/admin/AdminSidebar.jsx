@@ -15,6 +15,8 @@ import {
   FaChartBar,
   FaCog,
   FaInbox,
+  FaCreditCard,
+  FaCheckCircle,
 } from "react-icons/fa";
 
 
@@ -408,6 +410,39 @@ function SidebarContent({
             onClose={onClose}
           />
 
+          {/* =================================================
+            PAYMENT MANAGEMENT
+        ================================================= */}
+<SectionTitle>
+  Payment Management
+</SectionTitle>
+
+
+        <AdminNavItem
+          to="/admin/payments"
+          label="Payments"
+          icon={FaCreditCard}
+          mobile={mobile}
+          onClose={onClose}
+        />
+
+        <AdminNavItem
+          to="/admin/payments/verification"
+          label="Payment Verification"
+          icon={FaCheckCircle}
+          mobile={mobile}
+          onClose={onClose}
+        />
+
+        <AdminNavItem
+          to="/admin/payment-settings"
+          label="Payment Settings"
+          icon={FaCog}
+          mobile={mobile}
+          onClose={onClose}
+        />
+
+
 
           {/* =================================================
               USERS
@@ -476,8 +511,8 @@ function SidebarContent({
 
 
               <AdminNavItem
-                to="/admin/settings"
-                label="Settings"
+                to="/admin/system-settings"
+                label="System Settings"
                 icon={FaCog}
                 mobile={mobile}
                 onClose={onClose}

@@ -133,6 +133,14 @@ export const providerRoutes = [
     icon: FaCreditCard,
   },
 
+  {
+  path: "/provider/payment-details",
+  key: "payment-details",
+  label: "Payment Details",
+  element: "ProviderPaymentDetails",
+  icon: FaCreditCard,
+},
+
   // ================= PROFILE =================
   {
     path: "/provider/profile",

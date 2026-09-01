@@ -48,7 +48,7 @@ const Header = () => {
   },
     { name: "Get Your Business Website", path: "/business-website", icon: Globe },
     { name: "List Your Business", path: "/provider/add-business", icon: PlusCircle },
-    { name: "Advertise With Us", path: "/provider/add-banner", icon: PlusCircle },
+    { name: "Advertise With Us", path: "/banner-pricing", icon: PlusCircle },
     { name: "About ServDial", path: "/about", icon: Info },
   ];
 

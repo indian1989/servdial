@@ -19,6 +19,8 @@ import ProviderProfile from "../pages/provider/ProviderProfile";
 import ProviderAddBanner from "../pages/provider/ProviderAddBanner";
 import ProviderManageBanners from "../pages/provider/ProviderManageBanners";
 import { providerRoutes } from "./routeConfig";
+import ProviderPaymentDetails from "../pages/provider/ProviderPaymentDetails.jsx";
+import ProviderBannerPayment from "../pages/provider/ProviderBannerPayment.jsx";
 
 const components = {
   ProviderDashboard,
@@ -35,6 +37,21 @@ const components = {
   ProviderNotifications,
   ProviderSubscription,
   ProviderProfile,
+  // =====================================================
+  // PAYMENTS
+  // =====================================================
+  // Single payment section.
+  //
+  // Payment Details page handles:
+  // - Payment Details
+  // - Pending Payments
+  // - Payment Proof Submission
+  // - Verified Payments
+  // - Rejected Payments
+  //
+  // No separate ProviderPaymentHistory route.
+  // =====================================================
+  ProviderPaymentDetails,
 };
 
 function ProviderRoutes() {
@@ -75,6 +92,10 @@ if (!Component) {
 
       <Route path="track-business/:id" element={<TrackBusinessView />} />
 
+      <Route
+        path="banner/payment/:id"
+        element={<ProviderBannerPayment />}
+      />
     </Route>
   );
 }

@@ -8,7 +8,7 @@ import {
 
 import BannerForm from "../../components/banner/BannerForm";
 
-const ProviderAddBanner = () => {
+const UserAddBanner = () => {
   const [searchParams] = useSearchParams();
 
   const placement =
@@ -41,30 +41,30 @@ const ProviderAddBanner = () => {
         <div className="grid md:grid-cols-2 gap-3 mt-5">
 
           <div className="flex items-start gap-2 text-sm text-gray-600">
-            <FaCheckCircle className="text-green-500 mt-1" />
+            <FaCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
             <span>
               Banners become visible after successful payment.
             </span>
           </div>
 
           <div className="flex items-start gap-2 text-sm text-gray-600">
-            <FaCheckCircle className="text-green-500 mt-1" />
+            <FaCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
             <span>
               All banner ads are reviewed by admin before publishing.
             </span>
           </div>
 
           <div className="flex items-start gap-2 text-sm text-gray-600">
-            <FaCheckCircle className="text-green-500 mt-1" />
+            <FaCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
             <span>
               You can target specific cities and categories.
             </span>
           </div>
 
           <div className="flex items-start gap-2 text-sm text-gray-600">
-            <FaCheckCircle className="text-green-500 mt-1" />
+            <FaCheckCircle className="text-green-500 mt-1 flex-shrink-0" />
             <span>
-              High visibility placements help boost leads and customer reach.
+              High-visibility placements can help increase customer reach.
             </span>
           </div>
 
@@ -76,7 +76,7 @@ const ProviderAddBanner = () => {
       <div className="bg-white rounded-2xl shadow-sm border p-6">
 
         <BannerForm
-          mode="provider"
+          mode="user"
           initialPlacement={placement}
         />
 
@@ -86,4 +86,4 @@ const ProviderAddBanner = () => {
   );
 };
 
-export default ProviderAddBanner;
+export default UserAddBanner;

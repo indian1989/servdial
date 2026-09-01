@@ -854,6 +854,9 @@ export const SERVICE_LIBRARY = [
   "Physiotherapy",
   "Home Physiotherapy",
   "Health Counselling",
+  "Pathology Tests",
+  "Laboratory Investigations",
+  "Diagnostic Testing",
 
   // =======================================================
   // LEGAL SERVICES

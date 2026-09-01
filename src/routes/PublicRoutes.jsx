@@ -18,6 +18,7 @@ import LegacyCityRedirect from "../pages/LegacyCityRedirect";
 import FeaturedBusinessesPage from "../pages/FeaturedBusinessesPage";
 import TopRatedBusinessesPage from "../pages/TopRatedBusinessesPage";
 import NearbyBusinessesPage from "../pages/NearbyBusinessesPage";
+import BannerPricing from "../pages/BannerPricing";
 
 const PublicRoutes = () => {
   return (
@@ -52,6 +53,11 @@ const PublicRoutes = () => {
 
   {/* RECOMMENDED */}
 <Route path="/recommendations" element={<RecommendedPage />} />
+
+<Route
+  path="/banner-pricing"
+  element={<BannerPricing />}
+/>
 
 <Route
   path="/city/:citySlug"
