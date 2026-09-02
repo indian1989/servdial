@@ -63,6 +63,38 @@ const ProviderBannerPayment = () => {
     });
 
   // =======================================================
+// COPY UPI ID
+// =======================================================
+
+const copyToClipboard = async (text) => {
+  if (!text) {
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+
+    setUpiCopied(true);
+
+    setTimeout(() => {
+      setUpiCopied(false);
+    }, 2000);
+
+  } catch (error) {
+    console.error(
+      "Copy UPI ID Error:",
+      error
+    );
+
+    setUpiCopied(false);
+
+    setError(
+      "Unable to copy UPI ID. Please copy it manually."
+    );
+  }
+};
+
+  // =======================================================
   // STATE
   // =======================================================
 
@@ -107,6 +139,11 @@ const ProviderBannerPayment = () => {
 
   const [success, setSuccess] =
     useState("");
+
+  const [upiCopied, setUpiCopied] =
+  useState(false);
+
+  
 
   // =======================================================
   // FETCH BANNER + PAYMENT SETTINGS
@@ -513,18 +550,21 @@ const ProviderBannerPayment = () => {
       // STEP 2 — SUBMIT PAYMENT PROOF
       // ===================================================
 
-      const proofResponse =
-        await submitPaymentProof(
-          paymentId,
-          {
-            proofImage:
-              proofImage.trim(),
+     const proofResponse =
+  await submitPaymentProof(
+    paymentId,
+    {
+      proofImage:
+        proofImage.trim(),
 
-            proofPublicId:
-              proofPublicId?.trim() ||
-              "",
-          }
-        );
+      proofPublicId:
+        proofPublicId?.trim() ||
+        "",
+
+      transactionId:
+        transactionId.trim(),
+    }
+  );
 
       // ===================================================
       // SUCCESS
@@ -919,61 +959,155 @@ const ProviderBannerPayment = () => {
               </div>
             </div>
 
-            {/* =================================================
-                UPI DETAILS
-            ================================================= */}
+        {/* =================================================
+    UPI DETAILS
+================================================= */}
 
-            {paymentMethod ===
-              "upi" &&
-              isUpiAvailable && (
-                <div className="rounded-xl border border-blue-200 bg-blue-50 p-5">
-                  <h3 className="font-semibold text-gray-900">
-                    UPI Payment Details
-                  </h3>
+{paymentMethod === "upi" &&
+  isUpiAvailable && (
+    <div className="rounded-xl border border-blue-200 bg-blue-50 p-5">
 
-                  <div className="mt-4 grid sm:grid-cols-2 gap-4">
+      <h3 className="font-semibold text-gray-900">
+        UPI Payment Details
+      </h3>
 
-                    <div>
-                      <p className="text-sm text-gray-500">
-                        UPI ID
-                      </p>
+      <div className="mt-4 grid md:grid-cols-[180px_1fr] gap-6">
 
-                      <p className="font-semibold text-gray-900 break-all">
-                        {
-                          paymentSettings
-                            ?.upi
-                            ?.upiId
-                        }
-                      </p>
-                    </div>
+        {/* QR CODE */}
 
-                    {paymentSettings
-                      ?.upi
-                      ?.accountName && (
-                      <div>
-                        <p className="text-sm text-gray-500">
-                          Account Name
-                        </p>
+        <div className="flex flex-col items-center">
 
-                        <p className="font-semibold text-gray-900">
-                          {
-                            paymentSettings
-                              ?.upi
-                              ?.accountName
-                          }
-                        </p>
-                      </div>
-                    )}
+          {paymentSettings?.upi?.qrCode ? (
+            <>
+              <div className="bg-white border border-gray-200 rounded-xl p-3 shadow-sm">
+                <img
+                  src={paymentSettings.upi.qrCode}
+                  alt="UPI QR Code"
+                  className="w-40 h-40 object-contain"
+                />
+              </div>
 
-                  </div>
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                Scan this QR code using your UPI app
+              </p>
+            </>
+          ) : (
+            <div className="w-40 h-40 rounded-xl border border-gray-200 bg-white flex items-center justify-center text-sm text-gray-500 text-center p-4">
+              QR code not available
+            </div>
+          )}
 
-                  <p className="mt-4 text-sm text-blue-800">
-                    Please transfer the exact
-                    amount shown above and keep
-                    your transaction ID / UTR.
-                  </p>
-                </div>
-              )}
+        </div>
+
+        {/* UPI INFORMATION */}
+
+        <div className="space-y-4">
+
+          {/* UPI ID */}
+
+          <div>
+            <p className="text-sm text-gray-500 mb-1">
+              UPI ID
+            </p>
+
+    <div className="flex items-center gap-2">
+
+  <div className="flex-1 bg-white border border-gray-200 rounded-xl px-4 py-3 min-w-0">
+    <p className="font-semibold text-gray-900 break-all">
+      {paymentSettings?.upi?.upiId}
+    </p>
+  </div>
+
+  <button
+    type="button"
+    onClick={() =>
+      copyToClipboard(
+        paymentSettings?.upi?.upiId
+      )
+    }
+    className={`shrink-0 px-4 py-3 rounded-xl font-medium transition ${
+      upiCopied
+        ? "bg-green-600 text-white"
+        : "bg-blue-600 text-white hover:bg-blue-700"
+    }`}
+  >
+    {upiCopied ? "Copied!" : "Copy"}
+  </button>
+
+</div>
+
+{/* COPY SUCCESS NOTIFICATION */}
+
+{upiCopied && (
+  <div className="mt-2 flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
+    <span className="text-base">
+      ✓
+    </span>
+
+    <span>
+      UPI ID copied successfully.
+    </span>
+  </div>
+)}
+          </div>
+
+          {/* ACCOUNT NAME */}
+
+          {paymentSettings?.upi?.accountName && (
+            <div>
+              <p className="text-sm text-gray-500">
+                Account Name
+              </p>
+
+              <p className="font-semibold text-gray-900 mt-1">
+                {paymentSettings.upi.accountName}
+              </p>
+            </div>
+          )}
+
+          {/* PAYMENT AMOUNT */}
+
+          <div className="bg-white border border-blue-100 rounded-xl p-4">
+
+            <p className="text-sm text-gray-500">
+              Amount to Pay
+            </p>
+
+            <p className="text-2xl font-bold text-blue-600 mt-1">
+              {formatCurrency(banner?.price)}
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <div className="mt-5 bg-blue-100 border border-blue-200 rounded-xl p-4">
+
+        <p className="text-sm text-blue-900 font-medium">
+          How to pay
+        </p>
+
+        <ol className="mt-2 text-sm text-blue-800 list-decimal pl-5 space-y-1">
+          <li>
+            Scan the QR code or copy the UPI ID.
+          </li>
+          <li>
+            Pay the exact amount shown above.
+          </li>
+          <li>
+            Complete the payment using your UPI app.
+          </li>
+          <li>
+            Keep the transaction ID / UTR for payment confirmation.
+          </li>
+        </ol>
+
+      </div>
+
+    </div>
+  )}
 
             {/* =================================================
                 BANK DETAILS

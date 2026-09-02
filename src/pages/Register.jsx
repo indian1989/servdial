@@ -171,7 +171,7 @@ const Register = () => {
     );
 
     setEmailSent(true);
-    startTimer(setEmailTimer);
+setEmailTimer(60);
 
 
     toast.success(
@@ -200,38 +200,42 @@ const Register = () => {
     };
 
 
-  const verifyEmailOTP = async()=>{
+  const verifyEmailOTP = async () => {
 
+  try {
 
-  try{
+    setError("");
 
+    if (!formData.emailOtp.trim()) {
+      setError("Please enter email OTP");
+      return;
+    }
 
-  await API.post(
-  "/auth/verify-otp",
-  {
-  email:formData.email,
-  otp:formData.emailOtp,
-  type:"email_verification"
-  }
-  );
+    await API.post(
+      "/auth/verify-otp",
+      {
+        email: formData.email,
+        otp: formData.emailOtp,
+        type: "email_verification"
+      }
+    );
 
+    setEmailVerified(true);
+    setEmailTimer(0);
 
-  setEmailVerified(true);
-  setEmailTimer(0);
-
-
-  }
-  catch(err){
-
-  setError(
-  err.response?.data?.message ||
-  "Invalid email OTP"
-  );
+    toast.success("Email verified successfully");
 
   }
+  catch (err) {
 
+    setError(
+      err.response?.data?.message ||
+      "Invalid or expired email OTP"
+    );
 
-  };
+  }
+
+};
 
 
   const handleSubmit = async (e) => {
@@ -293,8 +297,6 @@ const Register = () => {
         formData.cityId
         :
         undefined,
-
-        emailOtp: formData.emailOtp
 
         }
         );
@@ -371,12 +373,16 @@ navigate("/");
         <div className="flex gap-2">
 
         <input
-        type="text"
-        name="emailOtp"
-        placeholder="Email OTP"
-        onChange={handleChange}
-        className="w-full border rounded-lg px-3 py-2"
-        />
+  type="text"
+  name="emailOtp"
+  placeholder="Email OTP"
+  onChange={handleChange}
+  value={formData.emailOtp}
+  maxLength={6}
+  inputMode="numeric"
+  required={!emailVerified}
+  className="w-full border rounded-lg px-3 py-2"
+/>
 
 
         {

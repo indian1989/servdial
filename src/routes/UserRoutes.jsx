@@ -23,6 +23,8 @@ import UserMessages from "../pages/user/UserMessages";
 import UserProfile from "../pages/user/UserProfile";
 import UserSettings from "../pages/user/UserSettings";
 import UserChangePassword from "../pages/user/UserChangePassword";
+import UserPayment from "../pages/user/UserPayment";
+import UserPaymentDashboard from "../pages/user/UserPaymentDashboard";
 
 /**
  * ==================================================
@@ -109,6 +111,24 @@ const UserRoutes = () => {
       <Route
         path="/user/manage-banners"
         element={<UserManageBanners />}
+      />
+
+    {/* =================================================
+    PAYMENT DASHBOARD
+    ================================================= */}
+
+    <Route
+    path="/user/payment-dashboard"
+    element={<UserPaymentDashboard />}
+    />
+
+      {/* =================================================
+          PAYMENTS
+      ================================================= */}
+
+      <Route
+        path="/user/banner/payment/:id"
+        element={<UserPayment />}
       />
 
 

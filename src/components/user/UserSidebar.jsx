@@ -7,6 +7,7 @@ import {
   FaTachometerAlt,
   FaImage,
   FaImages,
+  FaCreditCard,
   FaBookmark,
   FaStar,
   FaLightbulb,
@@ -51,6 +52,13 @@ const userRoutes = [
     label: "Manage Banner Ads",
     icon: FaImages,
   },
+
+    // ================= PAYMENT DASHBOARD =================
+{
+  path: "/user/payment-dashboard",
+  label: "Payment Dashboard",
+  icon: FaCreditCard,
+},
 
   // ================= SAVED BUSINESSES =================
   {

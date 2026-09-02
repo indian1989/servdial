@@ -24,6 +24,7 @@ import {
   deletePaymentSettings,
 } from "../../api/paymentAPI";
 
+import { uploadImage } from "../../services/CloudinaryService";
 
 // =========================================================
 // DEFAULT FORM
@@ -33,10 +34,12 @@ const DEFAULT_FORM = {
   isActive: true,
 
   upi: {
-    enabled: true,
-    upiId: "",
-    accountName: "",
-  },
+  enabled: true,
+  upiId: "",
+  accountName: "",
+  qrCode: "",
+  qrCodePublicId: "",
+},
 
   bank: {
     enabled: false,
@@ -65,17 +68,23 @@ const normalizeSettings = (settings = {}) => ({
       : true,
 
   upi: {
-    enabled:
-      settings.upi?.enabled !== undefined
-        ? Boolean(settings.upi.enabled)
-        : true,
+  enabled:
+    settings.upi?.enabled !== undefined
+      ? Boolean(settings.upi.enabled)
+      : true,
 
-    upiId:
-      settings.upi?.upiId || "",
+  upiId:
+    settings.upi?.upiId || "",
 
-    accountName:
-      settings.upi?.accountName || "",
-  },
+  accountName:
+    settings.upi?.accountName || "",
+
+  qrCode:
+    settings.upi?.qrCode || "",
+
+  qrCodePublicId:
+    settings.upi?.qrCodePublicId || "",
+},
 
   bank: {
     enabled:
@@ -155,6 +164,9 @@ function AdminPaymentSettings() {
 
   const [saving, setSaving] =
     useState(false);
+
+  const [qrUploading, setQrUploading] =
+  useState(false);
 
   const [actionId, setActionId] =
     useState(null);
@@ -333,6 +345,67 @@ function AdminPaymentSettings() {
     }));
   };
 
+  // =======================================================
+// UPI QR CODE UPLOAD
+// =======================================================
+
+const handleQrCodeUpload = async (event) => {
+  const file = event.target.files?.[0];
+
+  if (!file) return;
+
+  // Basic client-side validation
+  if (!file.type.startsWith("image/")) {
+    setError("Please select a valid QR code image.");
+    event.target.value = "";
+    return;
+  }
+
+  // Optional size protection
+  if (file.size > 5 * 1024 * 1024) {
+    setError("QR code image must be 5 MB or smaller.");
+    event.target.value = "";
+    return;
+  }
+
+  try {
+    setQrUploading(true);
+    setError("");
+    setSuccess("");
+
+    const result = await uploadImage(file);
+
+    if (!result?.secure_url) {
+      throw new Error(
+        "QR code upload failed. Cloudinary URL was not returned."
+      );
+    }
+
+    updateUpi(
+  "qrCode",
+  result.secure_url
+);
+
+updateUpi(
+  "qrCodePublicId",
+  result.public_id || ""
+);
+
+    setSuccess(
+      "UPI QR code uploaded successfully."
+    );
+  } catch (err) {
+    setError(
+      getErrorMessage(err)
+    );
+  } finally {
+    setQrUploading(false);
+
+    // Allow selecting the same file again
+    event.target.value = "";
+  }
+};
+
 
   // =======================================================
   // CLIENT VALIDATION
@@ -353,14 +426,20 @@ function AdminPaymentSettings() {
     }
 
     if (upiEnabled) {
-      if (!form.upi.upiId.trim()) {
-        return "UPI ID is required when UPI is enabled.";
-      }
+  const hasUpiId =
+    Boolean(form.upi.upiId.trim());
 
-      if (!form.upi.accountName.trim()) {
-        return "UPI account name is required when UPI is enabled.";
-      }
-    }
+  const hasQrCode =
+    Boolean(form.upi.qrCode.trim());
+
+  if (!hasUpiId && !hasQrCode) {
+    return "UPI ID or UPI QR code is required when UPI is enabled.";
+  }
+
+  if (!form.upi.accountName.trim()) {
+    return "UPI account name is required when UPI is enabled.";
+  }
+}
 
     if (bankEnabled) {
       if (!form.bank.accountName.trim()) {
@@ -408,16 +487,22 @@ function AdminPaymentSettings() {
       isActive:
         Boolean(form.isActive),
 
-      upi: {
-        enabled:
-          Boolean(form.upi.enabled),
+  upi: {
+  enabled:
+    Boolean(form.upi.enabled),
 
-        upiId:
-          form.upi.upiId.trim(),
+  upiId:
+    form.upi.upiId.trim(),
 
-        accountName:
-          form.upi.accountName.trim(),
-      },
+  accountName:
+    form.upi.accountName.trim(),
+
+  qrCode:
+    form.upi.qrCode.trim(),
+
+  qrCodePublicId:
+    form.upi.qrCodePublicId.trim(),
+},
 
       bank: {
         enabled:
@@ -1325,39 +1410,182 @@ function AdminPaymentSettings() {
                 />
 
 
-                {form.upi.enabled && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+                
 
-                    <InputField
-                      label="UPI ID"
-                      value={form.upi.upiId}
-                      onChange={(value) =>
-                        updateUpi(
-                          "upiId",
-                          value
-                        )
-                      }
-                      placeholder="example@upi"
-                      required
-                    />
+    {form.upi.enabled && (
+  <>
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
 
-                    <InputField
-                      label="UPI Account Name"
-                      value={
-                        form.upi.accountName
-                      }
-                      onChange={(value) =>
-                        updateUpi(
-                          "accountName",
-                          value
-                        )
-                      }
-                      placeholder="Account holder name"
-                      required
-                    />
+      <InputField
+        label="UPI ID"
+        value={form.upi.upiId}
+        onChange={(value) =>
+          updateUpi(
+            "upiId",
+            value
+          )
+        }
+        placeholder="example@upi"
+        required
+      />
 
-                  </div>
-                )}
+      <InputField
+        label="UPI Account Name"
+        value={
+          form.upi.accountName
+        }
+        onChange={(value) =>
+          updateUpi(
+            "accountName",
+            value
+          )
+        }
+        placeholder="Account holder name"
+        required
+      />
+
+    </div>
+
+    {/* UPI QR CODE */}
+
+<div className="mt-5">
+
+  <span className="block text-sm font-medium text-gray-700 mb-1.5">
+    UPI QR Code
+  </span>
+
+  <p className="text-xs text-gray-500 mb-3">
+    Upload the UPI QR code image. Users can scan this QR code to make payment.
+  </p>
+
+  <div className="flex flex-col sm:flex-row sm:items-start gap-4">
+
+    {/* UPLOAD BUTTON */}
+
+    <label
+      className={`
+        inline-flex
+        items-center
+        justify-center
+        gap-2
+        px-4
+        py-2.5
+        rounded-xl
+        border
+        border-indigo-200
+        bg-indigo-50
+        text-indigo-700
+        text-sm
+        font-medium
+        cursor-pointer
+        hover:bg-indigo-100
+        transition
+        ${qrUploading ? "opacity-60 cursor-not-allowed" : ""}
+      `}
+    >
+
+      <FaQrcode size={14} />
+
+      {qrUploading
+        ? "Uploading..."
+        : form.upi.qrCode
+          ? "Change QR Code"
+          : "Upload QR Code"}
+
+      <input
+        type="file"
+        accept="image/png,image/jpeg,image/webp"
+        className="hidden"
+        onChange={handleQrCodeUpload}
+        disabled={qrUploading || saving}
+      />
+
+    </label>
+
+
+    {/* REMOVE BUTTON */}
+
+    {form.upi.qrCode && !qrUploading && (
+      <button
+        type="button"
+        onClick={() => {
+        updateUpi("qrCode", "");
+        updateUpi("qrCodePublicId", "");
+
+        setError("");
+        setSuccess("");
+        }}
+        disabled={saving}
+        className="
+          inline-flex
+          items-center
+          justify-center
+          gap-2
+          px-4
+          py-2.5
+          rounded-xl
+          border
+          border-red-200
+          bg-red-50
+          text-red-600
+          text-sm
+          font-medium
+          hover:bg-red-100
+          disabled:opacity-50
+        "
+      >
+        <FaTimesCircle size={14} />
+        Remove QR
+      </button>
+    )}
+
+  </div>
+
+
+  {/* QR PREVIEW */}
+
+  {form.upi.qrCode && (
+    <div className="mt-4">
+
+      <p className="text-xs font-medium text-gray-500 mb-2">
+        QR Code Preview
+      </p>
+
+      <div
+        className="
+          w-44
+          h-44
+          rounded-xl
+          border
+          border-gray-200
+          bg-white
+          p-2
+          flex
+          items-center
+          justify-center
+          shadow-sm
+        "
+      >
+
+        <img
+          src={form.upi.qrCode}
+          alt="UPI QR Code"
+          className="
+            w-full
+            h-full
+            object-contain
+            rounded-lg
+          "
+        />
+
+      </div>
+
+    </div>
+  )}
+
+</div>
+  </>
+)}
 
               </div>
 

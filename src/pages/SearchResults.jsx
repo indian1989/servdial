@@ -240,6 +240,22 @@ const effectiveCategory =
       : safeString(filters.category)
   );
 
+console.log("🔥 HERO SEARCH EFFECTIVE STATE:", {
+  urlQuery,
+  filtersQ: filters.q,
+  effectiveQuery,
+
+  urlCity,
+  filtersCity: filters.city,
+  effectiveCity,
+
+  urlCategory,
+  filtersCategory: filters.category,
+  effectiveCategory,
+
+  fullURL: window.location.href,
+});
+
   /* =======================================================
   📍 EFFECTIVE CITY
 
@@ -433,13 +449,11 @@ const effectiveCategory =
         🚀 API
         ================================================= */
 
-        const response =
-          await API.get(
-            "/businesses/search",
-            {
-              params,
-            }
-          );
+   console.log("🔥 SEARCH API PARAMS:", params);
+
+const response = await API.get("/businesses/search", { params });
+
+console.log("🔥 SEARCH API RESPONSE:", response?.data);
 
         if (cancelled) {
           return;
@@ -799,15 +813,32 @@ const effectiveCategory =
       <div className="bg-white sticky top-0 z-50 px-3 py-3 shadow-sm">
 
         <SmartSearchBar
-        query={filters.q || ""}
-        setQuery={(value) => updateFilter("q", value)}
-        onSearch={(value) => { updateFilter("q", value);
-          
-          // 🔥 GLOBAL SEARCH: clear city filter
-          
-          updateFilter("city", "");
-          }}
-          />
+  query={filters.q || ""}
+  setQuery={(value) => updateFilter("q", value)}
+  onSearch={(value) => {
+    updateFilter("q", value);
+
+    /*
+     * 🔥 SEARCH QUERY TAKES PRECEDENCE
+     *
+     * Do not retain the previous city filter
+     * when the user starts a new search.
+     *
+     * Example:
+     *
+     * Current:
+     * /search?q=restaurant&city=hajipur
+     *
+     * New search:
+     * "water leakage in patna"
+     *
+     * The previous Hajipur filter must not
+     * remain attached to the new query.
+     */
+
+    updateFilter("city", "");
+  }}
+/>
 
         <div className="flex justify-between items-center mt-2">
 

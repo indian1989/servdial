@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import {
+  useSearchParams,
+  useNavigate,
+} from "react-router-dom";
 import Select from "react-select";
 
 import API from "../../api/axios";
@@ -67,6 +70,8 @@ const BannerForm = ({
   onSuccess,
   initialPlacement = "",
 }) => {
+  const navigate = useNavigate();
+
   const isAdmin = mode === "admin";
 
   const [loading, setLoading] =
@@ -89,7 +94,7 @@ const selectedDuration =
   validDurations.includes(urlDuration)
     ? urlDuration
     : 1;
-    
+
  const [form, setForm] = useState({
   title: "",
   link: "",
@@ -337,7 +342,7 @@ useEffect(() => {
 
   /* ================= SUBMIT ================= */
 
-  const handleSubmit = async () => {
+const handleSubmit = async () => {
   if (!form.title.trim()) {
     return alert("Title is required");
   }
@@ -346,7 +351,6 @@ useEffect(() => {
     return alert("Banner image required");
   }
 
-  
   // ================= TARGETING VALIDATION =================
 
   // User + Provider banners require city + category.
@@ -361,16 +365,16 @@ useEffect(() => {
 
   // ================= BANNER DURATION VALIDATION =================
 
-if (
-  !isAdmin &&
-  ![1, 3, 6, 12].includes(
-    Number(form.durationMonths)
-  )
-) {
-  return alert(
-    "Please select a valid banner duration"
-  );
-}
+  if (
+    !isAdmin &&
+    ![1, 3, 6, 12].includes(
+      Number(form.durationMonths)
+    )
+  ) {
+    return alert(
+      "Please select a valid banner duration"
+    );
+  }
 
   // ================= BUSINESS DETAIL VALIDATION =================
 
@@ -388,67 +392,88 @@ if (
     );
   }
 
-
   setLoading(true);
 
   try {
     const payload = {
-  title: form.title.trim(),
-  link: form.link?.trim() || "",
-  image: form.image,
-  placement: form.placement,
+      title: form.title.trim(),
+      link: form.link?.trim() || "",
+      image: form.image,
+      placement: form.placement,
 
-  cityId: form.cityId || null,
-  categoryId: form.categoryId || null,
-  businessId: form.businessId || null,
+      cityId: form.cityId || null,
+      categoryId: form.categoryId || null,
+      businessId: form.businessId || null,
 
-  durationMonths: isAdmin
-    ? undefined
-    : Number(form.durationMonths),
+      durationMonths: isAdmin
+        ? undefined
+        : Number(form.durationMonths),
 
-  isActive: isAdmin
-    ? form.isActive
-    : true,
-};
+      isActive: isAdmin
+        ? form.isActive
+        : true,
+    };
 
     const res = await addBanner(payload);
+
+    /* ===== GET CREATED BANNER ID ===== */
+
+    const bannerId =
+      res?.data?.data?._id;
+
+    if (!isAdmin && !bannerId) {
+      throw new Error(
+        "Banner created but banner ID was not returned"
+      );
+    }
 
     /* ===== RESET ===== */
 
     setForm({
-  title: "",
-  link: "",
-  image: "",
-  placement: "homepage_top",
+      title: "",
+      link: "",
+      image: "",
+      placement: "homepage_top",
 
-  cityId: "",
-  categoryId: "",
-  businessId: "",
+      cityId: "",
+      categoryId: "",
+      businessId: "",
 
-  durationMonths: 1,
+      durationMonths: 1,
 
-  isActive: true,
-});
+      isActive: true,
+    });
 
     setBusinesses([]);
 
-    /* ===== PROVIDER FLOW ===== */
+    /* =====================================================
+       USER + PROVIDER PAYMENT FLOW
+    ===================================================== */
 
     if (!isAdmin) {
-      const bannerId =
-        res?.data?.data?._id;
 
-      if (!bannerId) {
-        throw new Error(
-          "Banner created but banner ID was not returned"
+      // ================= USER =================
+
+      if (mode === "user") {
+        navigate(
+          `/user/banner/payment/${bannerId}`
         );
+
+        return;
       }
 
-      window.location.href =
-        `/provider/banner/payment/${bannerId}`;
+      // ================= PROVIDER =================
 
-      return;
+      if (mode === "provider") {
+        navigate(
+          `/provider/banner/payment/${bannerId}`
+        );
+
+        return;
+      }
     }
+
+    /* ===== ADMIN FLOW ===== */
 
     onSuccess?.();
 

@@ -100,12 +100,14 @@ const Header = () => {
 
                 <Link
                   to={
-                    user?.role === "provider"
-                      ? "/provider/dashboard"
-                      : user?.role === "admin" || user?.role === "superadmin"
-                      ? "/admin/dashboard"
-                      : "/"
-                  }
+                  user?.role === "provider"
+                    ? "/provider/dashboard"
+                    : user?.role === "admin" || user?.role === "superadmin"
+                    ? "/admin/dashboard"
+                    : user?.role === "user"
+                    ? "/user/dashboard"
+                    : "/"
+                }
                   className="flex items-center gap-1 text-sm text-gray-700 hover:text-blue-600"
                 >
                   <LayoutDashboard size={16} />
@@ -183,12 +185,14 @@ const Header = () => {
               <>
                 <Link
                   to={
-                    user?.role === "provider"
-                      ? "/provider/dashboard"
-                      : user?.role === "admin" || user?.role === "superadmin"
-                      ? "/admin/dashboard"
-                      : "/"
-                  }
+  user?.role === "provider"
+    ? "/provider/dashboard"
+    : user?.role === "admin" || user?.role === "superadmin"
+    ? "/admin/dashboard"
+    : user?.role === "user"
+    ? "/user/dashboard"
+    : "/"
+}
                   onClick={closeMenu}
                   className="flex items-center gap-2 text-blue-600 font-medium"
                 >
