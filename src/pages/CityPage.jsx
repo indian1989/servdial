@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import NotFound from "./NotFound";
+import BusinessCard from "../components/business/BusinessCard";
 
 const CityPage = () => {
   const { citySlug } = useParams();
@@ -19,6 +20,8 @@ const CityPage = () => {
   const [categories, setCategories] = useState([]);
   const [cityData, setCityData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [businesses, setBusinesses] = useState([]);
+  const [businessLoading, setBusinessLoading] = useState(false);
 
   // ================= FETCH =================
 useEffect(() => {
@@ -109,6 +112,56 @@ useEffect(() => {
   };
 
 }, [citySlug, navigate]);
+
+// ================= RANDOM CITY BUSINESSES =================
+useEffect(() => {
+  if (!cityData?.slug) {
+    setBusinesses([]);
+    return;
+  }
+
+  const fetchBusinesses = async () => {
+    try {
+      setBusinessLoading(true);
+
+      const res = await API.get(
+        "/businesses/random",
+        {
+          params: {
+            city: cityData.slug,
+            limit: 20,
+          },
+        }
+      );
+
+      const fetchedBusinesses =
+        Array.isArray(res?.data?.data)
+          ? res.data.data
+          : [];
+
+      console.log(
+        "🏢 CITY businesses:",
+        fetchedBusinesses.length
+      );
+
+      setBusinesses(fetchedBusinesses);
+
+    } catch (err) {
+      console.error(
+        "❌ City businesses fetch error:",
+        err?.response?.data || err
+      );
+
+      setBusinesses([]);
+
+    } finally {
+      setBusinessLoading(false);
+    }
+  };
+
+  fetchBusinesses();
+
+}, [cityData?.slug]);
 
   // ================= FILTER PARENT ONLY =================
   const parentCategories = (categories || []).filter(
@@ -312,6 +365,68 @@ if (!cityData) {
             </div>
 
           )}
+
+          {/* ================= RANDOM BUSINESSES ================= */}
+{cityData?.slug && (
+  <section className="mt-16">
+
+    <div className="mb-8">
+      <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
+        Businesses in {formattedCity}
+      </h2>
+
+      <p className="text-gray-500 mt-2">
+        Discover local businesses and service providers across different categories in {formattedCity}.
+      </p>
+    </div>
+
+    {businessLoading ? (
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+        {[...Array(8)].map((_, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-2xl border p-5 animate-pulse"
+          >
+            <div className="h-40 bg-gray-200 rounded-xl mb-4" />
+            <div className="h-5 bg-gray-200 rounded w-3/4 mb-3" />
+            <div className="h-4 bg-gray-200 rounded w-1/2 mb-2" />
+            <div className="h-4 bg-gray-200 rounded w-2/3" />
+          </div>
+        ))}
+
+      </div>
+
+    ) : businesses.length > 0 ? (
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+        {businesses.map((business) => (
+          <BusinessCard
+            key={business._id}
+            business={business}
+          />
+        ))}
+
+      </div>
+
+    ) : (
+
+      <div className="bg-white rounded-2xl border p-10 text-center">
+        <h3 className="text-lg font-semibold text-gray-700 mb-2">
+          No businesses found
+        </h3>
+
+        <p className="text-gray-500">
+          Businesses are not available in {formattedCity} right now.
+        </p>
+      </div>
+
+    )}
+
+  </section>
+)}
 
           {/* ================= SEO CONTENT ================= */}
           <div className="bg-white border rounded-3xl p-8 mt-14 shadow-sm">
