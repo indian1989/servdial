@@ -243,16 +243,15 @@ const BusinessSEO = ({
   // =======================================================
 
   const url =
-    currentUrl ||
-    `${FRONTEND_URL}/${
-      business?.citySlug ||
-      business?.cityId?.slug ||
-      ""
-    }/${
-      business?.categorySlug ||
-      business?.categoryId?.slug ||
-      ""
-    }/${business?.slug || ""}`;
+  `${FRONTEND_URL}/${
+    business?.citySlug ||
+    business?.cityId?.slug ||
+    ""
+  }/${
+    business?.categorySlug ||
+    business?.categoryId?.slug ||
+    ""
+  }/${business?.slug || ""}`;
 
 
   // =======================================================
