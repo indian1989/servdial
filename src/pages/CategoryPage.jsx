@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import BannerAd from "../components/ads/BannerAd";
+import BusinessCard from "../components/business/BusinessCard";
 
 
 const CategoryPage = () => {
@@ -41,96 +42,149 @@ const CategoryPage = () => {
   const [citySearch, setCitySearch] =
     useState("");
 
+  const [businesses, setBusinesses] =
+  useState([]);
+
+const [businessLoading, setBusinessLoading] =
+  useState(false);
 
   /* =====================================================
-     RESOLVE URL CITY
-  ===================================================== */
+   RESOLVE URL CITY
+   - Uses single /cities fetch
+===================================================== */
 
-  useEffect(() => {
+useEffect(() => {
 
-    if (!citySlug) {
+  if (!citySlug) {
 
-      setPageCity(
-        contextCity || null
-      );
+    setPageCity(
+      contextCity || null
+    );
 
-      return;
+    return;
 
+  }
+
+  const normalizedCitySlug =
+    citySlug.toLowerCase();
+
+  /*
+   * Cities are already fetched by
+   * the main fetchData() effect.
+   *
+   * Resolve page city from the
+   * existing cities state.
+   */
+
+  const matchedCity =
+    (cities || []).find(
+      (item) =>
+        (item?.slug || "")
+          .toLowerCase() ===
+        normalizedCitySlug
+    );
+
+  if (matchedCity) {
+
+    console.log(
+      "🏙️ CATEGORY matched city:",
+      matchedCity
+    );
+
+    setPageCity(
+      matchedCity
+    );
+
+  } else if (
+    !loading &&
+    cities.length > 0
+  ) {
+
+    console.log(
+      "⚠️ CATEGORY city not found:",
+      citySlug
+    );
+
+    setPageCity(null);
+
+  }
+
+}, [
+  citySlug,
+  cities,
+  loading,
+  contextCity,
+]);
+
+  /* =====================================================
+   FETCH CITY BUSINESSES
+===================================================== */
+
+useEffect(() => {
+
+  if (!pageCity?.slug) {
+
+    setBusinesses([]);
+
+    return;
+
+  }
+
+  const fetchBusinesses =
+    async () => {
+
+      try {
+
+        setBusinessLoading(true);
+
+        const res =
+  await API.get(
+    "/businesses/random",
+    {
+      params: {
+        city: pageCity.slug,
+        limit: 20,
+      },
     }
+  );
 
+        const fetchedBusinesses =
+          Array.isArray(
+            res?.data?.data
+          )
+            ? res.data.data
+            : [];
 
-    const resolvePageCity =
-      async () => {
+        console.log(
+          "🏢 CATEGORY businesses:",
+          fetchedBusinesses.length
+        );
 
-        try {
+        setBusinesses(
+          fetchedBusinesses
+        );
 
-          const res =
-            await API.get(
-              "/cities?dropdown=true"
-            );
+      } catch (err) {
 
-
-          const allCities =
-            Array.isArray(
-              res?.data?.data
-            )
-              ? res.data.data
-              : res?.data?.data?.cities ||
-                res?.data?.cities ||
-                [];
-
-
-          const matchedCity =
-            allCities.find(
-              (item) =>
-                (item?.slug || "")
-                  .toLowerCase() ===
-                citySlug.toLowerCase()
-            );
-
-
-          console.log(
-            "🏙️ CATEGORY cities:",
-            allCities.length
-          );
-
-          console.log(
-            "🏙️ CATEGORY citySlug:",
-            citySlug
-          );
-
-          console.log(
-            "🏙️ CATEGORY matched city:",
-            matchedCity
-          );
-
-
-          setPageCity(
-            matchedCity || null
-          );
-
-
-        } catch (err) {
-
-          console.error(
-            "❌ Category city resolve error:",
+        console.error(
+          "❌ Category businesses fetch error:",
+          err?.response?.data ||
             err
-          );
+        );
 
-          setPageCity(null);
+        setBusinesses([]);
 
-        }
+      } finally {
 
-      };
+        setBusinessLoading(false);
 
+      }
 
-    resolvePageCity();
+    };
 
-  }, [
-    citySlug,
-    contextCity,
-  ]);
+  fetchBusinesses();
 
+}, [pageCity?.slug]);
 
   /* =====================================================
      CITY NORMALIZATION
@@ -1385,7 +1439,213 @@ const CategoryPage = () => {
 
           )}
 
+{/* =================================================
+    BUSINESSES IN CITY
+================================================= */}
 
+{pageCity?.slug && (
+
+  <section className="mt-16">
+
+    <div
+      className="
+        flex
+        flex-col
+        md:flex-row
+        md:items-center
+        md:justify-between
+        gap-3
+        mb-6
+      "
+    >
+
+      <div>
+
+        <h2
+          className="
+            text-2xl
+            font-bold
+            text-gray-800
+          "
+        >
+          Businesses in {formattedCity}
+        </h2>
+
+        <p
+          className="
+            text-gray-500
+            mt-1
+          "
+        >
+          Discover local businesses and services
+          available in {formattedCity}.
+        </p>
+
+      </div>
+
+      {!businessLoading &&
+        businesses.length > 0 && (
+
+          <span
+            className="
+              text-sm
+              font-medium
+              text-blue-600
+              bg-blue-50
+              px-4
+              py-2
+              rounded-full
+            "
+          >
+            {businesses.length} businesses
+          </span>
+
+        )}
+
+    </div>
+
+
+    {/* ================= LOADING ================= */}
+
+    {businessLoading ? (
+
+      <div
+        className="
+          grid
+          grid-cols-1
+          sm:grid-cols-2
+          lg:grid-cols-4
+          gap-5
+        "
+      >
+
+        {[1, 2, 3, 4, 5, 6].map(
+          (item) => (
+
+            <div
+              key={item}
+              className="
+                bg-white
+                border
+                rounded-2xl
+                p-5
+                animate-pulse
+              "
+            >
+
+              <div
+                className="
+                  h-40
+                  bg-gray-200
+                  rounded-xl
+                  mb-4
+                "
+              />
+
+              <div
+                className="
+                  h-5
+                  bg-gray-200
+                  rounded
+                  w-3/4
+                  mb-3
+                "
+              />
+
+              <div
+                className="
+                  h-4
+                  bg-gray-200
+                  rounded
+                  w-1/2
+                "
+              />
+
+            </div>
+
+          )
+        )}
+
+      </div>
+
+    ) : businesses.length > 0 ? (
+
+      /* ================= BUSINESSES ================= */
+
+      <div
+        className="
+          grid
+          grid-cols-1
+          sm:grid-cols-2
+          lg:grid-cols-4
+          gap-5
+        "
+      >
+
+        {businesses.map(
+          (business) => (
+
+            <BusinessCard
+              key={business._id}
+              business={business}
+            />
+
+          )
+        )}
+
+      </div>
+
+    ) : (
+
+      /* ================= NO BUSINESSES ================= */
+
+      <div
+        className="
+          bg-white
+          border
+          rounded-3xl
+          p-10
+          text-center
+          shadow-sm
+        "
+      >
+
+        <Search
+          size={30}
+          className="
+            text-gray-400
+            mx-auto
+            mb-4
+          "
+        />
+
+        <h3
+          className="
+            text-xl
+            font-semibold
+            text-gray-700
+          "
+        >
+          No Businesses Found
+        </h3>
+
+        <p
+          className="
+            text-gray-500
+            mt-2
+          "
+        >
+          No approved businesses are currently
+          available in {formattedCity}.
+        </p>
+
+      </div>
+
+    )}
+
+  </section>
+
+)}
           {/* =================================================
               SEO CONTENT
           ================================================= */}

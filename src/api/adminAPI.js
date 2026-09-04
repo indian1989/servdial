@@ -141,6 +141,34 @@ export const markBannerPaid = (id, paymentId) =>
     paymentStatus: "paid",
     paymentId,
   });
+
+  // ==================== Visitor Analytics ====================
+
+export const getVisitorAnalytics = (params = {}) =>
+  API.get("/admin/visitor-analytics", {
+    params,
+  });
+
+  export const getSearchAnalytics = (params = {}) =>
+  API.get("/admin/search-analytics", {
+    params,
+  });
+
+  export const getBusinessFunnelAnalytics = (params = {}) =>
+  API.get("/admin/business-funnel-analytics", {
+    params,
+  });
+
+  export const getVisitorJourneyAnalytics = (params = {}) =>
+  API.get("/admin/visitor-journey-analytics", {
+    params,
+  });
+
+  export const getAcquisitionAnalytics = (params = {}) =>
+  API.get("/admin/acquisition-analytics", {
+    params,
+  });
+
 // ==================== Admins ====================
 export const getAllAdmins = () =>
   API.get("/admin/admins");

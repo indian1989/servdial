@@ -16,10 +16,15 @@ import ManageAdmins from "../pages/admin/ManageAdmins";
 import AdminLeads from "../pages/admin/AdminLeads";
 
 import Analytics from "../pages/admin/Analytics";
+import VisitorAnalytics from "../pages/admin/VisitorAnalytics";
+import SearchAnalytics from "../pages/admin/SearchAnalytics";
 import Reports from "../pages/admin/Reports";
 import SystemSettings from "../pages/admin/SystemSettings";
 import ActivityLogs from "../pages/admin/ActivityLogs";
 import AdminNotifications from "../pages/admin/AdminNotifications";
+import BusinessFunnelAnalytics from "../pages/admin/BusinessFunnelAnalytics";
+import VisitorJourneyAnalytics from "../pages/admin/VisitorJourneyAnalytics";
+import AcquisitionAnalytics from "../pages/admin/AcquisitionAnalytics";
 
 // =========================================================
 // PAYMENT MANAGEMENT
@@ -163,6 +168,31 @@ const AdminRoutes = () => {
       <Route
         path="analytics"
         element={<Analytics />}
+      />
+
+      <Route
+        path="visitor-analytics"
+        element={<VisitorAnalytics />}
+      />
+
+      <Route
+        path="search-analytics"
+        element={<SearchAnalytics />}
+      />
+
+      <Route
+        path="business-funnel-analytics"
+        element={<BusinessFunnelAnalytics />}
+      />
+
+      <Route
+        path="visitor-journey-analytics"
+        element={<VisitorJourneyAnalytics />}
+      />
+
+      <Route
+        path="acquisition-analytics"
+        element={<AcquisitionAnalytics />}
       />
 
       <Route

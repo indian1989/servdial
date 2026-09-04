@@ -51,6 +51,9 @@ const useBusinessActions = ({
   const hasAlternateMobile =
      Boolean(alternateMobileNumber);
 
+  const hasWhatsApp =
+  Boolean(whatsappNumber);
+
     const hasCall =
     hasMobile ||
     hasLandline ||
@@ -270,6 +273,8 @@ const callNumber =
     hasLandline,
 
     hasAlternateMobile,
+
+    hasWhatsApp,
 
     hasCall,
 

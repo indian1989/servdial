@@ -405,7 +405,12 @@ const cleanWhatsApp =
           )}
         </div>
 
-        {/* STATS */}
+        {/* =========================================================
+    BUSINESS STATS — TEMPORARILY HIDDEN
+    Tracking internally continues.
+========================================================= */}
+
+{/*
         <div className="flex items-center gap-4 mt-4 text-xs text-gray-400 border-t pt-3">
           <div className="flex items-center gap-1">
             <Eye size={14} />
@@ -420,6 +425,7 @@ const cleanWhatsApp =
             💬 {whatsappClicks}
           </div>
         </div>
+        */}
 
         <div className="flex-grow" />
 

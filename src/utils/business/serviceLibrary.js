@@ -26,6 +26,7 @@ export const SERVICE_LIBRARY = [
   "Consultation",
   "Installation",
   "Repair",
+  "Repair & Service",
   "Maintenance",
   "Inspection",
   "Replacement",
@@ -830,6 +831,7 @@ export const SERVICE_LIBRARY = [
   "Tooth Extraction",
   "Wisdom Tooth Removal",
   "Dental Crown",
+  "Dental Treatment",
   "Dental Bridge",
   "Dental Implant",
   "Braces Consultation",
@@ -841,6 +843,7 @@ export const SERVICE_LIBRARY = [
   "Child Dental Care",
   "Gum Treatment",
   "Gum Disease Treatment",
+  "Oral Care",
   "Oral Examination",
   "Cosmetic Dentistry",
   "General Health Consultation",
@@ -857,6 +860,7 @@ export const SERVICE_LIBRARY = [
   "Pathology Tests",
   "Laboratory Investigations",
   "Diagnostic Testing",
+  "Restorative Dentistry",
 
   // =======================================================
   // LEGAL SERVICES

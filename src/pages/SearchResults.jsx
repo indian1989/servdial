@@ -14,6 +14,7 @@ import {
 
 import useFilters from "../hooks/useFilters";
 import { useCity } from "../context/CityContext";
+import { useAuth } from "../context/AuthContext";
 
 import {
   MapContainer,
@@ -30,6 +31,14 @@ import {
 } from "lucide-react";
 
 import "leaflet/dist/leaflet.css";
+import {
+  getVisitorId,
+  getSessionId,
+} from "../services/visitorAnalyticsService";
+
+import {
+  trackSearchEvent,
+} from "../services/searchTrackingService";
 
 /* =========================================================
 🌍 DEFAULT MAP LOCATION
@@ -179,6 +188,8 @@ const normalizePhoneForWhatsApp = (business) => {
 ========================================================= */
 
 const SearchResults = () => {
+  const { user } = useAuth();
+
   const {
     filters,
     updateFilter,
@@ -381,9 +392,15 @@ console.log("🔥 HERO SEARCH EFFECTIVE STATE:", {
         setLoading(true);
 
         const params = {
-          q:
-            effectiveQuery || "",
-        };
+  q:
+    effectiveQuery || "",
+
+  visitorId:
+    getVisitorId(),
+
+  sessionId:
+    getSessionId(),
+};
 
         /*
          * IMPORTANT:
@@ -456,17 +473,99 @@ const response = await API.get("/businesses/search", { params });
 console.log("🔥 SEARCH API RESPONSE:", response?.data);
 
         if (cancelled) {
-          return;
-        }
+  console.log("🛑 SEARCH EFFECT CANCELLED BEFORE ANALYTICS");
+  return;
+}
+
+console.log("✅ SEARCH EFFECT REACHED AFTER API RESPONSE");
 
         const data =
-          response?.data?.data;
+  response?.data?.data;
 
-        setBusinesses(
-          Array.isArray(data)
-            ? data
-            : []
-        );
+const searchResults =
+  Array.isArray(data)
+    ? data
+    : [];
+
+setBusinesses(searchResults);
+
+console.log("🔎 BEFORE ADMIN CHECK:", {
+  user,
+  userRole: user?.role,
+});
+
+const isExcludedAdmin =
+  user?.role === "admin" ||
+  user?.role === "superadmin";
+
+console.log("🔎 ADMIN CHECK RESULT:", {
+  userRole: user?.role,
+  isExcludedAdmin,
+});
+
+if (!isExcludedAdmin) {
+/*
+ * =================================================
+ * 📊 SEARCH ANALYTICS
+ * =================================================
+ *
+ * Track every completed search, including
+ * zero-result searches.
+ *
+ * Analytics failure must NEVER break search.
+ * =================================================
+ */
+try {
+  await trackSearchEvent({
+    visitorId:
+      getVisitorId(),
+
+    sessionId:
+      getSessionId(),
+
+    query:
+      effectiveQuery || "",
+
+    path:
+      window.location.pathname +
+      window.location.search,
+
+    resultCount:
+      searchResults.length,
+
+    metadata: {
+      citySlug:
+        effectiveCity || "",
+
+      categorySlug:
+        effectiveCategory || "",
+
+      hasResults:
+        searchResults.length > 0,
+
+      noResults:
+        searchResults.length === 0,
+
+      sort:
+        filters.sort || "",
+
+      distance:
+        filters.distance || null,
+
+      nearby:
+        filters.nearby === true,
+
+      useLocation:
+        filters.useLocation === true,
+    },
+  });
+} catch (analyticsError) {
+  console.warn(
+    "⚠️ Search analytics tracking failed:",
+    analyticsError
+  );
+}
+}
 
       } catch (error) {
 

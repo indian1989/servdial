@@ -17,6 +17,9 @@ import {
   FaInbox,
   FaCreditCard,
   FaCheckCircle,
+  FaSearch,
+  FaChartLine,
+  FaRoute,
 } from "react-icons/fa";
 
 
@@ -505,6 +508,46 @@ function SidebarContent({
                 to="/admin/analytics"
                 label="Analytics"
                 icon={FaChartBar}
+                mobile={mobile}
+                onClose={onClose}
+              />
+
+              <AdminNavItem
+                to="/admin/visitor-analytics"
+                label="Visitor Analytics"
+                icon={FaChartBar}
+                mobile={mobile}
+                onClose={onClose}
+              />
+
+              <AdminNavItem
+                to="/admin/search-analytics"
+                label="Search Analytics"
+                icon={FaSearch}
+                mobile={mobile}
+                onClose={onClose}
+              />
+
+              <AdminNavItem
+                to="/admin/business-funnel-analytics"
+                label="Business Funnel Analytics"
+                icon={FaChartLine}
+                mobile={mobile}
+                onClose={onClose}
+              />
+
+              <AdminNavItem
+                to="/admin/visitor-journey-analytics"
+                label="Visitor Journey Analytics"
+                icon={FaRoute}
+                mobile={mobile}
+                onClose={onClose}
+              />
+
+              <AdminNavItem
+                to="/admin/acquisition-analytics"
+                label="Acquisition Analytics"
+                icon={FaBullhorn}
                 mobile={mobile}
                 onClose={onClose}
               />
