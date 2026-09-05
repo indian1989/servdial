@@ -288,8 +288,15 @@ export const getCurrentPageContext = () => {
     source = "campaign";
   } else if (referrer) {
     try {
+      const referrerUrl = new URL(referrer);
+
       const referrerHost =
-        new URL(referrer).hostname
+        referrerUrl.hostname
+          .toLowerCase()
+          .replace(/^www\./, "");
+
+      const currentHost =
+        window.location.hostname
           .toLowerCase()
           .replace(/^www\./, "");
 
@@ -317,7 +324,13 @@ export const getCurrentPageContext = () => {
         "telegram.org",
       ];
 
+      // Same-origin / same-domain traffic is NOT a referral.
       if (
+        referrerUrl.origin === window.location.origin ||
+        referrerHost === currentHost
+      ) {
+        source = "direct";
+      } else if (
         searchEngines.some(
           (domain) =>
             referrerHost === domain ||
@@ -352,9 +365,7 @@ export const getCurrentPageContext = () => {
         : "",
 
     referrer,
-
     source,
-
     utmSource,
     utmMedium,
     utmCampaign,
