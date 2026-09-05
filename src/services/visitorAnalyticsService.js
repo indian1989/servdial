@@ -4,7 +4,7 @@ import API from "../api/axios";
 
 /**
  * =========================================================
- * 📊 SERVIDIAL VISITOR ANALYTICS SERVICE
+ * 📊 SERVDIAL VISITOR ANALYTICS SERVICE
  * =========================================================
  *
  * RESPONSIBILITY:

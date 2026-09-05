@@ -1,6 +1,10 @@
 // src/pages/SearchResults.jsx
 
-import { useEffect, useMemo, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
@@ -30,6 +34,11 @@ import {
 } from "lucide-react";
 
 import "leaflet/dist/leaflet.css";
+
+import {
+  getVisitorId,
+  getSessionId,
+} from "../services/visitorAnalyticsService";
 
 
 /* =========================================================
@@ -232,6 +241,9 @@ const SearchResults = () => {
 
 const effectiveQuery = safeString(urlQuery || filters.q);
 
+const [searchInput, setSearchInput] = useState(effectiveQuery);
+const [submittedQuery, setSubmittedQuery] = useState(effectiveQuery);
+
 const effectiveCity = safeString(urlCity).toLowerCase();
 
 const effectiveCategory =
@@ -242,21 +254,7 @@ const effectiveCategory =
       : safeString(filters.category)
   );
 
-console.log("🔥 HERO SEARCH EFFECTIVE STATE:", {
-  urlQuery,
-  filtersQ: filters.q,
-  effectiveQuery,
 
-  urlCity,
-  filtersCity: filters.city,
-  effectiveCity,
-
-  urlCategory,
-  filtersCategory: filters.category,
-  effectiveCategory,
-
-  fullURL: window.location.href,
-});
 
   /* =======================================================
   📍 EFFECTIVE CITY
@@ -383,8 +381,13 @@ console.log("🔥 HERO SEARCH EFFECTIVE STATE:", {
         setLoading(true);
 
         const params = {
-  q:
-    effectiveQuery || "",
+  q: submittedQuery || "",
+
+  visitorId:
+    getVisitorId(),
+
+  sessionId:
+    getSessionId(),
 };
 
         /*
@@ -451,11 +454,8 @@ console.log("🔥 HERO SEARCH EFFECTIVE STATE:", {
         🚀 API
         ================================================= */
 
-   console.log("🔥 SEARCH API PARAMS:", params);
-
 const response = await API.get("/businesses/search", { params });
 
-console.log("🔥 SEARCH API RESPONSE:", response?.data);
 
         if (cancelled) {
   return;
@@ -504,7 +504,7 @@ setBusinesses(searchResults);
 
   }, [
     loadingCity,
-    effectiveQuery,
+    submittedQuery,
     effectiveCity,
     effectiveCategory,
     filters.lat,
@@ -818,10 +818,13 @@ setBusinesses(searchResults);
       <div className="bg-white sticky top-0 z-50 px-3 py-3 shadow-sm">
 
         <SmartSearchBar
-  query={filters.q || ""}
-  setQuery={(value) => updateFilter("q", value)}
-  onSearch={(value) => {
-    updateFilter("q", value);
+          query={searchInput}
+          setQuery={(value) => setSearchInput(value)}
+          onSearch={(value) => {
+            setSearchInput(value);
+            setSubmittedQuery(value);
+            updateFilter("q", value);
+            updateFilter("city", "");
 
     /*
      * 🔥 SEARCH QUERY TAKES PRECEDENCE
@@ -840,8 +843,6 @@ setBusinesses(searchResults);
      * The previous Hajipur filter must not
      * remain attached to the new query.
      */
-
-    updateFilter("city", "");
   }}
 />
 
