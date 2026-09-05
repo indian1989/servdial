@@ -237,7 +237,108 @@ export const getCurrentPageContext = () => {
       path: "",
       pageTitle: "",
       referrer: "",
+      source: "direct",
+      utmSource: "",
+      utmMedium: "",
+      utmCampaign: "",
+      utmTerm: "",
+      utmContent: "",
     };
+  }
+
+  const searchParams = new URLSearchParams(
+    window.location.search
+  );
+
+  const utmSource = safeString(
+    searchParams.get("utm_source")
+  );
+
+  const utmMedium = safeString(
+    searchParams.get("utm_medium")
+  );
+
+  const utmCampaign = safeString(
+    searchParams.get("utm_campaign")
+  );
+
+  const utmTerm = safeString(
+    searchParams.get("utm_term")
+  );
+
+  const utmContent = safeString(
+    searchParams.get("utm_content")
+  );
+
+  const referrer =
+    typeof document !== "undefined"
+      ? safeString(document.referrer)
+      : "";
+
+  let source = "direct";
+
+  // Campaign traffic has highest priority.
+  if (
+    utmSource ||
+    utmMedium ||
+    utmCampaign ||
+    utmTerm ||
+    utmContent
+  ) {
+    source = "campaign";
+  } else if (referrer) {
+    try {
+      const referrerHost =
+        new URL(referrer).hostname
+          .toLowerCase()
+          .replace(/^www\./, "");
+
+      const searchEngines = [
+        "google.com",
+        "google.co.in",
+        "bing.com",
+        "yahoo.com",
+        "duckduckgo.com",
+        "yandex.com",
+        "baidu.com",
+      ];
+
+      const socialPlatforms = [
+        "facebook.com",
+        "instagram.com",
+        "twitter.com",
+        "x.com",
+        "linkedin.com",
+        "youtube.com",
+        "tiktok.com",
+        "pinterest.com",
+        "reddit.com",
+        "whatsapp.com",
+        "telegram.org",
+      ];
+
+      if (
+        searchEngines.some(
+          (domain) =>
+            referrerHost === domain ||
+            referrerHost.endsWith(`.${domain}`)
+        )
+      ) {
+        source = "organic";
+      } else if (
+        socialPlatforms.some(
+          (domain) =>
+            referrerHost === domain ||
+            referrerHost.endsWith(`.${domain}`)
+        )
+      ) {
+        source = "social";
+      } else {
+        source = "referral";
+      }
+    } catch {
+      source = "referral";
+    }
   }
 
   return {
@@ -250,10 +351,15 @@ export const getCurrentPageContext = () => {
         ? document.title
         : "",
 
-    referrer:
-      typeof document !== "undefined"
-        ? document.referrer
-        : "",
+    referrer,
+
+    source,
+
+    utmSource,
+    utmMedium,
+    utmCampaign,
+    utmTerm,
+    utmContent,
   };
 };
 
@@ -410,37 +516,55 @@ export const trackPageView = async ({
     getCurrentPageContext();
 
   const payload = {
-    visitorId,
-    sessionId,
+  visitorId,
+  sessionId,
 
-    path:
-      safeString(path) ||
-      pageContext.path,
+  path:
+    safeString(path) ||
+    pageContext.path,
 
-    pageTitle:
-      safeString(pageTitle) ||
-      pageContext.pageTitle,
+  pageTitle:
+    safeString(pageTitle) ||
+    pageContext.pageTitle,
 
-    pageType:
-      safeString(pageType) || "other",
+  pageType:
+    safeString(pageType) || "other",
 
-    businessId:
-      businessId || null,
+  businessId:
+    businessId || null,
 
-    categoryId:
-      categoryId || null,
+  categoryId:
+    categoryId || null,
 
-    cityId:
-      cityId || null,
+  cityId:
+    cityId || null,
 
-    query:
-      safeString(query),
+  query:
+    safeString(query),
 
-    referrer:
-      pageContext.referrer,
+  referrer:
+    pageContext.referrer,
 
-    context,
-  };
+  source:
+    pageContext.source,
+
+  utmSource:
+    pageContext.utmSource,
+
+  utmMedium:
+    pageContext.utmMedium,
+
+  utmCampaign:
+    pageContext.utmCampaign,
+
+  utmTerm:
+    pageContext.utmTerm,
+
+  utmContent:
+    pageContext.utmContent,
+
+  context,
+};
 
   try {
     const response = await API.post(
