@@ -28,6 +28,100 @@ import NearbyBusinessesPage from "../pages/NearbyBusinessesPage";
 import BannerPricing from "../pages/BannerPricing";
 import StatePage from "../pages/StatePage";
 
+const OneSegmentResolver = () => {
+  const { stateSlug } = useParams();
+
+  const [loading, setLoading] = useState(true);
+  const [resolvedCity, setResolvedCity] = useState(null);
+  const [isCity, setIsCity] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const resolveRoute = async () => {
+      try {
+        const cityResponse = await API.get(
+          `/cities/${stateSlug}`
+        );
+
+        const city =
+          cityResponse?.data?.data ||
+          cityResponse?.data ||
+          null;
+
+        if (
+          city?.slug === stateSlug
+        ) {
+          if (!cancelled) {
+            setResolvedCity(city);
+            setIsCity(true);
+            setLoading(false);
+          }
+
+          return;
+        }
+
+        if (!cancelled) {
+          setIsCity(false);
+          setLoading(false);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setIsCity(false);
+          setLoading(false);
+        }
+      }
+    };
+
+    resolveRoute();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [stateSlug]);
+
+  if (loading) {
+    return (
+      <div className="py-16 text-center">
+        <p className="text-sm text-gray-500">
+          Loading...
+        </p>
+      </div>
+    );
+  }
+
+  /*
+   * OLD CITY URL
+   *
+   * /citySlug
+   *
+   * Example:
+   * /chennai-chennai-tamil-nadu
+   *
+   * Redirect to:
+   * /tamil-nadu/chennai-chennai-tamil-nadu
+   */
+  if (isCity && resolvedCity) {
+    const canonicalStateSlug =
+      resolvedCity.stateSlug ||
+      resolvedCity.state
+        ?.toLowerCase()
+        .replace(/\s+/g, "-");
+
+    return (
+      <Navigate
+        to={`/${canonicalStateSlug}/${resolvedCity.slug}`}
+        replace
+      />
+    );
+  }
+
+  /*
+   * CURRENT STATE URL
+   */
+  return <StatePage />;
+};
+
 const ThreeSegmentResolver = () => {
   const {
     stateSlug,
@@ -281,7 +375,7 @@ const PublicRoutes = () => {
   {/* STATE */}
 <Route
   path="/:stateSlug"
-  element={<StatePage />}
+  element={<OneSegmentResolver />}
 />
 
 {/* CITY */}
