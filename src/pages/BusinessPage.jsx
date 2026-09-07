@@ -1,6 +1,7 @@
 // frontend/src/pages/BusinessPage.jsx
 
 import { useEffect, useState } from "react";
+
 import {
   useNavigate,
   useParams,
@@ -17,15 +18,21 @@ import NotFound from "./NotFound";
 // 🏢 BUSINESS PAGE
 // =========================================================
 
-const BusinessPage = () => {
+const BusinessPage = ({ resolvedParams }) => {
 
-  const {
-    citySlug,
-    categorySlug,
-    slug,
-  } = useParams();
+  const params = useParams();
 
-  const navigate = useNavigate();
+const citySlug =
+  resolvedParams?.citySlug || params.citySlug;
+
+const categorySlug =
+  resolvedParams?.categorySlug ||
+  params.categorySlug;
+
+const slug =
+  resolvedParams?.slug || params.slug;
+
+const navigate = useNavigate();
 
 
   // =======================================================

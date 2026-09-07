@@ -76,10 +76,10 @@ const FeaturedCities = ({
   ========================================================= */
 
   const openCity = (city) => {
-    if (!city?.slug) return;
+  if (!city?.slug || !city?.stateSlug) return;
 
-    navigate(`/${city.slug}`);
-  };
+  navigate(`/${city.stateSlug}/${city.slug}`);
+};
 
   /* =========================================================
      CITY SEARCH OPTIONS

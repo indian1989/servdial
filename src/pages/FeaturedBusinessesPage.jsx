@@ -221,8 +221,7 @@ const FeaturedBusinessesPage = () => {
 const cityName = pageCity?.name
   ? formatLocationDisplay(
       pageCity.name,
-      pageCity.district,
-      pageCity.state
+      pageCity.district
     )
   : "your area";
 
@@ -350,40 +349,53 @@ const seoDescription =
 
             <ol className="flex flex-wrap items-center gap-2 text-sm">
 
-              <li>
-                <a
-                  href="/"
-                  className="text-white hover:text-blue-100"
-                >
-                  Home
-                </a>
-              </li>
+  <li>
+    <a
+      href="/"
+      className="text-white hover:text-blue-100"
+    >
+      Home
+    </a>
+  </li>
 
-              <li className="text-blue-200">
-                /
-              </li>
+  <li className="text-blue-200">
+    &gt;
+  </li>
 
-              <li>
-                <a
-                  href={`/${citySlugResolved}`}
-                  className="text-white hover:text-blue-100"
-                >
-                  {cityName}
-                </a>
-              </li>
+  <li>
+    <a
+      href={`/${pageCity?.stateSlug || ""}`}
+      className="text-white hover:text-blue-100"
+    >
+      {pageCity?.state || "State"}
+    </a>
+  </li>
 
-              <li className="text-blue-200">
-                /
-              </li>
+  <li className="text-blue-200">
+    &gt;
+  </li>
 
-              <li
-                className="font-semibold text-white"
-                aria-current="page"
-              >
-                Featured Businesses
-              </li>
+  <li>
+    <a
+      href={`/${pageCity?.stateSlug || ""}/${citySlugResolved}`}
+      className="text-white hover:text-blue-100"
+    >
+      {cityName}
+    </a>
+  </li>
 
-            </ol>
+  <li className="text-blue-200">
+    &gt;
+  </li>
+
+  <li
+    className="font-semibold text-white"
+    aria-current="page"
+  >
+    Featured Businesses
+  </li>
+
+</ol>
 
           </nav>
 
@@ -394,7 +406,7 @@ const seoDescription =
 
             Featured Businesses in{" "}
 
-            {cityName}, India
+            {cityName}, {pageCity?.state || ""}, India
 
           </h1>
 

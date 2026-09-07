@@ -61,16 +61,47 @@ const Footer = () => {
     /* CITIES */
     
     const cities = [
-      
-      { name: "Delhi", slug: "delhi-new-delhi-delhi" },
-      { name: "Mumbai", slug: "mumbai-mumbai-suburban-maharashtra" },
-      { name: "Bangalore", slug: "bengaluru-bengaluru-urban-karnataka" },
-      { name: "Hyderabad", slug: "hyderabad-hyderabad-telangana" },
-      { name: "Chennai", slug: "chennai-chennai-tamil-nadu" },
-      { name: "Kolkata", slug: "kolkata-kolkata-west-bengal" },
-      { name: "Patna", slug: "patna-patna-bihar" },
-      { name: "Pune", slug: "pune-pune-maharashtra" },
-    ];
+  {
+    name: "Delhi",
+    slug: "delhi-new-delhi-delhi",
+    stateSlug: "delhi",
+  },
+  {
+    name: "Mumbai",
+    slug: "mumbai-mumbai-suburban-maharashtra",
+    stateSlug: "maharashtra",
+  },
+  {
+    name: "Bangalore",
+    slug: "bengaluru-bengaluru-urban-karnataka",
+    stateSlug: "karnataka",
+  },
+  {
+    name: "Hyderabad",
+    slug: "hyderabad-hyderabad-telangana",
+    stateSlug: "telangana",
+  },
+  {
+    name: "Chennai",
+    slug: "chennai-chennai-tamil-nadu",
+    stateSlug: "tamil-nadu",
+  },
+  {
+    name: "Kolkata",
+    slug: "kolkata-kolkata-west-bengal",
+    stateSlug: "west-bengal",
+  },
+  {
+    name: "Patna",
+    slug: "patna-patna-bihar",
+    stateSlug: "bihar",
+  },
+  {
+    name: "Pune",
+    slug: "pune-pune-maharashtra",
+    stateSlug: "maharashtra",
+  },
+];
     
     return (
     
@@ -202,10 +233,10 @@ const Footer = () => {
 
         <Link
           to={
-            city?.slug
-              ? `/${city.slug}/${cat.slug}`
-              : `/category/${cat.slug}`
-          }
+  city?.slug
+    ? `/${city.stateSlug || city.state?.toLowerCase().replace(/\s+/g, "-")}/${city.slug}/${cat.slug}`
+    : `/category/${cat.slug}`
+}
           className="hover:text-white transition-colors"
         >
           {cat.name}
@@ -233,8 +264,10 @@ const Footer = () => {
             {cities.map((city) => (
               
               <li key={city.slug}>
-                <Link to={`/${city.slug}/all`}
-                className="hover:text-white transition-colors" >
+                <Link
+  to={`/${city.stateSlug}/${city.slug}`}
+  className="hover:text-white transition-colors"
+>
                   {city.name}
                   </Link>
                   </li>

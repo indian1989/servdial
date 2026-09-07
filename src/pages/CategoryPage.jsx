@@ -20,6 +20,14 @@ import {
 import BannerAd from "../components/ads/BannerAd";
 import BusinessCard from "../components/business/BusinessCard";
 
+const slugify = (value = "") =>
+  String(value)
+    .trim()
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-");
 
 const CategoryPage = () => {
 
@@ -55,15 +63,21 @@ const [businessLoading, setBusinessLoading] =
 
 useEffect(() => {
 
-  if (!citySlug) {
+ if (!citySlug) {
 
-    setPageCity(
-      contextCity || null
-    );
+  setPageCity(
+    contextCity
+      ? {
+          ...contextCity,
+          stateSlug:
+            contextCity.stateSlug ||
+            slugify(contextCity.state),
+        }
+      : null
+  );
 
-    return;
-
-  }
+  return;
+}
 
   const normalizedCitySlug =
     citySlug.toLowerCase();
@@ -91,9 +105,12 @@ useEffect(() => {
       matchedCity
     );
 
-    setPageCity(
-      matchedCity
-    );
+    setPageCity({
+  ...matchedCity,
+  stateSlug:
+    matchedCity.stateSlug ||
+    slugify(matchedCity.state),
+});
 
   } else if (
     !loading &&
@@ -306,8 +323,13 @@ useEffect(() => {
 
 
           setCities(
-            fetchedCities
-          );
+  fetchedCities.map((cityItem) => ({
+    ...cityItem,
+    stateSlug:
+      cityItem.stateSlug ||
+      slugify(cityItem.state),
+  }))
+);
 
 
           /* -------------------------------------------------
@@ -863,10 +885,10 @@ useEffect(() => {
 
           <Link
             to={
-              pageCity?.slug
-                ? `/${citySlugResolved}/${category.slug}`
-                : `/category/${category.slug}`
-            }
+  pageCity?.slug
+    ? `/${pageCity.stateSlug}/${citySlugResolved}/${category.slug}`
+    : `/category/${category.slug}`
+}
             className="
               group
               bg-white

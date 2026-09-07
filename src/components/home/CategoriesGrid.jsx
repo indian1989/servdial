@@ -64,12 +64,14 @@ const CategoriesGrid = ({ categories = [], city, loading = false }) => {
   // =====================================================
   // 🌍 CITY-AWARE CATEGORY NAVIGATION
   // =====================================================
-  // City selected → /city-slug/category-slug
+  // City selected → /state-slug/city-slug/category-slug
   // No city       → /category/category-slug
   // =====================================================
 
-  if (city?.slug) {
-    navigate(`/${city.slug}/${category.slug}`);
+  if (city?.slug && city?.stateSlug) {
+    navigate(
+      `/${city.stateSlug}/${city.slug}/${category.slug}`
+    );
   } else {
     navigate(`/category/${category.slug}`);
   }
@@ -149,9 +151,9 @@ const CategoriesGrid = ({ categories = [], city, loading = false }) => {
       <button
   onClick={() =>
     navigate(
-      selectedCity?.slug
-        ? `/${selectedCity.slug}/categories`
-        : "/categories"
+      selectedCity?.slug && selectedCity?.stateSlug
+  ? `/${selectedCity.stateSlug}/${selectedCity.slug}/categories`
+  : "/categories"
     )
   }
   className="px-6 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 transition"

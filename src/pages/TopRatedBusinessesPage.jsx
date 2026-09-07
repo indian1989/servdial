@@ -52,21 +52,6 @@ const [pageCity, setPageCity] =
               citySlug.toLowerCase()
           );
 
-        console.log(
-          "🏙️ TOP RATED cities:",
-          cities.length
-        );
-
-        console.log(
-          "🏙️ TOP RATED citySlug:",
-          citySlug
-        );
-
-        console.log(
-          "🏙️ TOP RATED matched city:",
-          match
-        );
-
         setPageCity(
           match || null
         );
@@ -236,8 +221,7 @@ const [pageCity, setPageCity] =
     pageCity?.name
       ? formatLocationDisplay(
           pageCity.name,
-          pageCity.district,
-          pageCity.state
+          pageCity.district
         )
       : "your area";
 
@@ -250,8 +234,7 @@ const [pageCity, setPageCity] =
     pageCity?.name
       ? formatLocationDisplay(
           pageCity.name,
-          pageCity.district,
-          pageCity.state
+          pageCity.district
         )
       : "your area";
 
@@ -383,40 +366,53 @@ const [pageCity, setPageCity] =
 
     <ol className="flex flex-wrap items-center gap-2 text-sm">
 
-      <li>
-        <a
-          href="/"
-          className="text-white hover:text-blue-100"
-        >
-          Home
-        </a>
-      </li>
+  <li>
+    <a
+      href="/"
+      className="text-white hover:text-blue-100"
+    >
+      Home
+    </a>
+  </li>
 
-      <li className="text-blue-200">
-        /
-      </li>
+  <li className="text-blue-200">
+    &gt;
+  </li>
 
-      <li>
-  <a
-    href={`/${citySlugResolved}`}
-    className="text-white hover:text-blue-100"
+  <li>
+    <a
+      href={`/${pageCity?.stateSlug || ""}`}
+      className="text-white hover:text-blue-100"
+    >
+      {pageCity?.state || "State"}
+    </a>
+  </li>
+
+  <li className="text-blue-200">
+    &gt;
+  </li>
+
+  <li>
+    <a
+      href={`/${pageCity?.stateSlug || ""}/${citySlugResolved}`}
+      className="text-white hover:text-blue-100"
+    >
+      {cityNameResolved}
+    </a>
+  </li>
+
+  <li className="text-blue-200">
+    &gt;
+  </li>
+
+  <li
+    className="font-semibold text-white"
+    aria-current="page"
   >
-    {cityNameResolved}
-  </a>
-</li>
+    Top Rated Businesses
+  </li>
 
-      <li className="text-blue-200">
-        /
-      </li>
-
-      <li
-        className="font-semibold text-white"
-        aria-current="page"
-      >
-        Top Rated Businesses
-      </li>
-
-    </ol>
+</ol>
 
   </nav>
 
@@ -427,7 +423,7 @@ const [pageCity, setPageCity] =
 
     Top Rated Businesses in{" "}
 
-    {cityNameResolved}, India
+    {cityNameResolved}, {pageCity?.state || ""}, India
 
   </h1>
 

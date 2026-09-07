@@ -77,40 +77,78 @@ useEffect(() => {
       setCategory(data);
 
       // =====================================================
-      // LEAF CATEGORY → BUSINESSES
-      // =====================================================
+// BUSINESSES
+// =====================================================
 
-      if ((data.children || []).length === 0) {
-        try {
-          const businessParams = new URLSearchParams();
+try {
+  const businessParams = new URLSearchParams();
 
-businessParams.set("category", slug);
-businessParams.set("limit", "50");
+  businessParams.set(
+    "category",
+    slug
+  );
 
-if (citySlug) {
-  businessParams.set("city", citySlug);
+  businessParams.set(
+    "limit",
+    "21"
+  );
+
+  let businessRes;
+
+  // ===================================================
+  // CITY-SPECIFIC CATEGORY
+  // ===================================================
+
+  if (citySlug) {
+
+    if (
+      (data.children || []).length === 0
+    ) {
+
+      businessParams.set(
+        "city",
+        citySlug
+      );
+
+      businessRes = await API.get(
+        `/businesses?${businessParams.toString()}`
+      );
+
+    } else {
+
+      businessRes = null;
+
+    }
+
+  }
+
+  // ===================================================
+  // GLOBAL CATEGORY
+  // RANDOM BUSINESSES ACROSS CITIES
+  // ===================================================
+
+  else {
+
+    businessRes = await API.get(
+      `/businesses/random-category?${businessParams.toString()}`
+    );
+
+  }
+
+  setBusinesses(
+    businessRes?.data?.data || []
+  );
+
+} catch (e) {
+
+  console.error(
+    "Business fetch error:",
+    e?.response?.data || e
+  );
+
+  setBusinesses([]);
+
 }
-
-const businessRes = await API.get(
-  `/businesses?${businessParams.toString()}`
-);
-
-          setBusinesses(
-            businessRes.data?.data || []
-          );
-
-        } catch (e) {
-          console.error(
-            "Business fetch error:",
-            e?.response?.data || e
-          );
-
-          setBusinesses([]);
-        }
-
-      } else {
-        setBusinesses([]);
-      }
 
     } catch (err) {
       console.error(
@@ -440,67 +478,127 @@ const ogDescription = description;
 
           </div>
 
-          {/* ================= CHILDREN ================= */}
-{category.children?.length > 0 ? (
-  // ===== MAIN CATEGORY → SHOW SUBCATEGORIES =====
-  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
-    
-    {category.children.map((sub) => (
-      <Link
-  key={sub._id}
-  to={
-    citySlug
-      ? `/${citySlug}/${category.slug}/${sub.slug}`
-      : `/category/${category.slug}/${sub.slug}`
-  }
-      className="group bg-white border border-gray-100 rounded-2xl p-5
-      hover:shadow-xl hover:border-blue-200 transition-all duration-300" >
-        
-        <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-
-        center justify-center mb-4 group-hover:bg-blue-100 transition">
-          
-          {sub.icon ? (
-            <img
-            src={sub.icon}
-            alt={sub.name}
-            className="w-8 h-8 object-contain"
-            />
-          ) : (
-          <Layers3 size={24} className="text-blue-600" />
-        )}
-        </div>
-        
-        <h3 className="font-semibold text-gray-800 text-sm leading-6
-        group-hover:text-blue-600 transition min-h-[48px]">
-          {sub.name}
+   {/* ================= CHILDREN ================= */}
+
+{category.children?.length > 0 && (
+  <>
+    {/* ===== MAIN CATEGORY → SHOW SUBCATEGORIES ===== */}
+
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+
+      {category.children.map((sub) => (
+        <Link
+          key={sub._id}
+          to={
+            citySlug
+              ? `/${citySlug}/${category.slug}/${sub.slug}`
+              : `/category/${category.slug}/${sub.slug}`
+          }
+          className="group bg-white border border-gray-100 rounded-2xl p-5
+          hover:shadow-xl hover:border-blue-200 transition-all duration-300"
+        >
+
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center
+          justify-center mb-4 group-hover:bg-blue-100 transition">
+
+            {sub.icon ? (
+              <img
+                src={sub.icon}
+                alt={sub.name}
+                className="w-8 h-8 object-contain"
+              />
+            ) : (
+              <Layers3 size={24} className="text-blue-600" />
+            )}
+
+          </div>
+
+          <h3 className="font-semibold text-gray-800 text-sm leading-6
+          group-hover:text-blue-600 transition min-h-[48px]">
+            {sub.name}
           </h3>
-          
+
           <div className="flex items-center justify-between mt-4">
-            
+
             <span className="text-xs text-gray-500">
               Explore businesses
-              </span>
-              
-              <ArrowRight
+            </span>
+
+            <ArrowRight
               size={16}
-              className="text-gray-400 group-hover:text-blue-600
-              transition"
-              />
-              </div>
-              </Link>
-              ))}
-              </div>
-              
-            ) : businesses.length > 0 ? (
-              
-              // ===== LEAF CATEGORY → SHOW BUSINESSES =====
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-         {businesses.map((b) => ( <BusinessCard key={b._id} business={b} /> ))}
-                  </div>
-                  ) : (
-                    
-                    // ===== TRULY EMPTY =====
-                    <div className="bg-white border rounded-3xl p-10 text-center shadow-sm"> <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center mx-auto mb-5"> <Layers3 size={28} className="text-gray-400" /> </div> <h3 className="text-xl font-semibold text-gray-700 mb-2"> No Businesses Found </h3> <p className="text-gray-500"> No businesses are available in this category right now. </p> </div> )}
+              className="text-gray-400 group-hover:text-blue-600 transition"
+            />
+
+          </div>
+
+        </Link>
+      ))}
+
+    </div>
+  </>
+)}
+
+
+{/* ================= BUSINESSES ================= */}
+
+{businesses.length > 0 && (
+  <section className="mt-14">
+
+    <div className="flex items-center justify-between mb-6">
+
+      <div>
+        <h2 className="text-2xl font-bold text-gray-800">
+          Businesses in {category.name}
+        </h2>
+
+        <p className="text-gray-500 mt-1">
+          Explore businesses and service providers in this category.
+        </p>
+      </div>
+
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+      {businesses.map((b) => (
+        <BusinessCard
+          key={b._id}
+          business={b}
+        />
+      ))}
+
+    </div>
+
+  </section>
+)}
+
+
+{/* ================= TRULY EMPTY ================= */}
+
+{category.children?.length === 0 &&
+  businesses.length === 0 && (
+    <div className="bg-white border rounded-3xl p-10 text-center shadow-sm">
+
+      <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center
+      justify-center mx-auto mb-5">
+
+        <Layers3
+          size={28}
+          className="text-gray-400"
+        />
+
+      </div>
+
+      <h3 className="text-xl font-semibold text-gray-700 mb-2">
+        No Businesses Found
+      </h3>
+
+      <p className="text-gray-500">
+        No businesses are available in this category right now.
+      </p>
+
+    </div>
+  )}
           {/* ================= SEO CONTENT ================= */}
           <div className="bg-white border rounded-3xl p-8 mt-14 shadow-sm">
 

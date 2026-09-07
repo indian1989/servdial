@@ -6,15 +6,27 @@ import { Helmet } from "react-helmet-async";
 
 import API from "../api/axios";
 import BusinessCard from "../components/business/BusinessCard";
-import { normalizeLocation } from "../utils/addressHelper";
+import {
+  normalizeLocation,
+  formatLocationDisplay,
+} from "../utils/addressHelper";
 import NotFound from "./NotFound";
 
-const CityCategoryPage = () => {
+const CityCategoryPage = ({ resolvedParams }) => {
   // ================= URL PARAMS =================
-  const params = useParams();
-  const navigate = useNavigate();
-  const citySlug = params.citySlug;
-  const categorySlug = params.categorySlug || "all";
+const params = useParams();
+const navigate = useNavigate();
+
+const stateSlug =
+  resolvedParams?.stateSlug || params.stateSlug;
+
+const citySlug =
+  resolvedParams?.citySlug || params.citySlug;
+
+const categorySlug =
+  resolvedParams?.categorySlug ||
+  params.categorySlug ||
+  "all";
 
   const [notFound, setNotFound] = useState(false);
 
@@ -85,10 +97,14 @@ if (
   )
 ) {
 
-  const targetUrl =
-    categorySlug === "all"
-      ? `/${canonicalCitySlug}`
-      : `/${canonicalCitySlug}/${canonicalCategorySlug}`;
+  const canonicalStateSlug =
+  data?.city?.stateSlug ||
+  stateSlug;
+
+const targetUrl =
+  categorySlug === "all"
+    ? `/${canonicalStateSlug}/${canonicalCitySlug}`
+    : `/${canonicalStateSlug}/${canonicalCitySlug}/${canonicalCategorySlug}`;
 
   navigate(targetUrl, {
     replace: true,
@@ -207,6 +223,15 @@ const formattedCity = cityInfo?.name
 ?.replace(/-/g, " ")
 ?.replace(/\b\w/g, (l) => l.toUpperCase()) || "";
 
+const breadcrumbCity = cityInfo?.name
+  ? formatLocationDisplay(
+      cityInfo.name,
+      cityInfo.district
+    )
+  : citySlug
+      ?.replace(/-/g, " ")
+      ?.replace(/\b\w/g, (l) => l.toUpperCase()) || "";
+
 const isAllPage = categorySlug === "all";
 
 console.log({ citySlug, categorySlug, isAllPage, categoryInfo });
@@ -231,8 +256,10 @@ const title = isAllPage
     : `Find trusted ${formattedCategory} services in ${formattedCity}.
     Browse verified local businesses, contact details, ratings and more on ServDial.`;
 
-  const canonicalUrl = `https://servdial.com/${citySlug}/${categorySlug}`;
-
+  const canonicalUrl =
+  categorySlug === "all"
+    ? `https://servdial.com/${stateSlug}/${citySlug}`
+    : `https://servdial.com/${stateSlug}/${citySlug}/${categorySlug}`;
    
   const schema = {
   "@context": "https://schema.org",
@@ -262,29 +289,39 @@ const title = isAllPage
     };
     
     const breadcrumbSchema = {
-    "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
     {
-    "@type": "ListItem",
-    position: 1,
-    name: "Home",
-    item: "https://servdial.com",
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: "https://servdial.com/",
     },
     {
-    "@type": "ListItem",
-    position: 2,
-    name: formattedCity,
-    item: `https://servdial.com/${citySlug}`,
+      "@type": "ListItem",
+      position: 2,
+      name: cityInfo?.state || "",
+      item: `https://servdial.com/${stateSlug}`,
     },
     {
-    "@type": "ListItem",
-    position: 3,
-    name: formattedCategory,
-    item: canonicalUrl,
+      "@type": "ListItem",
+      position: 3,
+      name: formattedCity,
+      item: `https://servdial.com/${stateSlug}/${citySlug}`,
     },
-    ],
-    };
+    ...(categorySlug !== "all"
+      ? [
+          {
+            "@type": "ListItem",
+            position: 4,
+            name: formattedCategory,
+            item: canonicalUrl,
+          },
+        ]
+      : []),
+  ],
+};
 
 // ================= FAQ DATA =================
   const faqItems = categorySlug === 'restaurant'
@@ -441,34 +478,44 @@ if (notFound) {
           <div className="max-w-7xl mx-auto px-4 py-12">
 
             {/* BREADCRUMB */}
-            <div className="flex flex-wrap items-center gap-2 text-sm text-blue-100 mb-5">
+<div className="flex flex-wrap items-center gap-2 text-sm text-blue-100 mb-5">
 
-              <Link
-                to="/"
-                className="hover:text-white transition"
-              >
-                Home
-              </Link>
+  <Link
+    to="/"
+    className="hover:text-white transition"
+  >
+    Home
+  </Link>
 
-              <span>/</span>
+  <span>&gt;</span>
 
-              <Link
-              to={`/${citySlug}`} className="hover:text-white transition capitalize"
-              >
-                {formattedCity}
-              </Link>
+  <Link
+  to={`/${stateSlug}`}
+  className="hover:text-white transition capitalize"
+>
+  {cityInfo?.state || ""}
+</Link>
 
-              {categorySlug !== "all" && (
-              <>
-              <span>/</span>
+<span>&gt;</span>
 
-              <span className="text-white font-medium capitalize">
-              {formattedCategory}
-              </span>
-              </>
-              )}
+<Link
+  to={`/${stateSlug}/${citySlug}`}
+  className="hover:text-white transition capitalize"
+>
+  {breadcrumbCity}
+</Link>
 
-            </div>
+{categorySlug !== "all" && (
+  <>
+    <span>&gt;</span>
+
+    <span className="text-white font-medium capitalize">
+      {formattedCategory}
+    </span>
+  </>
+)}
+
+</div>
 
             {/* HEADING */}
             <h1 className="text-3xl md:text-5xl font-bold capitalize leading-tight">
@@ -547,7 +594,7 @@ if (notFound) {
 
         <Link
         key={sub._id}
-        to={`/${citySlug}/${sub.slug}`}
+        to={`/${stateSlug}/${citySlug}/${sub.slug}`}
         className=" bg-white border border-gray-200 rounded-2xl p-5 hover:shadow-lg hover:border-blue-200 transition-all duration-300 group "
         >
 
@@ -576,7 +623,7 @@ if (notFound) {
             </div>
 
             <Link
-            to={`/${citySlug}`} className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 transition text-sm font-medium"
+            to={`/${stateSlug}/${citySlug}`} className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl border border-gray-300 bg-white hover:bg-gray-100 transition text-sm font-medium"
             >
               ← Explore More Categories
             </Link>
@@ -617,7 +664,7 @@ if (notFound) {
 
               <div className="mt-8">
                 <Link
-                  to={`/${citySlug}`}
+                  to={`/${stateSlug}/${citySlug}`}
                   className="inline-flex items-center px-6 py-3 rounded-2xl bg-blue-600 text-white hover:bg-blue-700 transition font-medium"
                 >
                   Browse Other Categories

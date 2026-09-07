@@ -8,7 +8,10 @@ import {
   BookmarkCheck,
   MapPin,
 } from "lucide-react";
-import { formatCityLocation } from "../../utils/addressHelper";
+import {
+  formatCityLocation,
+  formatLocationDisplay,
+} from "../../utils/addressHelper";
 
 const titleCase = (str = "") =>
   str
@@ -81,6 +84,54 @@ const BusinessHero = ({
   const countryName =
     business?.country ||
     "India";
+
+    // =========================================================
+  // BREADCRUMB DATA
+  // =========================================================
+
+  const breadcrumbStateName =
+    business?.cityId?.state ||
+    business?.state ||
+    "";
+
+  const breadcrumbStateSlug =
+    business?.cityId?.stateSlug ||
+    "";
+
+    const breadcrumbCityName =
+  business?.cityId?.name
+    ? formatLocationDisplay(
+        business.cityId.name,
+        business.cityId.district
+      )
+    : business?.cityName || "";
+
+  const breadcrumbCitySlug =
+    business?.cityId?.slug ||
+    business?.citySlug ||
+    "";
+
+  const parentCategoryName =
+    business?.parentCategoryId?.name ||
+    "";
+
+  const parentCategorySlug =
+    business?.parentCategoryId?.slug ||
+    "";
+
+  const subcategoryName =
+    business?.categoryId?.name ||
+    categoryName ||
+    "";
+
+  const subcategorySlug =
+    business?.categoryId?.slug ||
+    business?.categorySlug ||
+    "";
+
+  const businessSlug =
+    business?.slug ||
+    "";
 
   // =========================================================
   // VERIFICATION
@@ -204,6 +255,197 @@ const verificationType =
           overflow-hidden
         "
       >
+
+            {/* =================================================
+            BREADCRUMB
+        ================================================= */}
+
+        <nav
+          aria-label="Breadcrumb"
+          className="
+            absolute
+            top-4
+            left-4
+            right-4
+
+            sm:left-6
+            sm:right-6
+
+            md:left-8
+            md:right-8
+
+            z-30
+
+            overflow-x-auto
+            scrollbar-hide
+          "
+        >
+          <ol
+            className="
+              flex
+              items-center
+              gap-2
+
+              whitespace-nowrap
+
+              text-xs
+              sm:text-sm
+
+              text-white
+            "
+          >
+
+            {/* HOME */}
+
+            <li>
+              <a
+                href="/"
+                className="
+                  hover:text-blue-200
+                  transition
+                "
+              >
+                Home
+              </a>
+            </li>
+
+            <li className="text-white/60">
+              &gt;
+            </li>
+
+            {/* STATE */}
+
+            {breadcrumbStateName && (
+              <>
+                <li>
+                  {breadcrumbStateSlug ? (
+                    <a
+                      href={`/${breadcrumbStateSlug}`}
+                      className="
+                        hover:text-blue-200
+                        transition
+                      "
+                    >
+                      {breadcrumbStateName}
+                    </a>
+                  ) : (
+                    <span>
+                      {breadcrumbStateName}
+                    </span>
+                  )}
+                </li>
+
+                <li className="text-white/60">
+                  &gt;
+                </li>
+              </>
+            )}
+
+            {/* CITY */}
+
+            {breadcrumbCityName && (
+              <>
+                <li>
+                  {breadcrumbCitySlug &&
+                  breadcrumbStateSlug ? (
+                    <a
+                      href={`/${breadcrumbStateSlug}/${breadcrumbCitySlug}`}
+                      className="
+                        hover:text-blue-200
+                        transition
+                      "
+                    >
+                      {breadcrumbCityName}
+                    </a>
+                  ) : (
+                    <span>
+                      {breadcrumbCityName}
+                    </span>
+                  )}
+                </li>
+
+                <li className="text-white/60">
+                  &gt;
+                </li>
+              </>
+            )}
+
+            {/* PARENT CATEGORY */}
+
+            {parentCategoryName && (
+              <>
+                <li>
+                  {breadcrumbStateSlug &&
+                  breadcrumbCitySlug &&
+                  parentCategorySlug ? (
+                    <a
+                      href={`/${breadcrumbStateSlug}/${breadcrumbCitySlug}/${parentCategorySlug}`}
+                      className="
+                        hover:text-blue-200
+                        transition
+                      "
+                    >
+                      {titleCase(parentCategoryName)}
+                    </a>
+                  ) : (
+                    <span>
+                      {titleCase(parentCategoryName)}
+                    </span>
+                  )}
+                </li>
+
+                <li className="text-white/60">
+                  &gt;
+                </li>
+              </>
+            )}
+
+            {/* SUBCATEGORY */}
+
+            {subcategoryName && (
+              <>
+                <li>
+                  {breadcrumbStateSlug &&
+                  breadcrumbCitySlug &&
+                  subcategorySlug ? (
+                    <a
+                      href={`/${breadcrumbStateSlug}/${breadcrumbCitySlug}/${subcategorySlug}`}
+                      className="
+                        hover:text-blue-200
+                        transition
+                      "
+                    >
+                      {titleCase(subcategoryName)}
+                    </a>
+                  ) : (
+                    <span>
+                      {titleCase(subcategoryName)}
+                    </span>
+                  )}
+                </li>
+
+                <li className="text-white/60">
+                  &gt;
+                </li>
+              </>
+            )}
+
+            {/* BUSINESS */}
+
+            <li
+              className="
+                font-medium
+                text-white
+                truncate
+                max-w-[180px]
+                sm:max-w-[300px]
+              "
+            >
+              {businessName}
+            </li>
+
+          </ol>
+        </nav>
 
         {/* =================================================
             HERO IMAGE

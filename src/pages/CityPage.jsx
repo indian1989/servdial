@@ -14,7 +14,7 @@ import NotFound from "./NotFound";
 import BusinessCard from "../components/business/BusinessCard";
 
 const CityPage = () => {
-  const { citySlug } = useParams();
+  const { stateSlug, citySlug } = useParams();
   const navigate = useNavigate();
 
   const [categories, setCategories] = useState([]);
@@ -49,9 +49,9 @@ useEffect(() => {
         cityRes.data?.redirect === true &&
         cityRes.data?.to
       ) {
-        navigate(`/${cityRes.data.to}`, {
-          replace: true,
-        });
+        navigate(`/${stateSlug}/${cityRes.data.to}`, {
+  replace: true,
+});
 
         // IMPORTANT:
         // Do NOT set loading false here.
@@ -111,7 +111,7 @@ useEffect(() => {
     cancelled = true;
   };
 
-}, [citySlug, navigate]);
+}, [stateSlug, citySlug, navigate]);
 
 // ================= RANDOM CITY BUSINESSES =================
 useEffect(() => {
@@ -178,7 +178,7 @@ useEffect(() => {
 
   const description = `Find trusted local businesses, professionals and service providers in ${formattedCity}. Browse all popular categories on ServDial.`;
 
-  const url = `https://servdial.com/${citySlug}`;
+  const url = `https://servdial.com/${stateSlug}/${citySlug}`;
 
   const schema = {
     "@context": "https://schema.org",
@@ -188,7 +188,7 @@ useEffect(() => {
       "@type": "ListItem",
       position: index + 1,
       name: `${cat.name} in ${formattedCity}`,
-      url: `https://servdial.com/${citySlug}/${cat.slug}`,
+      url: `https://servdial.com/${stateSlug}/${citySlug}/${cat.slug}`,
     })),
   };
 
@@ -248,6 +248,15 @@ if (!cityData) {
                 className="hover:text-white transition"
               >
                 Home
+              </Link>
+
+              <ChevronRight size={14} />
+
+              <Link
+                to={`/${stateSlug}`}
+                className="hover:text-white transition"
+              >
+                {cityData?.state || stateSlug?.replace(/-/g, " ")}
               </Link>
 
               <ChevronRight size={14} />
@@ -315,7 +324,7 @@ if (!cityData) {
 
                 <Link
                   key={cat._id}
-                  to={`/${citySlug}/${cat.slug}`}
+                  to={`/${stateSlug}/${citySlug}/${cat.slug}`}
                   className="group bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-xl hover:border-blue-200 transition-all duration-300"
                 >
 
