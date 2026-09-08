@@ -12,6 +12,7 @@ import {
 
 import NotFound from "./NotFound";
 import BusinessCard from "../components/business/BusinessCard";
+import { formatLocationDisplay } from "../utils/addressHelper";
 
 const CityPage = () => {
   const { stateSlug, citySlug } = useParams();
@@ -169,16 +170,22 @@ useEffect(() => {
   );
 
   // ================= SEO =================
-  const formattedCity =
-    cityData?.name ||
-    citySlug?.replace(/-/g, " ") ||
-    "City";
+  const formattedCity = formatLocationDisplay(
+  cityData?.name || citySlug?.replace(/-/g, " "),
+  cityData?.district,
+  cityData?.state
+);
 
-  const title = `All Services in ${formattedCity} | ServDial`;
+const breadcrumbCity = formatLocationDisplay(
+  cityData?.name || citySlug?.replace(/-/g, " "),
+  cityData?.district
+);
 
-  const description = `Find trusted local businesses, professionals and service providers in ${formattedCity}. Browse all popular categories on ServDial.`;
+const title = `Businesses in ${formattedCity} | Local Business Directory | ServDial`;
 
-  const url = `https://servdial.com/${stateSlug}/${citySlug}`;
+const description = `Discover local businesses, professionals and service providers in ${formattedCity}. Browse businesses by category and find local services on ServDial.`;
+
+const url = `https://servdial.com/${stateSlug}/${citySlug}`;
 
   const schema = {
     "@context": "https://schema.org",
@@ -262,8 +269,8 @@ if (!cityData) {
               <ChevronRight size={14} />
 
               <span className="text-white font-medium">
-                {formattedCity}
-              </span>
+              {breadcrumbCity}
+            </span>
 
             </div>
 
@@ -276,7 +283,7 @@ if (!cityData) {
               </div>
 
               <h1 className="text-4xl md:text-5xl font-bold leading-tight mb-4">
-                All Services in {formattedCity}
+                Businesses in {formattedCity}
               </h1>
 
               <p className="text-blue-100 text-lg leading-relaxed">

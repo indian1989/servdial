@@ -7,6 +7,8 @@ import {
   generateBreadcrumbSchema,
 } from "../../utils/schemaBuilder";
 
+import { formatLocationDisplay } from "../../utils/addressHelper";
+
 
 const FRONTEND_URL =
   import.meta.env.VITE_FRONTEND_URL ||
@@ -51,12 +53,11 @@ const normalizeLocation = (...parts) => {
 
 
 // =========================================================
-// BUSINESS SEO
+// BUSINESS SEO — FINAL SSOT
 // =========================================================
 
 const BusinessSEO = ({
   business,
-  currentUrl,
 }) => {
 
   if (!business) return null;
@@ -114,10 +115,22 @@ const BusinessSEO = ({
   // =======================================================
   // SEO LOCATION
   // =======================================================
+  //
+  // FINAL BUSINESS SEO LOCATION:
+  //
+  // City, District, State
+  //
+  // Area is intentionally NOT included.
+  //
+  // Example:
+  // Hajipur, Vaishali, Bihar
+  //
+  // Duplicate locations are removed by
+  // formatLocationDisplay().
+  // =======================================================
 
   const locationText =
-    normalizeLocation(
-      area,
+    formatLocationDisplay(
       cityName,
       districtName,
       stateName
@@ -139,12 +152,22 @@ const BusinessSEO = ({
   // =======================================================
 
   const businessName =
-    business?.name ||
+    business?.name?.trim() ||
     "Business";
 
 
   // =======================================================
-  // BACKEND GENERATED SEO
+  // BACKEND SEO DATA
+  // =======================================================
+  //
+  // Backend SEO data may contain old/stored values.
+  //
+  // IMPORTANT:
+  // SEO TITLE and H1 are generated here from current
+  // business data so old database values cannot override
+  // the final SSOT format.
+  //
+  // Description and keywords can still use backend data.
   // =======================================================
 
   const seo =
@@ -152,17 +175,26 @@ const BusinessSEO = ({
 
 
   // =======================================================
-  // FALLBACK TITLE
+  // FINAL SEO TITLE — SSOT
+  // =======================================================
+  //
+  // FINAL FORMAT:
+  //
+  // Business Name | Category in City, District, State | ServDial
+  //
+  // Example:
+  // Adhunik Naksha Ghar | Architecture Firm in Hajipur,
+  // Vaishali, Bihar | ServDial
   // =======================================================
 
-  const fallbackTitle =
+  const generatedTitle =
     locationText
-      ? `${businessName} - ${categoryName} in ${locationText} | ServDial`
-      : `${businessName} - ${categoryName} | ServDial`;
+      ? `${businessName} | ${categoryName} in ${locationText} | ServDial`
+      : `${businessName} | ${categoryName} | ServDial`;
 
 
   // =======================================================
-  // FALLBACK DESCRIPTION
+  // FINAL SEO DESCRIPTION
   // =======================================================
 
   const fallbackDescription =
@@ -178,12 +210,21 @@ const BusinessSEO = ({
 
 
   // =======================================================
-  // SEO META — BACKEND FIRST
+  // FINAL SEO META
+  // =======================================================
+  //
+  // TITLE:
+  // Always generated locally.
+  //
+  // DESCRIPTION:
+  // Backend value allowed.
+  //
+  // KEYWORDS:
+  // Backend value allowed.
   // =======================================================
 
   const title =
-    seo?.title ||
-    fallbackTitle;
+    generatedTitle;
 
 
   const description =
@@ -204,11 +245,19 @@ const BusinessSEO = ({
           cityName,
           districtName,
           stateName,
+          `${categoryName} near me`,
+          `${categoryName}s near me`,
+          `${categoryName} ${cityName}`,
+          `${categoryName}s ${cityName}`,
           `${categoryName} in ${cityName}`,
+          `${categoryName}s in ${cityName}`,
           `Best ${categoryName} in ${cityName}`,
+          `Top ${categoryName} in ${cityName}`,
           `Verified ${categoryName} in ${cityName}`,
           `${businessName} phone number`,
           `${businessName} address`,
+          `${businessName} photo`,
+          `${businessName} review`,
           "ServDial",
         ]
           .filter(Boolean)
@@ -216,15 +265,21 @@ const BusinessSEO = ({
 
 
   // =======================================================
-  // SEO H1
+  // SEO H1 — FINAL SSOT
+  // =======================================================
+  //
+  // Stored seo.h1 is intentionally ignored so an old
+  // database value cannot restore the old "-" format.
+  //
+  // Example:
+  // Adhunik Naksha Ghar | Architecture Firm in Hajipur,
+  // Vaishali, Bihar
   // =======================================================
 
   const h1 =
-    seo?.h1 ||
-    fallbackTitle.replace(
-      " | ServDial",
-      ""
-    );
+    locationText
+      ? `${businessName} | ${categoryName} in ${locationText}`
+      : `${businessName} | ${categoryName}`;
 
 
   // =======================================================
@@ -397,9 +452,13 @@ const BusinessSEO = ({
 
       {/* ================= H1 ================= */}
 
-      {/* 
+      {/*
         H1 is intentionally NOT rendered here.
-        Use `business.seo.h1` in the actual page content.
+
+        Use `h1` in the actual BusinessPage content.
+
+        Final H1 value:
+        `${businessName} | ${categoryName} in ${locationText}`
       */}
 
 

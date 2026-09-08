@@ -204,11 +204,6 @@ const uiType =
   business?.category?.uiType ||
   "service";
 
-  console.log(
-  "💰 BUSINESS PRICING:",
-  business?.pricing
-);
-
  if (!business?._id) {
  return (
 
@@ -223,7 +218,6 @@ const uiType =
   <>
     <BusinessSEO
     business={business}
-    currentUrl={currentUrl}
 />
 
     <div className="bg-gray-50 min-h-screen pb-32">
