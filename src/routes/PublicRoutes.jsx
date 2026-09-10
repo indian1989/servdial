@@ -372,6 +372,7 @@ const PublicRoutes = () => {
   {/* SEARCH */}
   <Route path="/search" element={<SearchResults />} />
 
+
   {/* STATE */}
 <Route
   path="/:stateSlug"

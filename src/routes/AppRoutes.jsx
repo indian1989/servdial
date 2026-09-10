@@ -6,6 +6,7 @@ import PublicRoutes from "./PublicRoutes";
 import AuthRoutes from "./AuthRoutes";
 import AdminRoutes from "./AdminRoutes";
 import ProviderRoutes from "./ProviderRoutes";
+import TemporaryListingRoutes from "./temporaryListingRoutes";
 import UserRoutes from "./UserRoutes";
 import About from "../pages/static/About";
 import Contact from "../pages/static/Contact";
@@ -33,6 +34,9 @@ function AppRoutes() {
 
         {/* PUBLIC */}
         {PublicRoutes()}
+
+        {/* TEMPORARY LISTINGS */}
+{TemporaryListingRoutes()}
 
         {/* ADMIN */}
         {AdminRoutes()}

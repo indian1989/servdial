@@ -46,10 +46,18 @@ const Header = () => {
       : "/",
     icon: Building2 
   },
+
+  {
+  name: "Temporary Listings",
+  path: "/temporary-listings",
+  icon: PlusCircle,
+  isNew: true,
+},
+
     { name: "Get Your Business Website", path: "/business-website", icon: Globe },
     { name: "List Your Business", path: "/provider/add-business", icon: PlusCircle },
     { name: "Advertise With Us", path: "/banner-pricing", icon: PlusCircle },
-    { name: "About ServDial", path: "/about", icon: Info },
+  // { name: "About ServDial", path: "/about", icon: Info },
   ];
 
   return (
@@ -80,7 +88,15 @@ const Header = () => {
                   }`}
                 >
                   <Icon size={16} />
-                  {item.name}
+                  <span className="flex items-center gap-1 whitespace-nowrap">
+  {item.name}
+
+  {item.isNew && (
+    <sup className="ml-0.5 text-[8px] font-bold text-red-500">
+      NEW
+    </sup>
+  )}
+</span>
                 </Link>
               );
             })}
@@ -172,7 +188,16 @@ const Header = () => {
                   className="flex items-center gap-2 py-1 text-gray-700"
                 >
                   <Icon size={16} />
-                  {item.name}
+
+<span className="flex items-center gap-1 whitespace-nowrap">
+  {item.name}
+
+  {item.isNew && (
+    <sup className="ml-0.5 text-[8px] font-bold text-red-500">
+      NEW
+    </sup>
+  )}
+</span>
                 </Link>
               );
             })}

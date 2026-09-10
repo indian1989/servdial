@@ -13,6 +13,7 @@ import {
   FaCog,
   FaImage,
   FaImages,
+  FaClock,
 } from "react-icons/fa";
 
 /**
@@ -51,6 +52,15 @@ export const providerRoutes = [
     label: "Add Business",
     element: "ProviderAddBusiness",
     icon: FaPlusCircle,
+  },
+
+    // ================= TEMPORARY LISTINGS =================
+  {
+    path: "/provider/temporary-listings",
+    key: "temporary-listings",
+    label: "Temporary Listings",
+    element: "ProviderTemporaryListings",
+    icon: FaClock,
   },
 
   // ================= BANNERS =================

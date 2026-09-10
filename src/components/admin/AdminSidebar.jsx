@@ -352,6 +352,22 @@ function SidebarContent({
           />
 
 
+{/* =================================================
+    TEMPORARY LISTINGS
+================================================= */}
+
+<SectionTitle>
+  Temporary Listings
+</SectionTitle>
+
+<AdminNavItem
+  to="/admin/temporary-listings"
+  label="Temporary Listings"
+  icon={FaStore}
+  mobile={mobile}
+  onClose={onClose}
+  isNew
+/>
           {/* =================================================
               LOCATION ENGINE
           ================================================= */}
@@ -667,6 +683,7 @@ function AdminNavItem({
   icon: Icon,
   mobile,
   onClose,
+  isNew = false,
 }) {
 
   return (
@@ -781,16 +798,22 @@ function AdminNavItem({
             {/* LABEL */}
 
             <span
-              className="
-                flex-1
-                min-w-0
-                text-sm
-                font-medium
-                truncate
-              "
-            >
-              {label}
-            </span>
+  className="
+    flex-1
+    min-w-0
+    text-sm
+    font-medium
+    truncate
+  "
+>
+  {label}
+
+  {isNew && (
+    <sup className="ml-1 text-[8px] font-bold text-red-400">
+      NEW
+    </sup>
+  )}
+</span>
 
 
             {/* ARROW */}
