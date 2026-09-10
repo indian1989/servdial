@@ -1,4 +1,5 @@
-//frontend/src/pages/provider/EditBusiness.jsx
+// frontend/src/pages/provider/EditBusiness.jsx
+
 import { useEffect, useState } from "react";
 
 import {
@@ -6,868 +7,176 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-import API from "../../api/axios";
-
-import Select from "react-select";
-
 import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  useMapEvents,
-} from "react-leaflet";
-
-import L from "leaflet";
-
-import {
-  FaSave,
-  FaMapMarkerAlt,
-} from "react-icons/fa";
-
-import {
-  getProviderBusinessById
+  getProviderBusinessById,
 } from "../../api/providerAPI";
 
-import BusinessFeatureFields from "../../components/business/BusinessFeatureFields";
-import BusinessMediaManager from "../../components/BusinessMediaManager";
-import BusinessHoursManager from "../../components/BusinessHoursManager";
-import { normalizeAddress, formatBusinessAddress } from "../../utils/addressHelper";
+import BusinessForm from "../../components/business/BusinessForm";
+import BusinessSubmitter from "../../components/business/BusinessSubmitter";
 
 import Loader from "../../components/common/Loader";
 
-/* ================= MARKER FIX ================= */
-
-const markerIcon = new L.Icon({
-  iconUrl:
-    "https://unpkg.com/leaflet@1.9.3/dist/images/marker-icon.png",
-
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
-/* ================= MAP PICKER ================= */
-
-const LocationPicker = ({
-  setLocation,
-}) => {
-  useMapEvents({
-    click(e) {
-      setLocation([
-        e.latlng.lat,
-        e.latlng.lng,
-      ]);
-    },
-  });
-
-  return null;
-};
-
-/* ================= SELECT STYLE ================= */
-
-const selectStyles = {
-  control: (base, state) => ({
-    ...base,
-    minHeight: "48px",
-    borderRadius: "12px",
-    borderColor: state.isFocused
-      ? "#6366f1"
-      : "#d1d5db",
-
-    boxShadow: "none",
-
-    "&:hover": {
-      borderColor: "#6366f1",
-    },
-  }),
-};
+/**
+ * ======================================================
+ * PROVIDER EDIT BUSINESS
+ *
+ * Thin wrapper around:
+ *
+ * BusinessForm
+ *      +
+ * BusinessSubmitter
+ *
+ * RESPONSIBILITY:
+ * - Load existing business
+ * - Pass business data to common BusinessForm
+ * - Submit update through BusinessSubmitter
+ *
+ * Form logic remains inside BusinessForm.
+ * API submission remains inside BusinessSubmitter.
+ * ======================================================
+ */
 
 const EditBusiness = () => {
   const { id } = useParams();
 
   const navigate = useNavigate();
 
+  const [business, setBusiness] =
+    useState(null);
+
   const [loading, setLoading] =
     useState(true);
 
-  const [saving, setSaving] =
-    useState(false);
-
-  const [categories, setCategories] =
-    useState([]);
-
-  const [cities, setCities] =
-    useState([]);
-
-  const [location, setLocation] =
-    useState([26.1209, 85.3647]);
-
-    const [logo, setLogo] = useState("");
-  const [form, setForm] = useState({
-
-  name: "",
-  description: "",
-
-  categoryId: null,
-  cityId: null,
-
-  categoryFeatures: [],
-
-  address: {
-  street: "",
-  area: "",
-  landmark: "",
-},
-  pincode: "",
-
-  phone: "",
-  whatsapp: "",
-  website: "",
-
-  logo: "",
-  images: [],
-
-
-  pricing: [],
-  services: [],
-  catalog: [],
-  faq: [],
-  offers: [],
-  menu: [],
-
-
-  businessHours: {},
-
-});
-
-  /* ================= FETCH ================= */
+  /* =====================================================
+     FETCH BUSINESS
+  ===================================================== */
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchBusiness = async () => {
       try {
         setLoading(true);
 
-        const [
-          catRes,
-          cityRes,
-          bizRes,
-        ] = await Promise.all([
-          API.get("/categories"),
-          API.get("/cities"),
-          API.get(`/provider/businesses/${id}`),
-        ]);
+        const res =
+          await getProviderBusinessById(id);
 
-        /* ================= CATEGORIES ================= */
+        const data =
+          res?.data?.business ||
+          res?.data?.data ||
+          null;
 
-        const rawCategories =
-          catRes?.data?.data || [];
+        if (!data) {
+          throw new Error(
+            "Business not found"
+          );
+        }
 
-        setCategories(
- rawCategories.map((c)=>({
-
-   value:c._id,
-
-   label:c.name,
-
-   features:c.features || [],
-
- }))
-);
-
-        /* ================= CITIES ================= */
-
-        const rawCities =
-          cityRes?.data?.data ||
-          [];
-
-        setCities(
-          rawCities.map((c) => ({
-            value: c._id,
-
-            label: `${c.name} (${c.state})`,
-
-            district: c.district,
-            state: c.state,
-          }))
+        console.log(
+          "🔥 PROVIDER EDIT BUSINESS",
+          data
         );
 
-        /* ================= BUSINESS ================= */
+        setBusiness(data);
 
-        const business =
-  bizRes?.data?.business;
-
-        if (!business) return;
-
-        console.log("BUSINESS =", business);
-console.log("CATEGORY =", business.categoryId);
-console.log("FEATURES =", business.categoryId?.features);
-
-        setForm({
-          name: business.name || "",
-
-          description:
-            business.description || "",
-
-          categoryId: business.categoryId
-  ? {
-      value: business.categoryId._id,
-      label: business.categoryId.name,
-      features: business.categoryId.features || [],
-    }
-  : null,
-
-          cityId: business.cityId
-            ? {
-                value:
-                  business.cityId._id,
-
-                label:
-                  business.cityId.name,
-              }
-            : null,
-
-          address:
-            normalizeAddress(business.address),
-
-          pincode:
-            business.pincode || "",
-
-          phone:
-            business.phone || "",
-
-          whatsapp:
-            business.whatsapp || "",
-
-          website:
-            business.website || "",
-
-          logo: business.logo || "",
-          
-          images:
-            business.images || [],
-
-          businessHours:
-            business.businessHours ||
-            {},
-
-            pricing:
-  business.pricing || [],
-
-services:
-  business.services || [],
-
-catalog:
-  business.catalog || [],
-
-faq:
-  business.faq || [],
-
-offers:
-  business.offers || [],
-
-menu:
-  business.menu || [],
-
-
-categoryFeatures:
-  business.categoryId?.features || [],
-        });
-
-        setLogo(business.logo || "");
-
-        if (
-          business.location
-            ?.coordinates?.length === 2
-        ) {
-          setLocation([
-            business.location
-              .coordinates[1],
-
-            business.location
-              .coordinates[0],
-          ]);
-        }
       } catch (err) {
-        console.error(err);
+
+        console.error(
+          "❌ Failed to load business",
+          err
+        );
+
         alert(
+          err?.response?.data?.message ||
           "Failed to load business"
         );
+
+        navigate(
+          "/provider/businesses"
+        );
+
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [id]);
-
-  /* ================= INPUT ================= */
-
-  const handleChange = (e) => {
-    const {
-      name,
-      value,
-    } = e.target;
-
-    let nextValue = value;
-
-    if (
-      name === "phone" ||
-      name === "whatsapp"
-    ) {
-      nextValue = value
-        .replace(/\D/g, "")
-        .slice(0, 10);
+    if (id) {
+      fetchBusiness();
     }
+  }, [id, navigate]);
 
-    if (name === "pincode") {
-      nextValue = value
-        .replace(/\D/g, "")
-        .slice(0, 6);
-    }
-
-    setForm((prev) => ({
-      ...prev,
-      [name]: nextValue,
-    }));
-  };
-
-  /* ================= SUBMIT ================= */
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    try {
-      setSaving(true);
-
-      await API.put(`/provider/businesses/${id}`, {
-  name: form.name,
-  description: form.description,
-
-  categoryId: form.categoryId?.value,
-  cityId: form.cityId?.value,
-
-  address: form.address,
-  pincode: form.pincode,
-
-  phone: form.phone,
-  whatsapp: form.whatsapp,
-  website: form.website,
-
-  logo: form.logo,
-  images: form.images,
-
-  // 🔥 ADD THESE
-  pricing: form.pricing,
-  services: form.services,
-  catalog: form.catalog,
-  faq: form.faq,
-  offers: form.offers,
-  menu: form.menu,
-
-  businessHours: form.businessHours,
-
-  location: {
-    type: "Point",
-    coordinates: [
-      location[1],
-      location[0],
-    ],
-  },
-});
-
-      alert(
-        "Business updated successfully"
-      );
-
-      navigate(
-        "/provider/businesses"
-      );
-    } catch (err) {
-      console.error(err);
-
-      alert(
-        err?.response?.data?.message ||
-          "Update failed"
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  /* ================= LOADER ================= */
+  /* =====================================================
+     LOADING
+  ===================================================== */
 
   if (loading) {
     return <Loader />;
   }
 
-  /* ================= UI ================= */
+  /* =====================================================
+     BUSINESS NOT FOUND
+  ===================================================== */
 
-  return (
-    <div className="max-w-7xl mx-auto p-4 md:p-6">
+  if (!business) {
+    return (
+      <div className="max-w-7xl mx-auto p-6">
 
-      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="bg-white border rounded-xl p-6 text-center">
 
-        {/* ================= FORM ================= */}
-
-        <form
-          onSubmit={handleSubmit}
-          className="lg:col-span-2 bg-white border rounded-2xl shadow-sm p-5 md:p-6 space-y-5"
-        >
-
-          <div>
-
-            <h1 className="text-2xl font-bold text-gray-900">
-              Edit Business
-            </h1>
-
-            <p className="text-sm text-gray-500 mt-1">
-              Update your business
-              details and information
-            </p>
-
-          </div>
-
-          {/* NAME */}
-
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Business Name
-            </label>
-
-            <input
-              type="text"
-              name="name"
-              value={form.name}
-              onChange={
-                handleChange
-              }
-              className="w-full border rounded-xl px-4 py-3 outline-none focus:border-indigo-500"
-            />
-          </div>
-
-          {/* DESCRIPTION */}
-
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Description
-            </label>
-
-            <textarea
-              rows={5}
-              name="description"
-              value={
-                form.description
-              }
-              onChange={
-                handleChange
-              }
-              className="w-full border rounded-xl px-4 py-3 outline-none focus:border-indigo-500"
-            />
-          </div>
-
-          {/* CATEGORY */}
-
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Category
-            </label>
-
-            <Select
-              options={categories}
-              value={
-                form.categoryId
-              }
-              onChange={(v) =>
- setForm((prev) => ({
-   ...prev,
-
-   categoryId: v,
-
-   categoryFeatures:
-     v?.features || [],
-
- }))
-}
-              styles={selectStyles}
-            />
-          </div>
-
-          {/* CITY */}
-
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              City
-            </label>
-
-            <Select
-              options={cities}
-              value={form.cityId}
-              onChange={(v) =>
-                setForm((prev) => ({
-                  ...prev,
-                  cityId: v,
-                }))
-              }
-              styles={selectStyles}
-            />
-          </div>
-
-          {/* ADDRESS */}
-
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Address
-            </label>
-
-            <div className="space-y-3">
-
-  <input
-    name="street"
-    value={form.address?.street || ""}
-    onChange={(e) =>
-      setForm({
-        ...form,
-        address: {
-          ...form.address,
-          street: e.target.value,
-        },
-      })
-    }
-    placeholder="Street / Road"
-    className="border rounded-xl p-3 w-full"
-  />
-
-
-  <input
-    name="area"
-    value={form.address?.area || ""}
-    onChange={(e) =>
-      setForm({
-        ...form,
-        address: {
-          ...form.address,
-          area: e.target.value,
-        },
-      })
-    }
-    placeholder="Area / Locality"
-    className="border rounded-xl p-3 w-full"
-  />
-
-
-  <input
-    name="landmark"
-    value={form.address?.landmark || ""}
-    onChange={(e) =>
-      setForm({
-        ...form,
-        address: {
-          ...form.address,
-          landmark: e.target.value,
-        },
-      })
-    }
-    placeholder="Landmark (optional)"
-    className="border rounded-xl p-3 w-full"
-  />
-
-</div>
-</div>
-
-          {/* GRID */}
-
-          <div className="grid md:grid-cols-2 gap-4">
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Phone
-              </label>
-
-              <input
-                type="text"
-                name="phone"
-                value={
-                  form.phone
-                }
-                onChange={
-                  handleChange
-                }
-                className="w-full border rounded-xl px-4 py-3 outline-none focus:border-indigo-500"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                WhatsApp
-              </label>
-
-              <input
-                type="text"
-                name="whatsapp"
-                value={
-                  form.whatsapp
-                }
-                onChange={
-                  handleChange
-                }
-                className="w-full border rounded-xl px-4 py-3 outline-none focus:border-indigo-500"
-              />
-            </div>
-
-          </div>
-
-          {/* WEBSITE */}
-
-          <div>
-            <label className="text-sm font-medium mb-2 block">
-              Website
-            </label>
-
-            <input
-              type="text"
-              name="website"
-              value={
-                form.website
-              }
-              onChange={
-                handleChange
-              }
-              className="w-full border rounded-xl px-4 py-3 outline-none focus:border-indigo-500"
-            />
-          </div>
-
-         {/* BUSINESS HOURS */}
-
-<BusinessHoursManager
-  value={form.businessHours}
-  onChange={(v)=>
-    setForm(prev=>({
-      ...prev,
-      businessHours:v
-    }))
-  }
-/>
-
-
-{/* DYNAMIC CATEGORY FEATURES */}
-
-<BusinessFeatureFields
-
-features={
-  form.categoryFeatures
-}
-
-
-pricing={form.pricing}
-setPricing={(v)=>
- setForm(prev=>({
-   ...prev,
-   pricing:v
- }))
-}
-
-
-services={form.services}
-setServices={(v)=>
- setForm(prev=>({
-   ...prev,
-   services:v
- }))
-}
-
-
-catalog={form.catalog}
-setCatalog={(v)=>
- setForm(prev=>({
-   ...prev,
-   catalog:v
- }))
-}
-
-
-faq={form.faq}
-setFaq={(v)=>
- setForm(prev=>({
-   ...prev,
-   faq:v
- }))
-}
-
-
-offers={form.offers}
-setOffers={(v)=>
- setForm(prev=>({
-   ...prev,
-   offers:v
- }))
-}
-
-
-menu={form.menu}
-setMenu={(v)=>
- setForm(prev=>({
-   ...prev,
-   menu:v
- }))
-}
-
-/>
-
-          {/* MEDIA */}
-
-          <BusinessMediaManager
-            value={form.images}
-            onChange={(imgs) =>
-              setForm((prev) => ({
-                ...prev,
-                images: imgs,
-              }))
-            }
-            logo={logo}
-            onLogoChange={setLogo}
-          />
-
-          {/* MAP */}
-
-          <div>
-
-            <div className="flex items-center gap-2 mb-3">
-              <FaMapMarkerAlt className="text-red-500" />
-
-              <h2 className="font-semibold">
-                Business Location
-              </h2>
-            </div>
-
-            <div className="h-72 rounded-2xl overflow-hidden border">
-
-              <MapContainer
-                center={location}
-                zoom={13}
-                style={{
-                  height: "100%",
-                }}
-              >
-
-                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-
-                <Marker
-                  position={
-                    location
-                  }
-                  icon={
-                    markerIcon
-                  }
-                />
-
-                <LocationPicker
-                  setLocation={
-                    setLocation
-                  }
-                />
-
-              </MapContainer>
-
-            </div>
-
-          </div>
-
-          {/* SUBMIT */}
-
-          <button
-            type="submit"
-            disabled={saving}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition"
-          >
-
-            <FaSave />
-
-            {saving
-              ? "Saving..."
-              : "Update Business"}
-
-          </button>
-
-        </form>
-
-        {/* ================= PREVIEW ================= */}
-
-        <div className="bg-white border rounded-2xl shadow-sm p-5 sticky top-4 h-fit">
-
-          <h2 className="text-xl font-bold text-gray-900">
-            Live Preview
+          <h2 className="text-lg font-semibold text-gray-900">
+            Business not found
           </h2>
 
-          <div className="mt-4">
-
-            {logo && (
-              <img
-                src={logo}
-                alt={form.name}
-                className="w-24 h-24 rounded-2xl object-cover border mb-4"
-              />
-            )}
-
-            <h3 className="text-lg font-semibold">
-              {form.name ||
-                "Business Name"}
-            </h3>
-
-            <p className="text-sm text-gray-500 mt-2">
-              {
-                form.description
-              }
-            </p>
-
-            <div className="mt-4 text-sm text-gray-600 space-y-1">
-
-              <p>
-  📍 {formatBusinessAddress(form.address) || "-"}
-</p>
-
-<p> 🏙 {form.cityId?.label || "City not selected"} </p>
-
-<p> 📂 {form.categoryId?.label || "Category not selected"} </p>
-
-              <p>
-                📞 {form.phone}
-              </p>
-
-              <p>
-                🌐 {form.website ? (
-                  <a href={form.website} target="_blank" rel="noreferrer" className="text-blue-600 underline" >
-                {form.website}
-                </a>
-               ) : "-"}
-
-              </p>
-
-            </div>
-
-            {/* GALLERY */}
-
-            {form.images
-              ?.length > 0 && (
-              <div className="grid grid-cols-3 gap-2 mt-5">
-
-                {form.images.map(
-                  (img, i) => (
-                    <img
-                      key={i}
-                      src={img}
-                      alt=""
-                      className="w-full h-20 rounded-xl object-cover border"
-                    />
-                  )
-                )}
-
-              </div>
-            )}
-
-          </div>
+          <button
+            type="button"
+            onClick={() =>
+              navigate(
+                "/provider/businesses"
+              )
+            }
+            className="mt-4 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2 rounded-lg"
+          >
+            Back to Businesses
+          </button>
 
         </div>
 
       </div>
+    );
+  }
+
+  /* =====================================================
+     UI
+  ===================================================== */
+
+  return (
+    <div className="max-w-7xl mx-auto p-4 md:p-6">
+
+      <BusinessSubmitter
+        mode="provider"
+        action="update"
+        businessId={id}
+        redirect={false}
+        onSuccess={() => {
+
+          alert(
+            "Business updated successfully"
+          );
+
+          navigate(
+            "/provider/businesses"
+          );
+
+        }}
+      >
+        {(submitBusiness) => (
+
+          <BusinessForm
+            initialData={business}
+            mode="provider"
+            onSubmit={submitBusiness}
+          />
+
+        )}
+      </BusinessSubmitter>
 
     </div>
   );

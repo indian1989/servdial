@@ -23,7 +23,10 @@ const AdminAddBusiness = () => {
     .join(", ");
 
   return (
-    <BusinessSubmitter mode="admin">
+    <BusinessSubmitter
+    mode="admin"
+    action="create"
+    >
       {(submitBusiness) => (
         <div className="flex flex-col md:flex-row gap-6">
 

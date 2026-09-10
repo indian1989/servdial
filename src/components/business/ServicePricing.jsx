@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import {
   IndianRupee,
   Tag,
@@ -29,6 +30,9 @@ const UNIT_LABELS = {
 };
 
 const ServicePricing = ({ pricing = [] }) => {
+  const sliderRef = useRef(null);
+  const [isPaused, setIsPaused] = useState(false);
+
   if (!Array.isArray(pricing) || pricing.length === 0) {
     return null;
   }
@@ -75,6 +79,76 @@ const ServicePricing = ({ pricing = [] }) => {
 
     return UNIT_LABELS[item?.pricingUnit] || null;
   };
+
+    // =========================================================
+  // PRICING CAROUSEL
+  // =========================================================
+
+  const scrollPricing = (direction = 1) => {
+    const slider = sliderRef.current;
+
+    if (!slider) return;
+
+    const firstCard = slider.children?.[0];
+
+    if (!firstCard) return;
+
+    const cardWidth = firstCard.getBoundingClientRect().width;
+
+    const styles = window.getComputedStyle(slider);
+    const gap = parseFloat(styles.columnGap || styles.gap || "0");
+
+    const step = cardWidth + gap;
+
+    const maxScroll =
+      slider.scrollWidth - slider.clientWidth;
+
+    if (maxScroll <= 0) return;
+
+    if (direction > 0) {
+      if (slider.scrollLeft >= maxScroll - 5) {
+        slider.scrollTo({
+          left: 0,
+          behavior: "smooth",
+        });
+      } else {
+        slider.scrollBy({
+          left: step,
+          behavior: "smooth",
+        });
+      }
+    } else {
+      if (slider.scrollLeft <= 5) {
+        slider.scrollTo({
+          left: maxScroll,
+          behavior: "smooth",
+        });
+      } else {
+        slider.scrollBy({
+          left: -step,
+          behavior: "smooth",
+        });
+      }
+    }
+  };
+
+  // =========================================================
+  // AUTO SLIDE
+  // =========================================================
+
+  useEffect(() => {
+    if (pricing.length <= 1 || isPaused) {
+      return;
+    }
+
+    const interval = setInterval(() => {
+      scrollPricing(1);
+    }, 4000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [pricing.length, isPaused]);
 
   return (
     <section
@@ -175,630 +249,434 @@ const ServicePricing = ({ pricing = [] }) => {
         </div>
       </div>
 
-      {/* =====================================================
-          DESKTOP TABLE
-          Original desktop structure retained
+        {/* =====================================================
+          RESPONSIVE PRICING CAROUSEL
+
+          Desktop : 3 cards
+          Tablet  : 2 cards
+          Mobile  : 1 card
+          Auto    : 4 seconds
       ===================================================== */}
 
-      <div className="hidden md:block p-4">
-
-        <div className="grid grid-cols-2 xl:grid-cols-3 gap-3">
-  {pricing.map((item, index) => {
-
-    const price = Number(item?.price);
-
-    const originalPrice = Number(
-      item?.originalPrice ||
-      item?.regularPrice ||
-      item?.oldPrice ||
-      0
-    );
-
-    const discount = getDiscount(
-      originalPrice,
-      price
-    );
-
-    const hasDiscount = Boolean(discount);
-
-    const priceOnRequest =
-      item?.priceOnRequest === true ||
-      item?.price === null ||
-      item?.price === undefined ||
-      item?.price === "" ||
-      !Number.isFinite(price);
-
-    const unit = getUnitLabel(item);
-
-    return (
       <div
-        key={item?._id || index}
-        className="
-          rounded-xl
-          border border-gray-200
-          bg-white
-          overflow-hidden
-          hover:border-gray-300
-          hover:shadow-sm
-          transition
-        "
+        className="relative p-3 sm:p-4"
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setIsPaused(false)}
       >
 
-        {/* SERVICE */}
-        <div className="p-4">
+        {/* ===================================================
+            PREVIOUS BUTTON
+        =================================================== */}
 
-          <div className="flex items-start gap-3">
+        {pricing.length > 1 && (
+          <button
+            type="button"
+            onClick={() => scrollPricing(-1)}
+            aria-label="Previous pricing"
+            className="
+              absolute
+              left-1
+              sm:left-2
+              top-1/2
+              -translate-y-1/2
+              z-20
+              w-9
+              h-9
+              sm:w-10
+              sm:h-10
+              rounded-full
+              bg-white
+              border
+              border-gray-200
+              shadow-md
+              flex
+              items-center
+              justify-center
+              text-xl
+              text-gray-700
+              hover:bg-gray-50
+              hover:shadow-lg
+              transition
+            "
+          >
+            ‹
+          </button>
+        )}
 
-            <div
-              className="
-                w-8 h-8
-                rounded-lg
-                bg-blue-50
-                text-blue-600
-                flex
-                items-center
-                justify-center
-                shrink-0
-                text-xs
-                font-bold
-              "
-            >
-              {index + 1}
-            </div>
+        {/* ===================================================
+            NEXT BUTTON
+        =================================================== */}
 
-            <div className="min-w-0">
+        {pricing.length > 1 && (
+          <button
+            type="button"
+            onClick={() => scrollPricing(1)}
+            aria-label="Next pricing"
+            className="
+              absolute
+              right-1
+              sm:right-2
+              top-1/2
+              -translate-y-1/2
+              z-20
+              w-9
+              h-9
+              sm:w-10
+              sm:h-10
+              rounded-full
+              bg-white
+              border
+              border-gray-200
+              shadow-md
+              flex
+              items-center
+              justify-center
+              text-xl
+              text-gray-700
+              hover:bg-gray-50
+              hover:shadow-lg
+              transition
+            "
+          >
+            ›
+          </button>
+        )}
 
-              <h3
-                className="
-                  text-sm
-                  font-semibold
-                  text-gray-900
-                  leading-5
-                "
-              >
-                {item?.name || "Service"}
-              </h3>
+        {/* ===================================================
+            SLIDER
+        =================================================== */}
 
-              {item?.description ? (
-                <p
-                  className="
-                    mt-1
-                    text-xs
-                    text-gray-500
-                    leading-5
-                    line-clamp-2
-                  "
-                >
-                  {item.description}
-                </p>
-              ) : (
-                <p className="mt-1 text-xs text-gray-400">
-                  Service details available on request
-                </p>
-              )}
+        <div
+          ref={sliderRef}
+          className="
+            flex
+            gap-3
+            overflow-x-auto
+            scroll-smooth
+            snap-x
+            snap-mandatory
+            px-1
+            pb-2
+          "
+          style={{
+            scrollbarWidth: "none",
+            msOverflowStyle: "none",
+          }}
+        >
 
-            </div>
+          {pricing.map((item, index) => {
 
-          </div>
+            const price = Number(item?.price);
 
-        </div>
-
-        {/* PRICING */}
-        <div className="border-t border-gray-100">
-
-          <div className="grid grid-cols-2 divide-x divide-gray-100">
-
-            {/* ORIGINAL PRICE */}
-            <div className="p-3">
-
-              <div
-                className="
-                  text-[10px]
-                  uppercase
-                  tracking-wide
-                  font-semibold
-                  text-gray-400
-                  mb-1
-                "
-              >
-                Original Price
-              </div>
-
-              {originalPrice > 0 ? (
-
-                <div>
-
-                  <div
-                    className={`
-                      text-sm
-                      font-semibold
-                      whitespace-nowrap
-                      ${
-                        hasDiscount
-                          ? "text-gray-400 line-through"
-                          : "text-gray-800"
-                      }
-                    `}
-                  >
-                    ₹{formatPrice(originalPrice)}
-                  </div>
-
-                  {hasDiscount && (
-                    <span
-                      className="
-                        inline-flex
-                        items-center
-                        gap-1
-                        mt-1
-                        px-1.5
-                        py-0.5
-                        rounded-md
-                        bg-red-50
-                        text-red-600
-                        text-[9px]
-                        font-bold
-                      "
-                    >
-                      <Tag size={9} />
-                      {discount}% OFF
-                    </span>
-                  )}
-
-                </div>
-
-              ) : (
-                <span className="text-sm text-gray-400">
-                  —
-                </span>
-              )}
-
-            </div>
-
-            {/* STARTING PRICE */}
-            <div className="p-3 text-right">
-
-              <div
-                className="
-                  text-[10px]
-                  uppercase
-                  tracking-wide
-                  font-semibold
-                  text-gray-400
-                  mb-1
-                "
-              >
-                Starting Price
-              </div>
-
-              {priceOnRequest ? (
-
-                <span
-                  className="
-                    inline-flex
-                    items-center
-                    gap-1
-                    px-2
-                    py-1
-                    rounded-md
-                    bg-blue-50
-                    border border-blue-100
-                    text-blue-700
-                    text-[10px]
-                    font-semibold
-                  "
-                >
-                  <Clock3 size={11} />
-                  Price on Request
-                </span>
-
-              ) : (
-
-                <>
-
-                  <div
-                    className="
-                      flex
-                      items-baseline
-                      justify-end
-                      gap-0.5
-                    "
-                  >
-
-                    <IndianRupee
-                      size={14}
-                      className="text-green-600"
-                    />
-
-                    <span
-                      className="
-                        text-lg
-                        font-bold
-                        text-green-600
-                      "
-                    >
-                      {formatPrice(price)}
-                    </span>
-
-                    {unit && (
-                      <span
-                        className="
-                          ml-1
-                          text-[10px]
-                          font-semibold
-                          text-gray-500
-                          whitespace-nowrap
-                        "
-                      >
-                        / {unit}
-                      </span>
-                    )}
-
-                  </div>
-
-                  {hasDiscount && (
-                    <span
-                      className="
-                        flex
-                        items-center
-                        justify-end
-                        gap-1
-                        mt-0.5
-                        text-[10px]
-                        text-green-600
-                        font-medium
-                      "
-                    >
-                      <Sparkles size={10} />
-
-                      Save ₹
-                      {formatPrice(
-                        originalPrice - price
-                      )}
-                    </span>
-                  )}
-
-                </>
-
-              )}
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-    );
-  })}
-</div>
-
-      </div>
-
-      {/* =====================================================
-          MOBILE CARDS
-          Desktop table remains unchanged
-      ===================================================== */}
-
-      <div className="md:hidden p-3 space-y-3">
-
-        {pricing.map((item, index) => {
-
-          const price =
-            Number(item?.price);
-
-          const originalPrice =
-            Number(
+            const originalPrice = Number(
               item?.originalPrice ||
               item?.regularPrice ||
               item?.oldPrice ||
               0
             );
 
-          const discount =
-            getDiscount(
+            const discount = getDiscount(
               originalPrice,
               price
             );
 
-          const hasDiscount =
-            Boolean(discount);
+            const hasDiscount = Boolean(discount);
 
-          const priceOnRequest =
-            item?.priceOnRequest === true ||
-            item?.price === null ||
-            item?.price === undefined ||
-            item?.price === "" ||
-            !Number.isFinite(price);
+            const priceOnRequest =
+              item?.priceOnRequest === true ||
+              item?.price === null ||
+              item?.price === undefined ||
+              item?.price === "" ||
+              !Number.isFinite(price);
 
-          const unit =
-            getUnitLabel(item);
+            const unit = getUnitLabel(item);
 
-          return (
-
-            <div
-              key={item?._id || index}
-              className="
-                rounded-xl
-                border border-gray-200
-                overflow-hidden
-                bg-white
-              "
-            >
-
-              {/* MOBILE SERVICE */}
+            return (
               <div
+                key={item?._id || index}
                 className="
-                  px-3.5
-                  py-3
-                  bg-gray-50
-                  border-b
-                  border-gray-100
+                  shrink-0
+                  snap-start
+                  basis-full
+                  md:basis-[calc(50%_-_6px)]
+                  xl:basis-[calc(33.333333%_-_8px)]
                 "
               >
 
-                <div className="flex items-start gap-3">
+                {/* =================================================
+                    EXISTING PRICING CARD
+                ================================================= */}
 
-                  <div
-                    className="
-                      w-8
-                      h-8
-                      rounded-lg
-                      bg-blue-50
-                      text-blue-600
-                      flex
-                      items-center
-                      justify-center
-                      shrink-0
-                      text-xs
-                      font-bold
-                    "
-                  >
-                    {index + 1}
-                  </div>
+                <div
+                  className="
+                    h-full
+                    rounded-xl
+                    border border-gray-200
+                    bg-white
+                    overflow-hidden
+                    hover:border-gray-300
+                    hover:shadow-sm
+                    transition
+                  "
+                >
 
-                  <div className="min-w-0 flex-1">
+                  {/* SERVICE */}
 
-                    <div
-                      className="
-                        text-sm
-                        font-semibold
-                        text-gray-900
-                      "
-                    >
-                      {item?.name || "Service"}
-                    </div>
+                  <div className="p-4">
 
-                    {item?.description ? (
-
-                      <p
-                        className="
-                          text-xs
-                          text-gray-500
-                          leading-5
-                          mt-0.5
-                        "
-                      >
-                        {item.description}
-                      </p>
-
-                    ) : (
-
-                      <p
-                        className="
-                          text-xs
-                          text-gray-400
-                          mt-0.5
-                        "
-                      >
-                        Service details available on request
-                      </p>
-
-                    )}
-
-                  </div>
-
-                </div>
-
-              </div>
-
-              {/* MOBILE PRICES */}
-              <div
-                className="
-                  grid
-                  grid-cols-2
-                  divide-x
-                  divide-gray-100
-                "
-              >
-
-                {/* ORIGINAL PRICE */}
-                <div className="px-3.5 py-3">
-
-                  <div
-                    className="
-                      text-[10px]
-                      uppercase
-                      tracking-wide
-                      font-semibold
-                      text-gray-400
-                      mb-1
-                    "
-                  >
-                    Original Price
-                  </div>
-
-                  {originalPrice > 0 ? (
-
-                    <div>
-
-                      <span
-                        className={`
-                          text-sm
-                          whitespace-nowrap
-                          ${
-                            hasDiscount
-                              ? "text-gray-400 line-through"
-                              : "text-gray-800 font-semibold"
-                          }
-                        `}
-                      >
-                        ₹{formatPrice(originalPrice)}
-                      </span>
-
-                      {hasDiscount && (
-
-                        <span
-                          className="
-                            inline-flex
-                            items-center
-                            gap-1
-                            ml-1.5
-                            px-1.5
-                            py-0.5
-                            rounded-md
-                            bg-red-50
-                            text-red-600
-                            text-[9px]
-                            font-bold
-                          "
-                        >
-                          <Tag size={9} />
-                          {discount}% OFF
-                        </span>
-
-                      )}
-
-                    </div>
-
-                  ) : (
-
-                    <span className="text-sm text-gray-400">
-                      —
-                    </span>
-
-                  )}
-
-                </div>
-
-                {/* STARTING PRICE */}
-                <div className="px-3.5 py-3 text-right">
-
-                  <div
-                    className="
-                      text-[10px]
-                      uppercase
-                      tracking-wide
-                      font-semibold
-                      text-gray-400
-                      mb-1
-                    "
-                  >
-                    Starting Price
-                  </div>
-
-                  {priceOnRequest ? (
-
-                    <span
-                      className="
-                        inline-flex
-                        items-center
-                        gap-1
-                        px-2
-                        py-1
-                        rounded-md
-                        bg-blue-50
-                        border border-blue-100
-                        text-blue-700
-                        text-[11px]
-                        font-semibold
-                      "
-                    >
-                      <Clock3 size={11} />
-                      Price on Request
-                    </span>
-
-                  ) : (
-
-                    <>
+                    <div className="flex items-start gap-3">
 
                       <div
                         className="
+                          w-8
+                          h-8
+                          rounded-lg
+                          bg-blue-50
+                          text-blue-600
                           flex
-                          items-baseline
-                          justify-end
-                          gap-0.5
-                          text-green-600
+                          items-center
+                          justify-center
+                          shrink-0
+                          text-xs
+                          font-bold
                         "
                       >
+                        {index + 1}
+                      </div>
 
-                        <IndianRupee size={14} />
+                      <div className="min-w-0">
 
-                        <span
+                        <h3
                           className="
-                            text-lg
-                            font-bold
+                            text-sm
+                            font-semibold
+                            text-gray-900
+                            leading-5
                           "
                         >
-                          {formatPrice(price)}
-                        </span>
+                          {item?.name || "Service"}
+                        </h3>
 
-                        {unit && (
+                        {item?.description ? (
+                          <p
+                            className="
+                              mt-1
+                              text-xs
+                              text-gray-500
+                              leading-5
+                              line-clamp-2
+                            "
+                          >
+                            {item.description}
+                          </p>
+                        ) : (
+                          <p className="mt-1 text-xs text-gray-400">
+                            Service details available on request
+                          </p>
+                        )}
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  {/* PRICING */}
+
+                  <div className="border-t border-gray-100">
+
+                    <div className="grid grid-cols-2 divide-x divide-gray-100">
+
+                      {/* ORIGINAL PRICE */}
+
+                      <div className="p-3">
+
+                        <div
+                          className="
+                            text-[10px]
+                            uppercase
+                            tracking-wide
+                            font-semibold
+                            text-gray-400
+                            mb-1
+                          "
+                        >
+                          Original Price
+                        </div>
+
+                        {originalPrice > 0 ? (
+
+                          <div>
+
+                            <div
+                              className={`
+                                text-sm
+                                font-semibold
+                                whitespace-nowrap
+                                ${
+                                  hasDiscount
+                                    ? "text-gray-400 line-through"
+                                    : "text-gray-800"
+                                }
+                              `}
+                            >
+                              ₹{formatPrice(originalPrice)}
+                            </div>
+
+                            {hasDiscount && (
+                              <span
+                                className="
+                                  inline-flex
+                                  items-center
+                                  gap-1
+                                  mt-1
+                                  px-1.5
+                                  py-0.5
+                                  rounded-md
+                                  bg-red-50
+                                  text-red-600
+                                  text-[9px]
+                                  font-bold
+                                "
+                              >
+                                <Tag size={9} />
+                                {discount}% OFF
+                              </span>
+                            )}
+
+                          </div>
+
+                        ) : (
+                          <span className="text-sm text-gray-400">
+                            —
+                          </span>
+                        )}
+
+                      </div>
+
+                      {/* STARTING PRICE */}
+
+                      <div className="p-3 text-right">
+
+                        <div
+                          className="
+                            text-[10px]
+                            uppercase
+                            tracking-wide
+                            font-semibold
+                            text-gray-400
+                            mb-1
+                          "
+                        >
+                          Starting Price
+                        </div>
+
+                        {priceOnRequest ? (
 
                           <span
                             className="
-                              ml-1
+                              inline-flex
+                              items-center
+                              gap-1
+                              px-2
+                              py-1
+                              rounded-md
+                              bg-blue-50
+                              border border-blue-100
+                              text-blue-700
                               text-[10px]
                               font-semibold
-                              text-gray-500
-                              whitespace-nowrap
                             "
                           >
-                            / {unit}
+                            <Clock3 size={11} />
+                            Price on Request
                           </span>
+
+                        ) : (
+
+                          <>
+
+                            <div
+                              className="
+                                flex
+                                items-baseline
+                                justify-end
+                                gap-0.5
+                              "
+                            >
+
+                              <IndianRupee
+                                size={14}
+                                className="text-green-600"
+                              />
+
+                              <span
+                                className="
+                                  text-lg
+                                  font-bold
+                                  text-green-600
+                                "
+                              >
+                                {formatPrice(price)}
+                              </span>
+
+                              {unit && (
+                                <span
+                                  className="
+                                    ml-1
+                                    text-[10px]
+                                    font-semibold
+                                    text-gray-500
+                                    whitespace-nowrap
+                                  "
+                                >
+                                  / {unit}
+                                </span>
+                              )}
+
+                            </div>
+
+                            {hasDiscount && (
+                              <span
+                                className="
+                                  flex
+                                  items-center
+                                  justify-end
+                                  gap-1
+                                  mt-0.5
+                                  text-[10px]
+                                  text-green-600
+                                  font-medium
+                                "
+                              >
+                                <Sparkles size={10} />
+
+                                Save ₹
+                                {formatPrice(
+                                  originalPrice - price
+                                )}
+                              </span>
+                            )}
+
+                          </>
 
                         )}
 
                       </div>
 
-                      {hasDiscount && (
+                    </div>
 
-                        <span
-                          className="
-                            flex
-                            items-center
-                            justify-end
-                            gap-1
-                            mt-0.5
-                            text-[10px]
-                            text-green-600
-                            font-medium
-                          "
-                        >
-
-                          <Sparkles size={10} />
-
-                          Save ₹
-                          {formatPrice(
-                            originalPrice - price
-                          )}
-
-                        </span>
-
-                      )}
-
-                    </>
-
-                  )}
+                  </div>
 
                 </div>
 
               </div>
+            );
+          })}
 
-            </div>
-
-          );
-
-        })}
+        </div>
 
       </div>
 

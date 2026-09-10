@@ -47,7 +47,7 @@ const BusinessServiceInfo = ({ business }) => {
     coverage?.countries?.length > 0;
 
   const foodType = business?.foodType || "";
-
+console.log("🍽️ BUSINESS FOOD TYPE:", business?.foodType);
 
   if (
   !services.length &&
@@ -67,7 +67,94 @@ const BusinessServiceInfo = ({ business }) => {
         Services
       </h2>
 
-  
+  {/* ================= FOOD TYPE ================= */}
+
+{
+  foodType && (
+
+    <div className="mb-8">
+
+      <div className="flex items-center gap-2 mb-4">
+
+        <Utensils
+          size={20}
+          className="text-orange-600"
+        />
+
+        <h3 className="font-semibold text-lg">
+          Food Type
+        </h3>
+
+      </div>
+
+      <div className="flex flex-wrap gap-3">
+
+        {foodType === "veg" && (
+          <span className="
+            inline-flex
+            items-center
+            gap-2
+            px-4
+            py-2
+            rounded-full
+            bg-white
+            border
+            border-gray-200
+            text-sm
+            font-medium
+            text-gray-800
+          ">
+            <span className="w-3 h-3 rounded-full bg-green-600" />
+            Veg
+          </span>
+        )}
+
+        {foodType === "non_veg" && (
+          <span className="
+            inline-flex
+            items-center
+            gap-2
+            px-4
+            py-2
+            rounded-full
+            bg-white
+            border
+            border-gray-200
+            text-sm
+            font-medium
+            text-gray-800
+          ">
+            <span className="w-3 h-3 rounded-full bg-red-600" />
+            Non Veg
+          </span>
+        )}
+
+        {foodType === "both" && (
+          <span className="
+            inline-flex
+            items-center
+            gap-2
+            px-4
+            py-2
+            rounded-full
+            bg-white
+            border
+            border-gray-200
+            text-sm
+            font-medium
+            text-gray-800
+          ">
+            <span className="w-3 h-3 rounded-full bg-orange-600" />
+            Veg & Non Veg
+          </span>
+        )}
+
+      </div>
+
+    </div>
+  )
+}
+
       {/* ================= SERVICE COVERAGE ================= */}
 
 {
@@ -306,93 +393,7 @@ const BusinessServiceInfo = ({ business }) => {
   )
 }
 
-{/* ================= FOOD TYPE ================= */}
 
-{
-  foodType && (
-
-    <div className="mb-8">
-
-      <div className="flex items-center gap-2 mb-4">
-
-        <Utensils
-          size={20}
-          className="text-orange-600"
-        />
-
-        <h3 className="font-semibold text-lg">
-          Food Type
-        </h3>
-
-      </div>
-
-      <div className="flex flex-wrap gap-3">
-
-        {foodType === "vegetarian" && (
-          <span className="
-            inline-flex
-            items-center
-            gap-2
-            px-4
-            py-2
-            rounded-full
-            bg-white
-            border
-            border-gray-200
-            text-sm
-            font-medium
-            text-gray-800
-          ">
-            <span className="w-3 h-3 rounded-full bg-green-600" />
-            Veg
-          </span>
-        )}
-
-        {foodType === "non-vegetarian" && (
-          <span className="
-            inline-flex
-            items-center
-            gap-2
-            px-4
-            py-2
-            rounded-full
-            bg-white
-            border
-            border-gray-200
-            text-sm
-            font-medium
-            text-gray-800
-          ">
-            <span className="w-3 h-3 rounded-full bg-red-600" />
-            Non Veg
-          </span>
-        )}
-
-        {foodType === "both" && (
-          <span className="
-            inline-flex
-            items-center
-            gap-2
-            px-4
-            py-2
-            rounded-full
-            bg-white
-            border
-            border-gray-200
-            text-sm
-            font-medium
-            text-gray-800
-          ">
-            <span className="w-3 h-3 rounded-full bg-orange-600" />
-            Veg & Non Veg
-          </span>
-        )}
-
-      </div>
-
-    </div>
-  )
-}
 
       {/* ================= SERVICE TYPES ================= */}
 

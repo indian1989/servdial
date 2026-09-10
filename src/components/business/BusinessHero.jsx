@@ -221,8 +221,6 @@ const verificationType =
       categoryName
     )} in ${titleCase(cityName)}`;
 
-  // Prevent unused warning while keeping SEO variable available
-  void heroH1;
 
 
   // =========================================================
@@ -263,36 +261,53 @@ const verificationType =
         <nav
           aria-label="Breadcrumb"
           className="
-            absolute
-            top-4
-            left-4
-            right-4
+  absolute
+  top-4
+  left-4
+  right-4
 
-            sm:left-6
-            sm:right-6
+  sm:left-6
+  sm:right-6
 
-            md:left-8
-            md:right-8
+  md:left-8
+  md:right-8
 
-            z-30
+  z-30
 
-            overflow-x-auto
-            scrollbar-hide
-          "
+  bg-blue-600/90
+  backdrop-blur-sm
+
+  px-3
+  py-2.5
+  sm:px-4
+
+  rounded-xl
+  shadow-lg
+
+  w-auto
+  max-w-none
+  sm:w-fit
+  sm:max-w-[calc(100%-3rem)]
+  md:max-w-[calc(100%-4rem)]
+
+  overflow-hidden
+"
         >
           <ol
             className="
-              flex
-              items-center
-              gap-2
+  flex
+  flex-wrap
+  items-center
+  gap-x-2
+  gap-y-1
 
-              whitespace-nowrap
+  text-xs
+  sm:text-sm
 
-              text-xs
-              sm:text-sm
+  text-white
 
-              text-white
-            "
+  min-w-0
+"
           >
 
             {/* HOME */}
@@ -433,16 +448,15 @@ const verificationType =
             {/* BUSINESS */}
 
             <li
-              className="
-                font-medium
-                text-white
-                truncate
-                max-w-[180px]
-                sm:max-w-[300px]
-              "
-            >
-              {businessName}
-            </li>
+  className="
+    font-medium
+    text-white
+    min-w-0
+    break-words
+  "
+>
+  {businessName}
+</li>
 
           </ol>
         </nav>
@@ -622,7 +636,7 @@ const verificationType =
       min-w-0
     "
   >
-    {businessName}
+    {heroH1}
   </h1>
 
   <VerificationBadge />

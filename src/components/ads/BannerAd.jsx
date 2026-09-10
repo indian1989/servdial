@@ -13,42 +13,41 @@ const BannerAd = ({
   // ================= FETCH FROM BACKEND =================
   useEffect(() => {
     const fetchBanners = async () => {
-      try {
-        id="bannerad-query-patch"
-const params = {
-  placement,
-};
-
-if (cityId) {
-  params.cityId = cityId;
-}
-
-if (categoryId) {
-  params.categoryId = categoryId;
-}
-
-// businessId is applicable only to business-detail placements.
-if (
-  businessId &&
-  [
-    "business_detail_middle",
-    "business_detail_bottom",
-  ].includes(placement)
-) {
-  params.businessId = businessId;
-}
-
-const res = await API.get("/banners", {
-  params,
-});
-
-        setBanners(res?.data?.data || []);
-        setCurrentIndex(0);
-      } catch (err) {
-        console.error("Banner fetch error:", err);
-        setBanners([]);
-      }
+  try {
+    const params = {
+      placement,
     };
+
+    if (cityId) {
+      params.cityId = cityId;
+    }
+
+    if (categoryId) {
+      params.categoryId = categoryId;
+    }
+
+    // businessId is applicable only to business-detail placements.
+    if (
+      businessId &&
+      [
+        "business_detail_middle",
+        "business_detail_bottom",
+      ].includes(placement)
+    ) {
+      params.businessId = businessId;
+    }
+
+    const res = await API.get("/banners", {
+      params,
+    });
+
+    setBanners(res?.data?.data || []);
+    setCurrentIndex(0);
+  } catch (err) {
+    console.error("Banner fetch error:", err);
+    setBanners([]);
+  }
+};
 
     fetchBanners();
   }, [placement, cityId, categoryId, businessId]);

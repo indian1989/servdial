@@ -24,7 +24,10 @@ const ProviderAddBusiness = () => {
   const [formData, setFormData] = useState({});
 
   return (
-    <BusinessSubmitter mode="provider">
+    <BusinessSubmitter
+    mode="provider"
+    action="create"
+    >
       {(submitBusiness) => (
         <div className="max-w-7xl mx-auto p-4 md:p-6">
 

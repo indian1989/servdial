@@ -299,16 +299,62 @@ useEffect(() => {
           }))
         : [],
 
+  categoryName:
+  safeValue.categoryName ||
+  safeValue.categoryId?.name ||
+  categories.find(
+    (c) =>
+      String(c.value) ===
+      String(
+        safeValue.categoryId?._id ||
+        safeValue.categoryId
+      )
+  )?.label ||
+  "",
+
+categoryParentName:
+  safeValue.categoryParentName ||
+  categories.find(
+    (c) =>
+      String(c.value) ===
+      String(
+        safeValue.categoryId?._id ||
+        safeValue.categoryId
+      )
+  )?.parentName ||
+  "",
+
+categoryParentSlug:
+  safeValue.categoryParentSlug ||
+  categories.find(
+    (c) =>
+      String(c.value) ===
+      String(
+        safeValue.categoryId?._id ||
+        safeValue.categoryId
+      )
+  )?.parentSlug ||
+  "",
+
     // ================= CATEGORY FEATURES =================
 
+// ================= CATEGORY FEATURES =================
+
 categoryFeatures:
-  Array.isArray(safeValue.categoryFeatures)
+  Array.isArray(safeValue.categoryId?.features) &&
+  safeValue.categoryId.features.length > 0
+    ? safeValue.categoryId.features
+    : Array.isArray(safeValue.categoryFeatures) &&
+      safeValue.categoryFeatures.length > 0
     ? safeValue.categoryFeatures
-    : Array.isArray(
-        safeValue.categoryId?.features
-      )
-      ? safeValue.categoryId.features
-      : [],
+    : categories.find(
+        (c) =>
+          String(c.value) ===
+          String(
+            safeValue.categoryId?._id ||
+            safeValue.categoryId
+          )
+      )?.features || [],
 
     // ================= FEATURE DATA =================
     pricing: Array.isArray(safeValue.pricing)
@@ -345,6 +391,8 @@ categoryFeatures:
         countries: [],
       },
 
+    foodType: safeValue.foodType || "",
+    
     businessHours:
       safeValue.businessHours &&
       Object.keys(safeValue.businessHours).length > 0
@@ -414,7 +462,7 @@ setRestaurantBooking(
   }
 );
 
-}, [safeValue?._id]);
+}, [safeValue?._id, categories]);
 
   /* ================= HELPERS ================= */
 

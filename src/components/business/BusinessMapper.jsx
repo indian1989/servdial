@@ -3,7 +3,8 @@ import { normalizeAddress } from "../../utils/addressHelper";
 
 export const normalizeBusinessPayload = (
   data = {},
-  mode = "provider"
+  mode = "provider",
+  action="create"
 ) => {
   return {
 
@@ -305,8 +306,9 @@ countryCode:
 
     /* ================= ADMIN ONLY ================= */
 
-    ...(mode === "admin" && {
+    ...(mode === "admin" &&
 
+    action === "create" && {
       isVerified: true,
 
     }),

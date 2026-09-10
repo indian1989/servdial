@@ -645,6 +645,11 @@ export const SERVICE_LIBRARY = [
   "North Indian Food",
   "Mughlai Food",
   "Continental Food",
+  "Starters",
+  "Main Course",
+  "Desserts",
+  "Group Dining",
+  "Celebrations",
 
   // =======================================================
   // BAKERY / CAKE
@@ -803,7 +808,7 @@ export const SERVICE_LIBRARY = [
   "Travel Assistance",
   "Tour Assistance",
   "Travel Counter",
-  "Wi-Fi",
+  "WiFi",
 
   // =======================================================
   // HEALTHCARE
@@ -1430,6 +1435,25 @@ export const SERVICE_LIBRARY = [
   "Water Treatment Plant",
   "Water Tank Cleaning",
   "Water Tank Repair",
+
+  // =======================================================
+  // SHOPPING
+  // =======================================================
+
+  "Packaged Food",
+  "Staples",
+  "Beverages",
+  "Grocery",
+  "Fruits & Vegetables",
+  "Dairy Products",
+  "Home Care",
+  "Personal Care",
+  "Homeware",
+  "Household Products",
+  "Fashion",
+  "Daily-use Products",
+  "Cosmetics",
+
 
   // =======================================================
   // AGRICULTURE

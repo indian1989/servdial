@@ -26,7 +26,7 @@ import {
 } from "react-icons/fa";
 
 import BusinessForm from "../../components/business/BusinessForm";
-import { normalizeBusinessPayload } from "../../components/business/BusinessMapper";
+import BusinessSubmitter from "../../components/business/BusinessSubmitter";
 import ImageModal from "../../components/admin/modals/ImageModal";
 import { toBusinessEditDTO } from "../../dto/businessDTO";
 import BusinessMediaManager from "../../components/BusinessMediaManager";
@@ -48,7 +48,7 @@ const defaultHours = {
 const PAGE_SIZE = 10;
 
 const ManageBusinesses = () => {
-  console.log("🔥 ManageBusinesses LOADED");
+  
   // ================= STATE =================
   const [businesses, setBusinesses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -82,7 +82,8 @@ const [categoryOptions, setCategoryOptions] = useState([]);
         : Array.isArray(b.categoryFeatures)
         ? b.categoryFeatures
         : [],
-
+        foodType: dto.foodType || b.foodType || "",
+        
     /* ================= MEDIA ================= */
 
     images: dto.images || [],
@@ -332,101 +333,10 @@ console.error(error);
     await deleteBusiness(id);
   };
 
-  // ================= FULL EDIT SAVE =================
-  const handleUpdateBusiness = async (formData) => {
-  try {
-    console.log(
-      "🔥 UPDATE FORM HOURS BEFORE NORMALIZE:",
-      formData.businessHours
-    );
 
-    const payload = normalizeBusinessPayload({
-  ...formData,
+  const handleBulkPlan = async(plan)=>{
 
-  /* ================= MEDIA ================= */
-
-  images: editBusiness?.images || [],
-  logo: editBusiness?.logo || "",
-
-  /* ================= BUSINESS FEATURES ================= */
-
-  pricing: formData.pricing || [],
-  services: formData.services || [],
-  catalog: formData.catalog || [],
-  faq: formData.faq || [],
-  offers: formData.offers || [],
-  menu: formData.menu || [],
-
-  /* ================= BUSINESS HOURS ================= */
-
-  businessHours:
-    formData.businessHours &&
-    Object.keys(formData.businessHours).length > 0
-      ? formData.businessHours
-      : defaultHours,
-
-  /* ================= BOOKING ================= */
-
-  appointmentBooking:
-    formData.appointmentBooking || null,
-
-  restaurantBooking:
-    formData.restaurantBooking || null,
-
-  roomBooking:
-    formData.roomBooking || null,
-
-  partyBooking:
-    formData.partyBooking || null,
-});
-
-    console.log(
-      "🔥 FINAL PAYLOAD IMAGES:",
-      payload.images
-    );
-
-    console.log(
-      "🔥 FINAL PAYLOAD LOGO:",
-      payload.logo
-    );
-
-    console.log(
-      "🔥 FINAL PAYLOAD HOURS:",
-      payload.businessHours
-    );
-
-    const res = await updateBusiness(
-      editBusiness._id,
-      payload
-    );
-
-    const updated =
-      res?.data?.data ||
-      res?.data?.business;
-
-    setBusinesses((prev) =>
-      prev.map((b) =>
-        b._id === updated._id
-          ? updated
-          : b
-      )
-    );
-
-    setEditBusiness(null);
-
-  } catch (err) {
-    console.error(err);
-
-    alert(
-      err?.response?.data?.message ||
-      "Update failed"
-    );
-  }
-};
-
-        const handleBulkPlan = async(plan)=>{
-
-        try{
+    try{
 
         await Promise.all(
         selectedIds.map(id =>
@@ -711,153 +621,27 @@ const filtered = businesses
               Edit Business
             </h2>
 
- <BusinessForm
-  value={editBusiness}
-  mode="edit"
-
-  onChange={(data) =>
-    setEditBusiness((prev) => ({
-      ...prev,
-      ...data,
-    }))
-  }
-
-  onSubmit={handleUpdateBusiness}
+ <BusinessSubmitter
+  mode="admin"
+  action="update"
+  businessId={editBusiness._id}
 >
-  {/* ================= BUSINESS FEATURES ================= */}
+  {(submitBusiness) => (
+    <BusinessForm
+      value={editBusiness}
+      mode="admin"
 
-  <BusinessFeatureFields
-    features={editBusiness?.categoryFeatures || []}
+      onChange={(data) =>
+        setEditBusiness((prev) => ({
+          ...prev,
+          ...data,
+        }))
+      }
 
-    pricing={editBusiness?.pricing || []}
-    setPricing={(value) =>
-      setEditBusiness((prev) => ({
-        ...prev,
-        pricing:
-          typeof value === "function"
-            ? value(prev.pricing || [])
-            : value,
-      }))
-    }
+      onSubmit={submitBusiness}
+    >
 
-    services={editBusiness?.services || []}
-    setServices={(value) =>
-      setEditBusiness((prev) => ({
-        ...prev,
-        services:
-          typeof value === "function"
-            ? value(prev.services || [])
-            : value,
-      }))
-    }
-
-    catalog={editBusiness?.catalog || []}
-    setCatalog={(value) =>
-      setEditBusiness((prev) => ({
-        ...prev,
-        catalog:
-          typeof value === "function"
-            ? value(prev.catalog || [])
-            : value,
-      }))
-    }
-
-    menu={editBusiness?.menu || []}
-    setMenu={(value) =>
-      setEditBusiness((prev) => ({
-        ...prev,
-        menu:
-          typeof value === "function"
-            ? value(prev.menu || [])
-            : value,
-      }))
-    }
-
-    faq={editBusiness?.faq || []}
-    setFaq={(value) =>
-      setEditBusiness((prev) => ({
-        ...prev,
-        faq:
-          typeof value === "function"
-            ? value(prev.faq || [])
-            : value,
-      }))
-    }
-
-    offers={editBusiness?.offers || []}
-    setOffers={(value) =>
-      setEditBusiness((prev) => ({
-        ...prev,
-        offers:
-          typeof value === "function"
-            ? value(prev.offers || [])
-            : value,
-      }))
-    }
-
-    hours={editBusiness?.businessHours || defaultHours}
-    setHours={(value) =>
-      setEditBusiness((prev) => ({
-        ...prev,
-        businessHours:
-          typeof value === "function"
-            ? value(prev.businessHours || defaultHours)
-            : value,
-      }))
-    }
-
-    appointmentBooking={
-      editBusiness?.appointmentBooking || null
-    }
-    setAppointmentBooking={(value) =>
-      setEditBusiness((prev) => ({
-        ...prev,
-        appointmentBooking:
-          typeof value === "function"
-            ? value(prev.appointmentBooking)
-            : value,
-      }))
-    }
-
-    restaurantBooking={
-      editBusiness?.restaurantBooking || null
-    }
-    setRestaurantBooking={(value) =>
-      setEditBusiness((prev) => ({
-        ...prev,
-        restaurantBooking:
-          typeof value === "function"
-            ? value(prev.restaurantBooking)
-            : value,
-      }))
-    }
-
-    roomBooking={
-      editBusiness?.roomBooking || null
-    }
-    setRoomBooking={(value) =>
-      setEditBusiness((prev) => ({
-        ...prev,
-        roomBooking:
-          typeof value === "function"
-            ? value(prev.roomBooking)
-            : value,
-      }))
-    }
-
-    partyBooking={
-      editBusiness?.partyBooking || null
-    }
-    setPartyBooking={(value) =>
-      setEditBusiness((prev) => ({
-        ...prev,
-        partyBooking:
-          typeof value === "function"
-            ? value(prev.partyBooking)
-            : value,
-      }))
-    }
-  />
+  
 
   {/* ================= MEDIA ================= */}
 
@@ -881,7 +665,9 @@ const filtered = businesses
   />
 
   
-</BusinessForm>
+    </BusinessForm>
+  )}
+</BusinessSubmitter>
 
             <button
               onClick={() => setEditBusiness(null)}
