@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import BusinessCard from "../business/BusinessCard";
 
@@ -7,6 +8,67 @@ const FeaturedBusinesses = ({
   city = null,
 }) => {
   const navigate = useNavigate();
+
+   // ================= RESPONSIVE VISIBLE COUNT =================
+const [visibleCount, setVisibleCount] = useState(8);
+
+// Current rotation position
+const [rotationStep, setRotationStep] = useState(0);
+
+useEffect(() => {
+  const updateVisibleCount = () => {
+    if (window.innerWidth < 640) {
+      // Mobile → 3 cards
+      setVisibleCount(3);
+    } else if (window.innerWidth < 1024) {
+      // Tablet → 4 cards
+      setVisibleCount(4);
+    } else {
+      // Desktop → 8 cards
+      setVisibleCount(8);
+    }
+  };
+
+  updateVisibleCount();
+
+  window.addEventListener("resize", updateVisibleCount);
+
+  return () => {
+    window.removeEventListener("resize", updateVisibleCount);
+  };
+}, []);
+
+// ================= RESET ON NEW DATA / DEVICE =================
+useEffect(() => {
+  setRotationStep(0);
+}, [businesses, visibleCount]);
+
+// ================= ONE CARD POSITION ROTATION =================
+useEffect(() => {
+  if (businesses.length <= visibleCount) {
+    return;
+  }
+
+  const interval = setInterval(() => {
+    setRotationStep((prev) => {
+      const maxStart =
+        businesses.length - visibleCount;
+
+      return prev >= maxStart ? 0 : prev + 1;
+    });
+  }, 6000);
+
+  return () => clearInterval(interval);
+}, [businesses.length, visibleCount]);
+
+// ================= CURRENT VISIBLE BUSINESSES =================
+const currentBusinesses = Array.from(
+  { length: Math.min(visibleCount, businesses.length) },
+  (_, index) =>
+    businesses[
+      (rotationStep + index) % businesses.length
+    ]
+);
 
   // ================= LOADING =================
   if (loading) {
@@ -37,7 +99,7 @@ const FeaturedBusinesses = ({
   // ================= DATA =================
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-      {businesses.map((b) => (
+  {currentBusinesses.map((b) => (
         <BusinessCard
           key={b._id}
           business={b}

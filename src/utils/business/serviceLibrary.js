@@ -779,7 +779,8 @@ export const SERVICE_LIBRARY = [
   "Family Rooms",
   "Deluxe Rooms",
   "Executive Rooms",
-  "Suite Rooms",
+  "Luxury Rooms",
+  "Suites",
   "Budget Rooms",
   "Single Rooms",
   "Double Rooms",
@@ -808,7 +809,7 @@ export const SERVICE_LIBRARY = [
   "Travel Assistance",
   "Tour Assistance",
   "Travel Counter",
-  "WiFi",
+  "Fine Dining",
 
   // =======================================================
   // HEALTHCARE

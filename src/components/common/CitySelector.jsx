@@ -19,11 +19,14 @@ console.log("detectLocation fn:", detectLocation);
       try {
         setLoading(true);
         const res = await API.get("/cities?dropdown=true");
-        setCities(
+  const cityList =
   res.data?.data?.cities ||
   res.data?.cities ||
   res.data?.data ||
-  []
+  [];
+
+setCities(
+  cityList.filter((c) => c.status !== "inactive")
 );
       } catch {
         setCities([]);

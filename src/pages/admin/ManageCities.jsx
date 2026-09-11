@@ -17,6 +17,7 @@ const PAGE_SIZE = 15;
 
 const ManageCities = () => {
   const [cities, setCities] = useState([]);
+  
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -78,6 +79,34 @@ const toggleFeatured = async (city) => {
   } catch (err) {
     console.error(err);
     alert("Failed to update featured status");
+  }
+};
+
+// ================= TOGGLE CITY STATUS =================
+const toggleCityStatus = async (city) => {
+  const nextStatus = city.status === "active" ? "inactive" : "active";
+
+  const confirmed = window.confirm(
+    nextStatus === "inactive"
+      ? `Deactivate "${city.name}"?\n\nThis city will no longer be available as an active public city.`
+      : `Activate "${city.name}"?\n\nThis city will become publicly available again.`
+  );
+
+  if (!confirmed) return;
+
+  try {
+    await updateCity(city._id, {
+      status: nextStatus,
+    });
+
+    fetchCities();
+  } catch (err) {
+    console.error(err);
+    alert(
+      nextStatus === "inactive"
+        ? "Failed to deactivate city"
+        : "Failed to activate city"
+    );
   }
 };
 
@@ -521,6 +550,7 @@ const handleAddCity = async () => {
           <th className="p-3">State</th>
           <th className="p-3">Latitude</th>
           <th className="p-3">Longitude</th>
+          <th className="p-3 text-center">Status</th>
           <th className="p-3 text-center">Featured</th>
           <th className="p-3 text-center">Actions</th>
         </tr>
@@ -636,6 +666,20 @@ const handleAddCity = async () => {
             )}
           </td>
 
+        {/* CITY STATUS */}
+<td className="p-3 text-center">
+  <button
+    onClick={() => toggleCityStatus(c)}
+    className={`px-3 py-1 rounded text-xs font-medium ${
+      c.status === "active"
+        ? "bg-green-600 text-white"
+        : "bg-red-600 text-white"
+    }`}
+  >
+    {c.status === "active" ? "Active" : "Inactive"}
+  </button>
+</td>
+
           {/* FEATURE TOGGLE */}
                 <td className="p-3 text-center">
                   <button
@@ -703,6 +747,59 @@ const handleAddCity = async () => {
       </tbody>
 
     </table>
+    {/* ================= PAGINATION ================= */}
+{filtered.length > PAGE_SIZE && (
+  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 py-3 border-t bg-gray-50">
+
+    {/* RESULT INFO */}
+    <div className="text-sm text-gray-500">
+      Showing{" "}
+      {((currentPage - 1) * PAGE_SIZE) + 1}
+      {" - "}
+      {Math.min(currentPage * PAGE_SIZE, filtered.length)}
+      {" of "}
+      {filtered.length}
+      {" cities"}
+    </div>
+
+    {/* PAGINATION BUTTONS */}
+    <div className="flex items-center gap-2">
+
+      <button
+        onClick={() =>
+          setCurrentPage((prev) => Math.max(prev - 1, 1))
+        }
+        disabled={currentPage === 1}
+        className="px-3 py-1.5 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        Previous
+      </button>
+
+      <span className="px-3 py-1.5 text-sm font-medium text-gray-700">
+        Page {currentPage} of{" "}
+        {Math.ceil(filtered.length / PAGE_SIZE)}
+      </span>
+
+      <button
+        onClick={() =>
+          setCurrentPage((prev) =>
+            Math.min(
+              prev + 1,
+              Math.ceil(filtered.length / PAGE_SIZE)
+            )
+          )
+        }
+        disabled={
+          currentPage === Math.ceil(filtered.length / PAGE_SIZE)
+        }
+        className="px-3 py-1.5 border rounded text-sm bg-white hover:bg-gray-100 disabled:opacity-40 disabled:cursor-not-allowed"
+      >
+        Next
+      </button>
+
+    </div>
+  </div>
+)}
   </div>
 
 </div>
