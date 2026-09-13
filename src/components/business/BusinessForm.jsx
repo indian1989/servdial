@@ -33,89 +33,47 @@ import {
   DEFAULT_COUNTRY_CODE,
 } from '../../constants/countryCodes';
 
-/* ================= CATEGORY FLATTEN ================= */
+/* ================= CATEGORY TREE ================= */
 
-const flattenCategories = (
+const getCategoryChildren = (category) =>
+  Array.isArray(category?.subcategories)
+    ? category.subcategories
+    : [];
+
+const findCategoryById = (
   tree = [],
-  parent = null
+  categoryId
 ) => {
 
-  let result = [];
+  if (!categoryId) {
+    return null;
+  }
 
-  tree.forEach((cat) => {
+  for (const category of tree) {
+
+    if (
+      String(category._id) ===
+      String(categoryId)
+    ) {
+      return category;
+    }
 
     const children =
-      Array.isArray(cat.subcategories)
-        ? cat.subcategories
-        : [];
+      getCategoryChildren(category);
 
-    /*
-    =====================================================
-    LEAF CATEGORY
-    =====================================================
-    */
-
-    if (children.length === 0) {
-
-      result.push({
-
-        value: cat._id,
-
-        label: cat.name,
-
-        parentName:
-          parent?.name || "",
-
-        parentSlug:
-          parent?.slug || "",
-
-        /*
-        =================================================
-        CATEGORY FEATURES
-        IMPORTANT:
-        Keep DB features inside selected category option
-        =================================================
-        */
-
-        features:
-          Array.isArray(cat.features)
-            ? cat.features
-            : [],
-
-        uiType:
-          cat.uiType || "service",
-
-      });
-
-    }
-
-
-    /*
-    =====================================================
-    CHILD CATEGORIES
-    =====================================================
-    */
-
-    if (children.length > 0) {
-
-      result = result.concat(
-
-        flattenCategories(
-          children,
-          {
-            name: cat.name,
-            slug: cat.slug,
-          }
-        )
-
+    const found =
+      findCategoryById(
+        children,
+        categoryId
       );
 
+    if (found) {
+      return found;
     }
 
-  });
+  }
 
-  return result;
-
+  return null;
 };
 
 /* ================= SELECT STYLE ================= */
@@ -158,7 +116,12 @@ const BusinessForm = ({
 
   const [errors, setErrors] = useState({});
 
-  const [categories, setCategories] = useState([]);
+  const [categoryTree, setCategoryTree] = useState([]);
+  const [
+  selectedSubCategoryId,
+  setSelectedSubCategoryId,
+] = useState("");
+
   const [cities, setCities] = useState([]);
 
   const [form, setForm] = useState(() => ({
@@ -166,11 +129,74 @@ const BusinessForm = ({
   ...safeInitialData,
 }));
 
+const selectedCategory =
+  findCategoryById(
+    categoryTree,
+    form.categoryId
+  );
+
+const selectedSubCategory =
+  selectedSubCategoryId
+    ? findCategoryById(
+        categoryTree,
+        selectedSubCategoryId
+      )
+    : selectedCategory?.level === 2
+      ? findCategoryById(
+          categoryTree,
+          selectedCategory.parentCategory
+        )
+      : selectedCategory;
+
+const selectedParentCategory =
+  selectedSubCategory?.parentCategory
+    ? findCategoryById(
+        categoryTree,
+        selectedSubCategory.parentCategory
+      )
+    : null;
+
+const subCategoryOptions =
+  categoryTree
+    .flatMap((parent) =>
+      getCategoryChildren(parent)
+        .map((sub) => ({
+          value: sub._id,
+          label: sub.name,
+          parentId: parent._id,
+          parentName: parent.name,
+          parentSlug: parent.slug,
+          features: Array.isArray(sub.features)
+            ? sub.features
+            : [],
+          uiType:
+            sub.uiType || "service",
+          hasChildren:
+            getCategoryChildren(sub).length > 0,
+        }))
+    );
+
+const childCategoryOptions =
+  selectedSubCategory
+    ? getCategoryChildren(
+        selectedSubCategory
+      ).map((child) => ({
+        value: child._id,
+        label: child.name,
+        parentId: selectedSubCategory._id,
+        parentName: selectedSubCategory.name,
+        parentSlug: selectedSubCategory.slug,
+        features: Array.isArray(child.features)
+          ? child.features
+          : [],
+        uiType:
+          child.uiType || "service",
+      }))
+    : [];
+
 const selectedCategoryName =
-form.categoryName ||
-  categories.find(
-    (c) => c.value === String(form.categoryId)
-  )?.label ||
+  form.categoryName ||
+  selectedCategory?.name ||
   "";
 
 
@@ -224,14 +250,13 @@ useEffect(() => {
 console.log("CITY RESPONSE:", cityRes.data);
 
       // ✅ FIX CATEGORY RESPONSE
-      const rawCategories =
-        catRes?.data?.data || [];
+     const rawCategories =
+  catRes?.data?.data || [];
 
-      const tree =
-        buildCategoryTree(rawCategories);
+const tree =
+  buildCategoryTree(rawCategories);
 
-      setCategories(flattenCategories(tree));
-
+setCategoryTree(tree);
 
       // ✅ FIX CITY RESPONSE
       const cityRaw = cityRes.data?.data || [];
@@ -280,6 +305,16 @@ useEffect(() => {
 
     ...safeValue,
 
+     categoryId:
+    safeValue.categoryId?._id ||
+    safeValue.categoryId ||
+    "",
+
+  cityId:
+    safeValue.cityId?._id ||
+    safeValue.cityId ||
+    "",
+
     address: normalizeAddress(
       safeValue.address
     ),
@@ -302,41 +337,76 @@ useEffect(() => {
   categoryName:
   safeValue.categoryName ||
   safeValue.categoryId?.name ||
-  categories.find(
-    (c) =>
-      String(c.value) ===
-      String(
-        safeValue.categoryId?._id ||
-        safeValue.categoryId
-      )
-  )?.label ||
+  findCategoryById(
+    categoryTree,
+    safeValue.categoryId?._id ||
+      safeValue.categoryId
+  )?.name ||
   "",
 
 categoryParentName:
   safeValue.categoryParentName ||
-  categories.find(
-    (c) =>
-      String(c.value) ===
-      String(
-        safeValue.categoryId?._id ||
+  (
+    findCategoryById(
+      categoryTree,
+      safeValue.categoryId?._id ||
         safeValue.categoryId
-      )
-  )?.parentName ||
-  "",
+    )?.level === 2
+      ? findCategoryById(
+          categoryTree,
+          findCategoryById(
+            categoryTree,
+            safeValue.categoryId?._id ||
+              safeValue.categoryId
+          )?.parentCategory
+        )?.name
+      : findCategoryById(
+          categoryTree,
+          safeValue.categoryId?._id ||
+            safeValue.categoryId
+        )?.parentCategory
+          ? findCategoryById(
+              categoryTree,
+              findCategoryById(
+                categoryTree,
+                safeValue.categoryId?._id ||
+                  safeValue.categoryId
+              )?.parentCategory
+            )?.name
+          : ""
+  ),
 
 categoryParentSlug:
   safeValue.categoryParentSlug ||
-  categories.find(
-    (c) =>
-      String(c.value) ===
-      String(
-        safeValue.categoryId?._id ||
+  (
+    findCategoryById(
+      categoryTree,
+      safeValue.categoryId?._id ||
         safeValue.categoryId
-      )
-  )?.parentSlug ||
-  "",
-
-    // ================= CATEGORY FEATURES =================
+    )?.level === 2
+      ? findCategoryById(
+          categoryTree,
+          findCategoryById(
+            categoryTree,
+            safeValue.categoryId?._id ||
+              safeValue.categoryId
+          )?.parentCategory
+        )?.slug || ""
+      : findCategoryById(
+          categoryTree,
+          safeValue.categoryId?._id ||
+            safeValue.categoryId
+        )?.parentCategory
+          ? findCategoryById(
+              categoryTree,
+              findCategoryById(
+                categoryTree,
+                safeValue.categoryId?._id ||
+                  safeValue.categoryId
+              )?.parentCategory
+            )?.slug || ""
+          : ""
+  ),
 
 // ================= CATEGORY FEATURES =================
 
@@ -347,14 +417,21 @@ categoryFeatures:
     : Array.isArray(safeValue.categoryFeatures) &&
       safeValue.categoryFeatures.length > 0
     ? safeValue.categoryFeatures
-    : categories.find(
-        (c) =>
-          String(c.value) ===
-          String(
-            safeValue.categoryId?._id ||
-            safeValue.categoryId
-          )
-      )?.features || [],
+    : findCategoryById(
+    categoryTree,
+    safeValue.categoryId?._id ||
+      safeValue.categoryId
+  )?.features || [],
+
+  secondaryCategoryIds:
+  Array.isArray(
+    safeValue.secondaryCategoryIds
+  )
+    ? safeValue.secondaryCategoryIds.map(
+        (category) =>
+          category?._id || category
+      )
+    : [],
 
     // ================= FEATURE DATA =================
     pricing: Array.isArray(safeValue.pricing)
@@ -436,6 +513,32 @@ setLocationManuallyAdjusted(
   Boolean(existingLocation)
 );
 
+const editCategory =
+  findCategoryById(
+    categoryTree,
+    safeValue.categoryId?._id ||
+      safeValue.categoryId
+  );
+
+if (editCategory) {
+
+  /*
+  ==========================================
+  FINAL CATEGORY STRUCTURE
+
+  Business.categoryId = Level 1 PRIMARY
+  secondaryCategoryIds = Level 2
+  ==========================================
+  */
+
+  setSelectedSubCategoryId(
+    editCategory.level === 1
+      ? editCategory._id
+      : editCategory.parentCategory
+  );
+
+}
+
   setForm(updatedForm);
 
 onChange?.(updatedForm);
@@ -462,7 +565,7 @@ setRestaurantBooking(
   }
 );
 
-}, [safeValue?._id, categories]);
+}, [safeValue?._id, categoryTree]);
 
   /* ================= HELPERS ================= */
 
@@ -903,27 +1006,17 @@ const handleSelect = async (field, selected) => {
 
 if (field === "categoryId") {
 
-  /*
-  =====================================================
-  CATEGORY FEATURES
-  =====================================================
-
-  `selected` ab flattenCategories() se aa raha hai
-  aur usmein DB ke features already preserved hain.
-  */
-
   const categoryFeatures =
     Array.isArray(selected.features)
       ? selected.features
       : [];
 
-
   updateForm({
 
     ...form,
 
-    categoryId:
-      selected.value,
+    // PRIMARY CATEGORY
+    categoryId: selected.value,
 
     categoryName:
       selected.label || "",
@@ -934,38 +1027,33 @@ if (field === "categoryId") {
     categoryParentSlug:
       selected.parentSlug || "",
 
-    /*
-    ===================================================
-    THIS IS THE IMPORTANT LINE
-    ===================================================
-    */
-
     categoryFeatures,
-
-    /*
-    Keep uiType available as well
-    */
 
     uiType:
       selected.uiType || "service",
 
+    // New primary category ke saath
+    // old secondary categories clear.
+    secondaryCategoryIds: [],
+
   });
 
+  setSelectedSubCategoryId(
+    selected.value
+  );
 
   console.log(
-    "✅ CATEGORY SELECTED:",
+    "✅ PRIMARY CATEGORY SELECTED:",
     selected.label
   );
 
   console.log(
-    "✅ CATEGORY FEATURES:",
+    "✅ PRIMARY CATEGORY FEATURES:",
     categoryFeatures
   );
 
-
   return;
 }
-
 
   /* ================= CITY ================= */
 
@@ -1022,9 +1110,9 @@ const seoPreview = useMemo(() => {
     )?.label || "city";
 
   const category =
-    categories.find(
-      (c) => c.value === form.categoryId
-    )?.label || "category";
+    selectedCategory?.name ||
+    form.categoryName ||
+    "category";
 
   const businessSlug =
     slugify(form.name) || "business-name";
@@ -1035,8 +1123,9 @@ const seoPreview = useMemo(() => {
   form.name,
   form.cityId,
   form.categoryId,
+  form.categoryName,
   cities,
-  categories,
+  selectedCategory,
 ]);
 
 const hasAddressChanged = () => {
@@ -1442,31 +1531,206 @@ if (
 
           </FormField>
 
-          <FormField
-            label="Primary Category"
-            required
-            error={errors.categoryId}
-          >
+      {/* ================= CATEGORY ================= */}
 
-            <Select
-              options={categories}
-              value={
-  categories.find(
-    (c) =>
-      String(c.value) === String(form.categoryId)
-  ) || null
-}
-              onChange={(v) =>
-                handleSelect(
-                  "categoryId",
-                  v
-                )
-              }
-              placeholder="Select Primary Category"
-              styles={styles}
-            />
+<FormField
+  label="Sub Category"
+  required
+  error={errors.categoryId}
+>
 
-          </FormField>
+  <Select
+    options={subCategoryOptions}
+    value={
+      selectedSubCategory
+        ? {
+            value: selectedSubCategory._id,
+            label: selectedSubCategory.name,
+            parentId:
+              selectedParentCategory?._id,
+            parentName:
+              selectedParentCategory?.name || "",
+            parentSlug:
+              selectedParentCategory?.slug || "",
+            features:
+              Array.isArray(
+                selectedSubCategory.features
+              )
+                ? selectedSubCategory.features
+                : [],
+            uiType:
+              selectedSubCategory.uiType ||
+              "service",
+            hasChildren:
+              getCategoryChildren(
+                selectedSubCategory
+              ).length > 0,
+          }
+        : null
+    }
+    onChange={(selected) => {
+
+  if (!selected) {
+    return;
+  }
+
+  const subCategory =
+    findCategoryById(
+      categoryTree,
+      selected.value
+    );
+
+  if (!subCategory) {
+    return;
+  }
+
+  const parent =
+    findCategoryById(
+      categoryTree,
+      subCategory.parentCategory
+    );
+
+  setSelectedSubCategoryId(
+    subCategory._id
+  );
+
+  updateForm({
+
+    ...form,
+
+    // PRIMARY = LEVEL 1
+    categoryId:
+      subCategory._id,
+
+    categoryName:
+      subCategory.name || "",
+
+    categoryParentName:
+      parent?.name || "",
+
+    categoryParentSlug:
+      parent?.slug || "",
+
+    categoryFeatures:
+      Array.isArray(subCategory.features)
+        ? subCategory.features
+        : [],
+
+    uiType:
+      subCategory.uiType ||
+      "service",
+
+    // New primary select hone par
+    // previous secondary categories clear.
+    secondaryCategoryIds: [],
+
+  });
+
+  console.log(
+    "✅ PRIMARY SUB CATEGORY SELECTED:",
+    subCategory.name
+  );
+
+}}
+    placeholder="Select Sub Category"
+    styles={styles}
+  />
+
+</FormField>
+
+
+{/* ================= SECONDARY CATEGORIES ================= */}
+
+{selectedSubCategory &&
+  getCategoryChildren(
+    selectedSubCategory
+  ).length > 0 && (
+
+    <FormField
+      label="Specializations / Secondary Categories"
+      error={errors.secondaryCategoryIds}
+    >
+
+      <Select
+        isMulti
+        options={childCategoryOptions}
+
+        value={
+          childCategoryOptions.filter(
+            (option) =>
+              Array.isArray(
+                form.secondaryCategoryIds
+              ) &&
+              form.secondaryCategoryIds.some(
+                (id) =>
+                  String(id) ===
+                  String(option.value)
+              )
+          )
+        }
+
+        onChange={(selectedOptions) => {
+
+          const selected =
+            selectedOptions || [];
+
+          /*
+          ==========================================
+          MAX 5 SECONDARY CATEGORIES
+          ==========================================
+          */
+
+          if (selected.length > 5) {
+
+            setErrors((prev) => ({
+              ...prev,
+              secondaryCategoryIds:
+                "You can select a maximum of 5 secondary categories.",
+            }));
+
+            return;
+          }
+
+          setErrors((prev) => ({
+            ...prev,
+            secondaryCategoryIds: "",
+          }));
+
+          const secondaryIds =
+            selected.map(
+              (option) => option.value
+            );
+
+          updateForm({
+
+            ...form,
+
+            secondaryCategoryIds:
+              secondaryIds,
+
+          });
+
+          console.log(
+            "✅ SECONDARY CATEGORIES:",
+            secondaryIds
+          );
+
+        }}
+
+        placeholder="Select up to 5 specializations"
+        closeMenuOnSelect={false}
+        styles={styles}
+
+      />
+
+      <p className="text-xs text-gray-500 mt-1">
+        Optional. Select up to 5 specializations or
+        services offered under this primary category.
+      </p>
+
+    </FormField>
+
+  )}
 
         </FormSection>
 

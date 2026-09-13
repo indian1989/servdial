@@ -150,34 +150,6 @@ setCityInfo(
 );
 
 
-// "all" page is valid even without category
-if (categorySlug !== "all" && !data?.category?.slug) {
-  setNotFound(true);
-  return;
-}
-
-
-setBusinesses(data?.data || []);
-
-
-    // ================= SUB CATEGORIES =================
-
-    setSubCategories(
-      data?.subCategories || []
-    );
-
-
-    // ================= CATEGORY INFO =================
-
-    setCategoryInfo(
-      categorySlug === "all"
-       ? null : (data?.category || null) 
-      );
-
-    setCityInfo(
- data?.city || null
-);
-
   } catch (error) {
 
   console.error(
@@ -246,9 +218,8 @@ const formattedCategory = isAllPage
 
   // ================= SEO =================
 const title = isAllPage
-    ? `Businesses in ${formattedCity} | ServDial`
-    : `${formattedCategory} in ${formattedCity} | ServDial`;
-
+  ? `Businesses in ${formattedCity} | Local Business Directory | ServDial`
+  : `${formattedCategory} in ${formattedCity} | ServDial`;
 
   const description = isAllPage
     ? `Find trusted local businesses in ${formattedCity}. Explore

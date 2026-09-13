@@ -35,10 +35,7 @@ const CATEGORY_FEATURES = [
     value: "pricing",
     label: "Pricing",
   },
-  {
-    value: "services",
-    label: "Services",
-  },
+ 
   {
     value: "catalog",
     label: "Catalog",
@@ -71,10 +68,7 @@ const CATEGORY_FEATURES = [
     value: "offers",
     label: "Offers",
   },
-  {
-    value: "business_hours",
-    label: "Business Hours",
-  },
+ 
   {
     value: "lead_form",
     label: "Lead / Enquiry Form",
@@ -398,6 +392,7 @@ const EMPTY_NEW_CATEGORY = {
   description: "",
   order: 0,
   parentCategory: "",
+  subCategory: "",
   uiType: "service",
   features: [],
 };
@@ -612,41 +607,42 @@ const ManageCategories = () => {
   ======================================================= */
 
   const existingCategory =
-    useMemo(() => {
+  useMemo(() => {
 
-      const newName =
-        normalize(
-          newCategory.name
-        );
-
-
-      if (!newName) {
-        return null;
-      }
-
-
-      return flatCategories.find(
-        (category) =>
-
-          normalize(
-            category.name
-          ) === newName &&
-
-          String(
-            category.parentCategory ||
-            ""
-          ) ===
-          String(
-            newCategory.parentCategory ||
-            ""
-          )
+    const newName =
+      normalize(
+        newCategory.name
       );
 
-    }, [
-      flatCategories,
-      newCategory.name,
-      newCategory.parentCategory,
-    ]);
+    if (!newName) {
+      return null;
+    }
+
+    const finalParent =
+      newCategory.subCategory ||
+      newCategory.parentCategory ||
+      "";
+
+    return flatCategories.find(
+      (category) =>
+
+        normalize(
+          category.name
+        ) === newName &&
+
+        String(
+          category.parentCategory ||
+          ""
+        ) ===
+        String(finalParent)
+    );
+
+  }, [
+    flatCategories,
+    newCategory.name,
+    newCategory.parentCategory,
+    newCategory.subCategory,
+  ]);
 
 
   /* =======================================================
@@ -671,12 +667,16 @@ const ManageCategories = () => {
       if (existingCategory) {
 
         alert(
-          `"${existingCategory.name}" already exists in this Parent`
+  `"${existingCategory.name}" already exists under the selected parent`
         );
 
         return;
       }
 
+      const finalParentCategory =
+  newCategory.subCategory ||
+  newCategory.parentCategory ||
+  null;
 
       const orderValue =
         newCategory.order === "" ||
@@ -714,8 +714,7 @@ const ManageCategories = () => {
 
 
           parentCategory:
-            newCategory.parentCategory ||
-            null,
+  finalParentCategory,
 
 
           uiType:
@@ -1840,14 +1839,15 @@ const ManageCategories = () => {
               newCategory.parentCategory
             }
             onChange={(e) =>
-              setNewCategory(
-                (prev) => ({
-                  ...prev,
-                  parentCategory:
-                    e.target.value,
-                })
-              )
-            }
+  setNewCategory(
+    (prev) => ({
+      ...prev,
+      parentCategory:
+        e.target.value,
+      subCategory: "",
+    })
+  )
+}
           >
 
             <option value="">
@@ -1879,6 +1879,62 @@ const ManageCategories = () => {
 
           </select>
 
+    {/* SUB CATEGORY */}
+
+<select
+  className="
+    border
+    px-3
+    py-2
+    rounded
+  "
+  value={
+    newCategory.subCategory
+  }
+  onChange={(e) =>
+    setNewCategory(
+      (prev) => ({
+        ...prev,
+        subCategory:
+          e.target.value,
+      })
+    )
+  }
+  disabled={
+    !newCategory.parentCategory
+  }
+>
+
+  <option value="">
+    No Sub Category
+  </option>
+
+  {flatCategories
+  .filter(
+    (category) =>
+      String(
+        category.parentCategory || ""
+      ) ===
+      String(
+        newCategory.parentCategory || ""
+      )
+  )
+  .map(
+    (category) => (
+      <option
+        key={
+          category._id
+        }
+        value={
+          category._id
+        }
+      >
+        {category.name}
+      </option>
+    )
+  )}
+
+</select>
 
           {/* UI TYPE */}
 

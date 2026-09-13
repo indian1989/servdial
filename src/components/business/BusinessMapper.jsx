@@ -17,14 +17,21 @@ export const normalizeBusinessPayload = (
     foodType: data.foodType || "",
 
     categoryId:
-      data.categoryId?.value ||
-      data.categoryId ||
-      "",
+  data.categoryId?.value ||
+  data.categoryId ||
+  "",
 
-    cityId:
-      data.cityId?.value ||
-      data.cityId ||
-      "",
+/* ================= SECONDARY CATEGORIES ================= */
+
+secondaryCategoryIds:
+  Array.isArray(data.secondaryCategoryIds)
+    ? data.secondaryCategoryIds
+    : [],
+
+cityId:
+  data.cityId?.value ||
+  data.cityId ||
+  "",
 
     address: (() => {
       const address = normalizeAddress(data.address);

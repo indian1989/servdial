@@ -242,14 +242,23 @@ export const toBusinessEditDTO = (b = {}) => {
     // ================= RELATIONS =================
 
     categoryId:
-      b.categoryId?._id?.toString?.() ||
-      b.categoryId?.toString?.() ||
-      "",
+  b.categoryId?._id?.toString?.() ||
+  b.categoryId?.toString?.() ||
+  "",
 
-    cityId:
-      b.cityId?._id?.toString?.() ||
-      b.cityId?.toString?.() ||
-      "",
+secondaryCategoryIds:
+  Array.isArray(b.secondaryCategoryIds)
+    ? b.secondaryCategoryIds.map(
+        (category) =>
+          category?._id?.toString?.() ||
+          category?.toString?.()
+      )
+    : [],
+
+cityId:
+  b.cityId?._id?.toString?.() ||
+  b.cityId?.toString?.() ||
+  "",
 
     // ================= LOCATION =================
 

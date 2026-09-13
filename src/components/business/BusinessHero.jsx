@@ -211,16 +211,25 @@ const verificationType =
   countryName
 );
 
+const heroSeoLocation =
+  formatLocationDisplay(
+    cityName,
+    business?.cityId?.district,
+    stateName
+  );
+
   // =========================================================
   // SEO H1
   // =========================================================
 
-  const heroH1 =
-    business?.seo?.h1 ||
-    `${businessName} - ${titleCase(
-      categoryName
-    )} in ${titleCase(cityName)}`;
-
+const heroH1 =
+  heroSeoLocation
+    ? `${businessName} | ${titleCase(
+        categoryName
+      )} in ${heroSeoLocation}`
+    : `${businessName} | ${titleCase(
+        categoryName
+      )}`;
 
 
   // =========================================================

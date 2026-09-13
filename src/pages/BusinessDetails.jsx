@@ -42,6 +42,7 @@ import LoginPromptModal from "../components/common/LoginPromptModal";
 import useGallery from "../hooks/useGallery";
 import BusinessMedia from "../components/business/BusinessMedia";
 import { formatCityLocation } from "../utils/addressHelper";
+import Specializations from "../components/business/Specializations";
 
 const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
@@ -290,10 +291,13 @@ const uiType =
     business={business}
 />
 
+<Specializations
+  business={business}
+/>
+
 <BusinessServiceInfo
  business={business}
 />
-
 
 {/* AI SUMMARY */}
         <BusinessAISummary
