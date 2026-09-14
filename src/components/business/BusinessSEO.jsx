@@ -487,6 +487,21 @@ const BusinessSEO = ({
         content={image}
       />
 
+      <meta
+        property="og:image:width"
+        content="1200"
+      />
+
+      <meta
+        property="og:image:height"
+        content="630"
+      />
+
+      <meta
+        property="og:locale"
+        content="en_IN"
+      />
+
 
       <meta
         property="og:url"

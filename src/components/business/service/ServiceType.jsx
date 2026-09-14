@@ -18,6 +18,14 @@ const serviceTypeOptions = [
     label: "On-site Visit",
   },
   {
+    value: "dine-in",
+    label: "Dine In",
+  },
+  {
+    value: "takeaway",
+    label: "Takeaway",
+  },
+  {
     value: "mobile-sale",
     label: "Mobile Sales & Accessories",
   },
