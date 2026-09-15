@@ -62,12 +62,16 @@ const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
     }=useBusinessAnalytics(
     business?._id
     );
-  let user = null;
+ let user = null;
 
-try {
-  user = JSON.parse(localStorage.getItem("servdial_user"));
-} catch {
-  localStorage.removeItem("servdial_user");
+if (typeof window !== "undefined") {
+  try {
+    user = JSON.parse(
+      localStorage.getItem("servdial_user")
+    );
+  } catch {
+    localStorage.removeItem("servdial_user");
+  }
 }
 
   

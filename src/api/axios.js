@@ -1,19 +1,32 @@
 import axios from "axios";
 
 // ================= BASE API INSTANCE =================
-const API = axios.create({
-  baseURL: import.meta.env.DEV
-    ? (
+
+  const isLocalFrontend =
+  typeof window !== "undefined" &&
+  (
+    window.location.hostname === "localhost" ||
+    window.location.hostname === "127.0.0.1"
+  );
+
+  console.log(
+  "🔥 FINAL API BASE:",
+  isLocalFrontend
+    ? "http://localhost:5000/api"
+    : (
         import.meta.env.VITE_API_BASE_URL ||
-        "http://localhost:5000/api"
+        "https://api.servdial.com/api"
       )
+);
+
+const API = axios.create({
+  baseURL: isLocalFrontend
+    ? "http://localhost:5000/api"
     : (
         import.meta.env.VITE_API_BASE_URL ||
         "https://api.servdial.com/api"
       ),
-
   timeout: 60000,
-
   headers: {
     "Content-Type": "application/json",
   },

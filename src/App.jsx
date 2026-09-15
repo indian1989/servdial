@@ -5,7 +5,7 @@ import { CategoryProvider } from "./context/CategoryContext";
 import AppRoutes from "./routes/AppRoutes";
 import TrackPageView from "./components/analytics/TrackPageView";
 
-function AppContent() {
+function AppContent({ ssrBusiness }) {
   const { user } = useAuth();
 
   return (
@@ -13,17 +13,19 @@ function AppContent() {
       <CityProvider>
         <CategoryProvider>
           <TrackPageView user={user} />
-          <AppRoutes />
+          <AppRoutes ssrBusiness={ssrBusiness} />
         </CategoryProvider>
       </CityProvider>
     </BusinessProvider>
   );
 }
 
-function App() {
+function App({ ssrBusiness }) {
   return (
     <AuthProvider>
-      <AppContent />
+      <AppContent
+  ssrBusiness={ssrBusiness}
+/>
     </AuthProvider>
   );
 }

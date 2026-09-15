@@ -24,7 +24,7 @@ import CommunityGuidelines from "../pages/static/CommunityGuidelines";
 const Unauthorized = lazy(() => import("../pages/Unauthorized"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
-function AppRoutes() {
+function AppRoutes({ ssrBusiness }) {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
@@ -33,7 +33,9 @@ function AppRoutes() {
         {AuthRoutes()}
 
         {/* PUBLIC */}
-        {PublicRoutes()}
+        {PublicRoutes({
+  ssrBusiness,
+})}
 
         {/* TEMPORARY LISTINGS */}
 {TemporaryListingRoutes()}

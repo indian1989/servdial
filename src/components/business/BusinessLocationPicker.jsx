@@ -1,33 +1,6 @@
 // src/components/business/BusinessLocationPicker.jsx
 
 import { useEffect, useState } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  useMap,
-  useMapEvents,
-} from "react-leaflet";
-
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
-
-/* =========================================================
-   FIX LEAFLET DEFAULT MARKER ICON
-========================================================= */
-
-delete L.Icon.Default.prototype._getIconUrl;
-
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-
-  iconUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
 
 /* =========================================================
    DEFAULT FALLBACK
@@ -39,82 +12,6 @@ const DEFAULT_COORDINATES = {
   lng: 85.2090351,
 };
 
-/* =========================================================
-   MAP VIEW CONTROLLER
-========================================================= */
-
-/* =========================================================
-   MAP VIEW CONTROLLER
-========================================================= */
-
-const MapViewController = ({ coordinates }) => {
-  const map = useMap();
-
-  useEffect(() => {
-    if (
-      !Array.isArray(coordinates) ||
-      coordinates.length !== 2
-    ) {
-      return;
-    }
-
-    const lng = Number(coordinates[0]);
-    const lat = Number(coordinates[1]);
-
-    if (
-      !Number.isFinite(lat) ||
-      !Number.isFinite(lng)
-    ) {
-      return;
-    }
-
-    const current = map.getCenter();
-
-    const distance =
-      Math.abs(current.lat - lat) +
-      Math.abs(current.lng - lng);
-
-    /*
-    ==========================================
-    IMPORTANT
-
-    Agar location genuinely change hui hai,
-    map ko new coordinates par move karo.
-    ==========================================
-    */
-
-    if (distance > 0.000001) {
-      map.flyTo(
-        [lat, lng],
-        17,
-        {
-          animate: true,
-          duration: 0.8,
-        }
-      );
-    }
-
-  }, [coordinates, map]);
-
-  return null;
-};
-
-/* =========================================================
-   MAP CLICK HANDLER
-========================================================= */
-
-const MapClickHandler = ({ onLocationChange }) => {
-  useMapEvents({
-    click(event) {
-      const lat = event.latlng.lat;
-      const lng = event.latlng.lng;
-
-      onLocationChange([lng, lat]);
-    },
-  });
-
-  return null;
-};
 
 /* =========================================================
    COMPONENT
@@ -167,6 +64,32 @@ const BusinessLocationPicker = ({
     lat: initialCoordinates[1],
     lng: initialCoordinates[0],
   });
+
+    /* =======================================================
+     CLIENT-ONLY MAP
+  ======================================================= */
+
+  const [MapComponent, setMapComponent] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadMap = async () => {
+      const module = await import(
+        "./BusinessLocationPickerClient.jsx"
+      );
+
+      if (mounted) {
+        setMapComponent(() => module.default);
+      }
+    };
+
+    loadMap();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   /* =======================================================
      SYNC PARENT → MAP
@@ -263,52 +186,18 @@ const BusinessLocationPicker = ({
       className="space-y-3"
     >
 
-      <div className="rounded-2xl overflow-hidden border">
-
-        <MapContainer
-          center={[
-            position.lat,
-            position.lng,
-          ]}
-          zoom={17}
-          style={{
-            height: "320px",
-            width: "100%",
-          }}
-        >
-
-          <MapViewController
-            coordinates={[
-              position.lng,
-              position.lat,
-            ]}
-          />
-
-          <MapClickHandler
-            onLocationChange={
-              handleMapClick
-            }
-          />
-
-          <TileLayer
-            attribution="&copy; OpenStreetMap contributors"
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
-
-          <Marker
-            position={[
-              position.lat,
-              position.lng,
-            ]}
-            draggable={true}
-            eventHandlers={{
-              dragend: handleDragEnd,
-            }}
-          />
-
-        </MapContainer>
-
-      </div>
+      {MapComponent ? (
+  <MapComponent
+    position={position}
+    handleMapClick={handleMapClick}
+    handleDragEnd={handleDragEnd}
+  />
+) : (
+  <div
+    className="w-full rounded-2xl overflow-hidden border"
+    style={{ height: "320px" }}
+  />
+)}
 
       {/* ===================================================
           COORDINATES

@@ -1,6 +1,10 @@
 import { useMemo, useState } from "react";
 
 const generateFingerprint = () => {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
   return btoa(
     [
       navigator.userAgent,

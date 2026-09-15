@@ -1,9 +1,7 @@
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
 import { useState, useEffect } from "react";
-import L from "leaflet";
 
 const MapSection = ({ businesses }) => {
+  const [MapComponent, setMapComponent] = useState(null);
   const [center, setCenter] = useState([20.5937, 78.9629]);
 
   useEffect(() => {
@@ -14,23 +12,40 @@ const MapSection = ({ businesses }) => {
     }
   }, [businesses]);
 
-  return (
-    <MapContainer center={center} zoom={5} style={{ height: "400px" }}>
-      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+  useEffect(() => {
+    let mounted = true;
 
-      {businesses.map((b) => (
-        <Marker
-          key={b._id}
-          position={[b.location.coordinates[1], b.location.coordinates[0]]}
-        >
-          <Popup>
-            <div className="font-semibold">{b.name}</div>
-            <div>{b.category}</div>
-            <div>{b.city?.name}</div>
-          </Popup>
-        </Marker>
-      ))}
-    </MapContainer>
+    const loadMap = async () => {
+      const module = await import(
+        "../home/MapSectionClient.jsx"
+      );
+
+      if (mounted) {
+        setMapComponent(() => module.default);
+      }
+    };
+
+    loadMap();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (!MapComponent) {
+    return (
+      <div
+        className="w-full"
+        style={{ height: "400px" }}
+      />
+    );
+  }
+
+  return (
+    <MapComponent
+      businesses={businesses}
+      center={center}
+    />
   );
 };
 

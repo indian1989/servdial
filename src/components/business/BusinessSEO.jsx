@@ -314,8 +314,8 @@ const BusinessSEO = ({
   // =======================================================
 
   const localBusinessSchema =
-    generateLocalBusinessSchema({
-
+  generateLocalBusinessSchema(
+    {
       ...business,
 
       categoryName,
@@ -328,12 +328,11 @@ const BusinessSEO = ({
 
       image,
 
-      url,
-
       descriptionSEO:
         description,
-
-    });
+    },
+    url
+  );
 
 
   // =======================================================

@@ -122,7 +122,9 @@ const OneSegmentResolver = () => {
   return <StatePage />;
 };
 
-const ThreeSegmentResolver = () => {
+const ThreeSegmentResolver = ({
+  ssrBusiness,
+}) => {
   const {
     stateSlug,
     citySlug,
@@ -196,15 +198,41 @@ const ThreeSegmentResolver = () => {
     categorySlug,
   ]);
 
-  if (loading || !routeType) {
-    return (
-      <div className="py-16 text-center">
-        <p className="text-sm text-gray-500">
-          Loading...
-        </p>
-      </div>
-    );
-  }
+  /*
+ * SSR BUSINESS
+ *
+ * Server already resolved this 3-segment URL
+ * as a business request.
+ *
+ * Do not wait for useEffect on the server.
+ */
+
+if (
+  typeof window === "undefined" &&
+  ssrBusiness?.data?.business
+) {
+  return (
+    <BusinessPage
+      resolvedParams={{
+        citySlug: stateSlug,
+        categorySlug: citySlug,
+        slug: categorySlug,
+      }}
+      ssrBusiness={ssrBusiness}
+    />
+  );
+}
+
+
+if (loading || !routeType) {
+  return (
+    <div className="py-16 text-center">
+      <p className="text-sm text-gray-500">
+        Loading...
+      </p>
+    </div>
+  );
+}
 
   /*
    * CATEGORY PAGE
@@ -230,14 +258,15 @@ const ThreeSegmentResolver = () => {
    * categorySlug = actual business slug
    */
   return (
-    <BusinessPage
-      resolvedParams={{
-        citySlug: stateSlug,
-        categorySlug: citySlug,
-        slug: categorySlug,
-      }}
-    />
-  );
+  <BusinessPage
+    resolvedParams={{
+      citySlug: stateSlug,
+      categorySlug: citySlug,
+      slug: categorySlug,
+    }}
+    ssrBusiness={ssrBusiness}
+  />
+);
 };
 
 const TwoSegmentResolver = () => {
@@ -362,7 +391,9 @@ const TwoSegmentResolver = () => {
   return <CityPage />;
 };
 
-const PublicRoutes = () => {
+const PublicRoutes = ({
+  ssrBusiness,
+}) => {
   return (
     <Route element={<PublicLayout />}>
 
@@ -426,7 +457,11 @@ const PublicRoutes = () => {
   
  <Route
   path="/:stateSlug/:citySlug/:categorySlug"
-  element={<ThreeSegmentResolver />}
+  element={
+    <ThreeSegmentResolver
+      ssrBusiness={ssrBusiness}
+    />
+  }
 />
 
   {/* CATEGORIES (GLOBAL) */}

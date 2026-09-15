@@ -16,7 +16,10 @@ import NotFound from "./NotFound";
 // 🏢 BUSINESS PAGE
 // =========================================================
 
-const BusinessPage = ({ resolvedParams }) => {
+const BusinessPage = ({
+  resolvedParams,
+  ssrBusiness,
+}) => {
 
   const params = useParams();
 
@@ -37,17 +40,24 @@ const navigate = useNavigate();
   // STATE
   // =======================================================
 
-  const [business, setBusiness] =
-    useState(null);
+ const [business, setBusiness] = useState(
+  ssrBusiness?.data?.business || null
+);
 
-  const [reviews, setReviews] =
-    useState([]);
+const [reviews, setReviews] = useState(
+  Array.isArray(
+    ssrBusiness?.data?.reviews
+  )
+    ? ssrBusiness.data.reviews
+    : []
+);
 
   const [similar, setSimilar] =
     useState([]);
 
-  const [loading, setLoading] =
-    useState(true);
+  const [loading, setLoading] = useState(
+  !ssrBusiness
+);
 
   const [notFound, setNotFound] =
     useState(false);
