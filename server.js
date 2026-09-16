@@ -11,6 +11,17 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ================================================
+// SITEMAP
+// ================================================
+
+const BACKEND_URL =
+  process.env.VITE_API_BASE_URL ||
+  "https://api.servdial.com/api";
+
+const BACKEND_SITEMAP_URL =
+  BACKEND_URL.replace(/\/api$/, "");
+  
+// ================================================
 // PRODUCTION STATIC ASSETS
 // ================================================
 
@@ -21,6 +32,81 @@ app.use(
   express.static(distPath, {
     index: false,
   })
+);
+
+app.get(
+  [
+    "/sitemap.xml",
+    "/sitemap-static.xml",
+    "/sitemap-states.xml",
+    "/sitemap-states-:page.xml",
+    "/sitemap-cities.xml",
+    "/sitemap-cities-:page.xml",
+    "/sitemap-categories.xml",
+    "/sitemap-categories-:page.xml",
+    "/sitemap-city-category.xml",
+    "/sitemap-city-category-:page.xml",
+    "/sitemap-city-pages.xml",
+    "/sitemap-city-pages-:page.xml",
+    "/sitemap-businesses.xml",
+    "/sitemap-businesses-:page.xml",
+    "/sitemap-temporary-listings.xml",
+"/sitemap-temporary-listings-:page.xml",
+  ],
+  async (req, res) => {
+    try {
+      const sitemapUrl =
+        `${BACKEND_SITEMAP_URL}${req.originalUrl}`;
+
+      console.log(
+        "🗺️ Sitemap request:",
+        req.originalUrl
+      );
+
+      const response = await fetch(sitemapUrl, {
+        headers: {
+          Accept: "application/xml",
+        },
+      });
+
+      if (!response.ok) {
+        console.error(
+          "❌ Backend sitemap error:",
+          response.status,
+          sitemapUrl
+        );
+
+        return res
+          .status(response.status)
+          .send("Sitemap unavailable");
+      }
+
+      const xml = await response.text();
+
+      res.setHeader(
+        "Content-Type",
+        "application/xml; charset=utf-8"
+      );
+
+      res.setHeader(
+        "Cache-Control",
+        "public, max-age=3600"
+      );
+
+      return res.status(200).send(xml);
+
+    } catch (error) {
+
+      console.error(
+        "❌ Sitemap proxy error:",
+        error
+      );
+
+      return res
+        .status(500)
+        .send("Sitemap unavailable");
+    }
+  }
 );
 
 // ================================================

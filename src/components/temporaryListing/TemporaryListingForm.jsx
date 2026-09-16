@@ -25,7 +25,15 @@ const TemporaryListingForm = ({
       ? initialData.expiryDate.substring(0, 10)
       : "",
     images: initialData?.images || [],
-    metadata: initialData?.metadata || {},
+    metadata: {
+      ...(initialData?.metadata || {}),
+      listingMethod:
+        initialData?.metadata?.listingMethod || "Online",
+      website:
+        initialData?.metadata?.website || "",
+      address:
+        initialData?.metadata?.address || "",
+    },
   });
 
   const [loading, setLoading] = useState(false);
@@ -40,6 +48,18 @@ const TemporaryListingForm = ({
     }));
   };
 
+  const handleMetadataChange = (e) => {
+    const { name, value } = e.target;
+
+    setFormData((prev) => ({
+      ...prev,
+      metadata: {
+        ...prev.metadata,
+        [name]: value,
+      },
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -50,12 +70,61 @@ const TemporaryListingForm = ({
       return;
     }
 
+    const listingMethod =
+      formData.metadata.listingMethod;
+
+    const website =
+      formData.metadata.website.trim();
+
+    const address =
+      formData.metadata.address.trim();
+
+    const phone =
+      formData.phone.trim();
+
+    const landline =
+      formData.landline.trim();
+
+    /*
+     * Online listing requires website/link.
+     */
     if (
-      !formData.phone.trim() &&
-      !formData.landline.trim()
+      (listingMethod === "Online" ||
+        listingMethod === "Both") &&
+      !website
     ) {
       setError(
-        "Mobile number or landline number is required."
+        "Website / Auction Link is required for online listings."
+      );
+      return;
+    }
+
+    /*
+     * Offline listing requires physical address.
+     */
+    if (
+      (listingMethod === "Offline" ||
+        listingMethod === "Both") &&
+      !address
+    ) {
+      setError(
+        "Address / Location is required for offline listings."
+      );
+      return;
+    }
+
+    /*
+     * At least one usable access/contact method
+     * must be available.
+     */
+    if (
+      !website &&
+      !address &&
+      !phone &&
+      !landline
+    ) {
+      setError(
+        "Please provide a Website / Auction Link, Address / Location, Mobile Number, or Landline Number."
       );
       return;
     }
@@ -65,7 +134,10 @@ const TemporaryListingForm = ({
       return;
     }
 
-    const selectedDate = new Date(formData.expiryDate);
+    const selectedDate = new Date(
+      `${formData.expiryDate}T23:59:59`
+    );
+
     const today = new Date();
 
     if (selectedDate <= today) {
@@ -87,8 +159,14 @@ const TemporaryListingForm = ({
             ? null
             : Number(formData.price),
 
+        metadata: {
+          ...formData.metadata,
+          listingMethod,
+          website,
+          address,
+        },
+
         images: formData.images,
-        metadata: formData.metadata,
       };
 
       let response;
@@ -99,7 +177,9 @@ const TemporaryListingForm = ({
           payload
         );
       } else {
-        response = await createTemporaryListing(payload);
+        response = await createTemporaryListing(
+          payload
+        );
       }
 
       if (onSuccess) {
@@ -261,6 +341,93 @@ const TemporaryListingForm = ({
             className="w-full rounded-lg border px-3 py-2"
           />
         </div>
+      </div>
+
+      {/* Listing Method */}
+
+      <div>
+        <label className="mb-1 block text-sm font-medium">
+          Listing Method *
+        </label>
+
+        <select
+          name="listingMethod"
+          value={formData.metadata.listingMethod}
+          onChange={handleMetadataChange}
+          required
+          className="w-full rounded-lg border px-3 py-2"
+        >
+          <option value="Online">
+            Online
+          </option>
+
+          <option value="Offline">
+            Offline
+          </option>
+
+          <option value="Both">
+            Both
+          </option>
+        </select>
+      </div>
+
+      {/* Website / Auction Link */}
+
+      <div>
+        <label className="mb-1 block text-sm font-medium">
+          Website / Auction Link
+          {(formData.metadata.listingMethod ===
+            "Online" ||
+            formData.metadata.listingMethod ===
+              "Both") && " *"}
+        </label>
+
+        <input
+          type="url"
+          name="website"
+          value={formData.metadata.website}
+          onChange={handleMetadataChange}
+          placeholder="https://example.com/auction"
+          required={
+            formData.metadata.listingMethod ===
+              "Online" ||
+            formData.metadata.listingMethod ===
+              "Both"
+          }
+          className="w-full rounded-lg border px-3 py-2"
+        />
+
+        <p className="mt-1 text-xs text-gray-500">
+          Add the official website or auction link where
+          users can view details or participate.
+        </p>
+      </div>
+
+      {/* Address / Location */}
+
+      <div>
+        <label className="mb-1 block text-sm font-medium">
+          Address / Location
+          {(formData.metadata.listingMethod ===
+            "Offline" ||
+            formData.metadata.listingMethod ===
+              "Both") && " *"}
+        </label>
+
+        <textarea
+          name="address"
+          value={formData.metadata.address}
+          onChange={handleMetadataChange}
+          rows={3}
+          placeholder="Enter physical address or auction location"
+          required={
+            formData.metadata.listingMethod ===
+              "Offline" ||
+            formData.metadata.listingMethod ===
+              "Both"
+          }
+          className="w-full rounded-lg border px-3 py-2"
+        />
       </div>
 
       {/* Contact */}

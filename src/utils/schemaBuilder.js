@@ -234,108 +234,117 @@ business.serviceAreas.map(area => ({
 ====================================================
 */
 
-
 export const generateBreadcrumbSchema = ({
-
+  state,
+  stateSlug,
   city,
-  category,
-  businessName,
-
   citySlug,
+  parentCategory,
+  parentCategorySlug,
+  category,
   categorySlug,
-  businessSlug
-
-
-}) => ({
-
-
-  "@context":
-    "https://schema.org",
-
-
-
-  "@type":
-    "BreadcrumbList",
-
-
-
-  itemListElement:[
-
-
+  businessName,
+  businessSlug,
+}) => {
+  const items = [
     {
-
-      "@type":
-        "ListItem",
-
-      position:
-        1,
-
-      name:
-        "Home",
-
-      item:
-        "https://servdial.com"
-
+      "@type": "ListItem",
+      position: 1,
+      name: "Home",
+      item: "https://servdial.com/",
     },
+  ];
 
+  let position = 2;
 
-    {
+  // ==================================================
+  // STATE
+  // ==================================================
 
-      "@type":
-        "ListItem",
+  if (state && stateSlug) {
+    items.push({
+      "@type": "ListItem",
+      position: position++,
+      name: titleCase(state),
+      item: `https://servdial.com/${stateSlug}`,
+    });
+  }
 
-      position:
-        2,
+  // ==================================================
+  // CITY
+  // ==================================================
 
-      name:
-        titleCase(city),
+  if (city && citySlug && stateSlug) {
+    items.push({
+      "@type": "ListItem",
+      position: position++,
+      name: titleCase(city),
+      item: `https://servdial.com/${stateSlug}/${citySlug}`,
+    });
+  }
 
-      item:
-        `https://servdial.com/${citySlug}`
+  // ==================================================
+  // PARENT CATEGORY
+  // ==================================================
 
-    },
+  if (
+    parentCategory &&
+    parentCategorySlug &&
+    stateSlug &&
+    citySlug
+  ) {
+    items.push({
+      "@type": "ListItem",
+      position: position++,
+      name: titleCase(parentCategory),
+      item: `https://servdial.com/${stateSlug}/${citySlug}/${parentCategorySlug}`,
+    });
+  }
 
+  // ==================================================
+  // SUBCATEGORY / PRIMARY CATEGORY
+  // ==================================================
 
-    {
+  if (
+    category &&
+    categorySlug &&
+    stateSlug &&
+    citySlug
+  ) {
+    items.push({
+      "@type": "ListItem",
+      position: position++,
+      name: titleCase(category),
+      item: `https://servdial.com/${stateSlug}/${citySlug}/${categorySlug}`,
+    });
+  }
 
-      "@type":
-        "ListItem",
+  // ==================================================
+  // BUSINESS
+  // IMPORTANT:
+  // Business URL intentionally has NO state slug.
+  // ==================================================
 
-      position:
-        3,
+  if (
+    businessName &&
+    businessSlug &&
+    citySlug &&
+    categorySlug
+  ) {
+    items.push({
+      "@type": "ListItem",
+      position: position++,
+      name: businessName,
+      item: `https://servdial.com/${citySlug}/${categorySlug}/${businessSlug}`,
+    });
+  }
 
-      name:
-        titleCase(category),
-
-      item:
-        `https://servdial.com/${citySlug}/${categorySlug}`
-
-    },
-
-
-    {
-
-      "@type":
-        "ListItem",
-
-      position:
-        4,
-
-      name:
-        businessName,
-
-      item:
-        `https://servdial.com/${citySlug}/${categorySlug}/${businessSlug}`
-
-    }
-
-
-  ]
-
-});
-
-
-
+  return {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: items,
+  };
+};
 
 
 /*

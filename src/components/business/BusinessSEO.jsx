@@ -180,18 +180,23 @@ const BusinessSEO = ({
   //
   // FINAL FORMAT:
   //
-  // Business Name | Category in City, District, State | ServDial
+  // Business Name | Category in Area, City, District, State | ServDial
+  //
+  //Area is included only when available.
   //
   // Example:
-  // Adhunik Naksha Ghar | Architecture Firm in Hajipur,
-  // Vaishali, Bihar | ServDial
+  // Didi ki Rasoi (Jeevika) | Restaurant in Sadar Hospital,
+  // Hajipur, Vaishali, Bihar | ServDial
   // =======================================================
 
-  const generatedTitle =
-    locationText
-      ? `${businessName} | ${categoryName} in ${locationText} | ServDial`
+const generatedTitle =
+  locationText
+    ? area
+      ? `${businessName} | ${categoryName} in ${area}, ${locationText} | ServDial`
+      : `${businessName} | ${categoryName} in ${locationText} | ServDial`
+    : area
+      ? `${businessName} | ${categoryName} in ${area} | ServDial`
       : `${businessName} | ${categoryName} | ServDial`;
-
 
   // =======================================================
   // FINAL SEO DESCRIPTION
@@ -335,28 +340,68 @@ const BusinessSEO = ({
   );
 
 
-  // =======================================================
+    // =======================================================
   // BREADCRUMB SCHEMA
   // =======================================================
+
+  const stateSlug =
+    business?.stateSlug ||
+    business?.stateId?.slug ||
+    stateName
+      .toString()
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "-");
+
+  const citySlug =
+    business?.citySlug ||
+    business?.cityId?.slug ||
+    "";
+
+  const categorySlug =
+    business?.categorySlug ||
+    business?.categoryId?.slug ||
+    "";
+
+  const parentCategoryName =
+    business?.parentCategoryName ||
+    business?.parentCategoryId?.name ||
+    business?.parentCategory?.name ||
+    "";
+
+  const parentCategorySlug =
+    business?.parentCategorySlug ||
+    business?.parentCategoryId?.slug ||
+    business?.parentCategory?.slug ||
+    "";
 
   const breadcrumbSchema =
     generateBreadcrumbSchema({
 
+      state:
+        stateName,
+
+      stateSlug,
+
       city:
-        cityName,
+  normalizeLocation(
+    cityName,
+    districtName
+  ),
+
+      citySlug,
+
+      parentCategory:
+        parentCategoryName,
+
+      parentCategorySlug,
 
       category:
         categoryName,
 
+      categorySlug,
+
       businessName,
-
-      citySlug:
-        business?.citySlug ||
-        business?.cityId?.slug,
-
-      categorySlug:
-        business?.categorySlug ||
-        business?.categoryId?.slug,
 
       businessSlug:
         business?.slug,
