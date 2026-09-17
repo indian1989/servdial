@@ -14,24 +14,50 @@ import NotFound from "./NotFound";
 import BusinessCard from "../components/business/BusinessCard";
 import { formatLocationDisplay } from "../utils/addressHelper";
 
-const CityPage = () => {
+const CityPage = ({
+  ssrCity,
+  ssrCategories,
+  ssrBusinesses,
+}) => {
   const { stateSlug, citySlug } = useParams();
   const navigate = useNavigate();
 
-  const [categories, setCategories] = useState([]);
-  const [cityData, setCityData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [businesses, setBusinesses] = useState([]);
-  const [businessLoading, setBusinessLoading] = useState(false);
+  const [categories, setCategories] = useState(
+  Array.isArray(ssrCategories) ? ssrCategories : []
+);
+
+const [cityData, setCityData] = useState(
+  ssrCity || null
+);
+
+const [loading, setLoading] = useState(
+  !ssrCity
+);
+
+const [businesses, setBusinesses] = useState(
+  Array.isArray(ssrBusinesses) ? ssrBusinesses : []
+);
+
+const [businessLoading, setBusinessLoading] = useState(
+  !Array.isArray(ssrBusinesses)
+);
 
   // ================= FETCH =================
 useEffect(() => {
   let cancelled = false;
 
+  if (ssrCity) {
+  return () => {
+    cancelled = true;
+  };
+}
+
   const fetchData = async () => {
     setLoading(true);
     setCityData(null);
-    setCategories([]);
+    setCategories(
+  Array.isArray(ssrCategories) ? ssrCategories : []
+);
 
     try {
       // =====================================================
@@ -118,6 +144,14 @@ useEffect(() => {
 useEffect(() => {
   if (!cityData?.slug) {
     setBusinesses([]);
+    setBusinessLoading(false);
+    return;
+  }
+
+  // SSR businesses already available.
+  // Do not fetch them again on the server.
+  if (Array.isArray(ssrBusinesses)) {
+    setBusinessLoading(false);
     return;
   }
 
@@ -162,7 +196,7 @@ useEffect(() => {
 
   fetchBusinesses();
 
-}, [cityData?.slug]);
+}, [cityData?.slug, ssrBusinesses]);
 
   // ================= FILTER PARENT ONLY =================
   const parentCategories = (categories || []).filter(
@@ -217,6 +251,20 @@ const url = `https://servdial.com/${stateSlug}/${citySlug}`;
 if (!cityData) {
   return <NotFound />;
 }
+
+console.log(
+  "🏙️ CITY SSR RENDER:",
+  {
+    isServer: typeof window === "undefined",
+    city: cityData?.slug,
+    categories: categories.length,
+    businesses: businesses.length,
+    ssrBusinesses: Array.isArray(ssrBusinesses)
+      ? ssrBusinesses.length
+      : "not-array",
+    businessLoading,
+  }
+);
 
   return (
     <>

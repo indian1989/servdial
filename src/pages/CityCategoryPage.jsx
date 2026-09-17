@@ -12,7 +12,10 @@ import {
 } from "../utils/addressHelper";
 import NotFound from "./NotFound";
 
-const CityCategoryPage = ({ resolvedParams }) => {
+const CityCategoryPage = ({
+  resolvedParams,
+  ssrCityCategory,
+}) => {
   // ================= URL PARAMS =================
 const params = useParams();
 const navigate = useNavigate();
@@ -28,22 +31,60 @@ const categorySlug =
   params.categorySlug ||
   "all";
 
-  const [notFound, setNotFound] = useState(false);
+  const [notFound, setNotFound] = useState(
+  !!ssrCityCategory &&
+  ssrCityCategory.categorySlug !== "all" &&
+  !ssrCityCategory.category
+);
 
-  const [businesses, setBusinesses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [subCategories, setSubCategories] = useState([]);
-const [categoryInfo, setCategoryInfo] = useState(null);
-const [cityInfo,setCityInfo] = useState(null);
+const [businesses, setBusinesses] = useState(
+  Array.isArray(ssrCityCategory?.businesses)
+    ? ssrCityCategory.businesses
+    : []
+);
+
+const [loading, setLoading] = useState(
+  !ssrCityCategory
+);
+
+const [subCategories, setSubCategories] = useState(
+  Array.isArray(ssrCityCategory?.subCategories)
+    ? ssrCityCategory.subCategories
+    : []
+);
+
+const [categoryInfo, setCategoryInfo] = useState(
+  ssrCityCategory?.category || null
+);
+
+const [cityInfo, setCityInfo] = useState(
+  ssrCityCategory?.city || null
+);
 
   // ================= FETCH BUSINESSES =================
   useEffect(() => {
     // HARD GUARD
     if (!citySlug || !categorySlug) {
+      
       setBusinesses([]);
       setLoading(false);
       return;
     }
+
+      /*
+   * SSR DATA ALREADY AVAILABLE
+   *
+   * Server has already fetched the complete
+   * City + Category page data.
+   *
+   * Do not fetch /seo again during the
+   * initial server render.
+   */
+
+  if (ssrCityCategory) {
+  setLoading(false);
+  return;
+}
 
     const fetchBusinesses = async () => {
   try {
@@ -181,7 +222,7 @@ setCityInfo(
 
     fetchBusinesses();
 
-  }, [citySlug, categorySlug]);
+  }, [citySlug, categorySlug, ssrCityCategory]);
 
   // ================= FORMATTERS =================
 const formattedCity = cityInfo?.name
@@ -205,8 +246,6 @@ const breadcrumbCity = cityInfo?.name
       ?.replace(/\b\w/g, (l) => l.toUpperCase()) || "";
 
 const isAllPage = categorySlug === "all";
-
-console.log({ citySlug, categorySlug, isAllPage, categoryInfo });
 
 const formattedCategory = isAllPage
   

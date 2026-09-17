@@ -1,3 +1,5 @@
+// Path: frontend/src/components/admin/AdminSidebar.jsx
+
 import { NavLink } from "react-router-dom";
 import { useContext } from "react";
 import { AuthContext } from "../../context/AuthContext";
@@ -20,6 +22,7 @@ import {
   FaSearch,
   FaChartLine,
   FaRoute,
+  FaNewspaper,
 } from "react-icons/fa";
 
 
@@ -381,6 +384,39 @@ function SidebarContent({
             to="/admin/cities"
             label="Cities"
             icon={FaCity}
+            mobile={mobile}
+            onClose={onClose}
+          />
+
+          
+          {/* =================================================
+              BLOG / JOURNAL
+          ================================================= */}
+
+          <SectionTitle>
+            Blog / Journal
+          </SectionTitle>
+
+          <AdminNavItem
+            to="/admin/blog"
+            label="All Posts"
+            icon={FaNewspaper}
+            mobile={mobile}
+            onClose={onClose}
+          />
+
+          <AdminNavItem
+            to="/admin/blog/add"
+            label="Add Post"
+            icon={FaNewspaper}
+            mobile={mobile}
+            onClose={onClose}
+          />
+
+          <AdminNavItem
+            to="/admin/blog/categories"
+            label="Categories"
+            icon={FaLayerGroup}
             mobile={mobile}
             onClose={onClose}
           />

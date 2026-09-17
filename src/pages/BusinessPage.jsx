@@ -492,6 +492,15 @@ if (!biz) {
 
   }
 
+  console.log("🔎 BUSINESS PAGE SSR DATA:", {
+  isServer: typeof window === "undefined",
+  hasSSRBusiness: !!ssrBusiness,
+  hasSSRDataBusiness: !!ssrBusiness?.data?.business,
+  businessId: business?._id,
+  businessName: business?.name,
+  businessSlug: business?.slug,
+});
+
 
   // =======================================================
   // 🖥️ RENDER

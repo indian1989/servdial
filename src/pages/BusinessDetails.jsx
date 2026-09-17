@@ -209,6 +209,13 @@ const uiType =
   business?.category?.uiType ||
   "service";
 
+  console.log("🔎 BUSINESS DETAILS DATA:", {
+  isServer: typeof window === "undefined",
+  businessId: business?._id,
+  businessName: business?.name,
+  businessSlug: business?.slug,
+});
+
  if (!business?._id) {
  return (
 

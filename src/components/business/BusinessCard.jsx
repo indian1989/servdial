@@ -34,8 +34,15 @@ const b = toBusinessListDTO(business) || {};
 const businessStatus = getBusinessStatus(b);
 
 // User GPS coordinates
-const userLat = Number(localStorage.getItem("user_lat"));
-const userLng = Number(localStorage.getItem("user_lng"));
+const userLat =
+  typeof window !== "undefined"
+    ? Number(localStorage.getItem("user_lat"))
+    : null;
+
+const userLng =
+  typeof window !== "undefined"
+    ? Number(localStorage.getItem("user_lng"))
+    : null;
 
 // Business coordinates
 const businessLng = b.location?.coordinates?.[0];
@@ -494,7 +501,7 @@ const cleanWhatsApp =
     onClick={(e) => {
       e.preventDefault();
       e.stopPropagation();
-      setShowCallChooser(false);
+      setIsCallChooserOpen(false);
     }}
   >
 
@@ -568,7 +575,7 @@ const cleanWhatsApp =
             e.preventDefault();
             e.stopPropagation();
 
-            setShowCallChooser(false);
+            setIsCallChooserOpen(false);
 
             window.location.href =
               `tel:${mobileNumber}`;
@@ -674,7 +681,7 @@ const cleanWhatsApp =
             e.preventDefault();
             e.stopPropagation();
 
-            setShowCallChooser(false);
+            setIsCallChooserOpen(false);
 
             window.location.href =
               `tel:${landlineNumber}`;
@@ -777,7 +784,7 @@ const cleanWhatsApp =
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          setShowCallChooser(false);
+          setIsCallChooserOpen(false);
         }}
         className="
           w-full

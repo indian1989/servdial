@@ -17,6 +17,7 @@ import Testimonials from "../components/home/Testimonials";
 import DownloadApp from "../components/home/DownloadApp";
 import BecomeProvider from "../components/home/BecomeProvider";
 import BannerAd from "../components/ads/BannerAd";
+import LatestBlogPosts from "../components/home/LatestBlogPosts";
 
 const Home = () => {
 
@@ -411,6 +412,9 @@ content="Discover verified local businesses, services, restaurants, home service
       <section className="my-14 max-w-7xl mx-auto px-4">
         <FeaturedCities cities={data.cities} loading={loading} />
       </section>
+
+{/* ================= SERVDIAL JOURNAL ================= */}
+<LatestBlogPosts />
 
       {/* ================= POPULAR SEARCHES ================= */}
 

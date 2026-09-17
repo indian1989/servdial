@@ -14,6 +14,8 @@ import Home from "../pages/Home";
 import SearchResults from "../pages/SearchResults";
 import LatestBusinesses from "../pages/LatestBusinesses";
 import BusinessPage from "../pages/BusinessPage";
+import Blog from "../pages/Blog";
+import BlogPost from "../pages/BlogPost";
 import CategoryPage from "../pages/CategoryPage";
 import CategoryDetails from "../pages/CategoryDetails";
 import CityCategoryPage from "../pages/CityCategoryPage";
@@ -124,6 +126,7 @@ const OneSegmentResolver = () => {
 
 const ThreeSegmentResolver = ({
   ssrBusiness,
+  ssrCityCategory,
 }) => {
   const {
     stateSlug,
@@ -199,6 +202,33 @@ const ThreeSegmentResolver = ({
   ]);
 
   /*
+ * SSR CITY + CATEGORY
+ *
+ * /stateSlug/citySlug/categorySlug
+ *
+ * Server already resolved this URL as a
+ * city/category request.
+ *
+ * Do not wait for useEffect on the server.
+ */
+
+if (
+  typeof window === "undefined" &&
+  ssrCityCategory
+) {
+  return (
+    <CityCategoryPage
+      resolvedParams={{
+        stateSlug,
+        citySlug,
+        categorySlug,
+      }}
+      ssrCityCategory={ssrCityCategory}
+    />
+  );
+}
+
+  /*
  * SSR BUSINESS
  *
  * Server already resolved this 3-segment URL
@@ -249,6 +279,13 @@ if (loading || !routeType) {
     );
   }
 
+  console.log("🔎 THREE SEGMENT BUSINESS:", {
+  isServer: typeof window === "undefined",
+  ssrBusiness,
+  hasBusiness: !!ssrBusiness?.data?.business,
+  businessName: ssrBusiness?.data?.business?.name,
+  businessSlug: ssrBusiness?.data?.business?.slug,
+});
   /*
    * BUSINESS PAGE
    *
@@ -269,7 +306,11 @@ if (loading || !routeType) {
 );
 };
 
-const TwoSegmentResolver = () => {
+const TwoSegmentResolver = ({
+  ssrCity,
+  ssrCategories,
+  ssrBusinesses,
+}) => {
   const {
     stateSlug,
     citySlug,
@@ -351,6 +392,26 @@ const TwoSegmentResolver = () => {
     citySlug,
   ]);
 
+  /*
+ * SSR CITY
+ *
+ * Server already resolved this URL as a city request.
+ * Do not wait for useEffect on the server.
+ */
+
+if (
+  typeof window === "undefined" &&
+  ssrCity
+) {
+  return (
+    <CityPage
+      ssrCity={ssrCity}
+      ssrCategories={ssrCategories}
+      ssrBusinesses={ssrBusinesses}
+    />
+  );
+}
+
   if (loading || !routeType) {
     return (
       <div className="py-16 text-center">
@@ -393,6 +454,11 @@ const TwoSegmentResolver = () => {
 
 const PublicRoutes = ({
   ssrBusiness,
+  ssrBlog,
+  ssrCity,
+  ssrCategories,
+  ssrBusinesses,
+  ssrCityCategory,
 }) => {
   return (
     <Route element={<PublicLayout />}>
@@ -403,6 +469,13 @@ const PublicRoutes = ({
   {/* SEARCH */}
   <Route path="/search" element={<SearchResults />} />
 
+{/* BLOG */}
+<Route path="/blog" element={<Blog ssrBlog={ssrBlog} />} />
+
+<Route
+  path="/blog/:slug"
+  element={<BlogPost ssrBlog={ssrBlog} />}
+/>
 
   {/* STATE */}
 <Route
@@ -413,7 +486,13 @@ const PublicRoutes = ({
 {/* CITY */}
 <Route
   path="/:stateSlug/:citySlug"
-  element={<TwoSegmentResolver />}
+  element={
+    <TwoSegmentResolver
+      ssrCity={ssrCity}
+      ssrCategories={ssrCategories}
+      ssrBusinesses={ssrBusinesses}
+    />
+  }
 />
 
   {/* FEATURED */}
@@ -460,6 +539,7 @@ const PublicRoutes = ({
   element={
     <ThreeSegmentResolver
       ssrBusiness={ssrBusiness}
+      ssrCityCategory={ssrCityCategory}
     />
   }
 />

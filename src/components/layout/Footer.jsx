@@ -162,6 +162,12 @@ const Footer = () => {
               </Link>
             </li>
 
+            <li>
+              <Link to="/blog" className="hover:text-white">
+                ServDial Journal
+              </Link>
+            </li>
+
              <li>
               <Link to="/advertise" className="hover:text-white">
                 Advertise With ServDial

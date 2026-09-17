@@ -24,7 +24,14 @@ import CommunityGuidelines from "../pages/static/CommunityGuidelines";
 const Unauthorized = lazy(() => import("../pages/Unauthorized"));
 const NotFound = lazy(() => import("../pages/NotFound"));
 
-function AppRoutes({ ssrBusiness }) {
+function AppRoutes({
+  ssrBusiness,
+  ssrBlog,
+  ssrCity,
+  ssrCategories,
+  ssrBusinesses,
+  ssrCityCategory,
+}) {
   return (
     <Suspense fallback={<PageLoader />}>
       <Routes>
@@ -35,6 +42,11 @@ function AppRoutes({ ssrBusiness }) {
         {/* PUBLIC */}
         {PublicRoutes({
   ssrBusiness,
+  ssrBlog,
+  ssrCity,
+  ssrCategories,
+  ssrBusinesses,
+  ssrCityCategory,
 })}
 
         {/* TEMPORARY LISTINGS */}

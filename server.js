@@ -1,3 +1,5 @@
+// frontend/server.js
+
 import express from "express";
 import path from "path";
 import fs from "fs/promises";
@@ -20,7 +22,7 @@ const BACKEND_URL =
 
 const BACKEND_SITEMAP_URL =
   BACKEND_URL.replace(/\/api$/, "");
-  
+
 // ================================================
 // PRODUCTION STATIC ASSETS
 // ================================================
@@ -33,6 +35,10 @@ app.use(
     index: false,
   })
 );
+
+// ================================================
+// SITEMAP PROXY
+// ================================================
 
 app.get(
   [
@@ -51,17 +57,12 @@ app.get(
     "/sitemap-businesses.xml",
     "/sitemap-businesses-:page.xml",
     "/sitemap-temporary-listings.xml",
-"/sitemap-temporary-listings-:page.xml",
+    "/sitemap-temporary-listings-:page.xml",
   ],
   async (req, res) => {
     try {
       const sitemapUrl =
         `${BACKEND_SITEMAP_URL}${req.originalUrl}`;
-
-      console.log(
-        "🗺️ Sitemap request:",
-        req.originalUrl
-      );
 
       const response = await fetch(sitemapUrl, {
         headers: {
@@ -94,9 +95,7 @@ app.get(
       );
 
       return res.status(200).send(xml);
-
     } catch (error) {
-
       console.error(
         "❌ Sitemap proxy error:",
         error
@@ -110,42 +109,152 @@ app.get(
 );
 
 // ================================================
-// TEMPORARY SSR FOUNDATION
+// SSR
 // ================================================
 
 app.get("/{*splat}", async (req, res) => {
+  console.log("🔥 SSR ROUTE HIT:", req.originalUrl);
+
   try {
     const { render } = await import(
-  "./dist-ssr/entry-server.js"
-);
+      "./dist-ssr/entry-server.js"
+    );
 
-const {
-  html,
-  helmet,
-} = await render(
-  req.originalUrl
-);
+    const {
+      html,
+      helmet,
+      ssrBusinesses,
+    } = await render(
+      req.originalUrl
+    );
 
-    console.log("🔎 SSR URL:", req.originalUrl);
-console.log("🔎 SSR HTML LENGTH:", html?.length);
+    // ============================================
+    // CITY SSR DIAGNOSTICS
+    // ============================================
+
+    if (
+      req.originalUrl ===
+      "/bihar/hajipur-vaishali-bihar"
+    ) {
+      const firstBusiness =
+        Array.isArray(ssrBusinesses)
+          ? ssrBusinesses[0]
+          : null;
+
+      console.log(
+        "🔎 FIRST SSR CITY BUSINESS:",
+        {
+          name: firstBusiness?.name,
+          slug: firstBusiness?.slug,
+          id: firstBusiness?._id,
+        }
+      );
+
+      console.log(
+        "🔎 SSR CITY HTML HAS FIRST BUSINESS NAME:",
+        firstBusiness?.name
+          ? html.includes(firstBusiness.name)
+          : false
+      );
+
+      console.log(
+        "🔎 SSR CITY HTML HAS FIRST BUSINESS SLUG:",
+        firstBusiness?.slug
+          ? html.includes(firstBusiness.slug)
+          : false
+      );
+
+      console.log(
+        "🔎 SSR CITY HTML HAS FIRST BUSINESS ID:",
+        firstBusiness?._id
+          ? html.includes(firstBusiness._id)
+          : false
+      );
+
+      console.log(
+        "🔎 SSR CITY BUSINESS LINKS COUNT:",
+        (
+          html.match(
+            /href="\/hajipur-vaishali-bihar\/[^"]+"/g
+          ) || []
+        ).length
+      );
+    }
+
+    // ============================================
+    // READ INDEX TEMPLATE
+    // ============================================
 
     let template = await fs.readFile(
       path.join(distPath, "index.html"),
       "utf-8"
     );
 
-    // ================================================
+    console.log(
+      "🔎 TEMPLATE HAS EMPTY ROOT:",
+      template.includes(
+        '<div id="root"></div>'
+      )
+    );
+
+    // ============================================
     // INJECT SERVER-RENDERED REACT HTML
-    // ================================================
+    // ============================================
 
     template = template.replace(
       '<div id="root"></div>',
       `<div id="root">${html}</div>`
     );
 
-    // ================================================
+    // ============================================
+    // FINAL HTML DIAGNOSTICS
+    // IMPORTANT:
+    // These checks happen AFTER SSR HTML injection.
+    // ============================================
+
+    if (
+      req.originalUrl ===
+      "/bihar/hajipur-vaishali-bihar"
+    ) {
+      const firstBusiness =
+        Array.isArray(ssrBusinesses)
+          ? ssrBusinesses[0]
+          : null;
+
+      console.log(
+        "🔎 FINAL HTML HAS FIRST BUSINESS NAME:",
+        firstBusiness?.name
+          ? template.includes(firstBusiness.name)
+          : false
+      );
+
+      console.log(
+        "🔎 FINAL HTML HAS FIRST BUSINESS SLUG:",
+        firstBusiness?.slug
+          ? template.includes(firstBusiness.slug)
+          : false
+      );
+
+      console.log(
+        "🔎 FINAL HTML HAS FIRST BUSINESS ID:",
+        firstBusiness?._id
+          ? template.includes(firstBusiness._id)
+          : false
+      );
+
+      console.log(
+        "🔎 FINAL HTML BUSINESS LINKS COUNT:",
+        (
+          template.match(
+            /href="\/hajipur-vaishali-bihar\/[^"]+"/g
+          ) || []
+        ).length
+      );
+    }
+
+    // ============================================
     // INJECT SSR SEO TAGS
-    // ================================================
+    // ============================================
 
     const helmetTitle =
       helmet?.title?.toString() || "";
@@ -174,17 +283,30 @@ ${helmetScript}
 </head>`
     );
 
-    res.status(200).send(template);
+    // ============================================
+    // SEND FINAL SSR HTML
+    // ============================================
+
+    return res
+      .status(200)
+      .send(template);
 
   } catch (error) {
-    console.error("❌ SSR render error:", error);
+    console.error(
+      "❌ SSR render error:",
+      error
+    );
 
-    res.sendFile(
-      path.join(distPath, "index.html")
+    return res.sendFile(
+      path.join(
+        distPath,
+        "index.html"
+      )
     );
   }
 });
 
+console.log("🔥 SSR ROUTE REGISTERED");
 // ================================================
 // SERVER START
 // ================================================

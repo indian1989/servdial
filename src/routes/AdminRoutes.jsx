@@ -26,6 +26,10 @@ import BusinessFunnelAnalytics from "../pages/admin/BusinessFunnelAnalytics";
 import VisitorJourneyAnalytics from "../pages/admin/VisitorJourneyAnalytics";
 import AcquisitionAnalytics from "../pages/admin/AcquisitionAnalytics";
 
+import ManageBlog from "../pages/admin/ManageBlog";
+import AddBlog from "../pages/admin/AddBlog";
+import EditBlog from "../pages/admin/EditBlog";
+import ManageBlogCategories from "../pages/admin/ManageBlogCategories";
 // =========================================================
 // PAYMENT MANAGEMENT
 // =========================================================
@@ -90,6 +94,30 @@ const AdminRoutes = () => {
         element={<ManageCities />}
       />
 
+      
+      {/* ===================================================
+          BLOG / JOURNAL
+      =================================================== */}
+
+      <Route
+        path="blog"
+        element={<ManageBlog />}
+      />
+
+      <Route
+        path="blog/add"
+        element={<AddBlog />}
+      />
+
+      <Route
+        path="blog/edit/:id"
+        element={<EditBlog />}
+      />
+
+      <Route
+        path="blog/categories"
+        element={<ManageBlogCategories />}
+      />
 
       {/* ===================================================
           CATEGORY ENGINE
