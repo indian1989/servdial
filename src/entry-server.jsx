@@ -11,8 +11,8 @@ import { AuthProvider } from "./context/AuthContext";
 
 const API_BASE_URL =
   process.env.VITE_API_BASE_URL ||
-  //"https://api.servdial.com/api";
-"http://localhost:5000/api";
+  "https://api.servdial.com/api";
+//"http://localhost:5000/api";
 
 // =========================================================
 // FETCH BUSINESS FOR SSR
