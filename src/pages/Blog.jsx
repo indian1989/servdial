@@ -237,7 +237,7 @@ const hasSSRBlogList = Array.isArray(ssrBlog);
 
   <link
     rel="canonical"
-    href="https://servdial.com/blog"
+    href="https://www.servdial.com/blog"
   />
 
   <meta
@@ -252,7 +252,7 @@ const hasSSRBlogList = Array.isArray(ssrBlog);
 
   <meta
     property="og:url"
-    content="https://servdial.com/blog"
+    content="https://www.servdial.com/blog"
   />
 
   <meta
@@ -280,7 +280,7 @@ const hasSSRBlogList = Array.isArray(ssrBlog);
       "@context": "https://schema.org",
       "@type": "CollectionPage",
       name: "ServDial Blog",
-      url: "https://servdial.com/blog",
+      url: "https://www.servdial.com/blog",
       description:
         "Discover useful local business insights, service guides, business tips and helpful information from ServDial.",
       breadcrumb: {
@@ -290,13 +290,13 @@ const hasSSRBlogList = Array.isArray(ssrBlog);
             "@type": "ListItem",
             position: 1,
             name: "Home",
-            item: "https://servdial.com/",
+            item: "https://www.servdial.com/",
           },
           {
             "@type": "ListItem",
             position: 2,
             name: "Blog",
-            item: "https://servdial.com/blog",
+            item: "https://www.servdial.com/blog",
           },
         ],
       },

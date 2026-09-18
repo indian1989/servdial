@@ -206,8 +206,8 @@ const description = citySlug
 
 // ================= CANONICAL =================
 const canonicalUrl = citySlug
-  ? `https://servdial.com/${citySlug}/${slug}`
-  : `https://servdial.com/category/${slug}`;
+  ? `https://www.servdial.com/${citySlug}/${slug}`
+  : `https://www.servdial.com/category/${slug}`;
 
 // ================= OG / SOCIAL SEO =================
 const ogTitle = title;
@@ -334,13 +334,13 @@ const ogDescription = description;
           "@type": "ListItem",
           position: 1,
           name: "Home",
-          item: "https://servdial.com/",
+          item: "https://www.servdial.com/",
         },
         {
           "@type": "ListItem",
           position: 2,
           name: "Categories",
-          item: "https://servdial.com/categories",
+          item: "https://www.servdial.com/categories",
         },
         {
           "@type": "ListItem",
@@ -364,7 +364,7 @@ const ogDescription = description;
       isPartOf: {
         "@type": "WebSite",
         name: "ServDial",
-        url: "https://servdial.com/",
+        url: "https://www.servdial.com/",
       },
     })}
   </script>

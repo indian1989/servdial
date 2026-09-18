@@ -407,8 +407,8 @@ useEffect(() => {
 
   const categoryCanonicalUrl =
     pageCity?.slug
-      ? `https://servdial.com/${citySlugResolved}/categories`
-      : "https://servdial.com/categories";
+      ? `https://www.servdial.com/${citySlugResolved}/categories`
+      : "https://www.servdial.com/categories";
 
 
   /* =====================================================
@@ -573,7 +573,7 @@ useEffect(() => {
                 "ServDial",
 
               url:
-                "https://servdial.com/",
+                "https://www.servdial.com/",
 
             },
 

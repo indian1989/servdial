@@ -614,10 +614,10 @@ const [
 
   const canonicalUrl =
     selectedState
-      ? `https://servdial.com/${slugifyState(
+      ? `https://www.servdial.com/${slugifyState(
           selectedState
         )}`
-      : "https://servdial.com/states";
+      : "https://www.servdial.com/states";
 
 
   /* =====================================================

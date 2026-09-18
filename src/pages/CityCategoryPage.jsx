@@ -268,8 +268,8 @@ const title = isAllPage
 
   const canonicalUrl =
   categorySlug === "all"
-    ? `https://servdial.com/${stateSlug}/${citySlug}`
-    : `https://servdial.com/${stateSlug}/${citySlug}/${categorySlug}`;
+    ? `https://www.servdial.com/${stateSlug}/${citySlug}`
+    : `https://www.servdial.com/${stateSlug}/${citySlug}/${categorySlug}`;
    
   const schema = {
   "@context": "https://schema.org",
@@ -285,8 +285,8 @@ const title = isAllPage
     name: biz?.name,
     image:
     biz?.images?.[0] ||
-    "https://servdial.com/default-business.jpg",
-    url: `https://servdial.com/${citySlug}/${biz?.categorySlug ||
+    "https://www.servdial.com/default-business.jpg",
+    url: `https://www.servdial.com/${citySlug}/${biz?.categorySlug ||
     biz?.categoryId?.slug}/${biz?.slug}`,
     address: {
     "@type": "PostalAddress",
@@ -306,19 +306,19 @@ const title = isAllPage
       "@type": "ListItem",
       position: 1,
       name: "Home",
-      item: "https://servdial.com/",
+      item: "https://www.servdial.com/",
     },
     {
       "@type": "ListItem",
       position: 2,
       name: cityInfo?.state || "",
-      item: `https://servdial.com/${stateSlug}`,
+      item: `https://www.servdial.com/${stateSlug}`,
     },
     {
       "@type": "ListItem",
       position: 3,
       name: formattedCity,
-      item: `https://servdial.com/${stateSlug}/${citySlug}`,
+      item: `https://www.servdial.com/${stateSlug}/${citySlug}`,
     },
     ...(categorySlug !== "all"
       ? [
@@ -435,7 +435,7 @@ if (notFound) {
   <meta property="og:url" content={canonicalUrl} />
   <meta
     property="og:image"
-    content="https://servdial.com/og-image.jpg"
+    content="https://www.servdial.com/og-image.jpg"
   />
 
   <meta
@@ -463,7 +463,7 @@ if (notFound) {
   />
   <meta
     name="twitter:image"
-    content="https://servdial.com/og-image.jpg"
+    content="https://www.servdial.com/og-image.jpg"
   />
 
   <script type="application/ld+json">

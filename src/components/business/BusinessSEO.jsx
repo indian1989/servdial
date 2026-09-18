@@ -12,7 +12,7 @@ import { formatLocationDisplay } from "../../utils/addressHelper";
 
 const FRONTEND_URL =
   import.meta.env.VITE_FRONTEND_URL ||
-  "https://servdial.com";
+  "https://www.servdial.com";
 
 
 // =========================================================

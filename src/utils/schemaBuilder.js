@@ -73,7 +73,7 @@ export const generateLocalBusinessSchema = (
   business.image ||
   business.images?.[0] ||
   business.logo ||
-  "https://servdial.com/logo.png",
+  "https://www.servdial.com/logo.png",
 
 
 
@@ -251,7 +251,7 @@ export const generateBreadcrumbSchema = ({
       "@type": "ListItem",
       position: 1,
       name: "Home",
-      item: "https://servdial.com/",
+      item: "https://www.servdial.com/",
     },
   ];
 
@@ -266,7 +266,7 @@ export const generateBreadcrumbSchema = ({
       "@type": "ListItem",
       position: position++,
       name: titleCase(state),
-      item: `https://servdial.com/${stateSlug}`,
+      item: `https://www.servdial.com/${stateSlug}`,
     });
   }
 
@@ -279,7 +279,7 @@ export const generateBreadcrumbSchema = ({
       "@type": "ListItem",
       position: position++,
       name: titleCase(city),
-      item: `https://servdial.com/${stateSlug}/${citySlug}`,
+      item: `https://www.servdial.com/${stateSlug}/${citySlug}`,
     });
   }
 
@@ -297,7 +297,7 @@ export const generateBreadcrumbSchema = ({
       "@type": "ListItem",
       position: position++,
       name: titleCase(parentCategory),
-      item: `https://servdial.com/${stateSlug}/${citySlug}/${parentCategorySlug}`,
+      item: `https://www.servdial.com/${stateSlug}/${citySlug}/${parentCategorySlug}`,
     });
   }
 
@@ -315,7 +315,7 @@ export const generateBreadcrumbSchema = ({
       "@type": "ListItem",
       position: position++,
       name: titleCase(category),
-      item: `https://servdial.com/${stateSlug}/${citySlug}/${categorySlug}`,
+      item: `https://www.servdial.com/${stateSlug}/${citySlug}/${categorySlug}`,
     });
   }
 
@@ -335,7 +335,7 @@ export const generateBreadcrumbSchema = ({
       "@type": "ListItem",
       position: position++,
       name: businessName,
-      item: `https://servdial.com/${citySlug}/${categorySlug}/${businessSlug}`,
+      item: `https://www.servdial.com/${citySlug}/${categorySlug}/${businessSlug}`,
     });
   }
 
@@ -370,7 +370,7 @@ export const generateWebsiteSchema = () => ({
 
 
   url:
-    "https://servdial.com",
+    "https://www.servdial.com",
 
 
 
@@ -382,7 +382,7 @@ export const generateWebsiteSchema = () => ({
 
 
     target:
-      "https://servdial.com/search?q={search_term_string}",
+      "https://www.servdial.com/search?q={search_term_string}",
 
 
     "query-input":

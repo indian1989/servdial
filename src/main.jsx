@@ -14,7 +14,7 @@ import "leaflet/dist/leaflet.css";
 /* ================= CANONICAL DOMAIN REDIRECT ================= */
 if (window.location.hostname === "servdial.onrender.com") {
   window.location.replace(
-    `https://servdial.com${window.location.pathname}${window.location.search}${window.location.hash}`
+    `https://www.servdial.com${window.location.pathname}${window.location.search}${window.location.hash}`
   );
 }
 

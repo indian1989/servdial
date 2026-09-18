@@ -230,7 +230,7 @@ const citySlugResolved =
   citySlug;
 
 const currentUrl =
-  `https://servdial.com/${citySlugResolved}/featured-businesses`;
+  `https://www.servdial.com/${citySlugResolved}/featured-businesses`;
 
 const isPaginated =
   currentPage > 1;
@@ -299,7 +299,7 @@ const seoDescription =
 
         <meta
           property="og:image"
-          content="https://servdial.com/og-image.jpg"
+          content="https://www.servdial.com/og-image.jpg"
         />
 
         {/* Twitter */}
@@ -321,7 +321,7 @@ const seoDescription =
 
         <meta
           name="twitter:image"
-          content="https://servdial.com/og-image.jpg"
+          content="https://www.servdial.com/og-image.jpg"
         />
 
       </Helmet>

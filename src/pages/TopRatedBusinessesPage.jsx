@@ -243,7 +243,7 @@ const [pageCity, setPageCity] =
     activeCity;
 
   const currentUrl =
-    `https://servdial.com/${citySlugResolved}/top-rated-businesses`;
+    `https://www.servdial.com/${citySlugResolved}/top-rated-businesses`;
 
   const isPaginated =
     pageFromUrl > 1;
@@ -316,7 +316,7 @@ const [pageCity, setPageCity] =
 
       <meta
         property="og:image"
-        content="https://servdial.com/og-image.jpg"
+        content="https://www.servdial.com/og-image.jpg"
       />
 
       {/* Twitter */}
@@ -338,7 +338,7 @@ const [pageCity, setPageCity] =
 
       <meta
         name="twitter:image"
-        content="https://servdial.com/og-image.jpg"
+        content="https://www.servdial.com/og-image.jpg"
       />
 
     </Helmet>

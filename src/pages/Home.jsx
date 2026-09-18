@@ -170,7 +170,7 @@ content="Discover verified local businesses, services, restaurants, home service
       content="local business directory India, trusted businesses, home services, restaurants, hotels, professionals, ServDial"
     />
 
-    <link rel="canonical" href="https://servdial.com/" />
+    <link rel="canonical" href="https://www.servdial.com/" />
 
     {/* Open Graph */}
     <meta property="og:type" content="website" />
@@ -182,17 +182,17 @@ content="Discover verified local businesses, services, restaurants, home service
       property="og:description"
       content="Find verified local businesses, services, restaurants, professionals and home services across India with ServDial."
     />
-    <meta property="og:url" content="https://servdial.com/" />
+    <meta property="og:url" content="https://www.servdial.com/" />
     <meta property="og:site_name" content="ServDial" />
 
     <meta
   property="og:image"
-  content="https://servdial.com/og-image.jpg"
+  content="https://www.servdial.com/og-image.jpg"
 />
 
 <meta
   name="twitter:image"
-  content="https://servdial.com/og-image.jpg"
+  content="https://www.servdial.com/og-image.jpg"
 />
 
     {/* Twitter */}
@@ -212,11 +212,11 @@ content="Discover verified local businesses, services, restaurants, home service
         "@context": "https://schema.org",
         "@type": "WebSite",
         name: "ServDial",
-        url: "https://servdial.com",
+        url: "https://www.servdial.com",
         potentialAction: {
           "@type": "SearchAction",
           target:
-            "https://servdial.com/search?q={search_term_string}",
+            "https://www.servdial.com/search?q={search_term_string}",
           "query-input": "required name=search_term_string",
         },
       })}

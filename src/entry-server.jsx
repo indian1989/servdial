@@ -22,7 +22,7 @@ const fetchBusinessForSSR = async (url) => {
   try {
     const parsedUrl = new URL(
       url,
-      "https://servdial.com"
+      "https://www.servdial.com"
     );
 
     const parts = parsedUrl.pathname
@@ -125,7 +125,7 @@ const fetchCityForSSR = async (url) => {
   try {
     const parsedUrl = new URL(
       url,
-      "https://servdial.com"
+      "https://www.servdial.com"
     );
 
     const parts = parsedUrl.pathname
@@ -323,7 +323,7 @@ const fetchCityCategoryForSSR = async (url) => {
   try {
     const parsedUrl = new URL(
       url,
-      "https://servdial.com"
+      "https://www.servdial.com"
     );
 
     const parts = parsedUrl.pathname
@@ -497,7 +497,7 @@ const fetchCityCategoryForSSR = async (url) => {
 
 const fetchBlogForSSR = async (url) => {
   try {
-    const parsedUrl = new URL(url, "https://servdial.com");
+    const parsedUrl = new URL(url, "https://www.servdial.com");
     const parts = parsedUrl.pathname.split("/").filter(Boolean);
 
     if (parts[0] !== "blog") return null;

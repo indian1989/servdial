@@ -219,7 +219,7 @@ const title = `Businesses in ${formattedCity} | Local Business Directory | ServD
 
 const description = `Discover local businesses, professionals and service providers in ${formattedCity}. Browse businesses by category and find local services on ServDial.`;
 
-const url = `https://servdial.com/${stateSlug}/${citySlug}`;
+const url = `https://www.servdial.com/${stateSlug}/${citySlug}`;
 
   const schema = {
     "@context": "https://schema.org",
@@ -229,7 +229,7 @@ const url = `https://servdial.com/${stateSlug}/${citySlug}`;
       "@type": "ListItem",
       position: index + 1,
       name: `${cat.name} in ${formattedCity}`,
-      url: `https://servdial.com/${stateSlug}/${citySlug}/${cat.slug}`,
+      url: `https://www.servdial.com/${stateSlug}/${citySlug}/${cat.slug}`,
     })),
   };
 

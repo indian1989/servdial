@@ -14,7 +14,7 @@ setShowShareMenu
 const currentUrl =
 typeof window !== "undefined"
 ? window.location.href
-: "https://servdial.com";
+: "https://www.servdial.com";
 
 
 

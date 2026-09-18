@@ -258,7 +258,7 @@ const seoDescription = cityNameResolved
 
       <link
         rel="canonical"
-        href="https://servdial.com/nearby-businesses"
+        href="https://www.servdial.com/nearby-businesses"
       />
 
       <meta
@@ -273,7 +273,7 @@ const seoDescription = cityNameResolved
 
       <meta
         property="og:url"
-        content="https://servdial.com/nearby-businesses"
+        content="https://www.servdial.com/nearby-businesses"
       />
 
       <meta

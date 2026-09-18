@@ -306,7 +306,7 @@ const BlogPost = ({ ssrBlog }) => {
     blog.publishedAt || blog.createdAt;
 const canonicalUrl =
   blog.seo?.canonicalUrl ||
-  `https://servdial.com/blog/${blog.slug}`;
+  `https://www.servdial.com/blog/${blog.slug}`;
 
 const seoTitle =
   blog.seo?.title ||
@@ -447,12 +447,12 @@ const twitterDescription =
             : {
                 "@type": "Organization",
                 name: "ServDial",
-                url: "https://servdial.com",
+                url: "https://www.servdial.com",
               },
           publisher: {
             "@type": "Organization",
             name: "ServDial",
-            url: "https://servdial.com",
+            url: "https://www.servdial.com",
           },
           datePublished:
             blog.publishedAt ||
@@ -482,13 +482,13 @@ const twitterDescription =
               "@type": "ListItem",
               position: 1,
               name: "Home",
-              item: "https://servdial.com/",
+              item: "https://www.servdial.com/",
             },
             {
               "@type": "ListItem",
               position: 2,
               name: "Blog",
-              item: "https://servdial.com/blog",
+              item: "https://www.servdial.com/blog",
             },
             {
               "@type": "ListItem",
