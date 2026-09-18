@@ -11,24 +11,26 @@ import {
   Smartphone,
 } from "lucide-react";
 
-const ShareMenu = ({ business, open, onClose }) => {
+const ShareMenu = ({ business, blog, open, onClose }) => {
   const [copied, setCopied] = useState(false);
 
   if (!open) return null;
 
-  const shareUrl =
-  `${window.location.origin}/${
-    business?.citySlug ||
-    business?.cityId?.slug ||
-    ""
-  }/${
-    business?.categorySlug ||
-    business?.categoryId?.slug ||
-    ""
-  }/${business?.slug || ""}`;
+  const shareUrl = blog
+  ? `${window.location.origin}/blog/${blog?.slug || ""}`
+  : `${window.location.origin}/${
+      business?.citySlug ||
+      business?.cityId?.slug ||
+      ""
+    }/${
+      business?.categorySlug ||
+      business?.categoryId?.slug ||
+      ""
+    }/${business?.slug || ""}`;
 
-  const businessName =
-    business?.name || "this business";
+  const shareName = blog
+  ? blog?.title || "this article"
+  : business?.name || "this business";
 
   // =========================================================
   // COPY LINK
@@ -56,8 +58,8 @@ const ShareMenu = ({ business, open, onClose }) => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: businessName,
-          text: `Check this business on ServDial - ${businessName}`,
+          title: shareName,
+          text: `Check this business on ServDial - ${shareName}`,
           url: shareUrl,
         });
       } catch (error) {
@@ -77,7 +79,7 @@ const ShareMenu = ({ business, open, onClose }) => {
 
   const whatsappShare = () => {
     const text =
-      `Check ${businessName} on ServDial\n${shareUrl}`;
+      `Check ${shareName} on ServDial\n${shareUrl}`;
 
     window.open(
       `https://wa.me/?text=${encodeURIComponent(text)}`,
@@ -106,7 +108,7 @@ const ShareMenu = ({ business, open, onClose }) => {
 
   const telegramShare = () => {
     const text =
-      `Check ${businessName} on ServDial`;
+      `Check ${shareName} on ServDial`;
 
     window.open(
       `https://t.me/share/url?url=${encodeURIComponent(
@@ -137,10 +139,10 @@ const ShareMenu = ({ business, open, onClose }) => {
 
   const emailShare = () => {
     const subject =
-      `Check ${businessName} on ServDial`;
+      `Check ${shareName} on ServDial`;
 
     const body =
-      `I found this business on ServDial:\n\n${businessName}\n${shareUrl}`;
+      `I found this business on ServDial:\n\n${shareName}\n${shareUrl}`;
 
     window.location.href =
       `mailto:?subject=${encodeURIComponent(
@@ -154,7 +156,7 @@ const ShareMenu = ({ business, open, onClose }) => {
 
   const smsShare = () => {
     const text =
-      `Check ${businessName} on ServDial: ${shareUrl}`;
+      `Check ${shareName} on ServDial: ${shareUrl}`;
 
     window.location.href =
       `sms:?body=${encodeURIComponent(text)}`;
@@ -240,7 +242,7 @@ const ShareMenu = ({ business, open, onClose }) => {
                   text-gray-900
                 "
               >
-                Share Business
+                {blog ? "Share Article" : "Share Business"}
               </h3>
 
               <p
@@ -250,7 +252,9 @@ const ShareMenu = ({ business, open, onClose }) => {
                   mt-0.5
                 "
               >
-                Share this business with others
+                {blog
+                  ? "Share this article with others"
+                  : "Share this business with others"}
               </p>
             </div>
           </div>
@@ -301,7 +305,7 @@ const ShareMenu = ({ business, open, onClose }) => {
             truncate
           "
         >
-          {businessName}
+          {shareName}
         </div>
 
 

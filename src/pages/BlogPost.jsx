@@ -10,12 +10,15 @@ import {
   FaTag,
   FaUser,
 } from "react-icons/fa";
+import { Share2 } from "lucide-react";
 
 import {
   getBlogBySlug,
   getPublishedBlogs,
   incrementBlogViews,
 } from "../api/blogAPI";
+import ShareMenu from "../components/business/ShareMenu";
+import useBlogShare from "../hooks/useBlogShare";
 
 const BlogPost = ({ ssrBlog }) => {
   const { slug } = useParams();
@@ -33,6 +36,11 @@ const BlogPost = ({ ssrBlog }) => {
   !hasSSRBlog
 );
   const [notFound, setNotFound] = useState(false);
+const {
+  showShareMenu,
+  setShowShareMenu,
+  currentUrl,
+} = useBlogShare(blog);
 
   // =========================
   // HELPERS
@@ -575,6 +583,32 @@ const twitterDescription =
               </p>
             )}
 
+           <button
+  type="button"
+  onClick={() => setShowShareMenu(true)}
+  aria-label="Share blog post"
+  className="
+    bg-black/65
+    hover:bg-black/75
+    backdrop-blur-md
+    text-white
+    px-3
+    py-2.5
+    rounded-xl
+    inline-flex
+    items-center
+    justify-center
+    gap-1.5
+    text-xs
+    sm:text-sm
+    font-medium
+    transition
+  "
+>
+  <Share2 size={17} />
+  <span>Share</span>
+</button>
+
             {/* META */}
 
             <div className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-3 text-sm text-gray-500">
@@ -842,6 +876,12 @@ const twitterDescription =
           </div>
         </section>
       )}
+
+      <ShareMenu
+  open={showShareMenu}
+  blog={blog}
+  onClose={() => setShowShareMenu(false)}
+/>
         </main>
   </>
   );
