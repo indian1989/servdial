@@ -16,6 +16,7 @@ import {
   updateBlogCategory,
   deleteBlogCategory,
 } from "../../api/blogCategoryAPI";
+import { uploadImage } from "../../api/uploadAPI";
 
 const ManageBlogCategories = () => {
   // =========================
@@ -26,7 +27,8 @@ const ManageBlogCategories = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [actionLoading, setActionLoading] = useState(null);
-
+  const [imageUploading, setImageUploading] =
+  useState(false);
   const [search, setSearch] = useState("");
 
   const [form, setForm] = useState({
@@ -106,6 +108,54 @@ const ManageBlogCategories = () => {
       [name]: type === "checkbox" ? checked : value,
     }));
   };
+
+  // =========================
+// CATEGORY IMAGE UPLOAD
+// =========================
+
+const handleCategoryImageChange = async (e) => {
+  const file = e.target.files?.[0];
+
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    alert("Please select a valid image file.");
+    e.target.value = "";
+    return;
+  }
+
+  try {
+    setImageUploading(true);
+
+    const data = await uploadImage(file);
+
+    const imageUrl = data?.secure_url;
+
+    if (!imageUrl) {
+      throw new Error(
+        "Image uploaded but no image URL was returned."
+      );
+    }
+
+    setForm((prev) => ({
+      ...prev,
+      image: imageUrl,
+    }));
+  } catch (error) {
+    console.error(
+      "❌ Category image upload failed:",
+      error
+    );
+
+    alert(
+      error?.message ||
+        "Failed to upload category image."
+    );
+  } finally {
+    setImageUploading(false);
+    e.target.value = "";
+  }
+};
 
   // =========================
   // AUTO SLUG
@@ -409,22 +459,77 @@ const ManageBlogCategories = () => {
           </div>
 
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+            
             {/* IMAGE */}
 
-            <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">
-                Category Image URL
-              </label>
+<div>
+  <label className="mb-2 block text-sm font-medium text-gray-700">
+    Category Image
+  </label>
 
-              <input
-                type="text"
-                name="image"
-                value={form.image}
-                onChange={handleChange}
-                placeholder="https://..."
-                className="w-full rounded-lg border border-gray-300 px-4 py-2.5 text-sm outline-none transition focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
-              />
-            </div>
+  <div className="flex flex-col gap-3">
+    <div className="flex flex-wrap items-center gap-3">
+      <label
+        htmlFor="categoryImageUpload"
+        className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 ${
+          imageUploading
+            ? "cursor-not-allowed opacity-60"
+            : ""
+        }`}
+      >
+        <FaImage />
+
+        {imageUploading
+          ? "Uploading..."
+          : form.image
+          ? "Change Image"
+          : "Choose Image"}
+
+        <input
+          id="categoryImageUpload"
+          type="file"
+          accept="image/*"
+          onChange={handleCategoryImageChange}
+          disabled={imageUploading}
+          className="hidden"
+        />
+      </label>
+
+      {form.image && (
+        <button
+          type="button"
+          onClick={() =>
+            setForm((prev) => ({
+              ...prev,
+              image: "",
+            }))
+          }
+          disabled={imageUploading}
+          className="text-sm font-medium text-red-600 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          Remove Image
+        </button>
+      )}
+    </div>
+
+    <p className="text-xs text-gray-400">
+      Upload an image for this blog category.
+    </p>
+
+    {form.image && (
+      <div className="overflow-hidden rounded-lg border border-gray-200">
+        <img
+          src={form.image}
+          alt="Category preview"
+          className="h-40 w-full object-cover"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+      </div>
+    )}
+  </div>
+</div>
 
             {/* SORT ORDER */}
 
@@ -465,12 +570,14 @@ const ManageBlogCategories = () => {
           <div className="flex flex-wrap gap-3">
             <button
               type="submit"
-              disabled={saving}
+              disabled={saving || imageUploading}
               className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <FaPlus />
 
-              {saving
+              {imageUploading
+                ? "Uploading Image..."
+                : saving
                 ? "Saving..."
                 : editingId
                 ? "Update Category"

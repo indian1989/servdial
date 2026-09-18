@@ -9,6 +9,7 @@ import {
 } from "react-icons/fa";
 
 import { getAllBlogCategories } from "../../api/blogCategoryAPI";
+import { uploadImage } from "../../api/uploadAPI";
 
 const BlogForm = ({
   mode = "add",
@@ -35,6 +36,9 @@ const BlogForm = ({
   const [categories, setCategories] = useState([]);
   const [categoriesLoading, setCategoriesLoading] =
     useState(true);
+
+  const [imageUploading, setImageUploading] =
+  useState(false);
 
   // =========================
   // LOAD CATEGORIES
@@ -152,6 +156,54 @@ const BlogForm = ({
       [name]: value,
     }));
   };
+
+  // =========================
+// FEATURED IMAGE UPLOAD
+// =========================
+
+const handleFeaturedImageChange = async (e) => {
+  const file = e.target.files?.[0];
+
+  if (!file) return;
+
+  if (!file.type.startsWith("image/")) {
+    alert("Please select a valid image file.");
+    e.target.value = "";
+    return;
+  }
+
+  try {
+    setImageUploading(true);
+
+    const data = await uploadImage(file);
+
+    const imageUrl = data?.secure_url;
+
+    if (!imageUrl) {
+      throw new Error(
+        "Image uploaded but no image URL was returned."
+      );
+    }
+
+    setFormData((prev) => ({
+      ...prev,
+      featuredImage: imageUrl,
+    }));
+  } catch (error) {
+    console.error(
+      "❌ Featured image upload failed:",
+      error
+    );
+
+    alert(
+      error?.message ||
+        "Failed to upload featured image."
+    );
+  } finally {
+    setImageUploading(false);
+    e.target.value = "";
+  }
+};
 
   // =========================
   // SLUG
@@ -510,18 +562,53 @@ const BlogForm = ({
           </div>
         </div>
 
-        <input
-          type="text"
-          name="featuredImage"
-          value={formData.featuredImage}
-          onChange={handleChange}
-          placeholder="https://example.com/image.jpg"
-          className={inputClass}
-        />
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+  <label
+    htmlFor="featuredImageUpload"
+    className={`inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition hover:bg-gray-50 ${
+      imageUploading
+        ? "cursor-not-allowed opacity-60"
+        : ""
+    }`}
+  >
+    <FaImage />
 
-        <p className="mt-1 text-xs text-gray-400">
-          Enter the publicly accessible image URL.
-        </p>
+    {imageUploading
+      ? "Uploading..."
+      : formData.featuredImage
+      ? "Change Image"
+      : "Choose Image"}
+
+    <input
+      id="featuredImageUpload"
+      type="file"
+      accept="image/*"
+      onChange={handleFeaturedImageChange}
+      disabled={imageUploading}
+      className="hidden"
+    />
+  </label>
+
+  {formData.featuredImage && (
+    <button
+      type="button"
+      onClick={() =>
+        setFormData((prev) => ({
+          ...prev,
+          featuredImage: "",
+        }))
+      }
+      disabled={imageUploading}
+      className="text-sm font-medium text-red-600 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+    >
+      Remove Image
+    </button>
+  )}
+</div>
+
+<p className="mt-1 text-xs text-gray-400">
+  Upload the main image for this blog post.
+</p>
 
         {formData.featuredImage && (
           <div className="mt-4 overflow-hidden rounded-lg border border-gray-200">
@@ -545,12 +632,14 @@ const BlogForm = ({
       <div className="flex justify-end">
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || imageUploading}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
         >
           <FaSave />
 
-          {loading
+          {imageUploading
+            ? "Uploading Image..."
+            : loading
             ? "Saving..."
             : mode === "edit"
             ? "Update Blog Post"
