@@ -8,6 +8,7 @@ import {
   FaTrash,
   FaCheckCircle,
   FaTimesCircle,
+  FaImage,
 } from "react-icons/fa";
 
 import {
@@ -16,7 +17,7 @@ import {
   updateBlogCategory,
   deleteBlogCategory,
 } from "../../api/blogCategoryAPI";
-import { uploadImage } from "../../api/uploadAPI";
+import { uploadImage } from "../../services/CloudinaryService";
 
 const ManageBlogCategories = () => {
   // =========================
