@@ -621,11 +621,73 @@ const twitterDescription =
 
             <div className="min-w-0 rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8 lg:p-10">
               <div
-                className="blog-content text-gray-800"
-                dangerouslySetInnerHTML={{
-                  __html: blog.content || "",
-                }}
-              />
+  className="
+    blog-content
+    text-gray-800
+    break-words
+
+    [&_p]:mb-5
+    [&_p]:text-base
+    [&_p]:leading-8
+    [&_p]:text-gray-700
+
+    [&_h2]:mb-4
+    [&_h2]:mt-10
+    [&_h2]:text-2xl
+    [&_h2]:font-bold
+    [&_h2]:leading-tight
+    [&_h2]:text-gray-900
+    [&_h2:first-child]:mt-0
+
+    [&_h3]:mb-3
+    [&_h3]:mt-8
+    [&_h3]:text-xl
+    [&_h3]:font-semibold
+    [&_h3]:leading-tight
+    [&_h3]:text-gray-900
+
+    [&_ul]:mb-5
+    [&_ul]:list-disc
+    [&_ul]:pl-6
+
+    [&_ol]:mb-5
+    [&_ol]:list-decimal
+    [&_ol]:pl-6
+
+    [&_li]:mb-2
+    [&_li]:leading-7
+    [&_li]:text-gray-700
+
+    [&_blockquote]:my-6
+    [&_blockquote]:border-l-4
+    [&_blockquote]:border-indigo-300
+    [&_blockquote]:bg-indigo-50
+    [&_blockquote]:px-5
+    [&_blockquote]:py-4
+    [&_blockquote]:italic
+    [&_blockquote]:text-gray-700
+
+    [&_strong]:font-semibold
+    [&_em]:italic
+
+    [&_a]:font-medium
+    [&_a]:text-indigo-600
+    [&_a]:underline
+    [&_a]:underline-offset-2
+    [&_a:hover]:text-indigo-800
+
+    [&_hr]:my-8
+    [&_hr]:border-gray-200
+
+    [&_img]:my-6
+    [&_img]:h-auto
+    [&_img]:max-w-full
+    [&_img]:rounded-xl
+  "
+  dangerouslySetInnerHTML={{
+    __html: blog.content || "",
+  }}
+/>
 
               {/* TAGS */}
 

@@ -161,6 +161,13 @@ const hasSSRBlogList = Array.isArray(ssrBlog);
     });
   };
 
+  const stripHtml = (html = "") => {
+  return html
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+};
   // =========================
   // FILTER BLOGS
   // =========================
@@ -186,8 +193,8 @@ const hasSSRBlogList = Array.isArray(ssrBlog);
         blog?.excerpt
           ?.toLowerCase()
           .includes(query) ||
-        blog?.content
-          ?.toLowerCase()
+        stripHtml(blog?.content)
+          .toLowerCase()
           .includes(query) ||
         blog?.tags?.some((tag) =>
           tag?.toLowerCase().includes(query)

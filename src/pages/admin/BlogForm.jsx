@@ -10,6 +10,7 @@ import {
 
 import { getAllBlogCategories } from "../../api/blogCategoryAPI";
 import { uploadImage } from "../../services/CloudinaryService";
+import RichTextEditor from "../../components/admin/RichTextEditor";
 
 const BlogForm = ({
   mode = "add",
@@ -260,10 +261,16 @@ const handleFeaturedImageChange = async (e) => {
       return;
     }
 
-    if (!formData.content.trim()) {
-      alert("Please enter blog content.");
-      return;
-    }
+    const contentText = formData.content
+  .replace(/<[^>]*>/g, " ")
+  .replace(/&nbsp;/gi, " ")
+  .replace(/\s+/g, " ")
+  .trim();
+
+if (!contentText) {
+  alert("Please enter blog content.");
+  return;
+}
 
     const payload = {
       title: formData.title.trim(),
@@ -391,28 +398,29 @@ const handleFeaturedImageChange = async (e) => {
             </div>
           </div>
 
-          {/* CONTENT */}
+         {/* CONTENT */}
 
-          <div>
-            <label className="mb-1.5 block text-sm font-medium text-gray-700">
-              Content{" "}
-              <span className="text-red-500">*</span>
-            </label>
+<div>
+  <label className="mb-1.5 block text-sm font-medium text-gray-700">
+    Content{" "}
+    <span className="text-red-500">*</span>
+  </label>
 
-            <textarea
-              name="content"
-              value={formData.content}
-              onChange={handleChange}
-              rows={18}
-              placeholder="Write your blog article content here..."
-              className={`${textareaClass} resize-y`}
-            />
+  <RichTextEditor
+    value={formData.content}
+    onChange={(content) =>
+      setFormData((prev) => ({
+        ...prev,
+        content,
+      }))
+    }
+  />
 
-            <p className="mt-1 text-xs text-gray-400">
-              Article content will be displayed on the
-              public blog detail page.
-            </p>
-          </div>
+  <p className="mt-1 text-xs text-gray-400">
+    Write your article using the formatting toolbar. You
+    do not need to write HTML or Markdown.
+  </p>
+</div>
         </div>
       </div>
 
