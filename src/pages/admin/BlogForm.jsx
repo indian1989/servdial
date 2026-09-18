@@ -9,7 +9,7 @@ import {
 } from "react-icons/fa";
 
 import { getAllBlogCategories } from "../../api/blogCategoryAPI";
-import { uploadImage } from "../../api/uploadAPI";
+import { uploadImage } from "../../services/CloudinaryService";
 
 const BlogForm = ({
   mode = "add",
