@@ -19,29 +19,37 @@ import BecomeProvider from "../components/home/BecomeProvider";
 import BannerAd from "../components/ads/BannerAd";
 import LatestBlogPosts from "../components/home/LatestBlogPosts";
 
-const Home = () => {
+const Home = ({ ssrHome }) => {
 
 const navigate = useNavigate();
 
 const { city, loadingCity } = useCity();
 
-  const [data, setData] = useState({
-    featured: [],
-    topRated: [],
-    latest: [],
-    nearby: [],
-    recommended: [],
-    categories: [],
-    cities: [],
-  });
+const [data, setData] = useState(
+  ssrHome
+    ? {
+        featured: ssrHome.featuredBusinesses || [],
+        topRated: ssrHome.topRatedBusinesses || [],
+        latest: ssrHome.latestBusinesses || [],
+        nearby: ssrHome.nearbyBusinesses || [],
+        recommended: ssrHome.recommendedBusinesses || [],
+        categories: ssrHome.categories || [],
+        cities: ssrHome.cities || [],
+      }
+    : {
+        featured: [],
+        topRated: [],
+        latest: [],
+        nearby: [],
+        recommended: [],
+        categories: [],
+        cities: [],
+      }
+);
 
   const [userLocation, setUserLocation] = useState({ lat: null, lng: null });
 
-  console.log("🔥 USER LOCATION:", {
- lat: userLocation.lat,
- lng: userLocation.lng
-});
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(!ssrHome);
 
   const lastFetchKey = useRef(null);
 
@@ -130,10 +138,14 @@ useEffect(() => {
 
 /* ================= MAIN FETCH TRIGGER ================= */
 useEffect(() => {
+  if (ssrHome) {
+    setLoading(false);
+    return;
+  }
+
   if (loadingCity) return;
 
   const citySlug = city?.slug || null;
-
 
 if (!citySlug && !userLocation.lat) {
   return;
@@ -146,7 +158,13 @@ fetchHomepageData({
   lng: userLocation.lng || undefined,
 });
 
-}, [city, loadingCity, userLocation.lat, userLocation.lng]);
+}, [
+  city,
+  loadingCity,
+  userLocation.lat,
+  userLocation.lng,
+  ssrHome,
+]);
 
 const cityName = city?.name || "your area";
 
@@ -243,7 +261,7 @@ content="Discover verified local businesses, services, restaurants, home service
       <CategoriesGrid
         categories={data.categories}
         city={city}
-        loading={loading || loadingCity}
+        loading={loading}
       />
 
 
@@ -269,7 +287,7 @@ content="Discover verified local businesses, services, restaurants, home service
 
   <FeaturedBusinesses
     businesses={data.featured}
-    loading={loading || loadingCity}
+    loading={loading}
     city={city}
   />
 
@@ -304,7 +322,7 @@ content="Discover verified local businesses, services, restaurants, home service
 
   <PopularBusinesses
     businesses={data.topRated}
-    loading={loading || loadingCity}
+    loading={loading}
     city={city}
     title="top rated businesses"
   />
@@ -334,7 +352,7 @@ content="Discover verified local businesses, services, restaurants, home service
 
   <PopularBusinesses
     businesses={data.latest}
-    loading={loading || loadingCity}
+    loading={loading}
     city={city}
     title="new businesses"
   />
@@ -372,7 +390,7 @@ content="Discover verified local businesses, services, restaurants, home service
   <NearbyBusinesses
     businesses={data.nearby}
     userLocation={userLocation}
-    loading={loading || loadingCity}
+    loading={loading}
   />
 
 </section>
@@ -399,7 +417,7 @@ content="Discover verified local businesses, services, restaurants, home service
 
   <PopularBusinesses
     businesses={data.recommended}
-    loading={loading || loadingCity}
+    loading={loading}
     city={city}
     title="recommended businesses"
   />
@@ -410,7 +428,12 @@ content="Discover verified local businesses, services, restaurants, home service
 
       {/* ================= CITIES ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">
-        <FeaturedCities cities={data.cities} loading={loading} />
+        
+        <FeaturedCities
+        cities={data.cities}
+        loading={loading}
+        />
+
       </section>
 
 {/* ================= SERVDIAL JOURNAL ================= */}

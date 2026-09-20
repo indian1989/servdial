@@ -315,6 +315,111 @@ const fetchCityBusinessesForSSR = async (citySlug) => {
   }
 };
 
+async function fetchFeaturedBusinessesForSSR(url) {
+  try {
+    const parsedUrl = new URL(
+      url,
+      "http://localhost"
+    );
+
+    const parts = parsedUrl.pathname
+      .split("/")
+      .filter(Boolean);
+
+    // Expected:
+    // /citySlug/featured-businesses
+
+    if (
+      parts.length !== 2 ||
+      parts[1] !== "featured-businesses"
+    ) {
+      return null;
+    }
+
+    const citySlug = parts[0];
+
+    if (!citySlug) {
+      return null;
+    }
+
+    // Resolve city
+    const cityResponse = await fetch(
+      `${API_BASE_URL}/cities?dropdown=true`
+    );
+
+    if (!cityResponse.ok) {
+      return null;
+    }
+
+    const cityPayload =
+      await cityResponse.json();
+
+    const cities =
+      Array.isArray(cityPayload?.data)
+        ? cityPayload.data
+        : cityPayload?.data?.cities ||
+          cityPayload?.cities ||
+          [];
+
+    const city = cities.find(
+      (item) =>
+        (item?.slug || "").toLowerCase() ===
+        citySlug.toLowerCase()
+    );
+
+    if (!city) {
+      return null;
+    }
+
+    // Featured businesses
+    const page =
+      Math.max(
+        Number(
+          parsedUrl.searchParams.get("page")
+        ) || 1,
+        1
+      );
+
+    const response = await fetch(
+      `${API_BASE_URL}/businesses/featured?city=${encodeURIComponent(
+        citySlug
+      )}&page=${page}&limit=20`
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data =
+      await response.json();
+
+    return {
+      city,
+      businesses:
+        Array.isArray(data?.data)
+          ? data.data
+          : [],
+      meta:
+        data?.meta || {
+          total: 0,
+          page,
+          limit: 20,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
+    };
+
+  } catch (error) {
+    console.error(
+      "❌ Featured Businesses SSR error:",
+      error
+    );
+
+    return null;
+  }
+}
+
 // =========================================================
 // FETCH CITY CATEGORY FOR SSR
 // =========================================================
@@ -544,14 +649,271 @@ const fetchBlogForSSR = async (url) => {
   }
 };
 
+// =========================================================
+// HOMEPAGE SSR
+// =========================================================
+
+const getCookieValue = (cookieHeader = "", name) => {
+  const cookies = cookieHeader.split(";");
+
+  const target = cookies.find((cookie) => {
+    const [key] = cookie.trim().split("=");
+    return key === name;
+  });
+
+  if (!target) return null;
+
+  const [, ...valueParts] = target.trim().split("=");
+
+  return decodeURIComponent(valueParts.join("="));
+};
+
+const fetchHomepageForSSR = async (
+  url,
+  requestHeaders = {}
+) => {
+  try {
+    const parsedUrl = new URL(
+      url,
+      "https://www.servdial.com"
+    );
+
+    const pathname =
+      parsedUrl.pathname.replace(/\/+$/, "") || "/";
+
+    if (pathname !== "/") {
+      return null;
+    }
+
+    // Read selected city from browser cookie
+    const citySlug = getCookieValue(
+      requestHeaders.cookie || "",
+      "servdial_city_slug"
+    );
+
+    const homepageUrl = new URL(
+      `${API_BASE_URL}/homepage`
+    );
+
+    // Send selected city to backend
+    if (citySlug) {
+      homepageUrl.searchParams.set(
+        "city",
+        citySlug
+      );
+    }
+
+    console.log(
+      "🔥 SSR HOMEPAGE CITY COOKIE:",
+      citySlug || "none"
+    );
+
+    console.log(
+      "🔥 SSR HOMEPAGE API:",
+      homepageUrl.toString()
+    );
+
+    const response = await fetch(
+      homepageUrl.toString(),
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (!response.ok) {
+      console.warn(
+        "⚠️ SSR homepage API:",
+        response.status,
+        homepageUrl.toString()
+      );
+
+      return null;
+    }
+
+    const data = await response.json();
+
+    if (!data?.success) {
+      return null;
+    }
+
+    return data?.data || null;
+
+  } catch (error) {
+    console.error(
+      "❌ SSR homepage fetch error:",
+      error
+    );
+
+    return null;
+  }
+};
+
+// =========================================================
+// FETCH LATEST BUSINESSES FOR SSR
+// =========================================================
+
+const fetchLatestBusinessesForSSR = async (url) => {
+  try {
+    const parsedUrl = new URL(
+      url,
+      "https://www.servdial.com"
+    );
+
+    const pathname =
+      parsedUrl.pathname.replace(/\/+$/, "");
+
+    const match = pathname.match(
+      /^\/([^/]+)\/latest-businesses$/
+    );
+
+    if (!match) {
+      return null;
+    }
+
+    const citySlug = match[1];
+
+    if (!citySlug) {
+      return null;
+    }
+
+    const currentPage =
+      Math.max(
+        Number(
+          parsedUrl.searchParams.get("page")
+        ) || 1,
+        1
+      );
+
+    // ================= CITY =================
+
+    const cityResponse = await fetch(
+      `${API_BASE_URL}/cities/${encodeURIComponent(
+        citySlug
+      )}`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (!cityResponse.ok) {
+      console.warn(
+        "⚠️ SSR latest city API:",
+        cityResponse.status,
+        citySlug
+      );
+
+      return null;
+    }
+
+    const cityData =
+      await cityResponse.json();
+
+    const city =
+      cityData?.city ||
+      cityData?.data ||
+      null;
+
+    if (!city) {
+      return null;
+    }
+
+    // ================= BUSINESSES =================
+
+    const latestUrl =
+      new URL(
+        `${API_BASE_URL}/businesses/latest`
+      );
+
+    latestUrl.searchParams.set(
+      "city",
+      citySlug
+    );
+
+    latestUrl.searchParams.set(
+      "page",
+      String(currentPage)
+    );
+
+    latestUrl.searchParams.set(
+      "limit",
+      "20"
+    );
+
+    const latestResponse =
+      await fetch(
+        latestUrl.toString(),
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+    if (!latestResponse.ok) {
+      console.warn(
+        "⚠️ SSR latest businesses API:",
+        latestResponse.status,
+        latestUrl.toString()
+      );
+
+      return {
+        city,
+        businesses: [],
+        meta: {
+          page: currentPage,
+          limit: 20,
+          total: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
+      };
+    }
+
+    const latestData =
+      await latestResponse.json();
+
+    return {
+      city,
+
+      businesses:
+        Array.isArray(latestData?.data)
+          ? latestData.data
+          : [],
+
+      meta:
+        latestData?.meta || {
+          page: currentPage,
+          limit: 20,
+          total: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
+    };
+
+  } catch (error) {
+    console.error(
+      "❌ SSR latest businesses fetch error:",
+      error
+    );
+
+    return null;
+  }
+};
 
 // =========================================================
 // SSR RENDER
 // =========================================================
 
-export async function render(url) {
-
-  console.log("🔥 NEW ENTRY-SERVER IS RUNNING:", url);
+export const render = async (
+  url,
+  requestHeaders = {}
+) => {
 
   const helmetContext = {};
 
@@ -573,6 +935,18 @@ const ssrCityResponse =
 
 const ssrCityCategoryResponse =
   await fetchCityCategoryForSSR(url);
+
+const ssrFeaturedResponse =
+  await fetchFeaturedBusinessesForSSR(url);
+
+const ssrLatestResponse =
+  await fetchLatestBusinessesForSSR(url);
+
+const ssrHomeResponse =
+  await fetchHomepageForSSR(
+    url,
+    requestHeaders
+  );
 
 let ssrCategoriesResponse = [];
 let ssrBusinessesResponse = [];
@@ -610,6 +984,9 @@ const html = renderToString(
   ssrCategories={ssrCategoriesResponse}
   ssrBusinesses={ssrBusinessesResponse}
   ssrCityCategory={ssrCityCategoryResponse}
+  ssrFeatured={ssrFeaturedResponse}
+  ssrLatest={ssrLatestResponse}
+  ssrHome={ssrHomeResponse}
 />
         </AuthProvider>
       </StaticRouter>
@@ -627,5 +1004,8 @@ const html = renderToString(
   ssrCategories: ssrCategoriesResponse,
   ssrBusinesses: ssrBusinessesResponse,
   ssrCityCategory: ssrCityCategoryResponse,
+  ssrFeatured: ssrFeaturedResponse,
+  ssrLatest: ssrLatestResponse,
+  ssrHome: ssrHomeResponse,
 };
 }

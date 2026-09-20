@@ -459,12 +459,22 @@ const PublicRoutes = ({
   ssrCategories,
   ssrBusinesses,
   ssrCityCategory,
+  ssrFeatured,
+  ssrLatest,
+  ssrHome,
 }) => {
   return (
     <Route element={<PublicLayout />}>
 
   {/* HOME */}
-  <Route path="/" element={<Home />} />
+  <Route
+  path="/"
+  element={
+    <Home
+      ssrHome={ssrHome}
+    />
+  }
+/>
 
   {/* SEARCH */}
   <Route path="/search" element={<SearchResults />} />
@@ -498,7 +508,11 @@ const PublicRoutes = ({
   {/* FEATURED */}
 <Route
   path="/:citySlug/featured-businesses"
-  element={<FeaturedBusinessesPage />}
+  element={
+    <FeaturedBusinessesPage
+      ssrFeatured={ssrFeatured}
+    />
+  }
 />
 
 {/* TOP RATED */}
@@ -508,9 +522,13 @@ const PublicRoutes = ({
 />
 
   {/* LATEST */}
-  <Route
+<Route
   path="/:citySlug/latest-businesses"
-  element={<LatestBusinesses />}
+  element={
+    <LatestBusinesses
+      ssrLatest={ssrLatest}
+    />
+  }
 />
 
 {/* NEARBY */}

@@ -7,7 +7,9 @@ import { formatLocationDisplay } from "../utils/addressHelper";
 import BusinessCard from "../components/business/BusinessCard";
 import BannerAd from "../components/ads/BannerAd";
 
-const FeaturedBusinessesPage = () => {
+const FeaturedBusinessesPage = ({
+  ssrFeatured,
+}) => {
 
   const { citySlug } = useParams();
 
@@ -15,23 +17,31 @@ const FeaturedBusinessesPage = () => {
     useSearchParams();
 
   const [businesses, setBusinesses] =
-    useState([]);
+  useState(
+    Array.isArray(ssrFeatured?.businesses)
+      ? ssrFeatured.businesses
+      : []
+  );
 
   const [pageCity, setPageCity] =
-    useState(null);
+  useState(
+    ssrFeatured?.city || null
+  );
 
   const [loading, setLoading] =
-    useState(false);
+  useState(!ssrFeatured);
 
   const [meta, setMeta] =
-    useState({
+  useState(
+    ssrFeatured?.meta || {
       total: 0,
       page: 1,
       limit: 20,
       totalPages: 0,
       hasNextPage: false,
       hasPrevPage: false,
-    });
+    }
+  );
 
 
   /* =====================================================
@@ -50,11 +60,16 @@ const FeaturedBusinessesPage = () => {
      RESOLVE URL CITY
   ===================================================== */
 
-  useEffect(() => {
+useEffect(() => {
 
-    if (!citySlug) return;
+  if (!citySlug) return;
 
-    const resolveCity = async () => {
+  if (ssrFeatured) {
+    setPageCity(ssrFeatured.city || null);
+    return;
+  }
+
+  const resolveCity = async () => {
 
       try {
 
@@ -93,17 +108,39 @@ const FeaturedBusinessesPage = () => {
 
     resolveCity();
 
-  }, [citySlug]);
+  }, [citySlug, ssrFeatured]);
 
     /* =====================================================
      FETCH FEATURED BUSINESSES
   ===================================================== */
 
-  useEffect(() => {
+useEffect(() => {
 
-    if (!citySlug) return;
+  if (!citySlug) return;
 
-    const fetchBusinesses = async () => {
+  if (ssrFeatured) {
+    setBusinesses(
+      Array.isArray(ssrFeatured.businesses)
+        ? ssrFeatured.businesses
+        : []
+    );
+
+    setMeta(
+      ssrFeatured.meta || {
+        total: 0,
+        page: currentPage,
+        limit: 20,
+        totalPages: 0,
+        hasNextPage: false,
+        hasPrevPage: false,
+      }
+    );
+
+    setLoading(false);
+    return;
+  }
+
+  const fetchBusinesses = async () => {
 
       setLoading(true);
 
@@ -165,9 +202,10 @@ const FeaturedBusinessesPage = () => {
     fetchBusinesses();
 
   }, [
-    citySlug,
-    currentPage,
-  ]);
+  citySlug,
+  currentPage,
+  ssrFeatured,
+]);
 
 
   /* =====================================================

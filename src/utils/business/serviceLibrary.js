@@ -1026,6 +1026,8 @@ export const SERVICE_LIBRARY = [
   "Baby Photography",
   "Newborn Photography",
   "Couple Photography",
+  "Bridal Photography",
+  "Post-Wedding Shoot",
 
   // =======================================================
   // DIGITAL / IT SERVICES

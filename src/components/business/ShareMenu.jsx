@@ -55,38 +55,55 @@ const ShareMenu = ({ business, blog, open, onClose }) => {
   // =========================================================
 
   const nativeShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: shareName,
-          text: `Check this business on ServDial - ${shareName}`,
-          url: shareUrl,
-        });
-      } catch (error) {
-        // User cancelled native share
-        if (error?.name !== "AbortError") {
-          console.error("❌ Native share failed:", error);
-        }
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: shareName,
+        text: `Hello,
+
+I’d like to share this business profile listed on ServDial with you:
+
+🏢 ${shareName}
+🔗 ${shareUrl}
+
+Please feel free to view the business details, services, and contact information on ServDial.
+
+Regards,
+ServDial`,
+      });
+    } catch (error) {
+      // User cancelled native share
+      if (error?.name !== "AbortError") {
+        console.error("❌ Native share failed:", error);
       }
-    } else {
-      copyLink();
     }
-  };
+  } else {
+    copyLink();
+  }
+};
 
   // =========================================================
   // WHATSAPP
   // =========================================================
 
   const whatsappShare = () => {
-    const text =
-      `Check ${shareName} on ServDial\n${shareUrl}`;
+  const text = `Hello,
 
-    window.open(
-      `https://wa.me/?text=${encodeURIComponent(text)}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
-  };
+I came across this business on ServDial and thought you might find it useful.
+
+🏢 ${shareName}
+🔗 ${shareUrl}
+
+You can check the business profile, services, and contact details on ServDial.
+
+— ServDial`;
+
+  window.open(
+    `https://wa.me/?text=${encodeURIComponent(text)}`,
+    "_blank",
+    "noopener,noreferrer"
+  );
+};
 
   // =========================================================
   // FACEBOOK
@@ -107,17 +124,20 @@ const ShareMenu = ({ business, blog, open, onClose }) => {
   // =========================================================
 
   const telegramShare = () => {
-    const text =
-      `Check ${shareName} on ServDial`;
+  const text = `Found this business on ServDial:
 
-    window.open(
-      `https://t.me/share/url?url=${encodeURIComponent(
-        shareUrl
-      )}&text=${encodeURIComponent(text)}`,
-      "_blank",
-      "noopener,noreferrer"
-    );
-  };
+🏢 ${shareName}
+
+Have a look at the complete business profile and services.`;
+
+  window.open(
+    `https://t.me/share/url?url=${encodeURIComponent(
+      shareUrl
+    )}&text=${encodeURIComponent(text)}`,
+    "_blank",
+    "noopener,noreferrer"
+  );
+};
 
   // =========================================================
   // LINKEDIN
@@ -138,29 +158,42 @@ const ShareMenu = ({ business, blog, open, onClose }) => {
   // =========================================================
 
   const emailShare = () => {
-    const subject =
-      `Check ${shareName} on ServDial`;
+  const subject = `Business Profile: ${shareName} | ServDial`;
 
-    const body =
-      `I found this business on ServDial:\n\n${shareName}\n${shareUrl}`;
+  const body = `Hello,
 
-    window.location.href =
-      `mailto:?subject=${encodeURIComponent(
-        subject
-      )}&body=${encodeURIComponent(body)}`;
-  };
+I’d like to share this business profile from ServDial with you.
+
+Business: ${shareName}
+
+You can view the complete business profile, services, and contact details here:
+
+${shareUrl}
+
+I hope you find this information useful.
+
+Best regards,
+ServDial`;
+
+  window.location.href =
+    `mailto:?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+};
 
   // =========================================================
   // SMS
   // =========================================================
 
   const smsShare = () => {
-    const text =
-      `Check ${shareName} on ServDial: ${shareUrl}`;
+  const text = `I found this business on ServDial:
 
-    window.location.href =
-      `sms:?body=${encodeURIComponent(text)}`;
-  };
+${shareName}
+${shareUrl}`;
+
+  window.location.href =
+    `sms:?body=${encodeURIComponent(text)}`;
+};
 
   // =========================================================
   // RENDER

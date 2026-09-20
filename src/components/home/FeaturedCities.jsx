@@ -36,6 +36,11 @@ const FeaturedCities = ({
   const navigate = useNavigate();
 
   const [allCities, setAllCities] = useState([]);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   /* =========================================================
      ALL SERVDIAL CITIES
@@ -186,82 +191,101 @@ const FeaturedCities = ({
 
           <div className="max-w-xl mx-auto mt-6 text-left">
 
-            <Select
-              options={cityOptions}
-              isSearchable
-              isClearable
-              placeholder="🔍 Search or select your city"
-              noOptionsMessage={() =>
-                "No city found"
-              }
-              onChange={(selectedOption) => {
-                if (selectedOption?.city) {
-                  openCity(selectedOption.city);
-                }
-              }}
-              filterOption={(option, inputValue) => {
-                const search =
-                  inputValue
-                    .toLowerCase()
-                    .trim();
+            {isClient ? (
+  <Select
+    options={cityOptions}
+    isSearchable
+    isClearable
+    placeholder="🔍 Search or select your city"
+    noOptionsMessage={() =>
+      "No city found"
+    }
+    onChange={(selectedOption) => {
+      if (selectedOption?.city) {
+        openCity(selectedOption.city);
+      }
+    }}
+    filterOption={(option, inputValue) => {
+      const search =
+        inputValue
+          .toLowerCase()
+          .trim();
 
-                if (!search) {
-                  return true;
-                }
+      if (!search) {
+        return true;
+      }
 
-                return option.label
-                  .toLowerCase()
-                  .includes(search);
-              }}
-              styles={{
-                control: (base, state) => ({
-                  ...base,
-                  minHeight: "50px",
-                  borderRadius: "14px",
-                  borderColor: state.isFocused
-                    ? "#9ca3af"
-                    : "#e5e7eb",
-                  boxShadow: state.isFocused
-                    ? "0 0 0 1px #9ca3af"
-                    : "none",
-                  cursor: "text",
-                  "&:hover": {
-                    borderColor: "#9ca3af",
-                  },
-                }),
+      return option.label
+        .toLowerCase()
+        .includes(search);
+    }}
+    styles={{
+      control: (base, state) => ({
+        ...base,
+        minHeight: "50px",
+        borderRadius: "14px",
+        borderColor: state.isFocused
+          ? "#9ca3af"
+          : "#e5e7eb",
+        boxShadow: state.isFocused
+          ? "0 0 0 1px #9ca3af"
+          : "none",
+        cursor: "text",
+        "&:hover": {
+          borderColor: "#9ca3af",
+        },
+      }),
 
-                menu: (base) => ({
-                  ...base,
-                  zIndex: 50,
-                  borderRadius: "12px",
-                  overflow: "hidden",
-                }),
+      menu: (base) => ({
+        ...base,
+        zIndex: 50,
+        borderRadius: "12px",
+        overflow: "hidden",
+      }),
 
-                option: (
-                  base,
-                  state
-                ) => ({
-                  ...base,
-                  cursor: "pointer",
-                  padding: "10px 14px",
-                  backgroundColor:
-                    state.isFocused
-                      ? "#f3f4f6"
-                      : "#ffffff",
-                  color: "#1f2937",
-                }),
+      option: (
+        base,
+        state
+      ) => ({
+        ...base,
+        cursor: "pointer",
+        padding: "10px 14px",
+        backgroundColor:
+          state.isFocused
+            ? "#f3f4f6"
+            : "#ffffff",
+        color: "#1f2937",
+      }),
 
-                placeholder: (base) => ({
-                  ...base,
-                  color: "#6b7280",
-                }),
+      placeholder: (base) => ({
+        ...base,
+        color: "#6b7280",
+      }),
 
-                singleValue: (base) => ({
-                  ...base,
-                  color: "#1f2937",
-                }),
-              }}
-            />
+      singleValue: (base) => ({
+        ...base,
+        color: "#1f2937",
+      }),
+    }}
+  />
+) : (
+  <div
+    className="
+      h-[50px]
+      rounded-[14px]
+      border
+      border-gray-200
+      bg-white
+      flex
+      items-center
+      px-4
+      text-gray-500
+      text-sm
+    "
+  >
+    🔍 Search or select your city
+  </div>
+)}
 
           </div>
         </div>

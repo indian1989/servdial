@@ -125,7 +125,8 @@ app.get("/{*splat}", async (req, res) => {
       helmet,
       ssrBusinesses,
     } = await render(
-      req.originalUrl
+      req.originalUrl,
+      req.headers
     );
 
     // ============================================

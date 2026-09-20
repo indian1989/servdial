@@ -9,6 +9,7 @@ const serviceTypeOptions = [
     value: "shop",
     label: "Shop / In-store",
   },
+
   {
     value: "online",
     label: "Online Service",
@@ -19,11 +20,15 @@ const serviceTypeOptions = [
   },
   {
     value: "dine-in",
-    label: "Dine In",
+    label: "Dine-in",
   },
   {
     value: "takeaway",
     label: "Takeaway",
+  },
+  {
+    value: "photography",
+    label: "In-person Photography & Event Coverage",
   },
   {
     value: "mobile-sale",

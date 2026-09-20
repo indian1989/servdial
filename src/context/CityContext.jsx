@@ -12,20 +12,34 @@ export const CityProvider = ({ children }) => {
   const geoTimeoutRef = useRef(null);
 
   // ================= SET CITY =================
-  const setCity = (cityObj) => {
-    if (!cityObj?._id || !cityObj?.slug) return;
+  // ================================================
+// SET CITY
+// ================================================
+const setCity = (cityObj) => {
+  if (!cityObj?._id || !cityObj?.slug) return;
 
-    const safeCity = {
-      _id: cityObj._id,
-      name: cityObj.name,
-      slug: cityObj.slug,
-      state: cityObj.state || "",
-      district: cityObj.district || "",
-    };
-
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(safeCity));
-    setCityState(safeCity);
+  const safeCity = {
+    _id: cityObj._id,
+    name: cityObj.name,
+    slug: cityObj.slug,
+    state: cityObj.state || "",
+    district: cityObj.district || "",
   };
+
+  // Client storage
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(safeCity)
+  );
+
+  // SSR-readable cookie
+  document.cookie =
+    `servdial_city_slug=${encodeURIComponent(
+      safeCity.slug
+    )}; path=/; max-age=31536000; SameSite=Lax`;
+
+  setCityState(safeCity);
+};
 
   // ================= LOAD =================
   const loadSavedCity = () => {

@@ -12,6 +12,9 @@ function AppContent({
   ssrCategories,
   ssrBusinesses,
   ssrCityCategory,
+  ssrFeatured,
+  ssrLatest,
+  ssrHome,
 }) {
   const { user } = useAuth();
 
@@ -27,6 +30,9 @@ function AppContent({
           ssrCategories={ssrCategories}
           ssrBusinesses={ssrBusinesses}
           ssrCityCategory={ssrCityCategory}
+          ssrFeatured={ssrFeatured}
+          ssrLatest={ssrLatest}
+          ssrHome={ssrHome}
         />
         </CategoryProvider>
       </CityProvider>
@@ -41,6 +47,9 @@ function App({
   ssrCategories,
   ssrBusinesses,
   ssrCityCategory,
+  ssrFeatured,
+  ssrLatest,
+  ssrHome,
 }) {
   return (
     <AuthProvider>
@@ -51,6 +60,9 @@ function App({
   ssrCategories={ssrCategories}
   ssrBusinesses={ssrBusinesses}
   ssrCityCategory={ssrCityCategory}
+  ssrFeatured={ssrFeatured}
+  ssrLatest={ssrLatest}
+  ssrHome={ssrHome}
 />
     </AuthProvider>
   );

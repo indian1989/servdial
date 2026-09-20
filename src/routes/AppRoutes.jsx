@@ -31,6 +31,9 @@ function AppRoutes({
   ssrCategories,
   ssrBusinesses,
   ssrCityCategory,
+  ssrFeatured,
+  ssrLatest,
+  ssrHome,
 }) {
   return (
     <Suspense fallback={<PageLoader />}>
@@ -47,6 +50,9 @@ function AppRoutes({
   ssrCategories,
   ssrBusinesses,
   ssrCityCategory,
+  ssrFeatured,
+  ssrLatest,
+  ssrHome,
 })}
 
         {/* TEMPORARY LISTINGS */}

@@ -7,7 +7,7 @@ import BusinessCard from "../components/business/BusinessCard";
 import { formatLocationDisplay } from "../utils/addressHelper";
 import BannerAd from "../components/ads/BannerAd";
 
-const LatestBusinesses = () => {
+const LatestBusinesses = ({ ssrLatest }) => {
 
   const { citySlug } = useParams();
 
@@ -15,23 +15,31 @@ const LatestBusinesses = () => {
     useSearchParams();
 
   const [businesses, setBusinesses] =
-    useState([]);
+  useState(
+    ssrLatest?.businesses ||
+    []
+  );
 
   const [pageCity, setPageCity] =
-    useState(null);
+  useState(
+    ssrLatest?.city ||
+    null
+  );
 
   const [loading, setLoading] =
-    useState(false);
+  useState(!ssrLatest);
 
   const [pagination, setPagination] =
-    useState({
+  useState(
+    ssrLatest?.meta || {
       page: 1,
       limit: 20,
       total: 0,
       totalPages: 0,
       hasNextPage: false,
       hasPrevPage: false,
-    });
+    }
+  );
 
 
   /* =====================================================
@@ -53,9 +61,9 @@ const LatestBusinesses = () => {
 
   useEffect(() => {
 
-    if (!citySlug) return;
+  if (!citySlug || ssrLatest?.city) return;
 
-    const resolveCity = async () => {
+  const resolveCity = async () => {
 
       try {
 
@@ -86,7 +94,10 @@ const LatestBusinesses = () => {
 
     resolveCity();
 
-  }, [citySlug]);
+  }, [
+  citySlug,
+  ssrLatest,
+]);
 
 
   /* =====================================================
@@ -95,10 +106,19 @@ const LatestBusinesses = () => {
 
   useEffect(() => {
 
-    if (!citySlug) return;
+  if (!citySlug) return;
 
-    const fetchBusinesses =
-      async () => {
+  if (
+  ssrLatest &&
+  String(ssrLatest.meta?.page || 1) ===
+    String(currentPage)
+) {
+  setLoading(false);
+  return;
+}
+
+  const fetchBusinesses =
+    async () => {
 
         setLoading(true);
 
@@ -195,9 +215,10 @@ const LatestBusinesses = () => {
     fetchBusinesses();
 
   }, [
-    citySlug,
-    currentPage,
-  ]);
+  citySlug,
+  currentPage,
+  ssrLatest,
+]);
 
 
   /* =====================================================

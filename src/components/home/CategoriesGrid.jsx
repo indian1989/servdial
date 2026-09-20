@@ -79,9 +79,16 @@ const CategoriesGrid = ({ categories = [], city, loading = false }) => {
 
   // ✅ ONLY ACTIVE + TOP 20
   const topCategories = (categories || [])
-  .filter((c) => !c.parentCategory) // ONLY PARENTS
+  .filter((c) => !c.parentCategory)
   .sort((a, b) => (a.order || 0) - (b.order || 0))
   .slice(0, 16);
+
+console.log("🔥 CATEGORIES GRID SSR/CLIENT:", {
+  loading,
+  totalCategories: categories?.length,
+  topCategories: topCategories?.length,
+  sample: categories?.[0],
+});
 
   if (!loading && topCategories.length === 0) {
   return (
