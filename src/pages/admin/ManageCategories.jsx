@@ -175,6 +175,32 @@ const buildTree = (
 };
 
 
+const getCategoryLevel = (category, categories) => {
+  if (
+    category?.level !== undefined &&
+    category?.level !== null &&
+    Number.isFinite(Number(category.level))
+  ) {
+    return Number(category.level);
+  }
+
+  if (!category?.parentCategory) {
+    return 0;
+  }
+
+  const parent = categories.find(
+    (item) =>
+      String(item._id) ===
+      String(category.parentCategory)
+  );
+
+  if (!parent?.parentCategory) {
+    return 1;
+  }
+
+  return 2;
+};
+
 /* =========================================================
    FEATURE CHECKBOX GROUP
 ========================================================= */
@@ -391,8 +417,8 @@ const EMPTY_NEW_CATEGORY = {
   name: "",
   description: "",
   order: 0,
+  level: 0,
   parentCategory: "",
-  subCategory: "",
   uiType: "service",
   features: [],
 };
@@ -402,6 +428,8 @@ const EMPTY_EDIT_CATEGORY = {
   name: "",
   description: "",
   order: 0,
+  level: 0,
+  parentCategory: "",
   isTrending: false,
   uiType: "service",
   features: [],
@@ -606,43 +634,30 @@ const ManageCategories = () => {
      EXISTING CATEGORY
   ======================================================= */
 
-  const existingCategory =
-  useMemo(() => {
+  const existingCategory = useMemo(() => {
+  const newName = normalize(newCategory.name);
 
-    const newName =
-      normalize(
-        newCategory.name
-      );
+  if (!newName) {
+    return null;
+  }
 
-    if (!newName) {
-      return null;
-    }
+  const finalParent =
+    Number(newCategory.level) === 0
+      ? ""
+      : newCategory.parentCategory || "";
 
-    const finalParent =
-      newCategory.subCategory ||
-      newCategory.parentCategory ||
-      "";
-
-    return flatCategories.find(
-      (category) =>
-
-        normalize(
-          category.name
-        ) === newName &&
-
-        String(
-          category.parentCategory ||
-          ""
-        ) ===
+  return flatCategories.find(
+    (category) =>
+      normalize(category.name) === newName &&
+      String(category.parentCategory || "") ===
         String(finalParent)
-    );
-
-  }, [
-    flatCategories,
-    newCategory.name,
-    newCategory.parentCategory,
-    newCategory.subCategory,
-  ]);
+  );
+}, [
+  flatCategories,
+  newCategory.name,
+  newCategory.level,
+  newCategory.parentCategory,
+]);
 
 
   /* =======================================================
@@ -673,10 +688,13 @@ const ManageCategories = () => {
         return;
       }
 
-      const finalParentCategory =
-  newCategory.subCategory ||
-  newCategory.parentCategory ||
-  null;
+   const selectedLevel =
+  Number(newCategory.level);
+
+const finalParentCategory =
+  selectedLevel === 0
+    ? null
+    : newCategory.parentCategory || null;
 
       const orderValue =
         newCategory.order === "" ||
@@ -692,42 +710,28 @@ const ManageCategories = () => {
 
       try {
 
-        await addCategory({
+       await addCategory({
+  name: toTitleCase(newCategory.name),
+  description:
+    newCategory.description?.trim() || "",
+  order:
+    Number.isFinite(orderValue)
+      ? orderValue
+      : 0,
 
-          name:
-            toTitleCase(
-              newCategory.name
-            ),
+  level: selectedLevel,
 
+  parentCategory:
+    finalParentCategory,
 
-          description:
-            newCategory.description
-              ?.trim() || "",
+  uiType:
+    newCategory.uiType || "service",
 
-
-          order:
-            Number.isFinite(
-              orderValue
-            )
-              ? orderValue
-              : 0,
-
-
-          parentCategory:
-  finalParentCategory,
-
-
-          uiType:
-            newCategory.uiType ||
-            "service",
-
-
-          features:
-            normalizeFeatures(
-              newCategory.features
-            ),
-
-        });
+  features:
+    normalizeFeatures(
+      newCategory.features
+    ),
+});
 
 
         setNewCategory({
@@ -762,49 +766,41 @@ const ManageCategories = () => {
      START EDIT
   ======================================================= */
 
-  const startEdit =
-    (category) => {
+const startEdit = (category) => {
+  const categoryLevel =
+    getCategoryLevel(
+      category,
+      flatCategories
+    );
 
-      setEditingId(
-        category._id
-      );
+  setEditingData({
+    ...category,
+    name: category.name || "",
 
+    description:
+      category.description || "",
 
-      setEditingData({
+    order: category.order ?? 0,
 
-        name:
-          category.name || "",
+    level: categoryLevel,
 
+    parentCategory:
+      category.parentCategory || "",
 
-        description:
-          category.description || "",
+    isTrending:
+      Boolean(category.isTrending),
 
+    uiType:
+      category.uiType || "service",
 
-        order:
-          Number(
-            category.order ?? 0
-          ),
+    features:
+      Array.isArray(category.features)
+        ? category.features
+        : [],
+  });
 
-
-        isTrending:
-          Boolean(
-            category.isTrending
-          ),
-
-
-        uiType:
-          category.uiType ||
-          "service",
-
-
-        features:
-          normalizeFeatures(
-            category.features
-          ),
-
-      });
-
-    };
+  setEditingId(category._id);
+};
 
 
   /* =======================================================
@@ -831,45 +827,48 @@ const ManageCategories = () => {
 
       try {
 
-        await updateCategory(
-          id,
-          {
+const selectedLevel =
+  Number(editingData.level);
 
-            name:
-              toTitleCase(
-                editingData.name
-              ),
+const finalParentCategory =
+  selectedLevel === 0
+    ? null
+    : editingData.parentCategory || null;
 
+await updateCategory(id, {
+  name: toTitleCase(
+    editingData.name
+  ),
 
-            description:
-              editingData.description
-                ?.trim() || "",
+  description:
+    editingData.description?.trim() || "",
 
+  order:
+    Number.isFinite(
+      Number(editingData.order)
+    )
+      ? Number(editingData.order)
+      : 0,
 
-            order:
-              Number(
-                editingData.order
-              ) || 0,
+  level:
+    selectedLevel,
 
+  parentCategory:
+    finalParentCategory,
 
-            isTrending:
-              Boolean(
-                editingData.isTrending
-              ),
+  isTrending:
+    Boolean(
+      editingData.isTrending
+    ),
 
+  uiType:
+    editingData.uiType || "service",
 
-            uiType:
-              editingData.uiType ||
-              "service",
-
-
-            features:
-              normalizeFeatures(
-                editingData.features
-              ),
-
-          }
-        );
+  features:
+    normalizeFeatures(
+      editingData.features
+    ),
+});
 
 
         setEditingId(null);
@@ -1240,6 +1239,135 @@ const ManageCategories = () => {
 
             </td>
 
+          {/* LEVEL */}
+
+<td
+  className="
+    border
+    px-3
+    py-3
+  "
+>
+  {isEditing ? (
+    <select
+      value={editingData.level}
+      onChange={(e) => {
+        const selectedLevel =
+          Number(e.target.value);
+
+        setEditingData((prev) => ({
+          ...prev,
+          level: selectedLevel,
+          parentCategory: "",
+        }));
+      }}
+      className="
+        border
+        px-2
+        py-1
+        rounded
+      "
+    >
+      <option value={0}>
+        Level 0
+      </option>
+
+      <option value={1}>
+        Level 1
+      </option>
+
+      <option value={2}>
+        Level 2
+      </option>
+    </select>
+  ) : (
+    getCategoryLevel(
+      category,
+      flatCategories
+    )
+  )}
+</td>
+
+
+{/* PARENT */}
+
+<td
+  className="
+    border
+    px-3
+    py-3
+  "
+>
+  {isEditing ? (
+    Number(editingData.level) > 0 ? (
+      <select
+        value={
+          editingData.parentCategory
+        }
+        onChange={(e) =>
+          setEditingData((prev) => ({
+            ...prev,
+            parentCategory:
+              e.target.value,
+          }))
+        }
+        className="
+          border
+          px-2
+          py-1
+          rounded
+          max-w-[180px]
+        "
+      >
+        <option value="">
+          Select Parent
+        </option>
+
+        {flatCategories
+          .filter((parent) => {
+            if (
+              String(parent._id) ===
+              String(editingId)
+            ) {
+              return false;
+            }
+
+            return (
+              getCategoryLevel(
+                parent,
+                flatCategories
+              ) ===
+              Number(editingData.level) - 1
+            );
+          })
+          .map((parent) => (
+            <option
+              key={parent._id}
+              value={parent._id}
+            >
+              {parent.name}
+            </option>
+          ))}
+      </select>
+    ) : (
+      <span className="text-gray-400">
+        —
+      </span>
+    )
+  ) : (
+    <span>
+      {category.parentCategory
+        ? flatCategories.find(
+            (parent) =>
+              String(parent._id) ===
+              String(
+                category.parentCategory
+              )
+          )?.name || "-"
+        : "—"}
+    </span>
+  )}
+</td>
 
             {/* UI TYPE */}
 
@@ -1825,116 +1953,94 @@ const ManageCategories = () => {
             }
           />
 
+    {/* LEVEL */}
 
-          {/* PARENT */}
+<div>
+  <label className="block text-sm font-medium mb-1">
+    Level
+  </label>
 
-          <select
-            className="
-              border
-              px-3
-              py-2
-              rounded
-            "
-            value={
-              newCategory.parentCategory
-            }
-            onChange={(e) =>
-  setNewCategory(
-    (prev) => ({
-      ...prev,
-      parentCategory:
-        e.target.value,
-      subCategory: "",
-    })
-  )
-}
-          >
+  <select
+    value={newCategory.level}
+    onChange={(e) => {
+      const level =
+        Number(e.target.value);
 
-            <option value="">
-              No Parent
-            </option>
-
-
-            {flatCategories
-              .filter(
-                (category) =>
-                  !category.parentCategory
-              )
-              .map(
-                (category) => (
-
-                  <option
-                    key={
-                      category._id
-                    }
-                    value={
-                      category._id
-                    }
-                  >
-                    {category.name}
-                  </option>
-
-                )
-              )}
-
-          </select>
-
-    {/* SUB CATEGORY */}
-
-<select
-  className="
-    border
-    px-3
-    py-2
-    rounded
-  "
-  value={
-    newCategory.subCategory
-  }
-  onChange={(e) =>
-    setNewCategory(
-      (prev) => ({
+      setNewCategory((prev) => ({
         ...prev,
-        subCategory:
-          e.target.value,
-      })
-    )
-  }
-  disabled={
-    !newCategory.parentCategory
-  }
->
+        level,
+        parentCategory: "",
+      }));
+    }}
+    className="
+      w-full
+      border
+      px-3
+      py-2
+      rounded
+    "
+  >
+    <option value={0}>
+      Level 0 — Parent Category
+    </option>
 
-  <option value="">
-    No Sub Category
-  </option>
+    <option value={1}>
+      Level 1 — Subcategory
+    </option>
 
-  {flatCategories
-  .filter(
-    (category) =>
-      String(
-        category.parentCategory || ""
-      ) ===
-      String(
-        newCategory.parentCategory || ""
-      )
-  )
-  .map(
-    (category) => (
-      <option
-        key={
-          category._id
-        }
-        value={
-          category._id
-        }
-      >
-        {category.name}
+    <option value={2}>
+      Level 2 — Service
+    </option>
+  </select>
+</div>
+
+
+
+{Number(newCategory.level) > 0 && (
+  <div>
+    <label className="block text-sm font-medium mb-1">
+      Parent Category
+    </label>
+
+    <select
+      value={newCategory.parentCategory}
+      onChange={(e) =>
+        setNewCategory((prev) => ({
+          ...prev,
+          parentCategory:
+            e.target.value,
+        }))
+      }
+      className="w-full border rounded px-3 py-2"
+    >
+      <option value="">
+        Select Parent Category
       </option>
-    )
-  )}
 
-</select>
+      {flatCategories
+        .filter((category) => {
+          const categoryLevel =
+            getCategoryLevel(
+              category,
+              flatCategories
+            );
+
+          return (
+            categoryLevel ===
+            Number(newCategory.level) - 1
+          );
+        })
+        .map((category) => (
+          <option
+            key={category._id}
+            value={category._id}
+          >
+            {category.name}
+          </option>
+        ))}
+    </select>
+  </div>
+)}
 
           {/* UI TYPE */}
 
@@ -2125,6 +2231,25 @@ const ManageCategories = () => {
                 Description
               </th>
 
+            <th
+              className="
+                border
+                px-3
+                py-2
+              "
+            >
+              Level
+            </th>
+
+            <th
+              className="
+                border
+                px-3
+                py-2
+              "
+            >
+              Parent
+            </th>
 
               <th
                 className="
@@ -2202,7 +2327,7 @@ const ManageCategories = () => {
               <tr>
 
                 <td
-                  colSpan={7}
+                  colSpan={9}
                   className="
                     border
                     px-4
