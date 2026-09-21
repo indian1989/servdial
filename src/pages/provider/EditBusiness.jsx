@@ -13,6 +13,7 @@ import {
 
 import BusinessForm from "../../components/business/BusinessForm";
 import BusinessSubmitter from "../../components/business/BusinessSubmitter";
+import BusinessMediaManager from "../../components/BusinessMediaManager";
 
 import Loader from "../../components/common/Loader";
 
@@ -43,6 +44,9 @@ const EditBusiness = () => {
 
   const [business, setBusiness] =
     useState(null);
+
+const [images, setImages] = useState([]);
+const [logo, setLogo] = useState("");
 
   const [loading, setLoading] =
     useState(true);
@@ -76,6 +80,14 @@ const EditBusiness = () => {
         );
 
         setBusiness(data);
+
+        setImages(
+  Array.isArray(data.images)
+    ? data.images
+    : []
+);
+
+setLogo(data.logo || "");
 
       } catch (err) {
 
@@ -167,15 +179,26 @@ const EditBusiness = () => {
 
         }}
       >
-        {(submitBusiness) => (
-
-          <BusinessForm
-            initialData={business}
-            mode="provider"
-            onSubmit={submitBusiness}
-          />
-
-        )}
+       {(submitBusiness) => (
+  <BusinessForm
+    initialData={business}
+    mode="provider"
+    onSubmit={(data) =>
+      submitBusiness({
+        ...data,
+        logo,
+        images,
+      })
+    }
+  >
+    <BusinessMediaManager
+      value={images}
+      onChange={setImages}
+      logo={logo}
+      onLogoChange={setLogo}
+    />
+  </BusinessForm>
+)}
       </BusinessSubmitter>
 
     </div>

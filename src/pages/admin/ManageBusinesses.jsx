@@ -86,8 +86,13 @@ const [categoryOptions, setCategoryOptions] = useState([]);
         
     /* ================= MEDIA ================= */
 
-    images: dto.images || [],
-    logo: dto.logo || "",
+    images: Array.isArray(dto.images)
+  ? dto.images
+  : Array.isArray(b.images)
+  ? b.images
+  : [],
+
+logo: dto.logo || b.logo || "",
 
     /* ================= BUSINESS FEATURES ================= */
 
@@ -138,7 +143,7 @@ const [categoryOptions, setCategoryOptions] = useState([]);
       dto.partyBooking || null,
   });
 
-  setLogo(dto.logo || "");
+  setLogo(dto.logo || b.logo || "");
 };
 
   // ================= FETCH =================
@@ -632,13 +637,33 @@ const filtered = businesses
       mode="admin"
 
       onChange={(data) =>
-        setEditBusiness((prev) => ({
-          ...prev,
-          ...data,
-        }))
-      }
+  setEditBusiness((prev) => ({
+    ...prev,
+    ...data,
 
-      onSubmit={submitBusiness}
+    // MEDIA IS OWNED BY BusinessMediaManager
+    images: prev.images || [],
+    logo: prev.logo || "",
+  }))
+}
+
+      onSubmit={(data) => {
+  console.log("🖼️ EDIT BUSINESS MEDIA:", {
+    editLogo: editBusiness?.logo,
+    editImages: editBusiness?.images,
+  });
+
+  console.log("🖼️ FORM DATA MEDIA:", {
+    dataLogo: data?.logo,
+    dataImages: data?.images,
+  });
+
+  return submitBusiness({
+    ...data,
+    logo: editBusiness?.logo || "",
+    images: editBusiness?.images || [],
+  });
+}}
     >
 
   

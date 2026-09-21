@@ -107,7 +107,12 @@ const [reviews, setReviews] = useState(
   // =======================================================
 
   const fetchBusiness = async () => {
-
+console.log("🚀 BUSINESS CLIENT FETCH START:", {
+  citySlug,
+  categorySlug,
+  slug,
+  hasSSR: !!ssrBusiness,
+});
     let isRedirecting = false;
 
     if (!slug) {
@@ -130,7 +135,7 @@ const [reviews, setReviews] = useState(
   await API.get(
     `/businesses/${citySlug}/${categorySlug}/${slug}`
   );
-
+console.log("✅ BUSINESS CLIENT API RESPONSE:", res?.data);
 
      // =================================================
 // RESPONSE
