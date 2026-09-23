@@ -19,19 +19,17 @@ import {
 } from "../../utils/addressHelper";
 
 const BusinessCard = ({ business }) => {
-  if (!business) return null;
 
   const location = useLocation();
 
   const [
-  isCallChooserOpen,
-  setIsCallChooserOpen
-] = useState(false);
+    isCallChooserOpen,
+    setIsCallChooserOpen
+  ] = useState(false);
 
-const b = toBusinessListDTO(business) || {};
+  const b = toBusinessListDTO(business) || {};
 
-
-const businessStatus = getBusinessStatus(b);
+  if (!business) return null;
 
 // User GPS coordinates
 const userLat =
@@ -90,6 +88,8 @@ const realDistance =
   logo ||
   (Array.isArray(images) && images.length > 0 ? images[0] : null) ||
   "/no-image.png";
+
+  const businessStatus = getBusinessStatus(b);
 
   const displayLocation = formatCityLocation(
   area,

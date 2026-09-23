@@ -174,11 +174,6 @@ useEffect(() => {
           ? res.data.data
           : [];
 
-      console.log(
-        "🏢 CITY businesses:",
-        fetchedBusinesses.length
-      );
-
       setBusinesses(fetchedBusinesses);
 
     } catch (err) {
@@ -202,6 +197,11 @@ useEffect(() => {
   const parentCategories = (categories || []).filter(
     (c) => !c.parentCategory
   );
+
+  // ================= DISPLAY CATEGORIES =================
+// City page par sirf first 8 categories show hongi.
+// View All se complete category index page open hoga.
+const displayedCategories = parentCategories .slice(0,10);
 
   // ================= SEO =================
   const formattedCity = formatLocationDisplay(
@@ -252,19 +252,6 @@ if (!cityData) {
   return <NotFound />;
 }
 
-console.log(
-  "🏙️ CITY SSR RENDER:",
-  {
-    isServer: typeof window === "undefined",
-    city: cityData?.slug,
-    categories: categories.length,
-    businesses: businesses.length,
-    ssrBusinesses: Array.isArray(ssrBusinesses)
-      ? ssrBusinesses.length
-      : "not-array",
-    businessLoading,
-  }
-);
 
   return (
     <>
@@ -370,65 +357,83 @@ console.log(
 
           </div>
 
-          {/* ================= GRID ================= */}
-          {parentCategories.length > 0 ? (
+      {/* ================= GRID ================= */}
+{parentCategories.length > 0 ? (
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
+  <>
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-5">
 
-              {parentCategories.map((cat) => (
+      {displayedCategories.map((cat) => (
 
-                <Link
-                  key={cat._id}
-                  to={`/${stateSlug}/${citySlug}/${cat.slug}`}
-                  className="group bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-xl hover:border-blue-200 transition-all duration-300"
-                >
+        <Link
+          key={cat._id}
+          to={`/${stateSlug}/${citySlug}/${cat.slug}`}
+          className="group bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-xl hover:border-blue-200 transition-all duration-300"
+        >
 
-                  <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition">
+          <div className="w-14 h-14 rounded-2xl bg-blue-50 flex items-center justify-center mb-4 group-hover:bg-blue-100 transition">
 
-                    {cat.icon ? (
-                      <img
-                        src={cat.icon}
-                        alt={cat.name}
-                        className="w-8 h-8 object-contain"
-                      />
-                    ) : (
-                      <Grid2X2
-                        size={24}
-                        className="text-blue-600"
-                      />
-                    )}
+            {cat.icon ? (
+              <img
+                src={cat.icon}
+                alt={cat.name}
+                className="w-8 h-8 object-contain"
+              />
+            ) : (
+              <Grid2X2
+                size={24}
+                className="text-blue-600"
+              />
+            )}
 
-                  </div>
+          </div>
 
-                  <h3 className="font-semibold text-gray-800 text-sm leading-6 group-hover:text-blue-600 transition">
-                    {cat.name}
-                  </h3>
+          <h3 className="font-semibold text-gray-800 text-sm leading-6 group-hover:text-blue-600 transition">
+            {cat.name}
+          </h3>
 
-                  <p className="text-xs text-gray-500 mt-2">
-                    Explore businesses
-                  </p>
+          <p className="text-xs text-gray-500 mt-2">
+            Explore businesses
+          </p>
 
-                </Link>
+        </Link>
 
-              ))}
+      ))}
 
-            </div>
+    </div>
 
-          ) : (
+    {/* ================= VIEW ALL CATEGORIES ================= */}
+    {parentCategories.length > 8 && (
+      <div className="text-center mt-8">
+        <button
+          onClick={() =>
+            navigate(
+              `/${stateSlug}/${citySlug}/categories`
+            )
+          }
+          className="px-6 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 transition"
+        >
+          View All Categories
+        </button>
+      </div>
+    )}
+  </>
 
-            <div className="bg-white rounded-2xl border p-10 text-center">
+) : (
 
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">
-                No categories found
-              </h3>
+  <div className="bg-white rounded-2xl border p-10 text-center">
 
-              <p className="text-gray-500">
-                Categories are not available right now.
-              </p>
+    <h3 className="text-lg font-semibold text-gray-700 mb-2">
+      No categories found
+    </h3>
 
-            </div>
+    <p className="text-gray-500">
+      Categories are not available right now.
+    </p>
 
-          )}
+  </div>
+
+)}
 
           {/* ================= RANDOM BUSINESSES ================= */}
 {cityData?.slug && (

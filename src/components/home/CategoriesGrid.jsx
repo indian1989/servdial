@@ -1,6 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useCity } from "../../context/CityContext";
 
 // ICONS
 import home from "../../assets/icons/home.png";
@@ -56,7 +55,6 @@ const getParentIcon = (cat) => {
 
 const CategoriesGrid = ({ categories = [], city, loading = false }) => {
   const navigate = useNavigate();
-  const { city: selectedCity } = useCity();
 
   const handleCategoryClick = (category) => {
   if (!category?.slug) return;
@@ -82,13 +80,6 @@ const CategoriesGrid = ({ categories = [], city, loading = false }) => {
   .filter((c) => !c.parentCategory)
   .sort((a, b) => (a.order || 0) - (b.order || 0))
   .slice(0, 16);
-
-console.log("🔥 CATEGORIES GRID SSR/CLIENT:", {
-  loading,
-  totalCategories: categories?.length,
-  topCategories: topCategories?.length,
-  sample: categories?.[0],
-});
 
   if (!loading && topCategories.length === 0) {
   return (
@@ -158,9 +149,9 @@ console.log("🔥 CATEGORIES GRID SSR/CLIENT:", {
       <button
   onClick={() =>
     navigate(
-      selectedCity?.slug && selectedCity?.stateSlug
-  ? `/${selectedCity.stateSlug}/${selectedCity.slug}/categories`
-  : "/categories"
+      city?.slug && city?.stateSlug
+        ? `/${city.stateSlug}/${city.slug}/categories`
+        : "/categories"
     )
   }
   className="px-6 py-2 rounded-full bg-blue-600 text-white text-sm hover:bg-blue-700 transition"

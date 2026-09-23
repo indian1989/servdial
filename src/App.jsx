@@ -15,6 +15,7 @@ function AppContent({
   ssrFeatured,
   ssrLatest,
   ssrHome,
+  ssrCategoryPage,
 }) {
   const { user } = useAuth();
 
@@ -33,6 +34,7 @@ function AppContent({
           ssrFeatured={ssrFeatured}
           ssrLatest={ssrLatest}
           ssrHome={ssrHome}
+          ssrCategoryPage={ssrCategoryPage}
         />
         </CategoryProvider>
       </CityProvider>
@@ -50,6 +52,7 @@ function App({
   ssrFeatured,
   ssrLatest,
   ssrHome,
+  ssrCategoryPage,
 }) {
   return (
     <AuthProvider>
@@ -63,6 +66,7 @@ function App({
   ssrFeatured={ssrFeatured}
   ssrLatest={ssrLatest}
   ssrHome={ssrHome}
+  ssrCategoryPage={ssrCategoryPage}
 />
     </AuthProvider>
   );

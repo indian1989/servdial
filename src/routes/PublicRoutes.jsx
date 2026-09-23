@@ -127,6 +127,7 @@ const OneSegmentResolver = () => {
 const ThreeSegmentResolver = ({
   ssrBusiness,
   ssrCityCategory,
+  ssrCategoryPage,
 }) => {
   const {
     stateSlug,
@@ -200,6 +201,28 @@ const ThreeSegmentResolver = ({
     citySlug,
     categorySlug,
   ]);
+
+  /*
+ * SSR CATEGORY INDEX PAGE
+ *
+ * /stateSlug/citySlug/categories
+ *
+ * This URL is also matched by the generic
+ * 3-segment route above, so handle it here
+ * before CityCategory / Business SSR.
+ */
+
+if (
+  typeof window === "undefined" &&
+  categorySlug === "categories" &&
+  ssrCategoryPage
+) {
+  return (
+    <CategoryPage
+      ssrCategoryPage={ssrCategoryPage}
+    />
+  );
+}
 
   /*
  * SSR CITY + CATEGORY
@@ -462,6 +485,7 @@ const PublicRoutes = ({
   ssrFeatured,
   ssrLatest,
   ssrHome,
+  ssrCategoryPage,
 }) => {
   return (
     <Route element={<PublicLayout />}>
@@ -558,16 +582,28 @@ const PublicRoutes = ({
     <ThreeSegmentResolver
       ssrBusiness={ssrBusiness}
       ssrCityCategory={ssrCityCategory}
+      ssrCategoryPage={ssrCategoryPage}
     />
   }
 />
 
   {/* CATEGORIES (GLOBAL) */}
-<Route path="/categories" element={<CategoryPage />} />
+<Route
+  path="/categories"
+  element={
+    <CategoryPage
+      ssrCategoryPage={ssrCategoryPage}
+    />
+  }
+/>
 
 <Route
   path="/:stateSlug/:citySlug/categories"
-  element={<CategoryPage />}
+  element={
+    <CategoryPage
+      ssrCategoryPage={ssrCategoryPage}
+    />
+  }
 />
 
 {/* CATEGORY DETAILS */}

@@ -27,6 +27,11 @@ const serviceTypeOptions = [
     label: "Takeaway",
   },
   {
+    value: "medical-care",
+    label: "Medical Care",
+  },
+  
+  {
     value: "photography",
     label: "In-person Photography & Event Coverage",
   },

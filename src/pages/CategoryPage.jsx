@@ -5,7 +5,6 @@ import { Link, useParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
 import API from "../api/axios";
-import { useCity } from "../context/CityContext";
 import { formatLocationDisplay } from "../utils/addressHelper";
 
 import {
@@ -29,29 +28,35 @@ const slugify = (value = "") =>
     .replace(/\s+/g, "-")
     .replace(/-+/g, "-");
 
-const CategoryPage = () => {
-
-  const { city: contextCity } = useCity();
+const CategoryPage = ({ ssrCategoryPage }) => {
 
   const { citySlug } = useParams();
 
   const [pageCity, setPageCity] =
-    useState(null);
+  useState(
+    ssrCategoryPage?.city || null
+  );
 
-  const [cities, setCities] =
-    useState([]);
+const [cities, setCities] =
+  useState(
+    ssrCategoryPage?.cities || []
+  );
 
-  const [categories, setCategories] =
-    useState([]);
+const [categories, setCategories] =
+  useState(
+    ssrCategoryPage?.categories || []
+  );
 
-  const [loading, setLoading] =
-    useState(true);
+const [loading, setLoading] =
+  useState(!ssrCategoryPage);
 
-  const [citySearch, setCitySearch] =
-    useState("");
+const [citySearch, setCitySearch] =
+  useState("");
 
-  const [businesses, setBusinesses] =
-  useState([]);
+const [businesses, setBusinesses] =
+  useState(
+    ssrCategoryPage?.businesses || []
+  );
 
 const [businessLoading, setBusinessLoading] =
   useState(false);
@@ -63,18 +68,15 @@ const [businessLoading, setBusinessLoading] =
 
 useEffect(() => {
 
+ if (ssrCategoryPage) {
+   return;
+ }
+
  if (!citySlug) {
 
-  setPageCity(
-    contextCity
-      ? {
-          ...contextCity,
-          stateSlug:
-            contextCity.stateSlug ||
-            slugify(contextCity.state),
-        }
-      : null
-  );
+  // /categories = GLOBAL category page
+  // Do not use CityContext here.
+  setPageCity(null);
 
   return;
 }
@@ -100,11 +102,6 @@ useEffect(() => {
 
   if (matchedCity) {
 
-    console.log(
-      "🏙️ CATEGORY matched city:",
-      matchedCity
-    );
-
     setPageCity({
   ...matchedCity,
   stateSlug:
@@ -117,11 +114,6 @@ useEffect(() => {
     cities.length > 0
   ) {
 
-    console.log(
-      "⚠️ CATEGORY city not found:",
-      citySlug
-    );
-
     setPageCity(null);
 
   }
@@ -130,78 +122,89 @@ useEffect(() => {
   citySlug,
   cities,
   loading,
-  contextCity,
+  ssrCategoryPage,
 ]);
 
   /* =====================================================
-   FETCH CITY BUSINESSES
+   FETCH CITY / GLOBAL BUSINESSES
 ===================================================== */
 
 useEffect(() => {
 
-  if (!pageCity?.slug) {
-
-    setBusinesses([]);
-
+  if (ssrCategoryPage) {
     return;
-
   }
 
-  const fetchBusinesses =
-    async () => {
+  const fetchBusinesses = async () => {
 
-      try {
+    try {
 
-        setBusinessLoading(true);
+      setBusinessLoading(true);
 
-        const res =
-  await API.get(
-    "/businesses/random",
-    {
-      params: {
-        city: pageCity.slug,
-        limit: 20,
-      },
-    }
-  );
+      let res;
 
-        const fetchedBusinesses =
-          Array.isArray(
-            res?.data?.data
-          )
-            ? res.data.data
-            : [];
+      // ================= GLOBAL CATEGORY PAGE =================
+      if (!pageCity?.slug) {
 
-        console.log(
-          "🏢 CATEGORY businesses:",
-          fetchedBusinesses.length
+        res = await API.get(
+          "/businesses/random-global",
+          {
+            params: {
+              limit: 20,
+            },
+          }
         );
-
-        setBusinesses(
-          fetchedBusinesses
-        );
-
-      } catch (err) {
-
-        console.error(
-          "❌ Category businesses fetch error:",
-          err?.response?.data ||
-            err
-        );
-
-        setBusinesses([]);
-
-      } finally {
-
-        setBusinessLoading(false);
 
       }
 
-    };
+      // ================= CITY CATEGORY PAGE =================
+      else {
+
+        res = await API.get(
+          "/businesses/random",
+          {
+            params: {
+              city: pageCity.slug,
+              limit: 20,
+            },
+          }
+        );
+
+      }
+
+      const fetchedBusinesses =
+        Array.isArray(res?.data?.data)
+          ? res.data.data
+          : [];
+
+      setBusinesses(
+        fetchedBusinesses
+      );
+
+    } catch (err) {
+
+      console.error(
+        "❌ Category businesses fetch error:",
+        err?.response?.data ||
+          err
+      );
+
+      setBusinesses([]);
+
+    } finally {
+
+      setBusinessLoading(false);
+
+    }
+
+  };
 
   fetchBusinesses();
 
-}, [pageCity?.slug]);
+}, [
+  pageCity?.slug,
+  ssrCategoryPage,
+]);
 
   /* =====================================================
      CITY NORMALIZATION
@@ -283,8 +286,12 @@ useEffect(() => {
 
   useEffect(() => {
 
-    const fetchData =
-      async () => {
+  if (ssrCategoryPage) {
+    return;
+  }
+
+  const fetchData =
+    async () => {
 
         try {
 
@@ -375,7 +382,7 @@ useEffect(() => {
 
     fetchData();
 
-  }, []);
+ }, [ssrCategoryPage]);
 
 
   /* =====================================================
@@ -405,11 +412,13 @@ useEffect(() => {
       : "Explore business categories and local services on ServDial. Find trusted businesses, professionals, restaurants, healthcare, home services, repair services and more across India.";
 
 
-  const categoryCanonicalUrl =
+    const categoryCanonicalUrl =
     pageCity?.slug
-      ? `https://www.servdial.com/${citySlugResolved}/categories`
+      ? `https://www.servdial.com/${
+          pageCity.stateSlug ||
+          slugify(pageCity.state)
+        }/${citySlugResolved}/categories`
       : "https://www.servdial.com/categories";
-
 
   /* =====================================================
      LOADING
@@ -1465,7 +1474,7 @@ useEffect(() => {
     BUSINESSES IN CITY
 ================================================= */}
 
-{pageCity?.slug && (
+{(pageCity?.slug || businesses.length > 0) && (
 
   <section className="mt-16">
 
@@ -1483,25 +1492,28 @@ useEffect(() => {
 
       <div>
 
-        <h2
-          className="
-            text-2xl
-            font-bold
-            text-gray-800
-          "
-        >
-          Businesses in {formattedCity}
-        </h2>
+       <h2
+  className="
+    text-2xl
+    font-bold
+    text-gray-800
+  "
+>
+  {pageCity?.slug
+    ? `Businesses in ${formattedCity}`
+    : "Featured Businesses Across India"}
+</h2>
 
-        <p
-          className="
-            text-gray-500
-            mt-1
-          "
-        >
-          Discover local businesses and services
-          available in {formattedCity}.
-        </p>
+<p
+  className="
+    text-gray-500
+    mt-1
+  "
+>
+  {pageCity?.slug
+    ? `Discover local businesses and services available in ${formattedCity}.`
+    : "Discover businesses and services from cities and categories across India on ServDial."}
+</p>
 
       </div>
 
@@ -1651,15 +1663,16 @@ useEffect(() => {
           No Businesses Found
         </h3>
 
-        <p
-          className="
-            text-gray-500
-            mt-2
-          "
-        >
-          No approved businesses are currently
-          available in {formattedCity}.
-        </p>
+       <p
+  className="
+    text-gray-500
+    mt-2
+  "
+>
+  {pageCity?.slug
+    ? `No approved businesses are currently available in ${formattedCity}.`
+    : "No approved businesses are currently available across ServDial."}
+</p>
 
       </div>
 

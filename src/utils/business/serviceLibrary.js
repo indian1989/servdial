@@ -602,6 +602,8 @@ export const SERVICE_LIBRARY = [
   "Food Delivery",
   "Order Online",
   "Family Dining",
+  "Restaurant Dining",
+  "Dining",
   "Party Orders",
   "Catering Service",
   "Corporate Catering",
@@ -610,9 +612,9 @@ export const SERVICE_LIBRARY = [
   "Event Catering",
   "Outdoor Catering",
   "Buffet Service",
-  "Breakfast Service",
-  "Lunch Service",
-  "Dinner Service",
+  "Breakfast",
+  "Lunch",
+  "Dinner",
   "Late Night Food",
   "Parcel Service",
   "Food Packing",
@@ -867,6 +869,10 @@ export const SERVICE_LIBRARY = [
   "Laboratory Investigations",
   "Diagnostic Testing",
   "Restorative Dentistry",
+  "Inpatient Care",
+  "Outpatient Care",
+  "Gynaecology",
+  "Critical Care",
 
   // =======================================================
   // LEGAL SERVICES
@@ -1028,6 +1034,7 @@ export const SERVICE_LIBRARY = [
   "Couple Photography",
   "Bridal Photography",
   "Post-Wedding Shoot",
+  "Maternity Shoot",
 
   // =======================================================
   // DIGITAL / IT SERVICES

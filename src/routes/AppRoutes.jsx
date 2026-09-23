@@ -34,6 +34,7 @@ function AppRoutes({
   ssrFeatured,
   ssrLatest,
   ssrHome,
+  ssrCategoryPage,
 }) {
   return (
     <Suspense fallback={<PageLoader />}>
@@ -53,6 +54,7 @@ function AppRoutes({
   ssrFeatured,
   ssrLatest,
   ssrHome,
+  ssrCategoryPage,
 })}
 
         {/* TEMPORARY LISTINGS */}

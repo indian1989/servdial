@@ -248,7 +248,10 @@ content="Discover verified local businesses, services, restaurants, home service
 <HeroSearch city={city} />
 
 {/* 🔥 TOP BANNER */}
-<BannerAd placement="homepage_top" />
+<BannerAd
+  placement="homepage_top"
+  cityId={city?._id || city?.id}
+/>
 
       {/* LOCATION LOADING */}
       {loadingCity && (
@@ -295,7 +298,10 @@ content="Discover verified local businesses, services, restaurants, home service
 
       
       {/* 🔥 MIDDLE BANNER */}
-<BannerAd placement="homepage_middle" />
+<BannerAd
+  placement="homepage_middle"
+  cityId={city?._id || city?.id}
+/>
 
       {/* ================= TOP RATED ================= */}
 <section className="my-14 max-w-7xl mx-auto px-4">
@@ -424,7 +430,10 @@ content="Discover verified local businesses, services, restaurants, home service
 </section>
 
 {/* 🔥 BOTTOM BANNER */}
-<BannerAd placement="homepage_bottom" />
+<BannerAd
+  placement="homepage_bottom"
+  cityId={city?._id || city?.id}
+/>
 
       {/* ================= CITIES ================= */}
       <section className="my-14 max-w-7xl mx-auto px-4">

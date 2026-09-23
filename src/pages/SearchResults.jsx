@@ -11,6 +11,7 @@ import { Helmet } from "react-helmet-async";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 import API from "../api/axios";
+import BannerAd from "../components/ads/BannerAd";
 
 import BusinessCard from "../components/business/BusinessCard";
 import SmartSearchBar from "../components/search/SmartSearchBar";
@@ -862,6 +863,11 @@ setBusinesses(searchResults);
 
       <main className="max-w-7xl mx-auto px-3 py-4">
 
+<BannerAd
+  placement="search_results_top"
+  cityId={city?._id || city?.id}
+/>
+
         {/* LOADING */}
 
         {loading && (
@@ -954,6 +960,12 @@ setBusinesses(searchResults);
           )}
 
       </main>
+
+      {/* 🔥 SEARCH RESULTS BOTTOM BANNER */}
+<BannerAd
+  placement="search_results_bottom"
+  cityId={city?._id || city?.id}
+/>
 
       {/* =================================================
       MAP BUSINESS BOTTOM SHEET

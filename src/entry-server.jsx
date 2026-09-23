@@ -11,8 +11,8 @@ import { AuthProvider } from "./context/AuthContext";
 
 const API_BASE_URL =
   process.env.VITE_API_BASE_URL ||
-  "https://api.servdial.com/api";
-//"http://localhost:5000/api";
+ // "https://api.servdial.com/api";
+  "http://localhost:5000/api";
 
 // =========================================================
 // FETCH BUSINESS FOR SSR
@@ -153,12 +153,13 @@ const fetchCityForSSR = async (url) => {
      */
 
     if (
-      !stateSlug ||
-      !citySlug ||
-      stateSlug === "blog"
-    ) {
-      return null;
-    }
+  !stateSlug ||
+  !citySlug ||
+  stateSlug === "blog" ||
+  citySlug === "categories"
+) {
+  return null;
+}
 
     const endpoint =
       `${API_BASE_URL}/cities/` +
@@ -312,6 +313,230 @@ const fetchCityBusinessesForSSR = async (citySlug) => {
     );
 
     return [];
+  }
+};
+
+// =========================================================
+// FETCH CATEGORY PAGE FOR SSR
+// =========================================================
+
+const fetchCategoryPageForSSR = async (url) => {
+  try {
+    const parsedUrl = new URL(
+      url,
+      "https://www.servdial.com"
+    );
+
+    const parts = parsedUrl.pathname
+      .split("/")
+      .filter(Boolean);
+
+ // ================================================
+// GLOBAL CATEGORY INDEX PAGE
+// /categories
+// ================================================
+
+if (
+  parts.length === 1 &&
+  parts[0] === "categories"
+) {
+  const categories =
+    await fetchCategoriesForSSR();
+
+  // ================= RANDOM BUSINESSES =================
+
+  let businesses = [];
+
+  try {
+    const endpoint =
+      `${API_BASE_URL}/businesses/random-global?limit=20`;
+
+    const response = await fetch(
+      endpoint,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (response.ok) {
+      const data =
+        await response.json();
+
+      businesses =
+        Array.isArray(data?.data)
+          ? data.data
+          : [];
+    } else {
+      console.warn(
+        "⚠️ SSR global random businesses API:",
+        response.status,
+        endpoint
+      );
+    }
+  } catch (error) {
+    console.error(
+      "❌ SSR global random businesses error:",
+      error
+    );
+  }
+
+  console.log(
+    "🔥 GLOBAL CATEGORY PAGE SSR DATA READY:",
+    {
+      categories: categories?.length,
+      businesses: businesses?.length,
+    }
+  );
+
+  return {
+    stateSlug: null,
+    citySlug: null,
+    city: null,
+    cities: [],
+    categories,
+    businesses,
+  };
+}
+
+    /*
+     * CITY CATEGORY INDEX PAGE
+     *
+     * /stateSlug/citySlug/categories
+     *
+     * Example:
+     * /bihar/hajipur-vaishali-bihar/categories
+     */
+
+    if (
+      parts.length !== 3 ||
+      parts[2] !== "categories"
+    ) {
+      return null;
+    }
+
+    const [
+      stateSlug,
+      citySlug,
+    ] = parts;
+
+    if (!stateSlug || !citySlug) {
+      return null;
+    }
+
+    // ================= CITY =================
+
+    const cityEndpoint =
+      `${API_BASE_URL}/cities/` +
+      `${encodeURIComponent(citySlug)}`;
+
+    const cityResponse = await fetch(
+      cityEndpoint,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (!cityResponse.ok) {
+      console.warn(
+        "⚠️ SSR category page city API:",
+        cityResponse.status,
+        cityEndpoint
+      );
+
+      return null;
+    }
+
+    const cityData =
+      await cityResponse.json();
+
+    const city =
+      cityData?.city ||
+      cityData?.data ||
+      null;
+
+    if (!city) {
+      return null;
+    }
+
+    /*
+     * Verify requested state + city.
+     */
+
+    if (
+      city.slug !== citySlug ||
+      (
+        city.stateSlug &&
+        city.stateSlug !== stateSlug
+      )
+    ) {
+      return null;
+    }
+
+    // ================= CITIES =================
+
+    const citiesResponse = await fetch(
+      `${API_BASE_URL}/cities`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    let cities = [];
+
+    if (citiesResponse.ok) {
+      const citiesData =
+        await citiesResponse.json();
+
+      cities =
+        Array.isArray(citiesData?.data)
+          ? citiesData.data
+          : citiesData?.data?.cities ||
+            citiesData?.cities ||
+            [];
+    }
+
+    // ================= CATEGORIES =================
+
+    const categories =
+      await fetchCategoriesForSSR();
+
+    // ================= BUSINESSES =================
+
+    const businesses =
+      await fetchCityBusinessesForSSR(
+        citySlug
+      );
+
+      console.log("🔥 CATEGORY PAGE SSR DATA READY:", {
+  stateSlug,
+  citySlug,
+  city: city?.name,
+  categories: categories?.length,
+  businesses: businesses?.length,
+});
+
+    return {
+      stateSlug,
+      citySlug,
+      city,
+      cities,
+      categories,
+      businesses,
+    };
+
+  } catch (error) {
+    console.error(
+      "❌ SSR category page fetch error:",
+      error
+    );
+
+    return null;
   }
 };
 
@@ -948,6 +1173,21 @@ const ssrHomeResponse =
     requestHeaders
   );
 
+const ssrCategoryPageResponse =
+  await fetchCategoryPageForSSR(url);
+
+console.log("🔥 SSR CATEGORY PAGE CHECK:", {
+  url,
+  exists: !!ssrCategoryPageResponse,
+  city: ssrCategoryPageResponse?.city?.name,
+  citySlug: ssrCategoryPageResponse?.citySlug,
+  stateSlug: ssrCategoryPageResponse?.stateSlug,
+  categories:
+    ssrCategoryPageResponse?.categories?.length,
+  businesses:
+    ssrCategoryPageResponse?.businesses?.length,
+});
+
 let ssrCategoriesResponse = [];
 let ssrBusinessesResponse = [];
 
@@ -987,6 +1227,7 @@ const html = renderToString(
   ssrFeatured={ssrFeaturedResponse}
   ssrLatest={ssrLatestResponse}
   ssrHome={ssrHomeResponse}
+    ssrCategoryPage={ssrCategoryPageResponse}
 />
         </AuthProvider>
       </StaticRouter>
@@ -1007,5 +1248,6 @@ const html = renderToString(
   ssrFeatured: ssrFeaturedResponse,
   ssrLatest: ssrLatestResponse,
   ssrHome: ssrHomeResponse,
+  ssrCategoryPage: ssrCategoryPageResponse,
 };
 }
