@@ -18,9 +18,11 @@ return (
 
 <StaticPageLayout
 
-
 title="Disclaimer"
 
+path="/disclaimer"
+
+description="Read the ServDial Disclaimer covering business listings, platform usage, verification indicators, user content, transactions, third-party services, and user responsibilities."
 
 subtitle="
 Important information regarding ServDial's platform, business listings,

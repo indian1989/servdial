@@ -14,16 +14,22 @@ import AdminAddTemporaryListing from "../pages/admin/AddTemporaryListing";
 import ManageTemporaryListings from "../pages/admin/ManageTemporaryListings";
 import AdminEditTemporaryListing from "../pages/admin/EditTemporaryListing";
 
-const TemporaryListingRoutes = () => {
+const TemporaryListingRoutes = ({
+  ssrTemporaryListings,
+}) => {
   return (
     <>
     
       {/* Public */}
 
       <Route
-        path="/temporary-listings"
-        element={<TemporaryListings />}
-      />
+  path="/temporary-listings"
+  element={
+    <TemporaryListings
+      ssrTemporaryListings={ssrTemporaryListings}
+    />
+  }
+/>
 
       <Route
         path="/temporary-listings/:id"

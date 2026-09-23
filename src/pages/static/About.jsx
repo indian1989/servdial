@@ -22,6 +22,10 @@ const About = () => {
 
       title="About ServDial"
 
+      path="/about"
+
+      description="Learn about ServDial, a local business discovery platform connecting customers with local businesses and service providers through simple, reliable, location-based search."
+
       subtitle="
       ServDial is a modern business discovery platform that connects customers
       with local businesses and service providers through simple, reliable,

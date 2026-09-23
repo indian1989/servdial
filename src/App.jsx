@@ -14,6 +14,8 @@ function AppContent({
   ssrCityCategory,
   ssrFeatured,
   ssrLatest,
+  ssrTopRated,
+  ssrTemporaryListings,
   ssrHome,
   ssrCategoryPage,
 }) {
@@ -33,6 +35,8 @@ function AppContent({
           ssrCityCategory={ssrCityCategory}
           ssrFeatured={ssrFeatured}
           ssrLatest={ssrLatest}
+          ssrTopRated={ssrTopRated}
+          ssrTemporaryListings={ssrTemporaryListings}
           ssrHome={ssrHome}
           ssrCategoryPage={ssrCategoryPage}
         />
@@ -51,6 +55,8 @@ function App({
   ssrCityCategory,
   ssrFeatured,
   ssrLatest,
+  ssrTopRated,
+  ssrTemporaryListings,
   ssrHome,
   ssrCategoryPage,
 }) {
@@ -65,6 +71,8 @@ function App({
   ssrCityCategory={ssrCityCategory}
   ssrFeatured={ssrFeatured}
   ssrLatest={ssrLatest}
+  ssrTopRated={ssrTopRated}
+  ssrTemporaryListings={ssrTemporaryListings}
   ssrHome={ssrHome}
   ssrCategoryPage={ssrCategoryPage}
 />

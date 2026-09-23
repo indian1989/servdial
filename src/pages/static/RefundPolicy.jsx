@@ -21,9 +21,11 @@ return (
 
 <StaticPageLayout
 
-
 title="Refund Policy"
 
+path="/refund-policy"
+
+description="Read the ServDial Refund Policy covering payments, refunds, cancellations, promotional services, payment processing, and refund requests."
 
 subtitle="
 Information regarding payments, refunds, cancellations, and paid services on ServDial.

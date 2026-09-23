@@ -4,7 +4,9 @@ import Section from "../../components/common/Section";
 const Advertise = () => {
   return (
     <StaticPageLayout
-      title="Advertise Your Business on ServDial"
+      title="Advertise Your Business"
+      path="/advertise"
+      description="Advertise your business on ServDial and reach customers searching for local services in their city. Increase online visibility, generate leads, and grow your local business."
       subtitle="Reach customers who are actively searching for local services in their city."
       cta={{
         title: "Grow your business with ServDial",
@@ -15,6 +17,11 @@ const Advertise = () => {
             label: "List Your Business",
             link: "/register",
             primary: true,
+          },
+          {
+            label: "Banner Pricing",
+            link: "/banner-pricing",
+            primary: false,
           },
           {
             label: "Contact Us",

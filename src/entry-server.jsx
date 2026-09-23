@@ -5,14 +5,13 @@ import { HelmetProvider } from "react-helmet-async";
 
 import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
+
 // =========================================================
 // SERVER API
 // =========================================================
 
 const API_BASE_URL =
-  process.env.VITE_API_BASE_URL ||
- // "https://api.servdial.com/api";
-  "http://localhost:5000/api";
+  import.meta.env.VITE_API_BASE_URL;
 
 // =========================================================
 // FETCH BUSINESS FOR SSR
@@ -1132,6 +1131,214 @@ const fetchLatestBusinessesForSSR = async (url) => {
 };
 
 // =========================================================
+// FETCH TOP RATED BUSINESSES FOR SSR
+// =========================================================
+
+const fetchTopRatedBusinessesForSSR = async (url) => {
+  try {
+    const parsedUrl = new URL(
+      url,
+      "https://www.servdial.com"
+    );
+
+    const pathname =
+      parsedUrl.pathname.replace(/\/+$/, "");
+
+    const match = pathname.match(
+      /^\/([^/]+)\/top-rated-businesses$/
+    );
+
+    if (!match) {
+      return null;
+    }
+
+    const citySlug = match[1];
+
+    if (!citySlug) {
+      return null;
+    }
+
+    const currentPage = Math.max(
+      Number(
+        parsedUrl.searchParams.get("page")
+      ) || 1,
+      1
+    );
+
+    // ================= CITY =================
+
+    const cityResponse = await fetch(
+      `${API_BASE_URL}/cities/${encodeURIComponent(
+        citySlug
+      )}`,
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+
+    if (!cityResponse.ok) {
+      console.warn(
+        "⚠️ SSR top rated city API:",
+        cityResponse.status,
+        citySlug
+      );
+
+      return null;
+    }
+
+    const cityData =
+      await cityResponse.json();
+
+    const city =
+      cityData?.city ||
+      cityData?.data ||
+      null;
+
+    if (!city) {
+      return null;
+    }
+
+    // ================= BUSINESSES =================
+
+    const topRatedUrl = new URL(
+      `${API_BASE_URL}/businesses/top-rated`
+    );
+
+    topRatedUrl.searchParams.set(
+      "city",
+      citySlug
+    );
+
+    topRatedUrl.searchParams.set(
+      "page",
+      String(currentPage)
+    );
+
+    topRatedUrl.searchParams.set(
+      "limit",
+      "20"
+    );
+
+    const topRatedResponse =
+      await fetch(
+        topRatedUrl.toString(),
+        {
+          headers: {
+            Accept: "application/json",
+          },
+        }
+      );
+
+    if (!topRatedResponse.ok) {
+      console.warn(
+        "⚠️ SSR top rated businesses API:",
+        topRatedResponse.status,
+        topRatedUrl.toString()
+      );
+
+      return {
+        city,
+        businesses: [],
+        meta: {
+          page: currentPage,
+          limit: 20,
+          total: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
+      };
+    }
+
+    const topRatedData =
+      await topRatedResponse.json();
+
+    return {
+      city,
+
+      businesses:
+        Array.isArray(topRatedData?.data)
+          ? topRatedData.data
+          : [],
+
+      meta:
+        topRatedData?.meta || {
+          page: currentPage,
+          limit: 20,
+          total: 0,
+          totalPages: 0,
+          hasNextPage: false,
+          hasPrevPage: false,
+        },
+    };
+  } catch (error) {
+    console.error(
+      "❌ SSR top rated businesses fetch error:",
+      error
+    );
+
+    return null;
+  }
+};
+
+// =========================================================
+// FETCH TEMPORARY LISTINGS FOR SSR
+// =========================================================
+
+const fetchTemporaryListingsForSSR = async (url) => {
+  try {
+    const parsedUrl = new URL(
+      url,
+      "https://www.servdial.com"
+    );
+
+    const pathname =
+      parsedUrl.pathname.replace(/\/+$/, "");
+
+    // Public Temporary Listings page
+    // /temporary-listings
+
+    if (pathname !== "/temporary-listings") {
+      return null;
+    }
+
+    const endpoint =
+      `${API_BASE_URL}/temporary-listings`;
+
+    const response = await fetch(endpoint, {
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      console.warn(
+        "⚠️ SSR temporary listings API:",
+        response.status,
+        endpoint
+      );
+
+      return [];
+    }
+
+    const data = await response.json();
+
+    return Array.isArray(data?.data)
+      ? data.data
+      : [];
+  } catch (error) {
+    console.error(
+      "❌ SSR temporary listings fetch error:",
+      error
+    );
+
+    return [];
+  }
+};
+
+// =========================================================
 // SSR RENDER
 // =========================================================
 
@@ -1166,6 +1373,12 @@ const ssrFeaturedResponse =
 
 const ssrLatestResponse =
   await fetchLatestBusinessesForSSR(url);
+
+const ssrTopRatedResponse =
+  await fetchTopRatedBusinessesForSSR(url);
+
+const ssrTemporaryListingsResponse =
+  await fetchTemporaryListingsForSSR(url);
 
 const ssrHomeResponse =
   await fetchHomepageForSSR(
@@ -1226,8 +1439,10 @@ const html = renderToString(
   ssrCityCategory={ssrCityCategoryResponse}
   ssrFeatured={ssrFeaturedResponse}
   ssrLatest={ssrLatestResponse}
+  ssrTopRated={ssrTopRatedResponse}
+  ssrTemporaryListings={ssrTemporaryListingsResponse}
   ssrHome={ssrHomeResponse}
-    ssrCategoryPage={ssrCategoryPageResponse}
+  ssrCategoryPage={ssrCategoryPageResponse}
 />
         </AuthProvider>
       </StaticRouter>
@@ -1247,6 +1462,8 @@ const html = renderToString(
   ssrCityCategory: ssrCityCategoryResponse,
   ssrFeatured: ssrFeaturedResponse,
   ssrLatest: ssrLatestResponse,
+  ssrTopRated: ssrTopRatedResponse,
+  ssrTemporaryListings: ssrTemporaryListingsResponse,
   ssrHome: ssrHomeResponse,
   ssrCategoryPage: ssrCategoryPageResponse,
 };

@@ -9,12 +9,12 @@ import { formatLocationDisplay } from "../utils/addressHelper";
 import BusinessCard from "../components/business/BusinessCard";
 import BannerAd from "../components/ads/BannerAd";
 
-const TopRatedBusinessesPage = () => {
+const TopRatedBusinessesPage = ({ ssrTopRated }) => {
 
   const { citySlug } = useParams();
 
 const [pageCity, setPageCity] =
-  useState(null);
+  useState(ssrTopRated?.city || null);
 
   const [searchParams, setSearchParams] =
     useSearchParams();
@@ -29,9 +29,11 @@ const [pageCity, setPageCity] =
 
   useEffect(() => {
 
-    if (!citySlug) return;
+  if (!citySlug || ssrTopRated?.city) {
+    return;
+  }
 
-    const resolveCity = async () => {
+  const resolveCity = async () => {
 
       try {
 
@@ -71,7 +73,7 @@ const [pageCity, setPageCity] =
 
     resolveCity();
 
-  }, [citySlug]);
+  }, [citySlug, ssrTopRated]);
 
   const pageFromUrl =
     Number(
@@ -80,20 +82,24 @@ const [pageCity, setPageCity] =
 
 
   const [businesses, setBusinesses] =
-    useState([]);
+  useState(
+    ssrTopRated?.businesses || []
+  );
 
   const [loading, setLoading] =
-    useState(false);
+  useState(!ssrTopRated);
 
   const [meta, setMeta] =
-    useState({
+  useState(
+    ssrTopRated?.meta || {
       total: 0,
       page: 1,
       limit: 20,
       totalPages: 0,
       hasNextPage: false,
       hasPrevPage: false,
-    });
+    }
+  );
 
 
   /* =====================================================
@@ -102,10 +108,22 @@ const [pageCity, setPageCity] =
 
   useEffect(() => {
 
-    if (!activeCity) return;
+  if (!activeCity) return;
 
+  /*
+   * SSR already provided the data
+   * for the current page.
+   */
+  if (
+    ssrTopRated &&
+    String(ssrTopRated.meta?.page || 1) ===
+      String(pageFromUrl)
+  ) {
+    setLoading(false);
+    return;
+  }
 
-    const fetchBusinesses =
+  const fetchBusinesses =
       async () => {
 
         setLoading(true);
@@ -180,9 +198,10 @@ const [pageCity, setPageCity] =
     fetchBusinesses();
 
   }, [
-    activeCity,
-    pageFromUrl,
-  ]);
+  activeCity,
+  pageFromUrl,
+  ssrTopRated,
+]);
 
 
   /* =====================================================
@@ -200,9 +219,13 @@ const [pageCity, setPageCity] =
       }
 
 
-     setSearchParams({
-  page: String(page),
-});
+     if (page === 1) {
+  setSearchParams({});
+} else {
+  setSearchParams({
+    page: String(page),
+  });
+}
 
 
       window.scrollTo({
@@ -243,10 +266,9 @@ const [pageCity, setPageCity] =
     activeCity;
 
   const currentUrl =
-    `https://www.servdial.com/${citySlugResolved}/top-rated-businesses`;
-
-  const isPaginated =
-    pageFromUrl > 1;
+  pageFromUrl > 1
+    ? `https://www.servdial.com/${citySlugResolved}/top-rated-businesses?page=${pageFromUrl}`
+    : `https://www.servdial.com/${citySlugResolved}/top-rated-businesses`;
 
   const seoTitle =
     `Top Rated Businesses in ${cityNameResolved} | ServDial`;
@@ -274,13 +296,9 @@ const [pageCity, setPageCity] =
       />
 
       <meta
-        name="robots"
-        content={
-          isPaginated
-            ? "noindex,follow"
-            : "index,follow"
-        }
-      />
+  name="robots"
+  content="index,follow"
+/>
 
       <link
         rel="canonical"

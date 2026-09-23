@@ -65,6 +65,10 @@ return (
 
 title="Contact ServDial"
 
+path="/contact"
+
+description="Contact ServDial for customer support, business listings, partnerships, advertising, and other queries. Our team is here to help."
+
 subtitle="Have questions, need support, or want to grow your business with ServDial? Our team is here to help."
 
 cta={{

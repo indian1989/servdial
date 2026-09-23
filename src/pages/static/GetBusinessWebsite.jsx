@@ -21,8 +21,14 @@ import {
 
 const GetBusinessWebsite = () => {
 
+const [mounted, setMounted] = useState(false);
+
 const [businessCategory, setBusinessCategory] = useState(null);
 const [city, setCity] = useState(null);
+
+useEffect(() => {
+  setMounted(true);
+}, []);
 
 const [categoryOptions, setCategoryOptions] = useState([]);
 const [cityOptions, setCityOptions] = useState([]);
@@ -210,16 +216,89 @@ ${city?.value || "Not Selected"}
 
     <Helmet>
 
-      <title>
-        Get Your Business Website | ServDial
-      </title>
+  <title>
+    Get Your Business Website | ServDial
+  </title>
 
-      <meta
-      name="description"
-      content="Create a professional business website for your restaurant, shop, salon, hotel or service business with ServDial."
-      />
+  <meta
+    name="description"
+    content="Create a professional business website for your restaurant, shop, salon, hotel or service business with ServDial."
+  />
 
-    </Helmet>
+  <meta
+    name="robots"
+    content="index,follow"
+  />
+
+  <link
+    rel="canonical"
+    href="https://www.servdial.com/business-website"
+  />
+
+  <meta
+    property="og:title"
+    content="Get Your Business Website | ServDial"
+  />
+
+  <meta
+    property="og:description"
+    content="Create a professional business website for your restaurant, shop, salon, hotel or service business with ServDial."
+  />
+
+  <meta
+    property="og:url"
+    content="https://www.servdial.com/business-website"
+  />
+
+  <meta
+    property="og:type"
+    content="website"
+  />
+
+  <meta
+    name="twitter:card"
+    content="summary_large_image"
+  />
+
+  <meta
+    name="twitter:title"
+    content="Get Your Business Website | ServDial"
+  />
+
+  <meta
+    name="twitter:description"
+    content="Create a professional business website for your restaurant, shop, salon, hotel or service business with ServDial."
+  />
+
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      name: "Get Your Business Website",
+      url: "https://www.servdial.com/business-website",
+      description:
+        "Create a professional business website for your restaurant, shop, salon, hotel or service business with ServDial.",
+      breadcrumb: {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: "https://www.servdial.com/",
+          },
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Get Your Business Website",
+            item: "https://www.servdial.com/business-website",
+          },
+        ],
+      },
+    })}
+  </script>
+
+</Helmet>
 
 
     <div className="bg-white">
@@ -227,9 +306,40 @@ ${city?.value || "Not Selected"}
 
     {/* ================= HERO ================= */}
 
-    <section className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white py-20">
+    <section className="mx-4 mt-6 rounded-2xl bg-blue-600 text-white">
 
-    <div className="max-w-6xl mx-auto px-6 grid md:grid-cols-2 gap-10 items-center">
+    <div className="max-w-6xl mx-auto px-6 py-8">
+
+  <nav
+    aria-label="Breadcrumb"
+    className="mb-8 text-sm"
+  >
+    <ol className="flex flex-wrap items-center gap-2">
+
+      <li>
+        <a
+          href="/"
+          className="text-blue-100 transition hover:text-white"
+        >
+          Home
+        </a>
+      </li>
+
+      <li className="text-blue-200">
+        &gt;
+      </li>
+
+      <li
+        aria-current="page"
+        className="font-medium text-white"
+      >
+        Get Your Business Website
+      </li>
+
+    </ol>
+  </nav>
+
+  <div className="grid md:grid-cols-2 gap-10 items-center">
 
 
     <div>
@@ -251,42 +361,104 @@ ${city?.value || "Not Selected"}
     <div className="mt-6 grid sm:grid-cols-2 gap-4">
 
 
-    <Select
-
+    {mounted ? (
+  <Select
     placeholder="Select Business Type"
-
     options={categoryOptions}
-
     value={businessCategory}
-
-    onChange={(option)=>
-    setBusinessCategory(option)
+    onChange={(option) =>
+      setBusinessCategory(option)
     }
-
     isSearchable
-
     className="text-gray-800"
+  />
+) : (
+  <select
+    value={businessCategory?.value || ""}
+    onChange={(e) => {
+      const option =
+        categoryOptions.find(
+          (item) =>
+            item.value === e.target.value
+        ) || null;
 
-    />
+      setBusinessCategory(option);
+    }}
+    className="
+      w-full
+      rounded-md
+      border
+      border-gray-300
+      bg-white
+      px-3
+      py-3
+      text-gray-800
+    "
+  >
+    <option value="">
+      Select Business Type
+    </option>
+
+    {categoryOptions.map((option) => (
+      <option
+        key={option.value}
+        value={option.value}
+      >
+        {option.label}
+      </option>
+    ))}
+  </select>
+)}
 
 
-    <Select
-
+    {mounted ? (
+  <Select
     placeholder="Select Your City"
-
     options={cityOptions}
-
     value={city}
-
-    onChange={(option)=>
-    setCity(option)
+    onChange={(option) =>
+      setCity(option)
     }
-
     isSearchable
-
     className="text-gray-800"
+  />
+) : (
+  <select
+    value={city?.value || ""}
+    onChange={(e) => {
+      const option =
+        cityOptions.find(
+          (item) =>
+            item.value === e.target.value
+        ) || null;
 
-    />
+      setCity(option);
+    }}
+    className="
+      w-full
+      rounded-md
+      border
+      border-gray-300
+      bg-white
+      px-3
+      py-3
+      text-gray-800
+    "
+  >
+    <option value="">
+      Select Your City
+    </option>
+
+    {cityOptions.map((option) => (
+      <option
+        key={option.value}
+        value={option.value}
+      >
+        {option.label}
+      </option>
+    ))}
+  </select>
+)}
 
 
 </div>
@@ -345,7 +517,7 @@ Your Website Includes
 
 </div>
 
-
+</div>
 </div>
 
 </section>

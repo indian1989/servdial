@@ -16,13 +16,30 @@ const TemporaryListingList = ({
   showActions = false,
   onEdit,
   onDelete,
+  ssrTemporaryListings,
 }) => {
-  const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
+const [listings, setListings] = useState(
+  Array.isArray(ssrTemporaryListings)
+    ? ssrTemporaryListings
+    : []
+);
+
+const [loading, setLoading] = useState(
+  !Array.isArray(ssrTemporaryListings)
+);
   const [error, setError] = useState("");
 
   useEffect(() => {
     let mounted = true;
+
+    if (
+  type === "public" &&
+  Array.isArray(ssrTemporaryListings)
+) {
+  setListings(ssrTemporaryListings);
+  setLoading(false);
+  return;
+}
 
     const fetchListings = async () => {
       try {
@@ -74,7 +91,11 @@ const TemporaryListingList = ({
     return () => {
       mounted = false;
     };
-  }, [type, JSON.stringify(params)]);
+  }, [
+  type,
+  JSON.stringify(params),
+  ssrTemporaryListings,
+]);
 
   // Loading
 

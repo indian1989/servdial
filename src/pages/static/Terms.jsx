@@ -25,10 +25,13 @@ return (
 
 title="Terms & Conditions"
 
+path="/terms"
+
+description="Read the ServDial Terms & Conditions governing the use of the platform, business listings, provider responsibilities, payments, content, accounts, and services."
+
 subtitle="
 Rules and guidelines governing the use of ServDial platform and services.
 "
-
 
 cta={{
 

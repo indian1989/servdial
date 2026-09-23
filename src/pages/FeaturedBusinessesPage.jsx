@@ -62,12 +62,9 @@ const FeaturedBusinessesPage = ({
 
 useEffect(() => {
 
-  if (!citySlug) return;
-
-  if (ssrFeatured) {
-    setPageCity(ssrFeatured.city || null);
-    return;
-  }
+  if (!citySlug || ssrFeatured?.city) {
+  return;
+}
 
   const resolveCity = async () => {
 
@@ -118,27 +115,14 @@ useEffect(() => {
 
   if (!citySlug) return;
 
-  if (ssrFeatured) {
-    setBusinesses(
-      Array.isArray(ssrFeatured.businesses)
-        ? ssrFeatured.businesses
-        : []
-    );
-
-    setMeta(
-      ssrFeatured.meta || {
-        total: 0,
-        page: currentPage,
-        limit: 20,
-        totalPages: 0,
-        hasNextPage: false,
-        hasPrevPage: false,
-      }
-    );
-
-    setLoading(false);
-    return;
-  }
+  if (
+  ssrFeatured &&
+  String(ssrFeatured.meta?.page || 1) ===
+    String(currentPage)
+) {
+  setLoading(false);
+  return;
+}
 
   const fetchBusinesses = async () => {
 
@@ -221,9 +205,13 @@ useEffect(() => {
       return;
     }
 
-    setSearchParams({
-      page: String(page),
-    });
+    if (page === 1) {
+  setSearchParams({});
+} else {
+  setSearchParams({
+    page: String(page),
+  });
+}
 
     window.scrollTo({
       top: 0,
@@ -268,10 +256,9 @@ const citySlugResolved =
   citySlug;
 
 const currentUrl =
-  `https://www.servdial.com/${citySlugResolved}/featured-businesses`;
-
-const isPaginated =
-  currentPage > 1;
+  currentPage > 1
+    ? `https://www.servdial.com/${citySlugResolved}/featured-businesses?page=${currentPage}`
+    : `https://www.servdial.com/${citySlugResolved}/featured-businesses`;
 
 const seoTitle =
   `Featured Businesses in ${cityName} | ServDial`;
@@ -295,13 +282,9 @@ const seoDescription =
         />
 
         <meta
-          name="robots"
-          content={
-            isPaginated
-              ? "noindex,follow"
-              : "index,follow"
-          }
-        />
+  name="robots"
+  content="index,follow"
+/>
 
         <link
           rel="canonical"

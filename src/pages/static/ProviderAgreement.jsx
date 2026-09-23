@@ -23,9 +23,11 @@ return (
 
 <StaticPageLayout
 
-
 title="Provider Agreement"
 
+path="/provider-agreement"
+
+description="Read the ServDial Provider Agreement outlining the responsibilities, requirements, and obligations of businesses and service providers using the platform."
 
 subtitle="
 Terms and responsibilities for businesses and service providers using ServDial.

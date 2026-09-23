@@ -33,6 +33,8 @@ function AppRoutes({
   ssrCityCategory,
   ssrFeatured,
   ssrLatest,
+  ssrTopRated,
+  ssrTemporaryListings,
   ssrHome,
   ssrCategoryPage,
 }) {
@@ -53,12 +55,16 @@ function AppRoutes({
   ssrCityCategory,
   ssrFeatured,
   ssrLatest,
+  ssrTopRated,
+  ssrTemporaryListings,
   ssrHome,
   ssrCategoryPage,
 })}
 
         {/* TEMPORARY LISTINGS */}
-{TemporaryListingRoutes()}
+{TemporaryListingRoutes({
+  ssrTemporaryListings,
+})}
 
         {/* ADMIN */}
         {AdminRoutes()}

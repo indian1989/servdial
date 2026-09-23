@@ -1,7 +1,8 @@
 // frontend/src/pages/BannerPricing.jsx
 
 import React, { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 import {
@@ -659,11 +660,96 @@ const BannerPricing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="
+    <>
+      <Helmet>
+
+        <title>
+          Banner Advertising Plans | ServDial
+        </title>
+
+        <meta
+          name="description"
+          content="Explore ServDial banner advertising plans, placements, durations, pricing, and discounts for promoting your business."
+        />
+
+        <meta
+          name="robots"
+          content="index,follow"
+        />
+
+        <link
+          rel="canonical"
+          href="https://www.servdial.com/banner-pricing"
+        />
+
+        <meta
+          property="og:title"
+          content="Banner Advertising Plans | ServDial"
+        />
+
+        <meta
+          property="og:description"
+          content="Explore ServDial banner advertising plans, placements, durations, pricing, and discounts for promoting your business."
+        />
+
+        <meta
+          property="og:url"
+          content="https://www.servdial.com/banner-pricing"
+        />
+
+        <meta
+          property="og:type"
+          content="website"
+        />
+
+        <meta
+          name="twitter:card"
+          content="summary_large_image"
+        />
+
+        <meta
+          name="twitter:title"
+          content="Banner Advertising Plans | ServDial"
+        />
+
+        <meta
+          name="twitter:description"
+          content="Explore ServDial banner advertising plans, placements, durations, pricing, and discounts for promoting your business."
+        />
+
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebPage",
+            name: "Banner Advertising Plans",
+            url: "https://www.servdial.com/banner-pricing",
+            description:
+              "Explore ServDial banner advertising plans, placements, durations, pricing, and discounts for promoting your business.",
+            breadcrumb: {
+              "@type": "BreadcrumbList",
+              itemListElement: [
+                {
+                  "@type": "ListItem",
+                  position: 1,
+                  name: "Home",
+                  item: "https://www.servdial.com/",
+                },
+                {
+                  "@type": "ListItem",
+                  position: 2,
+                  name: "Banner Pricing",
+                  item: "https://www.servdial.com/banner-pricing",
+                },
+              ],
+            },
+          })}
+        </script>
+
+      </Helmet>
+
+      <div className="
       min-h-screen
-      bg-gradient-to-b
-      from-gray-50
-      to-white
+      bg-gray-50
       py-10
       px-4
     ">
@@ -672,24 +758,65 @@ const BannerPricing = () => {
 
         {/* HERO */}
 
-        <div className="
-          text-center
-          max-w-3xl
-          mx-auto
-        ">
+        <section className="
+  mx-4
+  rounded-2xl
+  bg-blue-600
+  text-white
+  px-6
+  py-10
+  md:py-12
+">
 
-          <div className="
-            inline-flex
-            items-center
-            gap-2
-            bg-blue-50
-            text-blue-700
-            px-4
-            py-2
-            rounded-full
-            text-sm
-            font-semibold
-          ">
+  {/* BREADCRUMB */}
+
+  <nav
+    aria-label="Breadcrumb"
+    className="mb-8 text-sm"
+  >
+    <ol className="flex flex-wrap items-center gap-2">
+
+      <li>
+        <Link
+          to="/"
+          className="text-blue-100 transition hover:text-white"
+        >
+          Home
+        </Link>
+      </li>
+
+      <li className="text-blue-200">
+        &gt;
+      </li>
+
+      <li
+        aria-current="page"
+        className="font-medium text-white"
+      >
+        Banner Pricing
+      </li>
+
+    </ol>
+  </nav>
+
+  <div className="
+    text-center
+    max-w-3xl
+    mx-auto
+  ">
+
+    <div className="
+      inline-flex
+      items-center
+      gap-2
+      bg-white/15
+      text-white
+      px-4
+      py-2
+      rounded-full
+      text-sm
+      font-semibold
+    ">
             <FaBullhorn />
             ServDial Banner Advertising
           </div>
@@ -699,14 +826,14 @@ const BannerPricing = () => {
             text-3xl
             md:text-4xl
             font-extrabold
-            text-gray-900
+            text-white
           ">
             Banner Advertising Plans
           </h1>
 
           <p className="
             mt-3
-            text-gray-600
+            text-blue-50
             leading-7
           ">
             Choose a high-visibility placement
@@ -725,7 +852,7 @@ const BannerPricing = () => {
             gap-x-5
             gap-y-2
             text-sm
-            text-gray-600
+            text-blue-50
           ">
 
             <span className="
@@ -758,6 +885,9 @@ const BannerPricing = () => {
           </div>
 
         </div>
+    
+</section>
+
 
         {/* PRICING GROUPS */}
 
@@ -865,9 +995,10 @@ const BannerPricing = () => {
 
         </div>
 
-      </div>
+            </div>
 
     </div>
+    </>
   );
 };
 

@@ -484,6 +484,7 @@ const PublicRoutes = ({
   ssrCityCategory,
   ssrFeatured,
   ssrLatest,
+  ssrTopRated,
   ssrHome,
   ssrCategoryPage,
 }) => {
@@ -542,7 +543,11 @@ const PublicRoutes = ({
 {/* TOP RATED */}
 <Route
   path="/:citySlug/top-rated-businesses"
-  element={<TopRatedBusinessesPage />}
+  element={
+    <TopRatedBusinessesPage
+      ssrTopRated={ssrTopRated}
+    />
+  }
 />
 
   {/* LATEST */}

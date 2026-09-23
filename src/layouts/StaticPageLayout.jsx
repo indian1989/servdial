@@ -1,10 +1,13 @@
-import React, { useEffect } from "react";
+import React from "react";
+import { Helmet } from "react-helmet-async";
+import { Link } from "react-router-dom";
 
 const StaticPageLayout = ({
   title,
   subtitle,
   children,
   cta,
+  path = "",
 
   // SEO
   description,
@@ -16,77 +19,124 @@ const StaticPageLayout = ({
 }) => {
 
 
-  useEffect(() => {
-
-    document.title = `${title} | ServDial`;
-
-
-    if(description){
-
-      const metaDescription =
-        document.querySelector(
-          'meta[name="description"]'
-        );
-
-      if(metaDescription){
-        metaDescription.setAttribute(
-          "content",
-          description
-        );
-      }
-
-    }
-
-
-    if(keywords){
-
-      let metaKeywords =
-        document.querySelector(
-          'meta[name="keywords"]'
-        );
-
-
-      if(!metaKeywords){
-
-        metaKeywords =
-          document.createElement("meta");
-
-        metaKeywords.name="keywords";
-
-        document.head.appendChild(
-          metaKeywords
-        );
-
-      }
-
-
-      metaKeywords.content = keywords;
-
-    }
-
-
-  },[
-    title,
-    description,
-    keywords
-  ]);
-
-
-
   return (
 
-    <div className="bg-[#f8fafc] min-h-screen">
+    <>
+      <Helmet>
 
+        <title>
+          {title} | ServDial
+        </title>
+
+        {description && (
+          <meta
+            name="description"
+            content={description}
+          />
+        )}
+
+        {keywords && (
+          <meta
+            name="keywords"
+            content={keywords}
+          />
+        )}
+
+        <meta
+          name="robots"
+          content="index,follow"
+        />
+
+        {path && (
+          <link
+            rel="canonical"
+            href={`https://www.servdial.com${path}`}
+          />
+        )}
+
+        <meta
+          property="og:title"
+          content={`${title} | ServDial`}
+        />
+
+        {description && (
+          <meta
+            property="og:description"
+            content={description}
+          />
+        )}
+
+        {path && (
+          <meta
+            property="og:url"
+            content={`https://www.servdial.com${path}`}
+          />
+        )}
+
+        <meta
+          property="og:type"
+          content="website"
+        />
+
+        <meta
+          name="twitter:card"
+          content="summary_large_image"
+        />
+
+        <meta
+          name="twitter:title"
+          content={`${title} | ServDial`}
+        />
+
+        {description && (
+          <meta
+            name="twitter:description"
+            content={description}
+          />
+        )}
+
+        {path && (
+          <script type="application/ld+json">
+            {JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "AboutPage",
+              name: title,
+              url: `https://www.servdial.com${path}`,
+              description: description || "",
+              breadcrumb: {
+                "@type": "BreadcrumbList",
+                itemListElement: [
+                  {
+                    "@type": "ListItem",
+                    position: 1,
+                    name: "Home",
+                    item: "https://www.servdial.com/",
+                  },
+                  {
+                    "@type": "ListItem",
+                    position: 2,
+                    name: title,
+                    item: `https://www.servdial.com${path}`,
+                  },
+                ],
+              },
+            })}
+          </script>
+        )}
+
+      </Helmet>
+
+      <div className="bg-[#f8fafc] min-h-screen">
 
       {/* ================= HERO ================= */}
 
       <section
         className="
-        bg-gradient-to-br
-        from-indigo-50
-        via-white
-        to-purple-50
-        border-b
+        mx-4
+        mt-6
+        rounded-2xl
+        bg-blue-600
+        text-white
         "
       >
 
@@ -102,31 +152,44 @@ const StaticPageLayout = ({
 
           {/* Breadcrumb */}
 
-          <div
-          className="
-          text-sm
-          text-gray-500
-          mb-5
-          "
-          >
+         <nav
+  aria-label="Breadcrumb"
+  className="
+  mb-6
+  text-sm
+  "
+>
+  <ol className="flex flex-wrap items-center gap-2">
 
-            Home
-            <span className="mx-2">
-              /
-            </span>
+    <li>
+      <Link
+        to="/"
+        className="text-blue-100 transition hover:text-white"
+      >
+        Home
+      </Link>
+    </li>
 
-            {title}
+    <li className="text-blue-200">
+      &gt;
+    </li>
 
-          </div>
+    <li
+      aria-current="page"
+      className="font-medium text-white"
+    >
+      {title}
+    </li>
 
-
+  </ol>
+</nav>
 
           <h1
           className="
           text-4xl
           md:text-5xl
           font-bold
-          text-gray-900
+          text-white
           mb-5
           "
           >
@@ -143,7 +206,7 @@ const StaticPageLayout = ({
             <p
             className="
             text-lg
-            text-gray-600
+            text-blue-50
             max-w-3xl
             leading-relaxed
             "
@@ -433,9 +496,9 @@ const StaticPageLayout = ({
 
       }
 
+        </div>
 
-
-    </div>
+    </>
 
   );
 

@@ -237,10 +237,13 @@ const LatestBusinesses = ({ ssrLatest }) => {
       }
 
 
-      setSearchParams({
-        page:
-          String(page),
-      });
+      if (page === 1) {
+  setSearchParams({});
+} else {
+  setSearchParams({
+    page: String(page),
+  });
+}
 
 
       window.scrollTo({
@@ -296,10 +299,9 @@ const citySlugResolved =
   citySlug;
 
 const currentUrl =
-  `https://www.servdial.com/${citySlugResolved}/latest-businesses`;
-
-const isPaginated =
-  currentPage > 1;
+  currentPage > 1
+    ? `https://www.servdial.com/${citySlugResolved}/latest-businesses?page=${currentPage}`
+    : `https://www.servdial.com/${citySlugResolved}/latest-businesses`;
 
 const seoTitle =
   `Latest Businesses in ${cityNameResolved} | ServDial`;
@@ -338,13 +340,9 @@ const seoDescription =
         />
 
         <meta
-          name="robots"
-          content={
-            isPaginated
-              ? "noindex,follow"
-              : "index,follow"
-          }
-        />
+  name="robots"
+  content="index,follow"
+/>
 
         <link
           rel="canonical"

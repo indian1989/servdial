@@ -26,8 +26,8 @@ return (
 
 
 title="Community Guidelines"
-
-
+path="/community-guidelines"
+description="Read ServDial Community Guidelines for maintaining a safe, trustworthy, respectful, and reliable environment for customers, businesses, providers, and other users."
 subtitle="
 Rules and standards for maintaining a safe, trustworthy, and respectful ServDial community.
 "

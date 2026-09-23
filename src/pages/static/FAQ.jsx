@@ -375,15 +375,15 @@ return (
 
 <StaticPageLayout
 
-
 title="Frequently Asked Questions (FAQ)"
 
+path="/faq"
+
+description="Find answers to common questions about using ServDial to discover local businesses and services, list a business, manage accounts, and use the platform."
 
 subtitle="
 Common questions about using ServDial for customers and businesses.
 "
-
-
 
 cta={{
 

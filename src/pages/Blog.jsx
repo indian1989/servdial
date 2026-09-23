@@ -312,55 +312,63 @@ const hasSSRBlogList = Array.isArray(ssrBlog);
 </Helmet>
 
     <main className="min-h-screen bg-gray-50">
-     
-     <div className="border-b border-gray-200 bg-white">
-  <div className="mx-auto max-w-7xl px-4 py-3 sm:px-6 lg:px-8">
+
+      <section className="mx-4 mt-6 rounded-2xl bg-blue-600 text-white">
+  <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+    {/* =========================
+        BREADCRUMB
+    ========================= */}
+
     <nav
       aria-label="Breadcrumb"
-      className="text-sm text-gray-500"
+      className="mb-6 text-sm"
     >
-      <Link
-        to="/"
-        className="transition hover:text-indigo-600"
-      >
-        Home
-      </Link>
+      <ol className="flex flex-wrap items-center gap-2">
+        <li>
+          <Link
+            to="/"
+            className="text-blue-100 transition hover:text-white"
+          >
+            Home
+          </Link>
+        </li>
 
-      <span className="mx-2">›</span>
+        <li className="text-blue-200">
+          &gt;
+        </li>
 
-      <span
-        className="text-gray-700"
-        aria-current="page"
-      >
-        Blog
-      </span>
+        <li
+          aria-current="page"
+          className="font-medium text-white"
+        >
+          Blog
+        </li>
+      </ol>
     </nav>
+
+    {/* =========================
+        HERO
+    ========================= */}
+
+    <div className="max-w-3xl">
+      <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-blue-100">
+        ServDial Journal
+      </p>
+
+      <h1 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+        ServDial Blog
+      </h1>
+
+      <p className="mt-4 text-base leading-7 text-blue-50 sm:text-lg">
+        Discover useful insights, local business
+        tips, service guides and helpful information
+        from ServDial.
+      </p>
+    </div>
+
   </div>
-</div>
-
-      {/* =========================
-          HERO
-      ========================= */}
-
-      <section className="border-b border-gray-200 bg-white">
-        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-          <div className="max-w-3xl">
-            <p className="mb-3 text-sm font-semibold uppercase tracking-wide text-indigo-600">
-              ServDial Journal
-            </p>
-
-            <h1 className="text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl lg:text-5xl">
-              ServDial Blog
-            </h1>
-
-            <p className="mt-4 text-base leading-7 text-gray-600 sm:text-lg">
-              Discover useful insights, local business
-              tips, service guides and helpful information
-              from ServDial.
-            </p>
-          </div>
-        </div>
-      </section>
+</section>
 
       {/* =========================
           CONTENT

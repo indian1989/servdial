@@ -21,9 +21,11 @@ return (
 
 <StaticPageLayout
 
-
 title="Privacy Policy"
 
+path="/privacy-policy"
+
+description="Read the ServDial Privacy Policy to understand how user and business information is collected, used, protected, stored, and managed on the platform."
 
 subtitle="
 How ServDial collects, uses, protects, and manages user and business information.
