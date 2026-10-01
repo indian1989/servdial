@@ -9,7 +9,15 @@ const serviceTypeOptions = [
     value: "shop",
     label: "Shop / In-store",
   },
-
+  
+  {
+    value: "retail-store",
+    label: "Retail Store",
+  },
+  {
+    value: "wholesale-store",
+    label: "Wholesale Store",
+  },
   {
     value: "online",
     label: "Online Service",

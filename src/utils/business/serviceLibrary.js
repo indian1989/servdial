@@ -812,6 +812,9 @@ export const SERVICE_LIBRARY = [
   "Tour Assistance",
   "Travel Counter",
   "Fine Dining",
+  "In-Room Dining",
+  "Spa Services",
+  "Event Services",
 
   // =======================================================
   // HEALTHCARE
@@ -873,6 +876,23 @@ export const SERVICE_LIBRARY = [
   "Outpatient Care",
   "Gynaecology",
   "Critical Care",
+  "Specialist Consultation",
+  "Surgical Care",
+
+
+
+  "Blood Bank Services",
+  "Blood Transfusion",
+  "Blood Grouping",
+  "Cross Matching",
+  "Red Blood Cell Transfusion",
+  "Platelet Transfusion",
+  "Plasma Therapy",
+  "Apheresis Services",
+  "Cryoprecipitate Services",
+  "Fresh Frozen Plasma",
+  "Emergency Blood Support",
+  "Donor Support",
 
   // =======================================================
   // LEGAL SERVICES
@@ -1127,6 +1147,16 @@ export const SERVICE_LIBRARY = [
   "Drawing Classes",
   "Art Classes",
   "Language Classes",
+  "Primary Education",
+  "Secondary Education",
+  "Senior Secondary Education",
+  "Smart Classes",
+  "Academic Education",
+  "Sports Activities",
+  "Extracurricular Activities",
+  "Co-Curricular Activities",
+  "Cultural Activities",
+  "Computer Education",
 
   // =======================================================
   // EVENT SERVICES
@@ -1450,7 +1480,7 @@ export const SERVICE_LIBRARY = [
   // SHOPPING
   // =======================================================
 
-  "Packaged Food",
+  "Packaged Foods",
   "Staples",
   "Beverages",
   "Grocery",
@@ -1463,6 +1493,7 @@ export const SERVICE_LIBRARY = [
   "Fashion",
   "Daily-use Products",
   "Cosmetics",
+  "Groceries",
 
 
   // =======================================================

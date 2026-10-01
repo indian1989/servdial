@@ -393,6 +393,13 @@ cityId:
         ? b.keywords
         : [],
 
+    // =====================================================
+// INFORMATIONAL BUSINESS FEATURES
+// =====================================================
+
+businessFeatures:
+  b.businessFeatures || {},
+
     // ================= CATEGORY FEATURES =================
 
     categoryFeatures:
@@ -645,6 +652,16 @@ export const normalizeBusinessPayload = (
         whatsappBooking: false,
         notes: "",
       },
+
+    // =====================================================
+// INFORMATIONAL BUSINESS FEATURES
+// =====================================================
+
+businessFeatures:
+  data.businessFeatures &&
+  typeof data.businessFeatures === "object"
+    ? data.businessFeatures
+    : {},
 
     // =====================================================
     // BUSINESS FEATURES

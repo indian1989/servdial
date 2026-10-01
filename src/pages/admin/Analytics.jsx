@@ -72,6 +72,19 @@ function Analytics() {
   const [cityCategoryCategory, setCityCategoryCategory] = useState(null);
 
   /* =========================================================
+   BUSINESS ANALYTICS DATE FILTER
+========================================================= */
+
+const [businessTimePeriod, setBusinessTimePeriod] =
+  useState("all");
+
+const [businessCustomFrom, setBusinessCustomFrom] =
+  useState("");
+
+const [businessCustomTo, setBusinessCustomTo] =
+  useState("");
+
+  /* =========================================================
      FETCH DATA
   ========================================================= */
 
@@ -658,6 +671,197 @@ const displayedCityCategoryData =
     : filteredCityCategoryData.slice(0, 40);
 
 
+/* =========================================================
+   BUSINESS ANALYTICS DATE FILTER
+========================================================= */
+
+const businessAnalyticsBusinesses = useMemo(() => {
+
+  if (
+    !businessTimePeriod ||
+    businessTimePeriod === "all"
+  ) {
+    return businesses;
+  }
+
+  const now = new Date();
+
+  const startOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    0,
+    0,
+    0,
+    0
+  );
+
+  const endOfToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate() + 1,
+    0,
+    0,
+    0,
+    0
+  );
+
+  let startDate = null;
+  let endDate = endOfToday;
+
+  /* TODAY */
+
+  if (businessTimePeriod === "today") {
+
+    startDate = startOfToday;
+
+  }
+
+  /* YESTERDAY */
+
+  else if (businessTimePeriod === "yesterday") {
+
+    startDate = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 1,
+      0,
+      0,
+      0,
+      0
+    );
+
+    endDate = startOfToday;
+
+  }
+
+  /* LAST 7 DAYS */
+
+  else if (businessTimePeriod === "7days") {
+
+    startDate = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 6,
+      0,
+      0,
+      0,
+      0
+    );
+
+  }
+
+  /* LAST 30 DAYS */
+
+  else if (businessTimePeriod === "30days") {
+
+    startDate = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 29,
+      0,
+      0,
+      0,
+      0
+    );
+
+  }
+
+  /* LAST 90 DAYS */
+
+  else if (businessTimePeriod === "90days") {
+
+    startDate = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate() - 89,
+      0,
+      0,
+      0,
+      0
+    );
+
+  }
+
+  /* LAST 1 YEAR */
+
+  else if (businessTimePeriod === "1year") {
+
+    startDate = new Date(
+      now.getFullYear() - 1,
+      now.getMonth(),
+      now.getDate(),
+      0,
+      0,
+      0,
+      0
+    );
+
+  }
+
+  /* CUSTOM DATES */
+
+  else if (businessTimePeriod === "custom") {
+
+    if (!businessCustomFrom) {
+      return [];
+    }
+
+    startDate = new Date(
+      `${businessCustomFrom}T00:00:00`
+    );
+
+    if (businessCustomTo) {
+
+      endDate = new Date(
+        new Date(
+          `${businessCustomTo}T00:00:00`
+        ).getTime() +
+        24 * 60 * 60 * 1000
+      );
+
+    }
+
+  }
+
+  if (!startDate) {
+    return businesses;
+  }
+
+  return businesses.filter((business) => {
+
+    const createdAt =
+      business?.createdAt ||
+      business?.created_at;
+
+    if (!createdAt) {
+      return false;
+    }
+
+    const createdDate =
+      new Date(createdAt);
+
+    if (
+      Number.isNaN(
+        createdDate.getTime()
+      )
+    ) {
+      return false;
+    }
+
+    return (
+      createdDate >= startDate &&
+      createdDate < endDate
+    );
+
+  });
+
+}, [
+  businesses,
+  businessTimePeriod,
+  businessCustomFrom,
+  businessCustomTo,
+]);
 
   /* =========================================================
      BUSINESS STATUS DATA
@@ -665,9 +869,9 @@ const displayedCityCategoryData =
 
   const statusData = useMemo(() => {
 
-    const map = {};
+  const map = {};
 
-    businesses.forEach((business) => {
+  businessAnalyticsBusinesses.forEach((business) => {
 
       const status =
         business.status || "unknown";
@@ -688,7 +892,7 @@ const displayedCityCategoryData =
       })
     );
 
-  }, [businesses]);
+  }, [businessAnalyticsBusinesses]);
 
 
   /* =========================================================
@@ -1695,30 +1899,275 @@ if (activeSection === "cityCategories") {
             description="Business status and listing overview"
           />
 
+  {/* =================================================
+    BUSINESS TIME PERIOD FILTER
+================================================= */}
+
+<div className="
+  mb-6
+  rounded-xl
+  border
+  bg-gray-50
+  p-4
+">
+
+  <div className="
+    flex
+    items-center
+    gap-2
+    mb-3
+  ">
+
+    <FaFilter className="text-indigo-600" />
+
+    <h3 className="
+      text-sm
+      font-semibold
+      text-gray-800
+    ">
+      Business Time Period
+    </h3>
+
+  </div>
+
+
+  <div className="
+    grid
+    grid-cols-1
+    sm:grid-cols-2
+    lg:grid-cols-3
+    gap-3
+  ">
+
+    {/* PERIOD */}
+
+    <div>
+
+      <label className="
+        block
+        text-xs
+        font-medium
+        text-gray-600
+        mb-1
+      ">
+        Time Period
+      </label>
+
+      <select
+        value={businessTimePeriod}
+        onChange={(e) => {
+          setBusinessTimePeriod(
+            e.target.value
+          );
+
+          if (
+            e.target.value !== "custom"
+          ) {
+            setBusinessCustomFrom("");
+            setBusinessCustomTo("");
+          }
+        }}
+        className="
+          w-full
+          rounded-lg
+          border
+          border-gray-300
+          bg-white
+          px-3
+          py-2.5
+          text-sm
+          text-gray-800
+          focus:outline-none
+          focus:ring-2
+          focus:ring-indigo-500
+        "
+      >
+
+        <option value="all">
+          All Time
+        </option>
+
+        <option value="today">
+          Today
+        </option>
+
+        <option value="yesterday">
+          Yesterday
+        </option>
+
+        <option value="7days">
+          Last 7 Days
+        </option>
+
+        <option value="30days">
+          Last 30 Days
+        </option>
+
+        <option value="90days">
+          Last 90 Days
+        </option>
+
+        <option value="1year">
+          Last 1 Year
+        </option>
+
+        <option value="custom">
+          Custom Dates
+        </option>
+
+      </select>
+
+    </div>
+
+
+    {/* CUSTOM FROM */}
+
+    {businessTimePeriod === "custom" && (
+      <div>
+
+        <label className="
+          block
+          text-xs
+          font-medium
+          text-gray-600
+          mb-1
+        ">
+          From Date
+        </label>
+
+        <input
+          type="date"
+          value={businessCustomFrom}
+          onChange={(e) =>
+            setBusinessCustomFrom(
+              e.target.value
+            )
+          }
+          className="
+            w-full
+            rounded-lg
+            border
+            border-gray-300
+            bg-white
+            px-3
+            py-2.5
+            text-sm
+            text-gray-800
+            focus:outline-none
+            focus:ring-2
+            focus:ring-indigo-500
+          "
+        />
+
+      </div>
+    )}
+
+
+    {/* CUSTOM TO */}
+
+    {businessTimePeriod === "custom" && (
+      <div>
+
+        <label className="
+          block
+          text-xs
+          font-medium
+          text-gray-600
+          mb-1
+        ">
+          To Date
+        </label>
+
+        <input
+          type="date"
+          value={businessCustomTo}
+          onChange={(e) =>
+            setBusinessCustomTo(
+              e.target.value
+            )
+          }
+          className="
+            w-full
+            rounded-lg
+            border
+            border-gray-300
+            bg-white
+            px-3
+            py-2.5
+            text-sm
+            text-gray-800
+            focus:outline-none
+            focus:ring-2
+            focus:ring-indigo-500
+          "
+        />
+
+      </div>
+    )}
+
+  </div>
+
+
+  <div className="
+    mt-3
+    text-xs
+    text-gray-500
+  ">
+
+    Showing{" "}
+
+    <span className="
+      font-semibold
+      text-gray-800
+    ">
+      {businessAnalyticsBusinesses.length}
+    </span>
+
+    {" "}businesses for the selected period.
+
+  </div>
+
+</div>
+
 
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
 
             <MiniStat
               title="Total"
-              value={stats.businesses}
+              value={
+                businessAnalyticsBusinesses.length
+              }
             />
 
             <MiniStat
               title="Pending"
-              value={stats.pending}
+              value={
+                businessAnalyticsBusinesses.filter(
+                  (business) =>
+                    business.status === "pending"
+                ).length
+              }
             />
 
             <MiniStat
               title="Featured"
-              value={stats.featured}
+              value={
+                businessAnalyticsBusinesses.filter(
+                  (business) =>
+                    business.isFeatured === true
+                ).length
+              }
             />
 
             <MiniStat
               title="Active"
               value={
                 Math.max(
-                  stats.businesses -
-                    stats.pending,
+                  businessAnalyticsBusinesses.length -
+                    businessAnalyticsBusinesses.filter(
+                      (business) =>
+                        business.status === "pending"
+                    ).length,
                   0
                 )
               }

@@ -166,6 +166,44 @@ appointmentBooking:
     notes: "",
   },
 
+  /* ================= BUSINESS FEATURES ================= */
+
+businessFeatures: (() => {
+  const features = data.businessFeatures || {};
+
+  const groups = [
+    "accessibility",
+    "serviceOptions",
+    "amenities",
+    "payments",
+    "parking",
+    "customerExperience",
+    "bookingOptions",
+    "deliveryPickup",
+    "facilities",
+    "safety",
+  ];
+
+  const normalized = {};
+
+  groups.forEach((group) => {
+    normalized[group] = Array.isArray(features[group])
+      ? [
+          ...new Set(
+            features[group]
+              .map((value) =>
+                String(value)
+                  .trim()
+                  .toLowerCase()
+              )
+              .filter(Boolean)
+          ),
+        ]
+      : [];
+  });
+
+  return normalized;
+})(),
 
     /* ================= OPTIONAL ================= */
 
@@ -217,6 +255,34 @@ serviceCoverage: (() => {
               "India",
             countryCode:
               city?.countryCode ||
+              "IN",
+          }))
+        : [],
+
+        areas:
+      Array.isArray(coverage.areas)
+        ? coverage.areas.map((area) => ({
+            name:
+              area?.name ||
+              area?.value ||
+              "",
+            cityId:
+              area?.cityId ||
+              "",
+            cityName:
+              area?.cityName ||
+              "",
+            district:
+              area?.district ||
+              "",
+            state:
+              area?.state ||
+              "",
+            country:
+              area?.country ||
+              "India",
+            countryCode:
+              area?.countryCode ||
               "IN",
           }))
         : [],

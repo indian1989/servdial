@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 import {
   Briefcase,
   Truck,
@@ -7,6 +9,7 @@ import {
 } from "lucide-react";
 
 import BusinessSection from "./BusinessSection";
+
 
 const serviceTypeLabels = {
 
@@ -25,9 +28,7 @@ const serviceTypeLabels = {
 };
 
 
-
 const BusinessServiceInfo = ({ business }) => {
-
 
   const services =
     business?.services || [];
@@ -38,11 +39,12 @@ const BusinessServiceInfo = ({ business }) => {
 
 
   const coverage =
-    business?.serviceCoverage || {};
+  business?.serviceCoverage || {};
 
-  const hasCoverage =
+const hasCoverage =
     coverage?.type === "global" ||
     coverage?.cities?.length > 0 ||
+    coverage?.areas?.length > 0 ||
     coverage?.states?.length > 0 ||
     coverage?.countries?.length > 0;
 
@@ -288,6 +290,61 @@ console.log("🍽️ BUSINESS FOOD TYPE:", business?.foodType);
               )
             }
 
+       {/* ================= SELECTED AREAS ================= */}
+
+{
+  coverage.type === "area" &&
+  coverage.mode !== "all" &&
+  coverage.areas?.length > 0 && (
+
+    <div>
+
+      <h4 className="text-sm font-semibold mb-2 text-gray-700">
+        Areas
+      </h4>
+
+      <div className="flex flex-wrap gap-3">
+
+        {
+          coverage.areas.map(
+            (area, index) => (
+
+              <span
+                key={`area-${index}`}
+                className="
+                  px-4
+                  py-2
+                  rounded-full
+                  bg-green-50
+                  text-green-700
+                  text-sm
+                "
+              >
+                {area.name}
+              </span>
+
+            )
+          )
+        }
+
+        <span
+          className="
+            px-4
+            py-2
+            text-sm
+            text-gray-600
+            font-medium
+          "
+        >
+          and Nearby areas
+        </span>
+
+      </div>
+
+    </div>
+
+  )
+}
 
             {/* ================= SELECTED STATES ================= */}
 

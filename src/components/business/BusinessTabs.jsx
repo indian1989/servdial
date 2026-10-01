@@ -18,6 +18,7 @@ import {
   MapPin,
   HelpCircle,
   Utensils,
+  Globe,
 } from "lucide-react";
 
 
@@ -41,6 +42,12 @@ const BusinessTabs = ({ business }) => {
       id: "services",
       label: "Services",
       icon: Briefcase,
+    },
+
+    service_information: {
+      id: "service_information",
+      label: "Service Information",
+      icon: Info,
     },
 
     pricing: {
@@ -139,6 +146,19 @@ const features = new Set(
   })
 );
 
+const businessFeatures = business?.businessFeatures || {};
+
+const hasBusinessFeatures = Object.values(
+  businessFeatures
+).some(
+  (values) =>
+    Array.isArray(values) &&
+    values.length > 0
+);
+
+if (hasBusinessFeatures) {
+  features.add("service_information");
+}
 
     if (
       Array.isArray(business?.services) &&
@@ -235,6 +255,7 @@ const features = new Set(
 
   const TAB_ORDER = [
     "services",
+    "service_information",
     "pricing",
     "catalog",
     "food_menu",
@@ -332,6 +353,16 @@ const features = new Set(
         label: "Location",
         icon: MapPin,
       },
+
+      ...(business?.website?.trim()
+  ? [
+      {
+        id: "website",
+        label: "Website",
+        icon: Globe,
+      },
+    ]
+  : []),
 
     ];
 

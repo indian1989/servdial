@@ -104,6 +104,10 @@ const UI_TYPES = [
     label: "Appointment",
   },
   {
+    value: "education",
+    label: "Education",
+  },
+  {
     value: "shopping",
     label: "Shopping",
   },
@@ -408,7 +412,6 @@ const FeatureDisplay = ({
   );
 };
 
-
 /* =========================================================
    INITIAL STATES
 ========================================================= */
@@ -421,7 +424,7 @@ const EMPTY_NEW_CATEGORY = {
   parentCategory: "",
   uiType: "service",
   features: [],
-};
+  };
 
 
 const EMPTY_EDIT_CATEGORY = {
@@ -433,7 +436,7 @@ const EMPTY_EDIT_CATEGORY = {
   isTrending: false,
   uiType: "service",
   features: [],
-};
+  };
 
 
 /* =========================================================
@@ -522,18 +525,18 @@ const ManageCategories = () => {
 
 
         const normalized =
-          flat.map((category) => ({
-            ...category,
+  flat.map((category) => ({
+    ...category,
 
-            features:
-              normalizeFeatures(
-                category.features
-              ),
+    features:
+      normalizeFeatures(
+        category.features
+      ),
 
-            uiType:
-              category.uiType ||
-              "service",
-          }));
+    uiType:
+      category.uiType ||
+      "service",
+  }));
 
 
         setFlatCategories(
@@ -1488,7 +1491,6 @@ await updateCategory(id, {
 
             </td>
 
-
             {/* ORDER */}
 
             <td
@@ -2271,7 +2273,6 @@ await updateCategory(id, {
               >
                 Features
               </th>
-
 
               <th
                 className="

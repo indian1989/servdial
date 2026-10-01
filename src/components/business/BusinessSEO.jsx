@@ -131,9 +131,7 @@ const BusinessSEO = ({
 
   const locationText =
     formatLocationDisplay(
-      cityName,
-      districtName,
-      stateName
+      cityName
     );
 
 
@@ -211,7 +209,7 @@ const generatedTitle =
       locationText || countryName
     }. Find address, phone number, business hours, ratings, reviews, photos, services and contact details on ServDial.`
       .replace(/\s+/g, " ")
-      .slice(0, 250);
+      .slice(0, 170);
 
 
   // =======================================================

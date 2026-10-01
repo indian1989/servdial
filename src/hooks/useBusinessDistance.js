@@ -1,36 +1,69 @@
-// frontend/src/hooks/useBusinessDistance.js
-
 import { useEffect, useState } from "react";
 import { getDistance } from "../utils/getDistance";
 
 const useBusinessDistance = (business) => {
 
-  const [distance, setDistance] = useState(null);
+  const [distance, setDistance] =
+    useState(null);
 
   useEffect(() => {
 
-    if (!business) return;
+    if (!business) {
+      setDistance(null);
+      return;
+    }
 
-    const userLat = Number(
-      localStorage.getItem("user_lat")
-    );
+    const calculateDistance = () => {
 
-    const userLng = Number(
-      localStorage.getItem("user_lng")
-    );
+      const storedLat =
+        localStorage.getItem("user_lat");
 
-    const businessLng =
-      business?.location?.coordinates?.[0];
+      const storedLng =
+        localStorage.getItem("user_lng");
 
-    const businessLat =
-      business?.location?.coordinates?.[1];
+      const userLat =
+        Number(storedLat);
 
-    if (
-      userLat &&
-      userLng &&
-      businessLat &&
-      businessLng
-    ) {
+      const userLng =
+        Number(storedLng);
+
+      const businessLng =
+        Number(
+          business?.location?.coordinates?.[0]
+        );
+
+      const businessLat =
+        Number(
+          business?.location?.coordinates?.[1]
+        );
+
+      /* =========================================
+         VALIDATE USER LOCATION
+      ========================================= */
+
+      if (
+        !Number.isFinite(userLat) ||
+        !Number.isFinite(userLng)
+      ) {
+        setDistance(null);
+        return false;
+      }
+
+      /* =========================================
+         VALIDATE BUSINESS LOCATION
+      ========================================= */
+
+      if (
+        !Number.isFinite(businessLat) ||
+        !Number.isFinite(businessLng)
+      ) {
+        setDistance(null);
+        return false;
+      }
+
+      /* =========================================
+         CALCULATE DISTANCE
+      ========================================= */
 
       const d = getDistance(
         userLat,
@@ -39,13 +72,97 @@ const useBusinessDistance = (business) => {
         businessLng
       );
 
-      setDistance(d);
-
-    } else {
+      if (Number.isFinite(d)) {
+        setDistance(d);
+        return true;
+      }
 
       setDistance(null);
+      return false;
+    };
 
+
+    /* =========================================
+       INITIAL CHECK
+    ========================================= */
+
+    const hasLocation =
+      calculateDistance();
+
+    if (hasLocation) {
+      return;
     }
+
+
+    /* =========================================
+       WAIT FOR LOCATION TO BECOME AVAILABLE
+    ========================================= */
+
+    const checkLocation =
+      setInterval(() => {
+
+        const found =
+          calculateDistance();
+
+        if (found) {
+          clearInterval(
+            checkLocation
+          );
+        }
+
+      }, 500);
+
+
+    /* =========================================
+       TAB / PAGE RETURN
+    ========================================= */
+
+    const handleVisibility =
+      () => {
+
+        if (
+          document.visibilityState ===
+          "visible"
+        ) {
+          calculateDistance();
+        }
+
+      };
+
+    document.addEventListener(
+      "visibilitychange",
+      handleVisibility
+    );
+
+
+    const handleFocus =
+      () => {
+        calculateDistance();
+      };
+
+    window.addEventListener(
+      "focus",
+      handleFocus
+    );
+
+
+    return () => {
+
+      clearInterval(
+        checkLocation
+      );
+
+      document.removeEventListener(
+        "visibilitychange",
+        handleVisibility
+      );
+
+      window.removeEventListener(
+        "focus",
+        handleFocus
+      );
+
+    };
 
   }, [business]);
 

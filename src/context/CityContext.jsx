@@ -81,28 +81,35 @@ const setCity = (cityObj) => {
   };
 
   // ================= DETECT LOCATION =================
-  const detectLocation = () => {
-  console.log(
-  "🚀 detectLocation STARTED"
-);
+const detectLocation = () => {
+  console.log("🚀 detectLocation STARTED");
 
   setLoadingCity(true);
 
   if (!navigator.geolocation) {
     console.log("❌ Geolocation not supported");
+
+    // Old GPS must not remain
+    localStorage.removeItem("user_lat");
+    localStorage.removeItem("user_lng");
+
     fallbackIP();
     return;
   }
 
   navigator.geolocation.getCurrentPosition(
     async (pos) => {
-      console.log(
-  "✅ GEO SUCCESS COORDS:",
-  {
-    latitude: pos.coords.latitude,
-    longitude: pos.coords.longitude,
-  }
-);
+      const {
+        latitude,
+        longitude,
+        accuracy,
+      } = pos.coords;
+
+      console.log("✅ GEO SUCCESS COORDS:", {
+        latitude,
+        longitude,
+        accuracy,
+      });
 
       if (geoTimeoutRef.current) {
         clearTimeout(geoTimeoutRef.current);
@@ -110,29 +117,31 @@ const setCity = (cityObj) => {
       }
 
       try {
-       const { latitude, longitude } = pos.coords;
+        // ==========================================
+        // SAVE FRESH GPS LOCATION
+        // ==========================================
+        localStorage.setItem(
+          "user_lat",
+          String(latitude)
+        );
 
-localStorage.setItem(
-  "user_lat",
-  latitude
-);
+        localStorage.setItem(
+          "user_lng",
+          String(longitude)
+        );
 
-localStorage.setItem(
-  "user_lng",
-  longitude
-);
+        console.log("💾 GPS SAVED:", {
+          lat: localStorage.getItem("user_lat"),
+          lng: localStorage.getItem("user_lng"),
+          accuracy,
+        });
 
-console.log(
-  "💾 GPS SAVED:",
-  {
-    lat: localStorage.getItem("user_lat"),
-    lng: localStorage.getItem("user_lng")
-  }
-);
-
-const res = await API.get(
-  `/location/reverse?lat=${latitude}&lng=${longitude}`
-);
+        // ==========================================
+        // REVERSE LOCATION
+        // ==========================================
+        const res = await API.get(
+          `/location/reverse?lat=${latitude}&lng=${longitude}`
+        );
 
         const detectedName =
           res?.data?.city ||
@@ -141,83 +150,143 @@ const res = await API.get(
           res?.data?.name ||
           "";
 
+        // GPS is valid even if reverse city detection fails.
+        // So DO NOT delete user_lat/user_lng here.
         if (!detectedName) {
-          return fallbackIP();
+          console.warn(
+            "⚠️ Reverse API did not return city. GPS coordinates retained."
+          );
+
+          setLoadingCity(false);
+          return;
         }
 
         const cities = await getCities();
 
         const normalize = (str = "") =>
-          str.toLowerCase().replace(/[^a-z0-9]/g, "");
+          str
+            .toLowerCase()
+            .replace(/[^a-z0-9]/g, "");
 
         const match = cities.find(
-          (c) => normalize(c.name) === normalize(detectedName)
+          (c) =>
+            normalize(c.name) ===
+            normalize(detectedName)
         );
 
         if (match) {
           setCity(match);
         } else {
-          fallbackIP();
+          console.warn(
+            "⚠️ GPS city not found in ServDial city list:",
+            detectedName
+          );
         }
       } catch (err) {
-        console.error("❌ Reverse API error:", err);
-        fallbackIP();
+        console.error(
+          "❌ Reverse API error:",
+          err
+        );
+
+        // IMPORTANT:
+        // GPS coordinates are still valid.
+        // Keep user_lat/user_lng for distance calculation.
       } finally {
         setLoadingCity(false);
       }
     },
+
     (err) => {
-      console.error("❌ GEO FAILED:", err.code, err.message);
+      console.error(
+        "❌ GEO FAILED:",
+        err.code,
+        err.message
+      );
 
       if (geoTimeoutRef.current) {
         clearTimeout(geoTimeoutRef.current);
         geoTimeoutRef.current = null;
       }
 
+      // ==========================================
+      // GPS FAILED → REMOVE OLD STALE COORDINATES
+      // ==========================================
+      localStorage.removeItem("user_lat");
+      localStorage.removeItem("user_lng");
+
+      console.log(
+        "🗑️ OLD GPS COORDINATES REMOVED"
+      );
+
       fallbackIP();
     },
+
     {
       enableHighAccuracy: true,
-      timeout: 10000,
-      maximumAge: 300000,
+
+      // IMPORTANT:
+      // Never use an old cached GPS position.
+      maximumAge: 0,
+
+      // Give real GPS a little more time.
+      timeout: 20000,
     }
   );
 };
 
   // ================= FALLBACK =================
-  const fallbackIP = async () => {
-    try {
-      const res = await API.get("/location/ip");
-      const detectedName = res?.data?.city;
+const fallbackIP = async () => {
+  try {
+    // ==========================================
+    // IP LOCATION IS NOT GPS
+    // Therefore old GPS coordinates must not
+    // remain active.
+    // ==========================================
+    localStorage.removeItem("user_lat");
+    localStorage.removeItem("user_lng");
 
-      if (!detectedName) {
-        setCity({
-  _id: "india",
-  name: "India",
-  slug: "india",
-  state: "",
-  district: "",
-});
-        setLoadingCity(false);
-        return;
-      }
+    console.log(
+      "🗑️ GPS COORDINATES CLEARED - USING IP LOCATION"
+    );
 
-      const cities = await getCities();
+    const res = await API.get("/location/ip");
 
-      const match = cities.find(
-        (c) =>
-          (c.name || "").toLowerCase() === detectedName.toLowerCase()
-      );
+    const detectedName =
+      res?.data?.city || "";
 
-      if (match) {
-  setCity(match);
-}
-    } catch {
-      
-    } finally {
+    if (!detectedName) {
+      setCity({
+        _id: "india",
+        name: "India",
+        slug: "india",
+        state: "",
+        district: "",
+      });
+
       setLoadingCity(false);
+      return;
     }
-  };
+
+    const cities = await getCities();
+
+    const match = cities.find(
+      (c) =>
+        (c.name || "").toLowerCase() ===
+        detectedName.toLowerCase()
+    );
+
+    if (match) {
+      setCity(match);
+    }
+  } catch (err) {
+    console.error(
+      "❌ IP location failed:",
+      err
+    );
+  } finally {
+    setLoadingCity(false);
+  }
+};
 
   // ================= INIT =================
   useEffect(() => {

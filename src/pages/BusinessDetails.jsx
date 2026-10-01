@@ -28,6 +28,8 @@ import MenuItemsSection from "../components/business/MenuItemsSection";
 import useBusinessDistance from "../hooks/useBusinessDistance";
 import BusinessAddressCard from "../components/business/BusinessAddressCard";
 import BusinessServiceInfo from "../components/business/BusinessServiceInfo";
+import BusinessFeatures from "../components/business/BusinessFeatures";
+
 import useBusinessAnalytics from "../hooks/useBusinessAnalytics";
 import useToastMessage from "../hooks/useToastMessage";
 import useBusinessDirections from "../hooks/useBusinessDirections";
@@ -43,6 +45,7 @@ import useGallery from "../hooks/useGallery";
 import BusinessMedia from "../components/business/BusinessMedia";
 import { formatCityLocation } from "../utils/addressHelper";
 import Specializations from "../components/business/Specializations";
+import BusinessWebsiteCard from "../components/business/BusinessWebsiteCard";
 
 const BusinessDetails = ({ business, reviews = [], similar = [], refresh }) => {
 
@@ -310,6 +313,10 @@ const uiType =
  business={business}
 />
 
+<BusinessFeatures
+  business={business}
+/>
+
 {/* AI SUMMARY */}
         <BusinessAISummary
     business={business}
@@ -364,6 +371,10 @@ const uiType =
 
 {/* LOCATION MAP */}
         <LocationMap
+  business={business}
+/>
+
+<BusinessWebsiteCard
   business={business}
 />
 

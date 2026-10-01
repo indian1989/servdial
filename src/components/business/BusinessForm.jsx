@@ -1,6 +1,7 @@
 // frontend/src/components/business/BusinessForm.jsx
 import React, { useEffect, useMemo, useState } from "react";
 import Select from "react-select";
+import CreatableSelect from "react-select/creatable";
 
 import API from "../../api/axios";
 
@@ -19,6 +20,7 @@ import {
 } from "./businessFormSchema";
 
 import BusinessFeatureFields from "./BusinessFeatureFields";
+import BusinessInformationalFeatureFields from "./BusinessInformationalFeatureFields";
 import BusinessLocationPicker from "./BusinessLocationPicker";
 import BusinessHoursManager from "../BusinessHoursManager";
 import BusinessServiceFields from "./service/BusinessServiceFields";
@@ -118,12 +120,25 @@ const BusinessForm = ({
 
   const [categoryTree, setCategoryTree] = useState([]);
   const [
-  selectedSubCategoryId,
-  setSelectedSubCategoryId,
-] = useState("");
+    selectedSubCategoryId,
+    setSelectedSubCategoryId,
+  ] = useState("");
 
   const [cities, setCities] = useState([]);
 
+  const [areaOptions, setAreaOptions] = useState([]);
+  const [areasLoading, setAreasLoading] = useState(false);
+
+  /* ================= AREA NORMALIZATION ================= */
+
+  const normalizeAreaForCompare = (value = "") =>
+    String(value)
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim()
+      .replace(/[\s\-_.,/\\]+/g, "");
+      
   const [form, setForm] = useState(() => ({
   ...defaultBusinessForm,
   ...safeInitialData,
@@ -169,6 +184,9 @@ const subCategoryOptions =
           features: Array.isArray(sub.features)
             ? sub.features
             : [],
+
+          informationalFeatures:
+            sub.informationalFeatures || {},
           uiType:
             sub.uiType || "service",
           hasChildren:
@@ -189,6 +207,9 @@ const childCategoryOptions =
         features: Array.isArray(child.features)
           ? child.features
           : [],
+
+        informationalFeatures:
+          child.informationalFeatures || {},
         uiType:
           child.uiType || "service",
       }))
@@ -198,7 +219,6 @@ const selectedCategoryName =
   form.categoryName ||
   selectedCategory?.name ||
   "";
-
 
   const isRestaurant = isRestaurantCategory({
     categoryName: form.categoryName,
@@ -230,6 +250,22 @@ const [restaurantBooking, setRestaurantBooking] = useState({
   seatingCapacity: "",
   advanceBookingDays: "",
 });
+
+// ================= SERVICE INFORMATION =================
+
+const hasSelectedBusinessFeatures = (businessFeatures = {}) =>
+  Object.values(businessFeatures || {}).some(
+    (values) =>
+      Array.isArray(values) &&
+      values.length > 0
+  );
+
+const [showBusinessInformation, setShowBusinessInformation] =
+  useState(
+    hasSelectedBusinessFeatures(
+      safeInitialData.businessFeatures
+    )
+  );
 
 const [locationManuallyAdjusted, setLocationManuallyAdjusted] =
   useState(false);
@@ -288,6 +324,112 @@ setCategoryTree(tree);
   init();
 }, []);
 
+/* ================= ADDRESS AREA OPTIONS ================= */
+
+useEffect(() => {
+  const cityId = form.cityId;
+
+  if (!cityId) {
+    setAreaOptions([]);
+    setAreasLoading(false);
+    return;
+  }
+
+  let cancelled = false;
+
+  const loadAreas = async () => {
+    setAreasLoading(true);
+
+    try {
+      const response = await API.get(
+        `/cities/${cityId}/areas`
+      );
+
+      if (cancelled) {
+        return;
+      }
+
+      const data =
+        response?.data?.data || {};
+
+      const rawAreas =
+        Array.isArray(data?.areas)
+          ? data.areas
+          : [];
+
+      /*
+      =====================================================
+      CITY AREAS NORMALIZATION + DUPLICATE REMOVAL
+      =====================================================
+      */
+
+      const uniqueAreas = [];
+      const seen = new Set();
+
+      rawAreas.forEach((area) => {
+
+        const areaName =
+          typeof area === "string"
+            ? area.trim()
+            : String(
+                area?.name || ""
+              ).trim();
+
+        if (!areaName) {
+          return;
+        }
+
+        const compareKey =
+          normalizeAreaForCompare(
+            areaName
+          );
+
+        if (!compareKey) {
+          return;
+        }
+
+        if (seen.has(compareKey)) {
+          return;
+        }
+
+        seen.add(compareKey);
+
+        uniqueAreas.push({
+          value: areaName,
+          label: areaName,
+        });
+      });
+
+      setAreaOptions(uniqueAreas);
+
+    } catch (err) {
+
+      console.error(
+        "❌ ADDRESS AREA LOAD ERROR:",
+        err
+      );
+
+      if (!cancelled) {
+        setAreaOptions([]);
+      }
+
+    } finally {
+
+      if (!cancelled) {
+        setAreasLoading(false);
+      }
+
+    }
+  };
+
+  loadAreas();
+
+  return () => {
+    cancelled = true;
+  };
+
+}, [form.cityId]);
+
 /* ================= INITIAL DATA / EDIT ================= */
 
 useEffect(() => {
@@ -297,8 +439,6 @@ useEffect(() => {
   if (!safeValue?._id) {
     return;
   }
-
-  console.log("EDIT BUSINESS VALUE:", safeValue);
 
   const updatedForm = {
     ...defaultBusinessForm,
@@ -433,6 +573,14 @@ categoryFeatures:
       )
     : [],
 
+    // ================= INFORMATIONAL BUSINESS FEATURES =================
+
+businessFeatures:
+  safeValue.businessFeatures &&
+  typeof safeValue.businessFeatures === "object"
+    ? safeValue.businessFeatures
+    : {},
+
     // ================= FEATURE DATA =================
     pricing: Array.isArray(safeValue.pricing)
     ? safeValue.pricing
@@ -464,6 +612,7 @@ categoryFeatures:
         type: "city",
         mode: "selected",
         cities: [],
+        areas: [],
         states: [],
         countries: [],
       },
@@ -565,6 +714,12 @@ setRestaurantBooking(
   }
 );
 
+setShowBusinessInformation(
+  hasSelectedBusinessFeatures(
+    safeValue.businessFeatures
+  )
+);
+
 }, [safeValue?._id, categoryTree]);
 
   /* ================= HELPERS ================= */
@@ -586,6 +741,7 @@ const updateForm = (updates) => {
 /* ================= BUSINESS COORDINATES ================= */
 
 const generateBusinessCoordinates = async ({
+  businessName = form.name,
   cityName = form.cityName,
   district = form.district,
   state = form.state,
@@ -597,26 +753,47 @@ const generateBusinessCoordinates = async ({
 
   try {
 
-    const response = await API.post(
-      "/geocode",
-      {
-        address: [
-          address?.street,
-          address?.area,
-          address?.landmark,
-        ]
-          .filter(Boolean)
-          .join(", "),
+    const addressText = [
+      address?.street,
+      address?.area,
+      address?.landmark,
+    ]
+      .filter(Boolean)
+      .join(", ");
 
-        city: cityName,
-        district,
-        state,
-        pincode,
-      }
+    const response = await API.post(
+  "/geocode",
+  {
+    businessName,
+    address: {
+      street: address?.street || "",
+      area: address?.area || "",
+      landmark: address?.landmark || "",
+    },
+    city: cityName,
+    district,
+    state,
+    pincode,
+  }
+);
+
+    console.log(
+      "📍 GEOCODE RAW RESPONSE:",
+      response?.data
     );
 
+    /*
+    =====================================================
+    ACCEPT ALL CURRENT SERVIDAL RESPONSE SHAPES
+    =====================================================
+    */
+
     const geocodedCoordinates =
-      response.data?.location?.coordinates;
+      response?.data?.data?.location?.coordinates ||
+      response?.data?.location?.coordinates ||
+      response?.data?.data?.coordinates ||
+      response?.data?.coordinates ||
+      null;
 
     if (
       Array.isArray(geocodedCoordinates) &&
@@ -625,27 +802,33 @@ const generateBusinessCoordinates = async ({
         (value) => Number.isFinite(Number(value))
       )
     ) {
-      coordinates = geocodedCoordinates;
+
+      coordinates = [
+        Number(geocodedCoordinates[0]),
+        Number(geocodedCoordinates[1]),
+      ];
 
       console.log(
         "✅ BUSINESS GEO:",
         coordinates
       );
-    }
 
-    console.log("📍 GEOCODE REQUEST:", {
-  address,
-  city: cityName,
-  district,
-  state,
-  pincode,
-});
+    } else {
+
+      console.warn(
+        "⚠️ GEOCODE RESPONSE DOES NOT CONTAIN VALID COORDINATES:",
+        response?.data
+      );
+
+    }
 
   } catch (err) {
 
     console.error(
       "❌ Geocode failed:",
-      err.message
+      err?.response?.data ||
+      err?.message ||
+      err
     );
 
   }
@@ -655,23 +838,124 @@ const generateBusinessCoordinates = async ({
 
 
 const updateMapFromAddress = async () => {
+  // =========================================================
+  // BUSINESS FORM CITY IS THE SOURCE OF TRUTH
+  // Admin / SuperAdmin / Provider selected city is NOT used.
+  // =========================================================
 
-  if (!form.cityName) {
+  const selectedCity = cities.find(
+    (city) =>
+      String(city.value) ===
+      String(form.cityId)
+  );
+
+  const resolvedCityName =
+    selectedCity?.label?.split(" (")[0] ||
+    form.cityName ||
+    "";
+
+  const resolvedDistrict =
+    selectedCity?.district ||
+    form.district ||
+    "";
+
+  const resolvedState =
+    selectedCity?.state ||
+    form.state ||
+    "";
+
+  // ---------------------------------------------------------
+  // CITY VALIDATION
+  // ---------------------------------------------------------
+
+  if (!form.cityId || !selectedCity || !resolvedCityName) {
+    console.warn(
+      "⚠️ FIND FROM ADDRESS: BUSINESS CITY NOT AVAILABLE",
+      {
+        businessCityId: form.cityId,
+        businessCityName: form.cityName,
+        selectedCity,
+      }
+    );
+
+    setErrors((prev) => ({
+      ...prev,
+      location:
+        "Please select the business city before finding the location from address.",
+    }));
+
     return;
   }
 
+  // ---------------------------------------------------------
+  // ADDRESS
+  // ---------------------------------------------------------
+
+  const addressText = [
+    form.address?.street,
+    form.address?.area,
+    form.address?.landmark,
+  ]
+    .filter(Boolean)
+    .join(", ");
+
+  if (!addressText) {
+    console.warn(
+      "⚠️ FIND FROM ADDRESS: ADDRESS IS EMPTY"
+    );
+
+    setErrors((prev) => ({
+      ...prev,
+      location:
+        "Please enter Street, Area or Landmark before finding the location from address.",
+    }));
+
+    return;
+  }
+
+  // ---------------------------------------------------------
+  // START GEOCODING
+  // ---------------------------------------------------------
+
   setLocating(true);
 
-  try {
+  console.log(
+    "🧭 FIND FROM ADDRESS START:",
+    {
+      businessName: form.name,
 
+      // IMPORTANT:
+      // This is the BUSINESS FORM CITY.
+      // Not admin/superadmin/provider selected city.
+      cityId: form.cityId,
+      city: resolvedCityName,
+
+      district: resolvedDistrict,
+      state: resolvedState,
+      pincode: form.pincode,
+
+      address: addressText,
+    }
+  );
+
+  try {
     const coordinates =
       await generateBusinessCoordinates({
-        cityName: form.cityName,
-        district: form.district,
-        state: form.state,
+        businessName: form.name,
+
+        // BUSINESS CITY
+        cityName: resolvedCityName,
+
+        district: resolvedDistrict,
+        state: resolvedState,
         pincode: form.pincode,
+
         address: form.address,
       });
+
+    // -------------------------------------------------------
+    // VALID COORDINATES
+    // -------------------------------------------------------
 
     if (
       Array.isArray(coordinates) &&
@@ -681,7 +965,6 @@ const updateMapFromAddress = async () => {
           Number.isFinite(Number(value))
       )
     ) {
-
       setLocationManuallyAdjusted(false);
 
       updateForm({
@@ -689,6 +972,12 @@ const updateMapFromAddress = async () => {
           type: "Point",
           coordinates,
         },
+
+        // Keep business location information synchronized
+        // with the selected business city.
+        cityName: resolvedCityName,
+        district: resolvedDistrict,
+        state: resolvedState,
       });
 
       setErrors((prev) => ({
@@ -698,23 +987,37 @@ const updateMapFromAddress = async () => {
 
       console.log(
         "📍 ADDRESS LOCATION UPDATED:",
+        {
+          cityId: form.cityId,
+          city: resolvedCityName,
+          coordinates,
+        }
+      );
+    } else {
+      console.warn(
+        "⚠️ FIND FROM ADDRESS: INVALID COORDINATES",
         coordinates
       );
-
-    } else {
 
       setErrors((prev) => ({
         ...prev,
         location:
           "We couldn't determine the exact location from the address. Please adjust the marker on the map or use GPS.",
       }));
-
     }
+  } catch (err) {
+    console.error(
+      "❌ FIND FROM ADDRESS ERROR:",
+      err
+    );
 
+    setErrors((prev) => ({
+      ...prev,
+      location:
+        "Unable to find the business location from this address. Please try again or adjust the map marker.",
+    }));
   } finally {
-
     setLocating(false);
-
   }
 };
 
@@ -1029,6 +1332,8 @@ if (field === "categoryId") {
 
     categoryFeatures,
 
+    businessFeatures: {},
+
     uiType:
       selected.uiType || "service",
 
@@ -1061,6 +1366,9 @@ if (field === "categoryId") {
 
   setLocationManuallyAdjusted(false);
 
+  // City change hone par purane city ka Area valid nahi rahega.
+  setAreaOptions([]);
+
   const cityName =
     selected.label.split(" (")[0];
 
@@ -1083,6 +1391,11 @@ if (field === "categoryId") {
     country: selected.country || "India",
 
     countryCode: selected.countryCode || "IN",
+
+    address: {
+      ...form.address,
+      area: "",
+    },
 
     location: {
       type: "Point",
@@ -1335,13 +1648,14 @@ else {
   );
 
   const geocodedCoordinates =
-    await generateBusinessCoordinates({
-      cityName: form.cityName,
-      district: form.district,
-      state: form.state,
-      pincode: form.pincode,
-      address: form.address,
-    });
+  await generateBusinessCoordinates({
+    businessName: form.name,
+    cityName: form.cityName,
+    district: form.district,
+    state: form.state,
+    pincode: form.pincode,
+    address: form.address,
+  });
 
 
   if (
@@ -1421,6 +1735,30 @@ if (
     const payload = {
 
       ...form,
+
+    // ================= INFORMATIONAL BUSINESS FEATURES =================
+
+businessFeatures:
+  Object.fromEntries(
+    Object.entries(
+      form.businessFeatures || {}
+    ).map(([group, values]) => [
+      group,
+      Array.isArray(values)
+        ? [
+            ...new Set(
+              values
+                .map((value) =>
+                  String(value)
+                    .trim()
+                    .toLowerCase()
+                )
+                .filter(Boolean)
+            ),
+          ]
+        : [],
+    ])
+  ),
 
       // ================= FEATURE DATA =================
       pricing: form.pricing || [],
@@ -1558,6 +1896,8 @@ if (
               )
                 ? selectedSubCategory.features
                 : [],
+            informationalFeatures:
+               selectedSubCategory.informationalFeatures || {},
             uiType:
               selectedSubCategory.uiType ||
               "service",
@@ -1615,6 +1955,8 @@ if (
       Array.isArray(subCategory.features)
         ? subCategory.features
         : [],
+
+    businessFeatures: {},
 
     uiType:
       subCategory.uiType ||
@@ -1969,6 +2311,94 @@ setRestaurantBooking={(value)=>{
 
 />
 
+{/* ================= SERVICE INFORMATION ================= */}
+
+<div className="rounded-2xl border border-gray-200 bg-white p-5">
+
+  {/* ================= SERVICE INFORMATION TOGGLE ================= */}
+
+  <label
+    className="
+      flex
+      items-center
+      justify-between
+      gap-4
+      cursor-pointer
+    "
+  >
+
+    <div>
+      <h3 className="text-lg font-semibold text-gray-900">
+        Service Information
+      </h3>
+
+      <p className="mt-1 text-sm text-gray-500">
+        Add facilities, services, amenities and convenience
+        options available at this business.
+      </p>
+    </div>
+
+    <input
+      type="checkbox"
+      checked={showBusinessInformation}
+      onChange={(e) => {
+
+        const checked = e.target.checked;
+
+        setShowBusinessInformation(checked);
+
+        /*
+        =====================================================
+        SERVICE INFORMATION DISABLED
+
+        Hidden section ke saath old selections bhi clear
+        kar rahe hain, taaki disabled Service Information
+        accidentally save/display na ho.
+        =====================================================
+        */
+
+        if (!checked) {
+
+          updateForm({
+            businessFeatures: {},
+          });
+
+        }
+
+      }}
+      className="
+        h-5
+        w-5
+        rounded
+        border-gray-300
+        text-indigo-600
+        focus:ring-indigo-500
+      "
+    />
+
+  </label>
+
+
+  {/* ================= EXPANDED SERVICE INFORMATION ================= */}
+
+  {showBusinessInformation && (
+
+    <div className="mt-5 border-t border-gray-100 pt-5">
+
+      <BusinessInformationalFeatureFields
+        value={form.businessFeatures || {}}
+        onChange={(businessFeatures) =>
+          updateForm({
+            businessFeatures,
+          })
+        }
+      />
+
+    </div>
+
+  )}
+
+</div>
 
         {/* LOCATION */}
 
@@ -1981,105 +2411,274 @@ setRestaurantBooking={(value)=>{
   label="Business Location Address"
   required
   error={
- errors.address ||
- errors.area
-}
+    errors.address ||
+    errors.area ||
+    errors.cityId
+  }
 >
 
-<div className="space-y-3">
+  <div className="space-y-4">
 
-    <input
-  name="street"
-  value={form.address?.street || ""}
-  onChange={(e) => {
-    setLocationManuallyAdjusted(false);
+    {/* ================= STREET ================= */}
 
-    updateForm({
-      ...form,
-      address: {
-        ...form.address,
-        street: e.target.value,
-      },
-    });
-  }}
-  
-  placeholder="Street / Road (e.g. Mahatma Gandhi Road)"
-  className="border rounded-xl p-3 w-full"
-/>
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Street / Road
+      </label>
 
+      <input
+        name="street"
+        value={form.address?.street || ""}
+        onChange={(e) => {
 
-<input
-  name="area"
-  value={form.address?.area || ""}
-  onChange={(e) => {
+          setLocationManuallyAdjusted(false);
 
-  setLocationManuallyAdjusted(false);
+          updateForm({
+            ...form,
+            address: {
+              ...form.address,
+              street: e.target.value,
+            },
+          });
 
-  updateForm({
-    ...form,
-    address: {
-      ...form.address,
-      area: e.target.value
-    }
-  });
-
-}}
-  
-  placeholder="Area / Locality (e.g. Azad Nagar)"
-  className="border rounded-xl p-3 w-full"
-/>
+        }}
+        placeholder="Street / Road (e.g. Mahatma Gandhi Road)"
+        className="border rounded-xl p-3 w-full"
+      />
+    </div>
 
 
-<input
-  name="landmark"
-  value={form.address?.landmark || ""}
-  onChange={(e) => {
+    {/* ================= CITY ================= */}
 
-  setLocationManuallyAdjusted(false);
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        City <span className="text-red-500">*</span>
+      </label>
 
-  updateForm({
-    ...form,
-    address: {
-      ...form.address,
-      landmark: e.target.value
-    }
-  });
+      <Select
+        options={cities}
+        value={
+          cities.find(
+            (c) =>
+              String(c.value) ===
+              String(form.cityId)
+          ) || null
+        }
+        onChange={(v) =>
+          handleSelect(
+            "cityId",
+            v
+          )
+        }
+        placeholder="Select City"
+        isSearchable
+        styles={styles}
+      />
+    </div>
 
-}}
-  
-  placeholder="Landmark (e.g. Near Taj Mahal)"
-  className="border rounded-xl p-3 w-full"
-/>
 
-</div>
+    {/* ================= AREA ================= */}
+
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Area / Locality <span className="text-red-500">*</span>
+      </label>
+
+      <CreatableSelect
+        isClearable
+        isSearchable
+        isDisabled={
+          !form.cityId ||
+          areasLoading
+        }
+        isLoading={areasLoading}
+        options={areaOptions}
+
+        value={
+          form.address?.area
+            ? {
+                value:
+                  form.address.area,
+                label:
+                  form.address.area,
+              }
+            : null
+        }
+
+        onChange={(selected) => {
+
+          if (!selected) {
+
+            setLocationManuallyAdjusted(false);
+
+            updateForm({
+              ...form,
+              address: {
+                ...form.address,
+                area: "",
+              },
+            });
+
+            return;
+          }
+
+          const selectedValue =
+            String(
+              selected.value || ""
+            ).trim();
+
+          if (!selectedValue) {
+            return;
+          }
+
+          /*
+          =================================================
+          EXISTING OPTION / MANUAL OPTION DUPLICATE CHECK
+          =================================================
+          */
+
+          const compareKey =
+            normalizeAreaForCompare(
+              selectedValue
+            );
+
+          const existingArea =
+            areaOptions.find(
+              (option) =>
+                normalizeAreaForCompare(
+                  option.value
+                ) === compareKey
+            );
+
+          const finalArea =
+            existingArea?.value ||
+            selectedValue;
+
+          setLocationManuallyAdjusted(false);
+
+          updateForm({
+            ...form,
+            address: {
+              ...form.address,
+              area: finalArea,
+            },
+          });
+
+        }}
+
+        onCreateOption={(inputValue) => {
+
+          const typedArea =
+            String(
+              inputValue || ""
+            ).trim();
+
+          if (!typedArea) {
+            return;
+          }
+
+          /*
+          =================================================
+          MANUAL AREA DUPLICATE CHECK
+
+          Azad Nagar
+          azad nagar
+          AZAD-NAGAR
+          AzadNagar
+
+          -> same area
+          =================================================
+          */
+
+          const compareKey =
+            normalizeAreaForCompare(
+              typedArea
+            );
+
+          const existingArea =
+            areaOptions.find(
+              (option) =>
+                normalizeAreaForCompare(
+                  option.value
+                ) === compareKey
+            );
+
+          const finalArea =
+            existingArea?.value ||
+            typedArea;
+
+          setLocationManuallyAdjusted(false);
+
+          updateForm({
+            ...form,
+            address: {
+              ...form.address,
+              area: finalArea,
+            },
+          });
+
+        }}
+
+        formatCreateLabel={(inputValue) =>
+          `Use "${inputValue}"`
+        }
+
+        createOptionPosition="first"
+
+        placeholder={
+          form.cityId
+            ? "Search or enter area"
+            : "Select City First"
+        }
+
+        noOptionsMessage={({ inputValue }) =>
+          inputValue
+            ? `No area found. You can use "${inputValue}"`
+            : "No areas available for this city"
+        }
+
+        styles={styles}
+      />
+
+      <p className="text-xs text-gray-500 mt-1">
+        Search an existing area or enter a new locality manually.
+      </p>
+    </div>
+
+
+    {/* ================= LANDMARK ================= */}
+
+    <div>
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Landmark
+      </label>
+
+      <input
+        name="landmark"
+        value={form.address?.landmark || ""}
+        onChange={(e) => {
+
+          setLocationManuallyAdjusted(false);
+
+          updateForm({
+            ...form,
+            address: {
+              ...form.address,
+              landmark: e.target.value,
+            },
+          });
+
+        }}
+        placeholder="Landmark (e.g. Near Taj Mahal)"
+        className="border rounded-xl p-3 w-full"
+      />
+    </div>
+
+  </div>
 
 </FormField>
 
-          <FormField
-            label="City"
-            required
-            error={errors.cityId}
-          >
-
-            <Select
-              options={cities}
-              value={
-                cities.find(
-                  (c) =>
-                    String(c.value) === String(form.cityId)
-                ) || null
-              }
-              onChange={(v) =>
-                handleSelect(
-                  "cityId",
-                  v
-                )
-              }
-              placeholder="Select City"
-              styles={styles}
-            />
-
-          </FormField>
+        
 
           <div className="grid md:grid-cols-3 gap-4">
 

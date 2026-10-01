@@ -321,14 +321,18 @@ const cleanWhatsApp =
         gap-1
         whitespace-nowrap
         ${
-          realDistance < 0.3
+          realDistance <= 0.3
             ? "bg-green-500/90 text-white"
             : "bg-black/70 text-white"
         }
       `}
     >
       📍{" "}
-      {realDistance < 0.3 ? "Nearby" : realDistance < 1 ? `${Math.round(realDistance * 1000)} m away` : `${realDistance.toFixed(1)} km away`}
+      {realDistance <= 0.3
+        ? "Nearby"
+        : realDistance < 1
+        ? `${Math.round(realDistance * 1000)} m away`
+        : `${realDistance.toFixed(1)} km away`}
     </span>
   </div>
 )}

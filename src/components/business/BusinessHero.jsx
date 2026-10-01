@@ -223,13 +223,7 @@ const heroSeoLocation =
   // =========================================================
 
 const heroH1 =
-  heroSeoLocation
-    ? `${businessName} | ${titleCase(
-        categoryName
-      )} in ${heroSeoLocation}`
-    : `${businessName} | ${titleCase(
-        categoryName
-      )}`;
+  businessName;
 
 
   // =========================================================
