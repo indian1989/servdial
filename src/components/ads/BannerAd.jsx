@@ -96,8 +96,13 @@ const BannerAd = ({
         >
           <img
             src={current.image}
-            alt={current.title}
+            alt={current.title || "ServDial Banner"}
             className="w-full rounded-xl shadow-lg"
+            loading={placement === "homepage_top" ? "eager" : "lazy"}
+            fetchPriority={placement === "homepage_top" ? "high" : "low"}
+            decoding="async"
+            width="1200"
+            height="400"
           />
         </a>
 
