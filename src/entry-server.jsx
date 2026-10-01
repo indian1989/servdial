@@ -1346,125 +1346,350 @@ export const render = async (
   url,
   requestHeaders = {}
 ) => {
-
   const helmetContext = {};
 
-  /*
-   * Fetch business before React render.
-   *
-   * This allows us to provide the business data
-   * through the SSR environment.
-   */
-
-const ssrBusinessResponse =
-  await fetchBusinessForSSR(url);
-
-const ssrBlogResponse =
-  await fetchBlogForSSR(url);
-
-const ssrCityResponse =
-  await fetchCityForSSR(url);
-
-const ssrCityCategoryResponse =
-  await fetchCityCategoryForSSR(url);
-
-const ssrFeaturedResponse =
-  await fetchFeaturedBusinessesForSSR(url);
-
-const ssrLatestResponse =
-  await fetchLatestBusinessesForSSR(url);
-
-const ssrTopRatedResponse =
-  await fetchTopRatedBusinessesForSSR(url);
-
-const ssrTemporaryListingsResponse =
-  await fetchTemporaryListingsForSSR(url);
-
-const ssrHomeResponse =
-  await fetchHomepageForSSR(
+  const parsedUrl = new URL(
     url,
-    requestHeaders
+    "https://www.servdial.com"
   );
 
-const ssrCategoryPageResponse =
-  await fetchCategoryPageForSSR(url);
+  const pathname =
+    parsedUrl.pathname.replace(/\/+$/, "") || "/";
 
-console.log("🔥 SSR CATEGORY PAGE CHECK:", {
-  url,
-  exists: !!ssrCategoryPageResponse,
-  city: ssrCategoryPageResponse?.city?.name,
-  citySlug: ssrCategoryPageResponse?.citySlug,
-  stateSlug: ssrCategoryPageResponse?.stateSlug,
-  categories:
-    ssrCategoryPageResponse?.categories?.length,
-  businesses:
-    ssrCategoryPageResponse?.businesses?.length,
-});
+  const parts = pathname
+    .split("/")
+    .filter(Boolean);
 
-let ssrCategoriesResponse = [];
-let ssrBusinessesResponse = [];
+  // =======================================================
+  // DEFAULT SSR DATA
+  // =======================================================
 
-if (ssrCityResponse) {
-  ssrCategoriesResponse =
-    await fetchCategoriesForSSR();
+  let ssrBusinessResponse = null;
+  let ssrBlogResponse = null;
+  let ssrCityResponse = null;
+  let ssrCategoriesResponse = [];
+  let ssrBusinessesResponse = [];
+  let ssrCityCategoryResponse = null;
+  let ssrFeaturedResponse = null;
+  let ssrLatestResponse = null;
+  let ssrTopRatedResponse = null;
+  let ssrTemporaryListingsResponse = null;
+  let ssrHomeResponse = null;
+  let ssrCategoryPageResponse = null;
 
-  const citySlug =
-    ssrCityResponse.slug ||
-    ssrCityResponse.data?.slug;
+  // =======================================================
+  // ROUTE-SPECIFIC SSR FETCHING
+  //
+  // IMPORTANT:
+  // Only fetch APIs required by the current page.
+  // This avoids unnecessary Render -> Voroa requests.
+  // =======================================================
 
-  if (citySlug) {
-    ssrBusinessesResponse =
-      await fetchCityBusinessesForSSR(citySlug);
+  // =======================================================
+  // HOMEPAGE
+  // /
+  // =======================================================
+
+  if (pathname === "/") {
+    ssrHomeResponse =
+      await fetchHomepageForSSR(
+        url,
+        requestHeaders
+      );
   }
-}
 
-  /*
-   * IMPORTANT:
-   *
-   * We do not modify the existing client routing.
-   * This data is currently prepared for SSR.
-   */
+  // =======================================================
+  // GLOBAL CATEGORIES
+  // /categories
+  // =======================================================
 
-const html = renderToString(
-  <React.StrictMode>
-    <HelmetProvider context={helmetContext}>
-      <StaticRouter location={url}>
-        <AuthProvider>
-          <App
-  ssrBusiness={ssrBusinessResponse}
-  ssrBlog={ssrBlogResponse}
-  ssrCity={ssrCityResponse}
-  ssrCategories={ssrCategoriesResponse}
-  ssrBusinesses={ssrBusinessesResponse}
-  ssrCityCategory={ssrCityCategoryResponse}
-  ssrFeatured={ssrFeaturedResponse}
-  ssrLatest={ssrLatestResponse}
-  ssrTopRated={ssrTopRatedResponse}
-  ssrTemporaryListings={ssrTemporaryListingsResponse}
-  ssrHome={ssrHomeResponse}
-  ssrCategoryPage={ssrCategoryPageResponse}
-/>
-        </AuthProvider>
-      </StaticRouter>
-    </HelmetProvider>
-  </React.StrictMode>
-);
+  else if (pathname === "/categories") {
+    ssrCategoryPageResponse =
+      await fetchCategoryPageForSSR(url);
+  }
 
+  // =======================================================
+  // BLOG
+  // /blog
+  // /blog/:slug
+  // =======================================================
+
+  else if (
+    parts[0] === "blog"
+  ) {
+    ssrBlogResponse =
+      await fetchBlogForSSR(url);
+  }
+
+  // =======================================================
+  // TEMPORARY LISTINGS
+  // /temporary-listings
+  // =======================================================
+
+  else if (
+    pathname === "/temporary-listings"
+  ) {
+    ssrTemporaryListingsResponse =
+      await fetchTemporaryListingsForSSR(url);
+  }
+
+  // =======================================================
+  // FEATURED BUSINESSES
+  // /citySlug/featured-businesses
+  // =======================================================
+
+  else if (
+    parts.length === 2 &&
+    parts[1] === "featured-businesses"
+  ) {
+    ssrFeaturedResponse =
+      await fetchFeaturedBusinessesForSSR(url);
+  }
+
+  // =======================================================
+  // LATEST BUSINESSES
+  // /citySlug/latest-businesses
+  // =======================================================
+
+  else if (
+    parts.length === 2 &&
+    parts[1] === "latest-businesses"
+  ) {
+    ssrLatestResponse =
+      await fetchLatestBusinessesForSSR(url);
+  }
+
+  // =======================================================
+  // TOP RATED BUSINESSES
+  // /citySlug/top-rated-businesses
+  // =======================================================
+
+  else if (
+    parts.length === 2 &&
+    parts[1] === "top-rated-businesses"
+  ) {
+    ssrTopRatedResponse =
+      await fetchTopRatedBusinessesForSSR(url);
+  }
+
+  // =======================================================
+  // CITY CATEGORY INDEX
+  // /stateSlug/citySlug/categories
+  // =======================================================
+
+  else if (
+    parts.length === 3 &&
+    parts[2] === "categories"
+  ) {
+    ssrCategoryPageResponse =
+      await fetchCategoryPageForSSR(url);
+  }
+
+  // =======================================================
+  // CITY + CATEGORY
+  //
+  // /stateSlug/citySlug/categorySlug
+  //
+  // Known Indian state/UT slugs are used only to distinguish
+  // this route from the business URL:
+  //
+  // /citySlug/categorySlug/businessSlug
+  // =======================================================
+
+  else if (
+    parts.length === 3 &&
+    [
+      "andaman-and-nicobar-islands",
+      "andhra-pradesh",
+      "arunachal-pradesh",
+      "assam",
+      "bihar",
+      "chandigarh",
+      "chhattisgarh",
+      "dadra-and-nagar-haveli-and-daman-and-diu",
+      "delhi",
+      "goa",
+      "gujarat",
+      "haryana",
+      "himachal-pradesh",
+      "jammu-and-kashmir",
+      "jharkhand",
+      "karnataka",
+      "kerala",
+      "ladakh",
+      "lakshadweep",
+      "madhya-pradesh",
+      "maharashtra",
+      "manipur",
+      "meghalaya",
+      "mizoram",
+      "nagaland",
+      "odisha",
+      "puducherry",
+      "punjab",
+      "rajasthan",
+      "sikkim",
+      "tamil-nadu",
+      "telangana",
+      "tripura",
+      "uttar-pradesh",
+      "uttarakhand",
+      "west-bengal"
+    ].includes(parts[0])
+  ) {
+    ssrCityCategoryResponse =
+      await fetchCityCategoryForSSR(url);
+  }
+
+  // =======================================================
+  // BUSINESS PAGE
+  //
+  // /citySlug/categorySlug/businessSlug
+  // =======================================================
+
+  else if (
+    parts.length === 3
+  ) {
+    ssrBusinessResponse =
+      await fetchBusinessForSSR(url);
+  }
+
+  // =======================================================
+  // CITY PAGE
+  //
+  // /stateSlug/citySlug
+  //
+  // Required SSR data:
+  // 1. City
+  // 2. Categories
+  // 3. Random city businesses
+  //
+  // Categories + businesses do not depend on each other,
+  // so fetch them in parallel.
+  // =======================================================
+
+  else if (
+    parts.length === 2
+  ) {
+    ssrCityResponse =
+      await fetchCityForSSR(url);
+
+    if (ssrCityResponse) {
+      const citySlug =
+        ssrCityResponse.slug ||
+        ssrCityResponse.data?.slug;
+
+      if (citySlug) {
+        [
+          ssrCategoriesResponse,
+          ssrBusinessesResponse
+        ] = await Promise.all([
+          fetchCategoriesForSSR(),
+          fetchCityBusinessesForSSR(
+            citySlug
+          )
+        ]);
+      }
+    }
+  }
+
+  // =======================================================
+  // SSR REACT RENDER
+  // =======================================================
+
+  const html = renderToString(
+    <React.StrictMode>
+      <HelmetProvider
+        context={helmetContext}
+      >
+        <StaticRouter location={url}>
+          <AuthProvider>
+            <App
+              ssrBusiness={
+                ssrBusinessResponse
+              }
+              ssrBlog={
+                ssrBlogResponse
+              }
+              ssrCity={
+                ssrCityResponse
+              }
+              ssrCategories={
+                ssrCategoriesResponse
+              }
+              ssrBusinesses={
+                ssrBusinessesResponse
+              }
+              ssrCityCategory={
+                ssrCityCategoryResponse
+              }
+              ssrFeatured={
+                ssrFeaturedResponse
+              }
+              ssrLatest={
+                ssrLatestResponse
+              }
+              ssrTopRated={
+                ssrTopRatedResponse
+              }
+              ssrTemporaryListings={
+                ssrTemporaryListingsResponse
+              }
+              ssrHome={
+                ssrHomeResponse
+              }
+              ssrCategoryPage={
+                ssrCategoryPageResponse
+              }
+            />
+          </AuthProvider>
+        </StaticRouter>
+      </HelmetProvider>
+    </React.StrictMode>
+  );
+
+  // =======================================================
+  // RETURN SSR DATA
+  // =======================================================
 
   return {
-  html,
-  helmet: helmetContext.helmet,
-  ssrBusiness: ssrBusinessResponse,
-  ssrBlog: ssrBlogResponse,
-  ssrCity: ssrCityResponse,
-  ssrCategories: ssrCategoriesResponse,
-  ssrBusinesses: ssrBusinessesResponse,
-  ssrCityCategory: ssrCityCategoryResponse,
-  ssrFeatured: ssrFeaturedResponse,
-  ssrLatest: ssrLatestResponse,
-  ssrTopRated: ssrTopRatedResponse,
-  ssrTemporaryListings: ssrTemporaryListingsResponse,
-  ssrHome: ssrHomeResponse,
-  ssrCategoryPage: ssrCategoryPageResponse,
+    html,
+    helmet: helmetContext.helmet,
+
+    ssrBusiness:
+      ssrBusinessResponse,
+
+    ssrBlog:
+      ssrBlogResponse,
+
+    ssrCity:
+      ssrCityResponse,
+
+    ssrCategories:
+      ssrCategoriesResponse,
+
+    ssrBusinesses:
+      ssrBusinessesResponse,
+
+    ssrCityCategory:
+      ssrCityCategoryResponse,
+
+    ssrFeatured:
+      ssrFeaturedResponse,
+
+    ssrLatest:
+      ssrLatestResponse,
+
+    ssrTopRated:
+      ssrTopRatedResponse,
+
+    ssrTemporaryListings:
+      ssrTemporaryListingsResponse,
+
+    ssrHome:
+      ssrHomeResponse,
+
+    ssrCategoryPage:
+      ssrCategoryPageResponse
+  };
 };
-}
