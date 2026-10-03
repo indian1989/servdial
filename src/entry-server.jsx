@@ -927,16 +927,6 @@ const fetchHomepageForSSR = async (
       );
     }
 
-    console.log(
-      "🔥 SSR HOMEPAGE CITY COOKIE:",
-      citySlug || "none"
-    );
-
-    console.log(
-      "🔥 SSR HOMEPAGE API:",
-      homepageUrl.toString()
-    );
-
     const response = await fetch(
       homepageUrl.toString(),
       {
@@ -1391,12 +1381,22 @@ export const render = async (
   // =======================================================
 
   if (pathname === "/") {
-    ssrHomeResponse =
-      await fetchHomepageForSSR(
-        url,
-        requestHeaders
-      );
-  }
+  ssrHomeResponse =
+    await fetchHomepageForSSR(
+      url,
+      requestHeaders
+    );
+
+  console.log(
+    "🔥 SSR HOME RESPONSE:",
+    ssrHomeResponse ? "FOUND" : "NULL"
+  );
+
+  console.log(
+    "🔥 SSR HOME TOP BANNERS:",
+    ssrHomeResponse?.homepageTopBanners?.length || 0
+  );
+}
 
   // =======================================================
   // GLOBAL CATEGORIES

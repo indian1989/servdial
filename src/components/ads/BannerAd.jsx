@@ -6,8 +6,9 @@ const BannerAd = ({
   cityId,
   categoryId,
   businessId,
+  initialBanners = [],
 }) => {
-  const [banners, setBanners] = useState([]);
+  const [banners, setBanners] = useState(initialBanners);
   const [currentIndex, setCurrentIndex] = useState(0);
 
   // Prevent the same banner request from being fired repeatedly
@@ -22,6 +23,15 @@ const BannerAd = ({
       "homepage_middle",
       "homepage_bottom",
     ].includes(placement);
+
+    // SSR already supplied homepage top banners.
+// Do not immediately fetch the same data again on the client.
+if (
+  placement === "homepage_top" &&
+  initialBanners.length > 0
+) {
+  return;
+}
 
     if (isHomepagePlacement && !cityId) {
       return;
@@ -84,7 +94,13 @@ const BannerAd = ({
     return () => {
       cancelled = true;
     };
-  }, [placement, cityId, categoryId, businessId]);
+  }, [
+  placement,
+  cityId,
+  categoryId,
+  businessId,
+  initialBanners.length,
+]);
 
   useEffect(() => {
     if (banners.length <= 1) return;
@@ -117,16 +133,19 @@ const BannerAd = ({
   return (
     <div className="w-full bg-gray-100 py-6 flex justify-center">
       <div className="relative max-w-6xl w-full px-4">
-        <a
+       <a
           href={current.link || "#"}
           target="_blank"
           rel="noopener noreferrer"
           onClick={() => handleBannerClick(current)}
+          className="block w-full aspect-video overflow-hidden rounded-xl"
         >
           <img
             src={current.image}
             alt={current.title || "ServDial Banner"}
-            className="w-full rounded-xl shadow-lg"
+            className="w-full h-full object-cover rounded-xl shadow-lg"
+            loading={placement === "homepage_top" ? "eager" : "lazy"}
+            fetchPriority={placement === "homepage_top" ? "high" : "auto"}
           />
         </a>
 

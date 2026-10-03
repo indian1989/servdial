@@ -35,6 +35,7 @@ const [data, setData] = useState(
         recommended: ssrHome.recommendedBusinesses || [],
         categories: ssrHome.categories || [],
         cities: ssrHome.cities || [],
+        topBanners: ssrHome.homepageTopBanners || [],
       }
     : {
         featured: [],
@@ -44,6 +45,7 @@ const [data, setData] = useState(
         recommended: [],
         categories: [],
         cities: [],
+        topBanners: [],
       }
 );
 
@@ -83,6 +85,7 @@ setData({
   recommended: d.recommendedBusinesses || [],
   categories: d.categories || [],
   cities: d.cities || [],
+  topBanners: d.homepageTopBanners || [],
 });
 
     } catch (err) {
@@ -96,6 +99,7 @@ setData({
         nearby: [],
         categories: [],
         cities: [],
+        topBanners: [],
       });
 
     } finally {
@@ -167,6 +171,8 @@ fetchHomepageData({
 ]);
 
 const cityName = city?.name || "your area";
+console.log("🔥 SSR HOME:", ssrHome);
+console.log("🔥 TOP BANNERS:", data.topBanners);
 
   return (
 
@@ -248,9 +254,11 @@ content="Discover verified local businesses, services, restaurants, home service
 <HeroSearch city={city} />
 
 {/* 🔥 TOP BANNER */}
+
 <BannerAd
   placement="homepage_top"
   cityId={city?._id || city?.id}
+  initialBanners={data.topBanners}
 />
 
       {/* LOCATION LOADING */}
