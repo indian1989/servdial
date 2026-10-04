@@ -2,39 +2,33 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 
 // ICONS
-import home from "../../assets/icons/home.png";
-import construction from "../../assets/icons/construction.png";
-import dentist from "../../assets/icons/dentist.png";
-import health from "../../assets/icons/health.png";
-import education from "../../assets/icons/education.png";
-import restaurant from "../../assets/icons/restaurant.png";
+import home from "../../assets/icons/home.webp";
+import construction from "../../assets/icons/construction.webp";
+import health from "../../assets/icons/health.webp";
+import education from "../../assets/icons/education.webp";
+import restaurant from "../../assets/icons/restaurant.webp";
 import automobile from "../../assets/icons/automobile.webp";
-import realestate from "../../assets/icons/realestate.png";
-import travel from "../../assets/icons/travel.png";
-import shopping from "../../assets/icons/shopping.png";
+import realestate from "../../assets/icons/realestate.webp";
+import travel from "../../assets/icons/travel.webp";
+import shopping from "../../assets/icons/shopping.webp";
 import beauty from "../../assets/icons/beauty.webp";
-import events from "../../assets/icons/events.png";
-import it from "../../assets/icons/it.png";
-import finance from "../../assets/icons/finance.png";
-import legal from "../../assets/icons/legal.png";
-import industrial from "../../assets/icons/industrial.png";
-import electronics from "../../assets/icons/electronics.png";
-import furniture from "../../assets/icons/furniture.png";
-import courier from "../../assets/icons/courier.png";
-import printing from "../../assets/icons/printing.png";
-import agriculture from "../../assets/icons/agriculture.png";
+import events from "../../assets/icons/events.webp";
+import it from "../../assets/icons/it.webp";
+import finance from "../../assets/icons/finance.webp";
+import legal from "../../assets/icons/legal.webp";
+import industrial from "../../assets/icons/industrial.webp";
+import electronics from "../../assets/icons/electronics.webp";
 
 // ICON MAP
 const iconMap = {
   "home-services": home,
   "construction-contractors": construction,
-  "dentist" : dentist,
   "health-medical": health,
   "education-training": education,
   "restaurants-food": restaurant,
   "automobiles": automobile,
   "real-estate": realestate,
-  "travel-transport": travel,
+  "travel-tourism": travel,
   "shopping-retail": shopping,
   "beauty-personal-care": beauty,
   "events-entertainment": events,
@@ -42,11 +36,7 @@ const iconMap = {
   "financial-services": finance,
   "legal-services": legal,
   "industrial-manufacturing": industrial,
-  "electronics-repair": electronics,
-  "furniture-interior": furniture,
-  "courier-logistics": courier,
-  "printing-advertising": printing,
-  "agriculture-farming": agriculture,
+  "electronics": electronics,
 };
 
 const getParentIcon = (cat) => {
