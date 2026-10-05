@@ -1555,43 +1555,73 @@ export const render = async (
   }
 
   // =======================================================
-  // CITY PAGE
+// ADMIN ROUTES
+//
+// IMPORTANT:
+// Admin URLs such as:
+//
+// /admin/businesses
+// /admin/businesses/new
+// /admin/categories
+// /admin/providers
+//
+// must NEVER be treated as public city URLs.
+//
+// Otherwise a URL such as /admin/businesses
+// gets incorrectly processed as:
+//
+// /cities/businesses
+//
+// which causes a 404 and leaves the admin page
+// with only its client-side Loading state during SSR.
+// =======================================================
+else if (
+  parts[0] === "admin"
+) {
+  // Admin pages handle their own authentication
+  // and client-side data fetching.
   //
-  // /stateSlug/citySlug
-  //
-  // Required SSR data:
-  // 1. City
-  // 2. Categories
-  // 3. Random city businesses
-  //
-  // Categories + businesses do not depend on each other,
-  // so fetch them in parallel.
-  // =======================================================
+  // Do not call any public city/category/business
+  // SSR APIs here.
+}
 
-  else if (
-    parts.length === 2
-  ) {
-    ssrCityResponse =
-      await fetchCityForSSR(url);
+// =======================================================
+// CITY PAGE
+//
+// /stateSlug/citySlug
+//
+// Required SSR data:
+// 1. City
+// 2. Categories
+// 3. Random city businesses
+//
+// Categories + businesses do not depend on each other,
+// so fetch them in parallel.
+// =======================================================
+else if (
+  parts.length === 2
+) {
+  ssrCityResponse =
+    await fetchCityForSSR(url);
 
-    if (ssrCityResponse) {
-      const citySlug =
-        ssrCityResponse.slug ||
-        ssrCityResponse.data?.slug;
+  if (ssrCityResponse) {
+    const citySlug =
+      ssrCityResponse.slug ||
+      ssrCityResponse.data?.slug;
 
-      if (citySlug) {
-        [
-          ssrCategoriesResponse,
-          ssrBusinessesResponse
-        ] = await Promise.all([
-          fetchCategoriesForSSR(),
-          fetchCityBusinessesForSSR(
-            citySlug
-          )
-        ]);
-      }
+    if (citySlug) {
+      [
+        ssrCategoriesResponse,
+        ssrBusinessesResponse
+      ] = await Promise.all([
+        fetchCategoriesForSSR(),
+        fetchCityBusinessesForSSR(
+          citySlug
+        )
+      ]);
     }
   }
+}
 
   // =======================================================
   // SSR REACT RENDER

@@ -1,5 +1,11 @@
 // frontend/src/pages/admin/ManageBusinesses.jsx
-import React, { useEffect, useState } from "react";
+import React, {
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import API from "../../api/axios";
 import Select from "react-select";
 
@@ -25,15 +31,24 @@ import {
   FaTimes
 } from "react-icons/fa";
 
-import BusinessForm from "../../components/business/BusinessForm";
-import BusinessSubmitter from "../../components/business/BusinessSubmitter";
+
 import ImageModal from "../../components/admin/modals/ImageModal";
 import { toBusinessEditDTO } from "../../dto/businessDTO";
-import BusinessMediaManager from "../../components/BusinessMediaManager";
+
 import BusinessHoursManager from "../../components/BusinessHoursManager";
 import { formatBusinessAddress } from "../../utils/addressHelper";
 import BusinessFeatureFields from "../../components/business/BusinessFeatureFields";
+const BusinessForm = lazy(
+  () => import("../../components/business/BusinessForm")
+);
 
+const BusinessSubmitter = lazy(
+  () => import("../../components/business/BusinessSubmitter")
+);
+
+const BusinessMediaManager = lazy(
+  () => import("../../components/BusinessMediaManager")
+);
 
 const defaultHours = {
   monday: { open: "", close: "", closed: false, open24h: false },
@@ -50,9 +65,9 @@ const PAGE_SIZE = 10;
 const ManageBusinesses = () => {
   
   // ================= STATE =================
-  const [businesses, setBusinesses] = useState([]);
-  const [loading, setLoading] = useState(false);
-
+const [businesses, setBusinesses] = useState([]);
+const [loading, setLoading] = useState(false);
+const [editLoading, setEditLoading] = useState(false);
 const [search, setSearch] = useState("");
 const [statusFilter, setStatusFilter] = useState("all");
 const [cityFilter, setCityFilter] = useState("all");
@@ -70,81 +85,134 @@ const [categoryOptions, setCategoryOptions] = useState([]);
   // ✅ SINGLE SOURCE OF TRUTH FOR EDIT
   const [editBusiness, setEditBusiness] = useState(null);
 
-  const openEdit = (b) => {
-  const dto = toBusinessEditDTO(b);
+    const openEdit = async (b) => {
+    setEditLoading(true);
 
-  setEditBusiness({
-    ...dto,
+    try {
+      /* ================================================
+         FETCH FULL BUSINESS ONLY WHEN EDIT IS OPENED
+      ================================================= */
+
+      const res = await API.get(`/admin/businesses/${b._id}`);
+
+      const fullBusiness =
+        res?.data?.data || null;
+
+      if (!fullBusiness) {
+        throw new Error("Business data not found");
+      }
+
+      const dto = toBusinessEditDTO(fullBusiness);
+
+      /* ================================================
+         SINGLE SOURCE OF TRUTH FOR EDIT
+      ================================================= */
+
+      setEditBusiness({
+        ...dto,
 
         categoryFeatures:
-      Array.isArray(dto.categoryFeatures)
-        ? dto.categoryFeatures
-        : Array.isArray(b.categoryFeatures)
-        ? b.categoryFeatures
-        : [],
-        foodType: dto.foodType || b.foodType || "",
-        
-    /* ================= MEDIA ================= */
+          Array.isArray(dto.categoryFeatures)
+            ? dto.categoryFeatures
+            : Array.isArray(fullBusiness.categoryFeatures)
+            ? fullBusiness.categoryFeatures
+            : [],
 
-    images: Array.isArray(dto.images)
-  ? dto.images
-  : Array.isArray(b.images)
-  ? b.images
-  : [],
+        foodType:
+          dto.foodType ||
+          fullBusiness.foodType ||
+          "",
 
-logo: dto.logo || b.logo || "",
+        /* ================= MEDIA ================= */
 
-    /* ================= BUSINESS FEATURES ================= */
+        images:
+          Array.isArray(dto.images)
+            ? dto.images
+            : Array.isArray(fullBusiness.images)
+            ? fullBusiness.images
+            : [],
 
-    pricing: Array.isArray(dto.pricing)
-      ? dto.pricing
-      : [],
+        logo:
+          dto.logo ||
+          fullBusiness.logo ||
+          "",
 
-    services: Array.isArray(dto.services)
-      ? dto.services
-      : [],
+        /* ================= BUSINESS FEATURES ================= */
 
-    catalog: Array.isArray(dto.catalog)
-      ? dto.catalog
-      : [],
+        pricing:
+          Array.isArray(dto.pricing)
+            ? dto.pricing
+            : [],
 
-    menu: Array.isArray(dto.menu)
-      ? dto.menu
-      : [],
+        services:
+          Array.isArray(dto.services)
+            ? dto.services
+            : [],
 
-    faq: Array.isArray(dto.faq)
-      ? dto.faq
-      : [],
+        catalog:
+          Array.isArray(dto.catalog)
+            ? dto.catalog
+            : [],
 
-    offers: Array.isArray(dto.offers)
-      ? dto.offers
-      : [],
+        menu:
+          Array.isArray(dto.menu)
+            ? dto.menu
+            : [],
 
-    /* ================= BUSINESS HOURS ================= */
+        faq:
+          Array.isArray(dto.faq)
+            ? dto.faq
+            : [],
 
-    businessHours:
-      dto.businessHours &&
-      Object.keys(dto.businessHours).length > 0
-        ? dto.businessHours
-        : defaultHours,
+        offers:
+          Array.isArray(dto.offers)
+            ? dto.offers
+            : [],
 
-    /* ================= BOOKING ================= */
+        /* ================= BUSINESS HOURS ================= */
 
-    appointmentBooking:
-      dto.appointmentBooking || null,
+        businessHours:
+          dto.businessHours &&
+          Object.keys(dto.businessHours).length > 0
+            ? dto.businessHours
+            : defaultHours,
 
-    restaurantBooking:
-      dto.restaurantBooking || null,
+        /* ================= BOOKING ================= */
 
-    roomBooking:
-      dto.roomBooking || null,
+        appointmentBooking:
+          dto.appointmentBooking || null,
 
-    partyBooking:
-      dto.partyBooking || null,
-  });
+        restaurantBooking:
+          dto.restaurantBooking || null,
 
-  setLogo(dto.logo || b.logo || "");
-};
+        roomBooking:
+          dto.roomBooking || null,
+
+        partyBooking:
+          dto.partyBooking || null,
+      });
+
+      setLogo(
+        dto.logo ||
+        fullBusiness.logo ||
+        ""
+      );
+
+    } catch (err) {
+      console.error(
+        "Failed to load business for edit:",
+        err
+      );
+
+      alert(
+        err?.response?.data?.message ||
+        "Failed to load business details"
+      );
+
+    } finally {
+      setEditLoading(false);
+    }
+  };
 
   // ================= FETCH =================
   const fetchBusinesses = async () => {
@@ -366,110 +434,93 @@ console.error(error);
   // ================= FILTER =================
   const searchTerm = search.toLowerCase();
 
-    const fetchFilterOptions = async()=>{
-
-    try{
-
-    const cityRes =
-    await API.get("/admin/cities");
-
-
-    const categoryRes =
-    await API.get("/admin/categories");
-
+    const fetchFilterOptions = async () => {
+  try {
+    const [cityRes, categoryRes] = await Promise.all([
+      API.get("/admin/cities"),
+      API.get("/admin/categories"),
+    ]);
 
     setCityOptions(
-    (cityRes.data.data || []).map(city=>({
-
-    label:
-    `${city.name} (${city.district}, ${city.state})`,
-
-    value:
-    city._id,
-
-    cityId:
-    city._id
-
-    }))
+      (cityRes.data.data || []).map((city) => ({
+        label: `${city.name} (${city.district}, ${city.state})`,
+        value: city._id,
+        cityId: city._id,
+      }))
     );
-
 
     setCategoryOptions(
-    (categoryRes.data.data || []).map(cat=>({
-    label:cat.name,
-    value:cat.name
-    }))
+      (categoryRes.data.data || []).map((cat) => ({
+        label: cat.name,
+        value: cat.name,
+      }))
     );
-
-
-    }catch(error){
-
-    console.error(
-    "Filter options error",
-    error
-    );
-
-    }
-
-    };
+  } catch (error) {
+    console.error("Filter options error", error);
+  }
+};
 
 
 // ================= FILTERED BUSINESSES =================
 
-const filtered = businesses
-  .filter((b) => {
-    if (statusFilter === "claim-pending") {
-      return b.claimStatus === "pending";
-    }
+const filtered = useMemo(() => {
+  const searchTerm = search.toLowerCase();
 
-    return statusFilter === "all"
-      ? true
-      : b.status === statusFilter;
-  })
-  .filter((b) => {
-    return cityFilter === "all"
-      ? true
-      : String(
-        b.cityId?._id || b.cityId
-        )
-        ===
-        String(cityFilter)
-  })
-  .filter((b) => {
-    return categoryFilter === "all"
-      ? true
-      :(
-        b.categoryId?.name ||
-        b.categoryName) === categoryFilter
-  })  
-  .filter((b) => {
-    return planFilter === "all"
-      ? true
-      : (b.plan || "free") === planFilter;
-  })
-  .filter((b) => {
-    if (featureFilter === "featured") return b.isFeatured;
-    if (featureFilter === "verified") return b.isVerified;
-    if (featureFilter === "claimed") return b.isClaimed;
-    if (featureFilter === "trusted") return b.plan==="trusted";
-    if (featureFilter === "premium") return b.plan==="premium";
-    
-    
-    
-    return true;
-  })
-  .filter((b) =>
-    (b.name || "")
-      .toLowerCase()
-      .includes(search.toLowerCase())
-  );
+  return businesses
+    .filter((b) => {
+      if (statusFilter === "claim-pending") {
+        return b.claimStatus === "pending";
+      }
 
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+      return statusFilter === "all"
+        ? true
+        : b.status === statusFilter;
+    })
+    .filter((b) => {
+      return cityFilter === "all"
+        ? true
+        : String(b.cityId?._id || b.cityId) === String(cityFilter);
+    })
+    .filter((b) => {
+      return categoryFilter === "all"
+        ? true
+        : (b.categoryId?.name || b.categoryName) === categoryFilter;
+    })
+    .filter((b) => {
+      return planFilter === "all"
+        ? true
+        : (b.plan || "free") === planFilter;
+    })
+    .filter((b) => {
+      if (featureFilter === "featured") return b.isFeatured;
+      if (featureFilter === "verified") return b.isVerified;
+      if (featureFilter === "claimed") return b.isClaimed;
+      if (featureFilter === "trusted") return b.plan === "trusted";
+      if (featureFilter === "premium") return b.plan === "premium";
 
-  const paginated = filtered.slice(
+      return true;
+    })
+    .filter((b) =>
+      (b.name || "").toLowerCase().includes(searchTerm)
+    );
+}, [
+  businesses,
+  search,
+  statusFilter,
+  cityFilter,
+  categoryFilter,
+  planFilter,
+  featureFilter,
+]);
+
+const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+
+const paginated = useMemo(() => {
+  return filtered.slice(
     (currentPage - 1) * PAGE_SIZE,
     currentPage * PAGE_SIZE
   );
+}, [filtered, currentPage]);
 
   // ================= STATUS CHIP =================
   const StatusChip = ({ status }) => {
@@ -618,15 +669,23 @@ const filtered = businesses
 
       {/* ================= FULL EDIT MODAL ================= */}
       {editBusiness && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+  <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
 
-          <div className="bg-white w-full max-w-3xl p-6 rounded-xl overflow-y-auto max-h-[90vh]">
+    <div className="bg-white w-full max-w-3xl p-6 rounded-xl overflow-y-auto max-h-[90vh]">
 
-            <h2 className="text-xl font-bold mb-4">
-              Edit Business
-            </h2>
+      <h2 className="text-xl font-bold mb-4">
+        Edit Business
+      </h2>
 
- <BusinessSubmitter
+      <Suspense
+        fallback={
+          <div className="py-8 text-center text-gray-500">
+            Loading editor...
+          </div>
+        }
+      >
+
+          <BusinessSubmitter
   mode="admin"
   action="update"
   businessId={editBusiness._id}
@@ -693,6 +752,7 @@ const filtered = businesses
     </BusinessForm>
   )}
 </BusinessSubmitter>
+</Suspense>
 
             <button
               onClick={() => setEditBusiness(null)}
@@ -918,7 +978,8 @@ const filtered = businesses
 
                       <button
                         onClick={() => openEdit(b)}
-                        className="p-2 bg-blue-500 text-white rounded"
+                        disabled={editLoading}
+                        className="p-2 bg-blue-500 text-white rounded disabled:opacity-50"
                       >
                         <FaEdit />
                       </button>

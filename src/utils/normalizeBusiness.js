@@ -16,13 +16,11 @@ export const normalizeBusiness = (b = {}) => {
 
 
   const images =
-    Array.isArray(b.images) && b.images.length
-      ? b.images
-      : b.logo
-      ? [b.logo]
-      : [
-          "https://via.placeholder.com/400x250?text=ServDial"
-        ];
+  Array.isArray(b.images) && b.images.length
+    ? b.images
+    : b.logo
+    ? [b.logo]
+    : [];
 
 
   return {

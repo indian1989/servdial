@@ -35,12 +35,11 @@ export const toBusinessListDTO = (b = {}) => {
     // ================= IMAGE =================
 
     image:
-      (Array.isArray(b.images) && b.images.length > 0
-        ? b.images[0]
-        : null) ||
-      b.logo ||
-      "https://via.placeholder.com/400x250",
-
+  (Array.isArray(b.images) && b.images.length > 0
+    ? b.images[0]
+    : null) ||
+  b.logo ||
+  null,
     logo: b.logo || null,
 
     images: Array.isArray(b.images)
