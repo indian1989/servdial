@@ -3,6 +3,8 @@
 import { useEffect, useRef } from "react";
 import { useLocation } from "react-router-dom";
 
+import { useAuth } from "../../context/AuthContext";
+
 import {
   initializeVisitorAnalytics,
   trackPageView,
@@ -11,39 +13,56 @@ import {
 const TrackPageView = ({ user = null }) => {
   const location = useLocation();
 
+  const { user: authUser, loading } = useAuth();
+
+  const currentUser = user ?? authUser;
+
   const initializedRef = useRef(false);
   const previousPathRef = useRef("");
 
   useEffect(() => {
     let cancelled = false;
 
+    // ---------------------------------------------------------
+    // WAIT UNTIL AUTH STATE IS FULLY RESOLVED
+    // ---------------------------------------------------------
+    if (loading) {
+      return;
+    }
+
     const trackCurrentPage = async () => {
       const currentPath =
-  location.pathname +
-  location.search;
+        location.pathname + location.search;
 
-const isExcludedAdmin =
-  user?.role === "admin" ||
-  user?.role === "superadmin";
+      // -------------------------------------------------------
+      // EXCLUDE ADMIN / SUPERADMIN
+      // -------------------------------------------------------
+      const isExcludedAdmin =
+        currentUser?.role === "admin" ||
+        currentUser?.role === "superadmin";
 
-if (isExcludedAdmin) {
-  return;
-}
+      if (isExcludedAdmin) {
+        return;
+      }
 
-if (
-  !currentPath ||
-  currentPath === previousPathRef.current
-) {
-  return;
-}
-
-      previousPathRef.current = currentPath;
+      // -------------------------------------------------------
+      // PREVENT DUPLICATE PAGE TRACKING
+      // -------------------------------------------------------
+      if (
+        !currentPath ||
+        currentPath === previousPathRef.current
+      ) {
+        return;
+      }
 
       try {
+        // -----------------------------------------------------
+        // INITIALIZE VISITOR ONLY ONCE
+        // -----------------------------------------------------
         if (!initializedRef.current) {
           const initialized =
             await initializeVisitorAnalytics({
-              user,
+              user: currentUser,
             });
 
           if (cancelled) {
@@ -61,6 +80,9 @@ if (
           initializedRef.current = true;
         }
 
+        // -----------------------------------------------------
+        // TRACK PAGE VIEW
+        // -----------------------------------------------------
         await trackPageView({
           path: currentPath,
           pageTitle:
@@ -68,6 +90,13 @@ if (
               ? document.title
               : "",
         });
+
+        // -----------------------------------------------------
+        // MARK PATH ONLY AFTER SUCCESSFUL TRACKING
+        // -----------------------------------------------------
+        if (!cancelled) {
+          previousPathRef.current = currentPath;
+        }
       } catch (error) {
         if (!cancelled) {
           console.warn(
@@ -86,7 +115,8 @@ if (
   }, [
     location.pathname,
     location.search,
-    user,
+    currentUser,
+    loading,
   ]);
 
   return null;
