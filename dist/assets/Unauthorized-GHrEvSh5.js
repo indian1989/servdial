@@ -1,0 +1,1 @@
+import{j as e}from"./client-57F91Zxx.js";const r=()=>e.jsx("div",{className:"min-h-screen flex items-center justify-center",children:e.jsx("h1",{className:"text-2xl font-bold text-red-600",children:"You are not authorized to view this page."})});export{r as default};
