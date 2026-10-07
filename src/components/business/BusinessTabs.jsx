@@ -348,7 +348,7 @@ if (hasBusinessFeatures) {
         icon: Star,
       },
 
-      {
+            {
         id: "location",
         label: "Location",
         icon: MapPin,
@@ -365,7 +365,7 @@ if (hasBusinessFeatures) {
   : []),
 
     ];
-
+        
   }, [
     dynamicTabs,
     business?.images?.length,

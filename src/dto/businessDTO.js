@@ -40,6 +40,7 @@ export const toBusinessListDTO = (b = {}) => {
     : null) ||
   b.logo ||
   null,
+
     logo: b.logo || null,
 
     images: Array.isArray(b.images)
@@ -651,6 +652,16 @@ export const normalizeBusinessPayload = (
         whatsappBooking: false,
         notes: "",
       },
+
+  // =====================================================
+// INFORMATIONAL BUSINESS FEATURES
+// =====================================================
+
+businessFeatures:
+  data.businessFeatures &&
+  typeof data.businessFeatures === "object"
+    ? data.businessFeatures
+    : {},
 
     // =====================================================
 // INFORMATIONAL BUSINESS FEATURES

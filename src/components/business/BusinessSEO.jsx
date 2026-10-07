@@ -382,10 +382,10 @@ const generatedTitle =
       stateSlug,
 
       city:
-  normalizeLocation(
-    cityName,
-    districtName
-  ),
+        normalizeLocation(
+          cityName,
+          districtName
+        ),
 
       citySlug,
 

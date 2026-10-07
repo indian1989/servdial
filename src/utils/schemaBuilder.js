@@ -252,6 +252,7 @@ export const generateBreadcrumbSchema = ({
       position: 1,
       name: "Home",
       item: "https://www.servdial.com/",
+
     },
   ];
 
@@ -318,6 +319,7 @@ export const generateBreadcrumbSchema = ({
       item: `https://www.servdial.com/${stateSlug}/${citySlug}/${categorySlug}`,
     });
   }
+
 
   // ==================================================
   // BUSINESS

@@ -359,18 +359,18 @@ function SidebarContent({
     TEMPORARY LISTINGS
 ================================================= */}
 
-<SectionTitle>
-  Temporary Listings
-</SectionTitle>
+          <SectionTitle>
+            Temporary Listings
+          </SectionTitle>
 
-<AdminNavItem
-  to="/admin/temporary-listings"
-  label="Temporary Listings"
-  icon={FaStore}
-  mobile={mobile}
-  onClose={onClose}
-  isNew
-/>
+          <AdminNavItem
+            to="/admin/temporary-listings"
+            label="Temporary Listings"
+            icon={FaStore}
+            mobile={mobile}
+            onClose={onClose}
+            isNew
+          />
           {/* =================================================
               LOCATION ENGINE
           ================================================= */}
@@ -468,9 +468,9 @@ function SidebarContent({
           {/* =================================================
             PAYMENT MANAGEMENT
         ================================================= */}
-<SectionTitle>
-  Payment Management
-</SectionTitle>
+        <SectionTitle>
+          Payment Management
+        </SectionTitle>
 
 
         <AdminNavItem

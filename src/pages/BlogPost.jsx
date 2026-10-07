@@ -118,6 +118,7 @@ const {
   }
 
   const fetchBlog = async () => {
+
       try {
         setLoading(true);
         setNotFound(false);
@@ -312,6 +313,7 @@ const {
 
   const publishDate =
     blog.publishedAt || blog.createdAt;
+
 const canonicalUrl =
   blog.seo?.canonicalUrl ||
   `https://www.servdial.com/blog/${blog.slug}`;
@@ -884,6 +886,7 @@ const twitterDescription =
 />
         </main>
   </>
+
   );
 };
 

@@ -504,13 +504,13 @@ const PublicRoutes = ({
   {/* SEARCH */}
   <Route path="/search" element={<SearchResults />} />
 
-{/* BLOG */}
-<Route path="/blog" element={<Blog ssrBlog={ssrBlog} />} />
+  {/* BLOG */}
+  <Route path="/blog" element={<Blog />} />
 
-<Route
-  path="/blog/:slug"
-  element={<BlogPost ssrBlog={ssrBlog} />}
-/>
+  <Route
+    path="/blog/:slug"
+    element={<BlogPost />}
+  />
 
   {/* STATE */}
 <Route

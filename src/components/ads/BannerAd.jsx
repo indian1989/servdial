@@ -24,14 +24,14 @@ const BannerAd = ({
       "homepage_bottom",
     ].includes(placement);
 
-    // SSR already supplied homepage top banners.
-// Do not immediately fetch the same data again on the client.
-if (
-  placement === "homepage_top" &&
-  initialBanners.length > 0
-) {
-  return;
-}
+    // If banners were already supplied initially, do not
+    // immediately fetch the same homepage-top data again.
+    if (
+      placement === "homepage_top" &&
+      initialBanners.length > 0
+    ) {
+      return;
+    }
 
     if (isHomepagePlacement && !cityId) {
       return;
@@ -55,7 +55,9 @@ if (
 
     const fetchBanners = async () => {
       try {
-        const params = { placement };
+        const params = {
+          placement,
+        };
 
         if (cityId) {
           params.cityId = cityId;
@@ -65,6 +67,7 @@ if (
           params.categoryId = categoryId;
         }
 
+        // businessId is applicable only to business-detail placements.
         if (
           businessId &&
           [
@@ -75,7 +78,9 @@ if (
           params.businessId = businessId;
         }
 
-        const res = await API.get("/banners", { params });
+        const res = await API.get("/banners", {
+          params,
+        });
 
         if (cancelled) return;
 
@@ -95,12 +100,12 @@ if (
       cancelled = true;
     };
   }, [
-  placement,
-  cityId,
-  categoryId,
-  businessId,
-  initialBanners.length,
-]);
+    placement,
+    cityId,
+    categoryId,
+    businessId,
+    initialBanners.length,
+  ]);
 
   useEffect(() => {
     if (banners.length <= 1) return;
@@ -133,7 +138,7 @@ if (
   return (
     <div className="w-full bg-gray-100 py-6 flex justify-center">
       <div className="relative max-w-6xl w-full px-4">
-       <a
+        <a
           href={current.link || "#"}
           target="_blank"
           rel="noopener noreferrer"
@@ -145,12 +150,15 @@ if (
             alt={current.title || "ServDial Banner"}
             className="w-full h-full object-cover rounded-xl shadow-lg"
             loading={placement === "homepage_top" ? "eager" : "lazy"}
-            fetchPriority={placement === "homepage_top" ? "high" : "auto"}
+            fetchPriority={
+              placement === "homepage_top" ? "high" : "auto"
+            }
           />
         </a>
 
         {banners.length > 1 && (
           <>
+            {/* ================= PREVIOUS ================= */}
             <button
               type="button"
               onClick={() =>
@@ -158,14 +166,23 @@ if (
                   prev === 0 ? banners.length - 1 : prev - 1
                 )
               }
-              className="absolute left-6 top-1/2 -translate-y-1/2
-                         bg-black/50 text-white rounded-full
-                         w-9 h-9 flex items-center justify-center"
+              className="
+                absolute
+                top-1/2
+                left-6
+                -translate-y-1/2
+                bg-white
+                px-3
+                py-2
+                rounded-full
+                shadow
+              "
               aria-label="Previous banner"
             >
               ◀
             </button>
 
+            {/* ================= NEXT ================= */}
             <button
               type="button"
               onClick={() =>
@@ -173,9 +190,17 @@ if (
                   prev === banners.length - 1 ? 0 : prev + 1
                 )
               }
-              className="absolute right-6 top-1/2 -translate-y-1/2
-                         bg-black/50 text-white rounded-full
-                         w-9 h-9 flex items-center justify-center"
+              className="
+                absolute
+                top-1/2
+                right-6
+                -translate-y-1/2
+                bg-white
+                px-3
+                py-2
+                rounded-full
+                shadow
+              "
               aria-label="Next banner"
             >
               ▶

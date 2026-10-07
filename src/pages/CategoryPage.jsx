@@ -414,11 +414,13 @@ useEffect(() => {
 
     const categoryCanonicalUrl =
     pageCity?.slug
+
       ? `https://www.servdial.com/${
           pageCity.stateSlug ||
           slugify(pageCity.state)
         }/${citySlugResolved}/categories`
       : "https://www.servdial.com/categories";
+
 
   /* =====================================================
      LOADING

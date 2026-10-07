@@ -29,6 +29,7 @@ const hasSSRBlogList = Array.isArray(ssrBlog);
   const [loading, setLoading] = useState(
   !hasSSRBlogList
 );
+
   const [categoryLoading, setCategoryLoading] =
     useState(true);
 
@@ -46,6 +47,7 @@ const hasSSRBlogList = Array.isArray(ssrBlog);
   }
 
   const fetchBlogs = async () => {
+
       try {
         setLoading(true);
 

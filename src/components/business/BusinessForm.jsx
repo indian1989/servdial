@@ -1430,7 +1430,7 @@ const seoPreview = useMemo(() => {
   const businessSlug =
     slugify(form.name) || "business-name";
 
-  return `servdial.com/${slugify(city)}/${slugify(category)}/${businessSlug}`;
+  return `www.servdial.com/${slugify(city)}/${slugify(category)}/${businessSlug}`;
 
 }, [
   form.name,
