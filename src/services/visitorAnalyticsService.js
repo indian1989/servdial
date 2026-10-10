@@ -32,6 +32,9 @@ const VISITOR_STORAGE_KEY =
 const SESSION_STORAGE_KEY =
   "servdial_session_id";
 
+const ACQUISITION_STORAGE_KEY =
+  "servdial_session_acquisition";
+
 /**
  * =========================================================
  * HELPERS
@@ -231,6 +234,7 @@ export const clearSessionId = () => {
  * CURRENT PAGE CONTEXT
  * =========================================================
  */
+
 export const getCurrentPageContext = () => {
   if (typeof window === "undefined") {
     return {
@@ -250,108 +254,260 @@ export const getCurrentPageContext = () => {
     window.location.search
   );
 
-  const utmSource = safeString(
-    searchParams.get("utm_source")
-  );
+  const currentUtm = {
+    utmSource: safeString(searchParams.get("utm_source")),
+    utmMedium: safeString(searchParams.get("utm_medium")),
+    utmCampaign: safeString(searchParams.get("utm_campaign")),
+    utmTerm: safeString(searchParams.get("utm_term")),
+    utmContent: safeString(searchParams.get("utm_content")),
+  };
 
-  const utmMedium = safeString(
-    searchParams.get("utm_medium")
-  );
-
-  const utmCampaign = safeString(
-    searchParams.get("utm_campaign")
-  );
-
-  const utmTerm = safeString(
-    searchParams.get("utm_term")
-  );
-
-  const utmContent = safeString(
-    searchParams.get("utm_content")
-  );
-
-  const referrer =
+  const rawReferrer =
     typeof document !== "undefined"
       ? safeString(document.referrer)
       : "";
 
-  let source = "direct";
+  const normalizeHost = (host = "") =>
+    safeString(host)
+      .toLowerCase()
+      .replace(/^www\./i, "");
 
-  // Campaign traffic has highest priority.
-  if (
-    utmSource ||
-    utmMedium ||
-    utmCampaign ||
-    utmTerm ||
-    utmContent
-  ) {
-    source = "campaign";
-  } else if (referrer) {
+  const currentHost =
+    normalizeHost(window.location.hostname);
+
+  // Current ServDial domain and known previous frontend
+  // hosting domains should not count as external referrals.
+  const internalHosts = [
+    "servdial.com",
+    "localhost",
+    "127.0.0.1",
+    "comforting-tanuki-5ff825.netlify.app",
+    "servdial-frontend-ssr.onrender.com",
+  ];
+
+  const isInternalHost = (host = "") => {
+    const normalizedHost = normalizeHost(host);
+
+    return internalHosts.some(
+      (domain) =>
+        normalizedHost === domain ||
+        normalizedHost.endsWith(`.${domain}`)
+    );
+  };
+
+  let externalReferrer = "";
+
+  if (rawReferrer) {
     try {
-      const referrerUrl = new URL(referrer);
-
+      const referrerUrl = new URL(rawReferrer);
       const referrerHost =
-        referrerUrl.hostname
-          .toLowerCase()
-          .replace(/^www\./, "");
+        normalizeHost(referrerUrl.hostname);
 
-      const currentHost =
-        window.location.hostname
-          .toLowerCase()
-          .replace(/^www\./, "");
-
-      const searchEngines = [
-        "google.com",
-        "google.co.in",
-        "bing.com",
-        "yahoo.com",
-        "duckduckgo.com",
-        "yandex.com",
-        "baidu.com",
-      ];
-
-      const socialPlatforms = [
-        "facebook.com",
-        "instagram.com",
-        "twitter.com",
-        "x.com",
-        "linkedin.com",
-        "youtube.com",
-        "tiktok.com",
-        "pinterest.com",
-        "reddit.com",
-        "whatsapp.com",
-        "telegram.org",
-      ];
-
-      // Same-origin / same-domain traffic is NOT a referral.
       if (
-        referrerUrl.origin === window.location.origin ||
-        referrerHost === currentHost
+        ["http:", "https:"].includes(referrerUrl.protocol) &&
+        !isInternalHost(referrerHost) &&
+        referrerHost !== currentHost
       ) {
-        source = "direct";
-      } else if (
-        searchEngines.some(
-          (domain) =>
-            referrerHost === domain ||
-            referrerHost.endsWith(`.${domain}`)
-        )
-      ) {
-        source = "organic";
-      } else if (
-        socialPlatforms.some(
-          (domain) =>
-            referrerHost === domain ||
-            referrerHost.endsWith(`.${domain}`)
-        )
-      ) {
-        source = "social";
-      } else {
-        source = "referral";
+        externalReferrer = referrerUrl.href;
       }
     } catch {
-      source = "referral";
+      // Invalid referrer URLs are ignored.
     }
+  }
+
+  const hasCurrentUtm = Object.values(currentUtm).some(
+    Boolean
+  );
+
+  
+  const getNamedSource = (value = "") => {
+    let source = safeString(value).toLowerCase();
+
+    if (!source) return "";
+
+    // Accept either a source name or a full URL/domain.
+    try {
+      if (/^https?:\/\//i.test(source)) {
+        source = new URL(source).hostname.toLowerCase();
+      }
+    } catch {
+      // Continue with the original source value.
+    }
+
+    source = source
+      .replace(/^www\./i, "")
+      .replace(/\/+$/, "");
+
+    const knownSources = [
+      { pattern: /(^|\.)google\.[a-z.]+$/i, label: "Google" },
+      { pattern: /(^|\.)bing\.com$/i, label: "Bing" },
+      { pattern: /(^|\.)search\.yahoo\.com$/i, label: "Yahoo" },
+      { pattern: /(^|\.)duckduckgo\.com$/i, label: "DuckDuckGo" },
+      { pattern: /(^|\.)yandex\.[a-z.]+$/i, label: "Yandex" },
+      { pattern: /(^|\.)baidu\.com$/i, label: "Baidu" },
+
+      { pattern: /(^|\.)facebook\.com$/i, label: "Facebook" },
+      { pattern: /(^|\.)fb\.com$/i, label: "Facebook" },
+      { pattern: /(^|\.)instagram\.com$/i, label: "Instagram" },
+      { pattern: /(^|\.)whatsapp\.com$/i, label: "WhatsApp" },
+      { pattern: /(^|\.)whatsapp\.net$/i, label: "WhatsApp" },
+      { pattern: /(^|\.)linkedin\.com$/i, label: "LinkedIn" },
+      { pattern: /(^|\.)twitter\.com$/i, label: "X (Twitter)" },
+      { pattern: /(^|\.)x\.com$/i, label: "X" },
+      { pattern: /(^|\.)t\.co$/i, label: "X (Twitter)" },
+      { pattern: /(^|\.)youtube\.com$/i, label: "YouTube" },
+      { pattern: /(^|\.)youtu\.be$/i, label: "YouTube" },
+      { pattern: /(^|\.)tiktok\.com$/i, label: "TikTok" },
+      { pattern: /(^|\.)pinterest\.com$/i, label: "Pinterest" },
+      { pattern: /(^|\.)reddit\.com$/i, label: "Reddit" },
+      { pattern: /(^|\.)telegram\.org$/i, label: "Telegram" },
+      { pattern: /(^|\.)t\.me$/i, label: "Telegram" },
+    ];
+
+    const match = knownSources.find(({ pattern }) =>
+      pattern.test(source)
+    );
+
+    if (match) return match.label;
+
+    // Preserve the actual domain/name for other sources.
+    return source;
+  };
+
+  const classifyReferrer = (referrerUrl = "") => {
+    if (!referrerUrl) return "";
+
+    try {
+      const host = new URL(referrerUrl).hostname;
+      return getNamedSource(host) || "";
+    } catch {
+      return "";
+    }
+  };
+
+  const classifyUtm = (medium = "") => {
+    const normalizedMedium = medium.toLowerCase().trim();
+
+    if (
+      ["cpc", "ppc", "paid_search", "paidsearch", "sem"]
+        .includes(normalizedMedium)
+    ) {
+      return "paid_search";
+    }
+
+    if (
+      ["paid_social", "paidsocial", "social_paid"]
+        .includes(normalizedMedium)
+    ) {
+      return "paid_social";
+    }
+
+    if (
+      ["email", "e-mail", "newsletter"]
+        .includes(normalizedMedium)
+    ) {
+      return "email";
+    }
+
+    
+if (
+  ["display", "banner", "programmatic"]
+    .includes(normalizedMedium)
+) {
+  return "display";
+}
+
+// Organic search traffic.
+if (
+  ["organic", "seo"].includes(normalizedMedium)
+) {
+  return "organic";
+}
+
+// Unpaid social media traffic.
+if (
+  ["social", "social-media", "social_media"].includes(
+    normalizedMedium
+  )
+) {
+  return "social";
+}
+
+if (
+  ["referral", "refer"].includes(normalizedMedium)
+) {
+  return "referral";
+}
+
+return "campaign";
+  };
+
+  const classifyUtmSource = (source = "", medium = "") => {
+  return getNamedSource(source) || classifyUtm(medium);
+};
+
+  let savedAcquisition = null;
+
+  try {
+    const stored = window.sessionStorage.getItem(
+      ACQUISITION_STORAGE_KEY
+    );
+
+    if (stored) {
+      savedAcquisition = JSON.parse(stored);
+    }
+  } catch {
+    savedAcquisition = null;
+  }
+
+  // Only a genuine external referrer or current UTM
+  // parameters can establish new session attribution.
+  const hasNewAcquisition =
+    hasCurrentUtm || Boolean(externalReferrer);
+
+  let acquisition;
+
+  if (hasNewAcquisition) {
+    acquisition = {
+      source: hasCurrentUtm
+        ? classifyUtmSource(
+            currentUtm.utmSource,
+            currentUtm.utmMedium
+          )
+        : classifyReferrer(externalReferrer) || "unknown",
+
+      referrer: externalReferrer,
+
+      ...currentUtm,
+    };
+
+    // Persist this acquisition for subsequent page views
+    // in the same browser tab/session.
+    try {
+      window.sessionStorage.setItem(
+        ACQUISITION_STORAGE_KEY,
+        JSON.stringify(acquisition)
+      );
+    } catch {
+      // Analytics must continue if storage is unavailable.
+    }
+  } else if (
+    savedAcquisition &&
+    savedAcquisition.source
+  ) {
+    // Do not replace a known source with "direct" just
+    // because the current page has no referrer/UTM.
+    acquisition = savedAcquisition;
+  } else {
+    acquisition = {
+      source: "direct",
+      referrer: "",
+      utmSource: "",
+      utmMedium: "",
+      utmCampaign: "",
+      utmTerm: "",
+      utmContent: "",
+    };
   }
 
   return {
@@ -364,13 +520,14 @@ export const getCurrentPageContext = () => {
         ? document.title
         : "",
 
-    referrer,
-    source,
-    utmSource,
-    utmMedium,
-    utmCampaign,
-    utmTerm,
-    utmContent,
+    referrer: acquisition.referrer || "",
+    source: acquisition.source || "unknown",
+
+    utmSource: acquisition.utmSource || "",
+    utmMedium: acquisition.utmMedium || "",
+    utmCampaign: acquisition.utmCampaign || "",
+    utmTerm: acquisition.utmTerm || "",
+    utmContent: acquisition.utmContent || "",
   };
 };
 
@@ -605,6 +762,126 @@ export const trackPageView = async ({
   }
 };
 
+
+/**
+ * =========================================================
+ * TRACK BUSINESS FUNNEL EVENT
+ * =========================================================
+ *
+ * Creates a VisitorEvent through the new analytics system.
+ * Existing BusinessView / BusinessClick tracking is untouched.
+ */
+export const trackBusinessFunnelEvent = async ({
+  event,
+  businessId = null,
+  path = "",
+  metadata = {},
+  user = null,
+} = {}) => {
+  const normalizedEvent = safeString(event).toLowerCase();
+
+  const allowedEvents = [
+    "business_view",
+    "call",
+    "whatsapp",
+    "directions",
+    "website_click",
+    "share",
+    "favorite",
+  ];
+
+  if (!allowedEvents.includes(normalizedEvent)) {
+    return {
+      success: false,
+      message: "Invalid business funnel event.",
+    };
+  }
+
+  // Ensure the backend Visitor record exists before creating an event.
+  const initialized = await initializeVisitorAnalytics({ user });
+
+  if (
+    !initialized?.success ||
+    !initialized?.visitorId ||
+    !initialized?.sessionId
+  ) {
+    return {
+      success: false,
+      message: "Visitor analytics initialization failed.",
+    };
+  }
+
+  const pageContext = getCurrentPageContext();
+
+  try {
+    const response = await API.post("/analytics/event", {
+      visitorId: initialized.visitorId,
+      sessionId: initialized.sessionId,
+      event: normalizedEvent,
+      business: businessId,
+      path: safeString(path) || pageContext.path,
+      
+source: (() => {
+  const source = safeString(pageContext.source).toLowerCase();
+
+  if (!source || source === "unknown") return "unknown";
+  if (source === "direct") return "direct";
+
+  if (
+    ["google", "bing", "yahoo", "duckduckgo"].includes(source)
+  ) {
+    return "organic";
+  }
+
+  if (
+    [
+      "facebook",
+      "instagram",
+      "whatsapp",
+      "linkedin",
+      "x",
+      "twitter",
+      "youtube",
+    ].includes(source)
+  ) {
+    return "social";
+  }
+
+  if (pageContext.utmSource || pageContext.utmCampaign) {
+    return "campaign";
+  }
+
+  return "referral";
+})(),
+metadata: {
+  ...metadata,
+  trafficSource: pageContext.source || "unknown",
+  referrer: pageContext.referrer,
+  utmSource: pageContext.utmSource,
+  utmMedium: pageContext.utmMedium,
+  utmCampaign: pageContext.utmCampaign,
+  utmTerm: pageContext.utmTerm,
+  utmContent: pageContext.utmContent,
+},
+    });
+
+    return response?.data || { success: false };
+  } catch (error) {
+    console.warn(
+      "Business funnel event tracking failed:",
+      normalizedEvent,
+      error?.response?.data || error
+    );
+
+    return {
+      success: false,
+      message:
+        error?.response?.data?.message ||
+        "Business funnel event tracking failed.",
+    };
+  }
+};
+
 /**
  * =========================================================
  * INITIALIZE ANALYTICS
@@ -671,4 +948,5 @@ export default {
   trackPageView,
 
   initializeVisitorAnalytics,
+  trackBusinessFunnelEvent,
 };

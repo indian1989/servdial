@@ -1,4 +1,5 @@
 import { Globe } from "lucide-react";
+import { trackBusinessFunnelEvent } from "../../services/visitorAnalyticsService";
 
 const BusinessWebsiteCard = ({ business }) => {
 
@@ -53,6 +54,13 @@ const BusinessWebsiteCard = ({ business }) => {
             href={websiteUrl}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => {
+                void trackBusinessFunnelEvent({
+                    event: "website_click",
+                    businessId: business?._id,
+                    path: window.location.pathname + window.location.search,
+                });
+                }}
             className="
               inline-block
               mt-2

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import API from "../api/axios";
+import { trackBusinessFunnelEvent } from "../services/visitorAnalyticsService";
 
 const useSaveBusiness = ({
   businessId,
@@ -61,14 +62,17 @@ businessId
 );
 
 
-if(res.data.success){
+if (res.data.success) {
+  setIsSaved(true);
 
-setIsSaved(true);
+  showToastMsg("Business saved ❤️");
 
-showToastMsg(
-"Business saved ❤️"
-);
-
+  // New Business Funnel Analytics
+  void trackBusinessFunnelEvent({
+    event: "favorite",
+    businessId,
+    path: window.location.pathname + window.location.search,
+  });
 }
 
 }

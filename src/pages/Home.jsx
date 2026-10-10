@@ -57,7 +57,7 @@ const [data, setData] = useState(
 
   /* ================= FETCH HOMEPAGE ================= */
   const fetchHomepageData = async ({ citySlug, lat, lng }) => {
-    if (!citySlug) return;
+  if (!citySlug && !lat && !lng) return;
 
     const key = `${citySlug}_${lat || "0"}_${lng || "0"}`;
 
@@ -150,11 +150,6 @@ useEffect(() => {
   if (loadingCity) return;
 
   const citySlug = city?.slug || null;
-
-if (!citySlug && !userLocation.lat) {
-  return;
-}
-
 
 fetchHomepageData({
   citySlug,

@@ -215,6 +215,13 @@ export default function BusinessFunnelAnalytics() {
       ? analytics.businessPerformance
       : [];
 
+  
+  const sharePlatforms = Array.isArray(
+    analytics?.sharePlatforms
+  )
+    ? analytics.sharePlatforms
+    : [];
+
   const totalViews =
     Number(
       totals.businessViews
@@ -750,6 +757,47 @@ export default function BusinessFunnelAnalytics() {
                       }
                     )}
                   </div>
+                </div>
+              )}
+            </div>
+
+    
+            {/* =================================================
+                SHARE PLATFORM BREAKDOWN
+            ================================================= */}
+
+            <div className="mb-6 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+              <div className="mb-4">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  Share Platform Breakdown
+                </h2>
+
+                <p className="text-sm text-gray-500">
+                  Business shares by platform.
+                </p>
+              </div>
+
+              {!sharePlatforms.length ? (
+                <div className="py-6 text-center text-sm text-gray-500">
+                  No platform-specific share data available yet.
+                </div>
+              ) : (
+                <div className="divide-y divide-gray-100">
+                  {sharePlatforms.map((item) => (
+                    <div
+                      key={item.platform}
+                      className="flex items-center justify-between gap-4 py-3"
+                    >
+                      <div className="font-medium capitalize text-gray-800">
+                        {(item.platform || "")
+                          .replace(/_/g, " ")}
+                      </div>
+
+                      <div className="text-right font-semibold text-gray-900">
+                        {numberFormat(item.count)}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>

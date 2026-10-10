@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { trackBusinessFunnelEvent } from "../services/visitorAnalyticsService";
 
 const useBusinessDirections = (business, trackEvent, showToastMsg) => {
 
@@ -46,6 +47,13 @@ const useBusinessDirections = (business, trackEvent, showToastMsg) => {
       return;
 
     }
+
+  // New Business Funnel Analytics
+  void trackBusinessFunnelEvent({
+    event: "directions",
+    businessId: business?._id,
+    path: window.location.pathname + window.location.search,
+  });
 
 
     try {

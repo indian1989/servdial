@@ -2,6 +2,7 @@ import {
   useState
 } from "react";
 
+import { trackBusinessFunnelEvent } from "../services/visitorAnalyticsService";
 
 const useBusinessActions = ({
   business,
@@ -167,6 +168,13 @@ const callNumber =
       return;
     }
 
+     // New Business Funnel Analytics: actual call initiated
+    void trackBusinessFunnelEvent({
+      event: "call",
+      businessId: business?._id,
+      path: window.location.pathname + window.location.search,
+    });
+
 
     setShowCallChooser(false);
 
@@ -238,6 +246,13 @@ const callNumber =
       cleanWhatsApp.startsWith("91")
         ? cleanWhatsApp
         : `91${cleanWhatsApp}`;
+
+    // New Business Funnel Analytics: valid WhatsApp action
+    void trackBusinessFunnelEvent({
+      event: "whatsapp",
+      businessId: business?._id,
+      path: window.location.pathname + window.location.search,
+    });
 
 
     window.open(

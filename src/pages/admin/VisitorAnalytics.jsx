@@ -1162,38 +1162,40 @@ const VisitorAnalytics = () => {
                       ) => label}
                     />
 
-                    <Line
-                      type="monotone"
-                      dataKey="visitors"
-                      name="visitors"
-                      strokeWidth={2.5}
-                      dot={false}
-                      activeDot={{
-                        r: 5,
-                      }}
-                    />
+                    
+                    
+            <Line
+              type="linear"
+              dataKey="visitors"
+              name="visitors"
+              stroke="#2563EB"
+              strokeWidth={3}
+              dot={{ r: 5, fill: "#2563EB", strokeWidth: 0 }}
+              activeDot={{ r: 7 }}
+              isAnimationActive={false}
+            />
 
-                    <Line
-                      type="monotone"
-                      dataKey="sessions"
-                      name="sessions"
-                      strokeWidth={2.5}
-                      dot={false}
-                      activeDot={{
-                        r: 5,
-                      }}
-                    />
+            <Line
+              type="linear"
+              dataKey="sessions"
+              name="sessions"
+              stroke="#16A34A"
+              strokeWidth={3}
+              dot={{ r: 5, fill: "#16A34A", strokeWidth: 0 }}
+              activeDot={{ r: 7 }}
+              isAnimationActive={false}
+            />
 
-                    <Line
-                      type="monotone"
-                      dataKey="pageViews"
-                      name="pageViews"
-                      strokeWidth={2.5}
-                      dot={false}
-                      activeDot={{
-                        r: 5,
-                      }}
-                    />
+            <Line
+              type="linear"
+              dataKey="pageViews"
+              name="pageViews"
+              stroke="#EA580C"
+              strokeWidth={3}
+              dot={{ r: 5, fill: "#EA580C", strokeWidth: 0 }}
+              activeDot={{ r: 7 }}
+              isAnimationActive={false}
+            />
                   </LineChart>
                 </ResponsiveContainer>
               </div>

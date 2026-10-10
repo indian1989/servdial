@@ -10,11 +10,27 @@ import {
   Mail,
   Smartphone,
 } from "lucide-react";
+import { trackBusinessFunnelEvent } from "../../services/visitorAnalyticsService";
 
 const ShareMenu = ({ business, blog, open, onClose }) => {
   const [copied, setCopied] = useState(false);
 
   if (!open) return null;
+
+  
+const trackShare = async (sharePlatform) => {
+  // Blog shares are not business funnel events.
+  if (!business?._id) return;
+
+  return trackBusinessFunnelEvent({
+    event: "share",
+    businessId: business._id,
+    path: window.location.pathname + window.location.search,
+    metadata: {
+      sharePlatform,
+    },
+  });
+};
 
   const shareUrl = blog
   ? `${window.location.origin}/blog/${blog?.slug || ""}`
@@ -37,18 +53,21 @@ const ShareMenu = ({ business, blog, open, onClose }) => {
   // =========================================================
 
   const copyLink = async () => {
-    try {
-      await navigator.clipboard.writeText(shareUrl);
+  try {
+    await navigator.clipboard.writeText(shareUrl);
 
-      setCopied(true);
+    setCopied(true);
 
-      setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    } catch (error) {
-      console.error("❌ Copy link failed:", error);
-    }
-  };
+    // Record only after the link is copied successfully
+    void trackShare("copy_link");
+
+    setTimeout(() => {
+      setCopied(false);
+    }, 2000);
+  } catch (error) {
+    console.error("❌ Copy link failed:", error);
+  }
+};
 
   // =========================================================
   // NATIVE SHARE
@@ -71,6 +90,8 @@ Please feel free to view the business details, services, and contact information
 Regards,
 ServDial`,
       });
+
+await trackShare("native_share");
     } catch (error) {
       // User cancelled native share
       if (error?.name !== "AbortError") {
@@ -98,6 +119,8 @@ You can check the business profile, services, and contact details on ServDial.
 
 — ServDial`;
 
+void trackShare("whatsapp");
+
   window.open(
     `https://wa.me/?text=${encodeURIComponent(text)}`,
     "_blank",
@@ -110,6 +133,7 @@ You can check the business profile, services, and contact details on ServDial.
   // =========================================================
 
   const facebookShare = () => {
+    void trackShare("facebook");
     window.open(
       `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
         shareUrl
@@ -130,6 +154,8 @@ You can check the business profile, services, and contact details on ServDial.
 
 Have a look at the complete business profile and services.`;
 
+void trackShare("telegram");
+
   window.open(
     `https://t.me/share/url?url=${encodeURIComponent(
       shareUrl
@@ -144,6 +170,8 @@ Have a look at the complete business profile and services.`;
   // =========================================================
 
   const linkedinShare = () => {
+    void trackShare("linkedin");
+
     window.open(
       `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
         shareUrl
@@ -157,7 +185,7 @@ Have a look at the complete business profile and services.`;
   // EMAIL
   // =========================================================
 
-  const emailShare = () => {
+  const emailShare = async () => {
   const subject = `Business Profile: ${shareName} | ServDial`;
 
   const body = `Hello,
@@ -175,6 +203,8 @@ I hope you find this information useful.
 Best regards,
 ServDial`;
 
+await trackShare("email");
+
   window.location.href =
     `mailto:?subject=${encodeURIComponent(
       subject
@@ -185,11 +215,13 @@ ServDial`;
   // SMS
   // =========================================================
 
-  const smsShare = () => {
+  const smsShare = async () => {
   const text = `I found this business on ServDial:
 
 ${shareName}
 ${shareUrl}`;
+
+await trackShare("sms");
 
   window.location.href =
     `sms:?body=${encodeURIComponent(text)}`;
