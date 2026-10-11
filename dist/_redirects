@@ -1,2 +1,5 @@
+
+/sitemap.xml https://api.servdial.com/sitemap.xml 200
+/sitemap-*.xml https://api.servdial.com/sitemap-:splat.xml 200
 /city/* /:splat 301
 /* /index.html 200
