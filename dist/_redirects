@@ -1,5 +1,26 @@
-
 /sitemap.xml https://api.servdial.com/sitemap.xml 200
-/sitemap-*.xml https://api.servdial.com/sitemap-:splat.xml 200
+/sitemap-static.xml https://api.servdial.com/sitemap-static.xml 200
+
+/sitemap-states.xml https://api.servdial.com/sitemap-states.xml 200
+/sitemap-states-1.xml https://api.servdial.com/sitemap-states-1.xml 200
+
+/sitemap-cities.xml https://api.servdial.com/sitemap-cities.xml 200
+/sitemap-cities-1.xml https://api.servdial.com/sitemap-cities-1.xml 200
+
+/sitemap-categories.xml https://api.servdial.com/sitemap-categories.xml 200
+/sitemap-categories-1.xml https://api.servdial.com/sitemap-categories-1.xml 200
+
+/sitemap-businesses.xml https://api.servdial.com/sitemap-businesses.xml 200
+/sitemap-businesses-1.xml https://api.servdial.com/sitemap-businesses-1.xml 200
+
+/sitemap-city-category.xml https://api.servdial.com/sitemap-city-category.xml 200
+/sitemap-city-category-1.xml https://api.servdial.com/sitemap-city-category-1.xml 200
+
+/sitemap-city-pages.xml https://api.servdial.com/sitemap-city-pages.xml 200
+/sitemap-city-pages-1.xml https://api.servdial.com/sitemap-city-pages-1.xml 200
+
+/sitemap-temporary-listings.xml https://api.servdial.com/sitemap-temporary-listings.xml 200
+/sitemap-temporary-listings-1.xml https://api.servdial.com/sitemap-temporary-listings-1.xml 200
+
 /city/* /:splat 301
 /* /index.html 200
