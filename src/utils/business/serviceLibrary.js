@@ -880,6 +880,24 @@ export const SERVICE_LIBRARY = [
   "Surgical Care",
 
 
+  
+  "Retina Care",
+  "Glaucoma Management",
+  "LASIK Consultation",
+  "Refractive Error Evaluation",
+  "Cornea Care",
+  "Pediatric Eye Care",
+  "Squint Treatment",
+  "Post-operative Eye Care",
+  "Eye Consultation",
+  "Ophthalmic Examination",
+
+
+
+  "Physical Rehabilitation",
+  "Mobility Rehabilitation",
+
+
 
   "Blood Bank Services",
   "Blood Transfusion",

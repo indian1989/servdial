@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 
 import CitySelector from "../common/CitySelector";
-import logo from "../../assets/servdial-logo.png";
+import logo from "../../assets/ServDial.png";
 
 const Header = () => {
   const navigate = useNavigate();

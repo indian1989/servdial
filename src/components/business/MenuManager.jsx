@@ -1,12 +1,43 @@
 import { useEffect, useState } from "react";
-import { Utensils, Plus, Trash2, Image as ImageIcon } from "lucide-react";
+import { Utensils, Plus, Trash2, Pencil } from "lucide-react";
+
+const MENU_CATEGORIES = [
+  "Soups",
+    "Starters",
+    "Biryani Special",
+    "Mutton Special",
+    "Chicken Special",
+    "Mushroom Special",
+    "Paneer Special",
+    "Rice & Pulao",
+    "Tandoori & Grilled",
+    "Indian Breads",
+    "Main Course",
+    "Thali & Combos",
+    "Salads",
+    "Snacks",
+    "Pizza",
+    "Burgers",
+    "Sandwiches",
+    "Pasta",
+    "Noodles",
+    "Momos",
+    "South Indian",
+    "Chinese",   
+    "Seafood",
+    "Special Dishes",
+    "Desserts",
+    "Ice Cream",
+    "Beverages",
+    "Tea & Coffee",
+    "Other",
+  ];
 
 const DEFAULT_ITEM = {
   name: "",
   description: "",
   price: "",
   category: "",
-  image: "",
   isAvailable: true,
 };
 
@@ -14,6 +45,8 @@ const MenuManager = ({ value = [], onChange }) => {
   const [enabled, setEnabled] = useState(value.length > 0);
   const [expanded, setExpanded] = useState(value.length > 0);
   const [item, setItem] = useState(DEFAULT_ITEM);
+  const [editingIndex, setEditingIndex] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   useEffect(() => {
     if (value.length > 0) {
@@ -28,19 +61,58 @@ const MenuManager = ({ value = [], onChange }) => {
     }));
   };
 
+  
   const addItem = () => {
-    if (!item.name || !item.price) return;
+    if (
+      !item.name.trim() ||
+      item.price === "" ||
+      !Number.isFinite(Number(item.price)) ||
+      Number(item.price) < 0 ||
+      !item.category
+    ) {
+      return;
+    }
 
-    onChange([
-      ...value,
-      {
-        ...item,
-        price: Number(item.price),
-      },
-    ]);
+    const updatedItem = {
+      ...item,
+      name: item.name.trim(),
+      price: Number(item.price),
+    };
+
+    if (editingIndex !== null) {
+      onChange(
+        value.map((menuItem, index) =>
+          index === editingIndex ? updatedItem : menuItem
+        )
+      );
+    } else {
+      onChange([...value, updatedItem]);
+    }
 
     setItem(DEFAULT_ITEM);
+    setEditingIndex(null);
+    setEditModalOpen(false);
   };
+
+  const editItem = (index) => {
+  const selectedItem = value[index];
+
+  setItem({
+    ...DEFAULT_ITEM,
+    ...selectedItem,
+    price: String(selectedItem.price ?? ""),
+  });
+
+  setEditingIndex(index);
+  setEditModalOpen(true);
+};
+
+const cancelEdit = () => {
+  setItem(DEFAULT_ITEM);
+  setEditingIndex(null);
+  setEditModalOpen(false);
+};
+
 
   const removeItem = (index) => {
     onChange(value.filter((_, i) => i !== index));
@@ -133,12 +205,20 @@ const MenuManager = ({ value = [], onChange }) => {
               className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
             />
 
-            <input
-              value={item.category}
-              onChange={(e) => updateItem("category", e.target.value)}
-              placeholder="Category (Pizza, Starter...)"
-              className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-            />
+      <select
+        value={item.category}
+        onChange={(e) => updateItem("category", e.target.value)}
+        className="w-full min-w-0 border border-gray-300 rounded-xl p-3 bg-white focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+      >
+        <option value="">Select Menu Category *</option>
+
+        {MENU_CATEGORIES.map((category) => (
+          <option key={category} value={category}>
+            {category}
+          </option>
+        ))}
+      </select>
+
 
           </div>
 
@@ -149,13 +229,6 @@ const MenuManager = ({ value = [], onChange }) => {
               value={item.price}
               onChange={(e) => updateItem("price", e.target.value)}
               placeholder="Price *"
-              className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
-            />
-
-            <input
-              value={item.image}
-              onChange={(e) => updateItem("image", e.target.value)}
-              placeholder="Image URL"
               className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
             />
 
@@ -186,8 +259,6 @@ const MenuManager = ({ value = [], onChange }) => {
 
               <div className="border border-dashed border-gray-300 rounded-2xl p-8 text-center text-gray-400">
 
-                <ImageIcon className="w-10 h-10 mx-auto mb-3 opacity-50" />
-
                 <p className="font-medium">No menu items added</p>
 
                 <p className="text-sm mt-1">
@@ -204,22 +275,6 @@ const MenuManager = ({ value = [], onChange }) => {
                   key={index}
                   className="border border-gray-200 rounded-2xl p-4 flex gap-4 items-start hover:shadow-sm transition"
                 >
-
-                  {menu.image ? (
-
-                    <img
-                      src={menu.image}
-                      alt={menu.name}
-                      className="w-24 h-24 rounded-xl object-cover border border-gray-200"
-                    />
-
-                  ) : (
-
-                    <div className="w-24 h-24 rounded-xl bg-gray-100 border border-gray-200 flex items-center justify-center">
-                      <Utensils className="w-8 h-8 text-gray-400" />
-                    </div>
-
-                  )}
 
                   <div className="flex-1 min-w-0">
 
@@ -267,7 +322,16 @@ const MenuManager = ({ value = [], onChange }) => {
                         {menu.isAvailable ? "Available" : "Unavailable"}
                       </span>
 
-                      <button
+                    <button
+                      type="button"
+                      onClick={() => editItem(index)}
+                      className="inline-flex items-center gap-1 rounded-lg px-3 py-2 text-sm font-medium text-blue-600 transition hover:bg-blue-50 hover:text-blue-700"
+                    >
+                      <Pencil className="h-4 w-4" />
+                      Edit
+                    </button>
+
+                    <button
                         type="button"
                         onClick={() => removeItem(index)}
                         className="inline-flex items-center gap-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg px-3 py-2 text-sm font-medium transition"
@@ -275,7 +339,6 @@ const MenuManager = ({ value = [], onChange }) => {
                         <Trash2 className="w-4 h-4" />
                         Delete
                       </button>
-
                     </div>
 
                   </div>
@@ -291,7 +354,99 @@ const MenuManager = ({ value = [], onChange }) => {
         </div>
       )}
 
+      
+{editModalOpen && editingIndex !== null && (
+  <div
+    className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4"
+    onClick={cancelEdit}
+  >
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-menu-title"
+      className="w-full max-w-lg max-h-[90vh] overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="mb-5 flex items-center justify-between">
+        <h3
+          id="edit-menu-title"
+          className="text-xl font-semibold text-gray-900"
+        >
+          Edit Menu Item
+        </h3>
+
+        <button
+          type="button"
+          onClick={cancelEdit}
+          aria-label="Close edit menu"
+          className="rounded-lg px-3 py-1 text-2xl text-gray-500 hover:bg-gray-100"
+        >
+          &times;
+        </button>
+      </div>
+
+      <div className="space-y-4">
+        <input
+          value={item.name}
+          onChange={(e) => updateItem("name", e.target.value)}
+          placeholder="Food Name *"
+          className="w-full rounded-xl border border-gray-300 p-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500"
+        />
+
+        <select
+          value={item.category}
+          onChange={(e) => updateItem("category", e.target.value)}
+          className="w-full rounded-xl border border-gray-300 bg-white p-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500"
+        >
+          <option value="">Select Menu Category *</option>
+          {MENU_CATEGORIES.map((category) => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
+
+        <input
+          type="number"
+          min="0"
+          step="any"
+          value={item.price}
+          onChange={(e) => updateItem("price", e.target.value)}
+          placeholder="Price *"
+          className="w-full rounded-xl border border-gray-300 p-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500"
+        />
+
+        <textarea
+          value={item.description}
+          onChange={(e) => updateItem("description", e.target.value)}
+          placeholder="Short description"
+          rows={4}
+          className="w-full resize-none rounded-xl border border-gray-300 p-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500"
+        />
+      </div>
+
+      <div className="mt-6 flex justify-end gap-3">
+        <button
+          type="button"
+          onClick={cancelEdit}
+          className="rounded-xl border border-gray-300 px-4 py-3 font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          onClick={addItem}
+          className="inline-flex items-center gap-2 rounded-xl bg-orange-600 px-5 py-3 font-medium text-white transition hover:bg-orange-700"
+        >
+          <Pencil className="h-4 w-4" />
+          Update Item
+        </button>
+      </div>
     </div>
+  </div>
+)}
+</div>
   );
 };
 

@@ -7,7 +7,6 @@ import AppointmentBooking from "./AppointmentBooking";
 import RoomBooking from "./RoomBooking";
 
 import RestaurantBooking from "./RestaurantBooking";
-import FoodMenuSection from "./FoodMenuSection";
 import PartyBooking from "./PartyBooking";
 import OffersSection from "./OffersSection";
 
@@ -49,9 +48,6 @@ const featureRegistry = {
 
   table_booking:
     RestaurantBooking,
-
-  food_menu:
-    FoodMenuSection,
 
   party_booking:
     PartyBooking,
