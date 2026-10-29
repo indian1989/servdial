@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Utensils, Plus, Trash2, Pencil } from "lucide-react";
 
 const MENU_CATEGORIES = [
-  "Soups",
+    "Soup",
     "Starters",
     "Biryani Special",
     "Mutton Special",
@@ -37,6 +37,7 @@ const DEFAULT_ITEM = {
   name: "",
   description: "",
   price: "",
+  quantity: "",
   category: "",
   isAvailable: true,
 };
@@ -232,6 +233,14 @@ const cancelEdit = () => {
               className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
             />
 
+            <input
+              type="text"
+              value={item.quantity}
+              onChange={(e) => updateItem("quantity", e.target.value)}
+              placeholder="Quantity (e.g. 4 pc, 250 g, 500 ml)"
+              className="border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none"
+            />
+
           </div>
 
           <textarea
@@ -285,6 +294,12 @@ const cancelEdit = () => {
                         <h4 className="font-semibold text-gray-900 truncate">
                           {menu.name}
                         </h4>
+
+                    {menu.quantity && (
+                      <p className="mt-1 text-xs text-gray-500">
+                        {menu.quantity}
+                      </p>
+                    )}
 
                         {menu.category && (
                           <span className="inline-flex items-center rounded-full bg-orange-50 text-orange-700 text-xs font-medium px-2 py-1 mt-2">
@@ -413,6 +428,14 @@ const cancelEdit = () => {
           value={item.price}
           onChange={(e) => updateItem("price", e.target.value)}
           placeholder="Price *"
+          className="w-full rounded-xl border border-gray-300 p-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500"
+        />
+
+        <input
+          type="text"
+          value={item.quantity}
+          onChange={(e) => updateItem("quantity", e.target.value)}
+          placeholder="Quantity (e.g. 4 pc, 250 g, 500 ml)"
           className="w-full rounded-xl border border-gray-300 p-3 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-500"
         />
 

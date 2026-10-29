@@ -7,6 +7,7 @@ import AdminLayout from "../layouts/AdminLayout";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import ManageBusinesses from "../pages/admin/ManageBusinesses";
 import AdminAddBusiness from "../pages/admin/AdminAddBusiness";
+import BulkImportBusinesses from "../pages/admin/BulkImportBusinesses";
 import ManageCities from "../pages/admin/ManageCities";
 import ManageCategories from "../pages/admin/ManageCategories";
 import ManageBannerAds from "../pages/admin/ManageBannerAds";
@@ -82,6 +83,11 @@ const AdminRoutes = () => {
       <Route
         path="businesses/add"
         element={<AdminAddBusiness />}
+      />
+
+      <Route
+        path="businesses/bulk-import"
+        element={<BulkImportBusinesses />}
       />
 
 

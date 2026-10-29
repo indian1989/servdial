@@ -391,7 +391,7 @@ const FoodMenuFeature = ({ business }) => {
 
   return (
     <FeatureSection
-      id="food-menu"
+      id="food_menu"
       icon={<Utensils size={22} />}
       title="Food Menu"
     >

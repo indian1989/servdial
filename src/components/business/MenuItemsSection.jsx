@@ -69,7 +69,7 @@ const [visibleCount, setVisibleCount] = useState(() => {
   }, {});
 
   const categoryOrder = [
-    "Soups",
+    "Soup",
     "Starters",
     "Biryani Special",
     "Mutton Special",
@@ -127,9 +127,9 @@ const [visibleCount, setVisibleCount] = useState(() => {
       return current;
     }
 
-    // Default Biryani, agar available hai
+    // Default Biryani Special, agar available hai
     if (sortedCategories.includes("Biryani")) {
-      return "Biryani";
+      return "Biryani Special";
     }
 
     // Warna pehli available category
@@ -179,18 +179,26 @@ const visibleMenu = Array.from(
 
       {/* Dish name and price */}
       <div className="flex min-w-0 items-start justify-between gap-2 sm:gap-3">
-        <h3
-          className={`font-semibold text-gray-900 min-w-0 ${
-            compact ? "text-sm" : "text-base sm:text-lg"
-          }`}
-        >
-          {item.name}
-        </h3>
+  <div className="min-w-0">
+    <h3
+      className={`font-semibold text-gray-900 min-w-0 ${
+        compact ? "text-sm" : "text-base sm:text-lg"
+      }`}
+    >
+      {item.name}
+    </h3>
 
-        <span className="shrink-0 font-bold text-orange-600 whitespace-nowrap">
-          ₹{item.price}
-        </span>
-      </div>
+    {item.quantity && (
+      <p className="mt-1 text-xs text-gray-500">
+        {item.quantity}
+      </p>
+    )}
+  </div>
+
+  <span className="shrink-0 font-bold text-orange-600 whitespace-nowrap">
+    ₹{item.price}
+  </span>
+</div>
 
       {/* Description */}
       {item.description && (
@@ -226,7 +234,7 @@ const visibleMenu = Array.from(
 
   return (
     <section
-      id="food-menu"
+      id="food_menu"
       
 className="w-full min-w-0 max-w-full box-border bg-white rounded-2xl shadow-sm border border-gray-100 p-3 sm:p-6 mt-4 sm:mt-6 scroll-mt-24"
 

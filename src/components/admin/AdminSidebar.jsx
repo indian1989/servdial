@@ -354,6 +354,15 @@ function SidebarContent({
             onClose={onClose}
           />
 
+          <AdminNavItem
+            to="/admin/businesses/bulk-import"
+            label="Bulk Import Businesses"
+            icon={FaStore}
+            mobile={mobile}
+            onClose={onClose}
+            isNew
+          />
+
 
 {/* =================================================
     TEMPORARY LISTINGS

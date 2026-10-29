@@ -515,6 +515,15 @@ const filtered = useMemo(() => {
 
 const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
 
+// Current page ke aage 4 aur pichhe 4 pages
+const startPage = Math.max(1, currentPage - 4);
+const endPage = Math.min(totalPages, currentPage + 4);
+
+const pageNumbers = Array.from(
+  { length: Math.max(0, endPage - startPage + 1) },
+  (_, i) => startPage + i
+);
+
 const paginated = useMemo(() => {
   return filtered.slice(
     (currentPage - 1) * PAGE_SIZE,
@@ -1033,24 +1042,131 @@ const paginated = useMemo(() => {
 
       </div>
 
-      {/* ================= PAGINATION ================= */}
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-4 gap-2">
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i + 1)}
-              className={`px-3 py-1 border rounded ${
-                currentPage === i + 1
-                  ? "bg-indigo-500 text-white"
-                  : "bg-white"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
-      )}
+      
+{/* ================= PAGINATION ================= */}
+{totalPages > 1 && (
+  <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+    {/* Previous */}
+    <button
+      type="button"
+      onClick={() =>
+        setCurrentPage((page) => Math.max(1, page - 1))
+      }
+      disabled={currentPage === 1}
+      className="rounded-lg border bg-white px-3 py-2 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      Previous
+    </button>
+
+    {/* First page */}
+    {startPage > 1 && (
+      <>
+        <button
+          type="button"
+          onClick={() => setCurrentPage(1)}
+          className="rounded-lg border bg-white px-3 py-2 text-sm hover:bg-gray-50"
+        >
+          1
+        </button>
+
+        {startPage > 2 && (
+          <span className="px-1 text-gray-500">...</span>
+        )}
+      </>
+    )}
+
+    {/* Current page ke pichhe 4 aur aage 4 pages */}
+    {pageNumbers.map((page) => (
+      <button
+        key={page}
+        type="button"
+        onClick={() => setCurrentPage(page)}
+        aria-current={currentPage === page ? "page" : undefined}
+        className={`min-w-10 rounded-lg border px-3 py-2 text-sm ${
+          currentPage === page
+            ? "border-indigo-500 bg-indigo-500 text-white"
+            : "bg-white hover:bg-gray-50"
+        }`}
+      >
+        {page}
+      </button>
+    ))}
+
+    {/* Last page */}
+    {endPage < totalPages && (
+      <>
+        {endPage < totalPages - 1 && (
+          <span className="px-1 text-gray-500">...</span>
+        )}
+
+        <button
+          type="button"
+          onClick={() => setCurrentPage(totalPages)}
+          className="rounded-lg border bg-white px-3 py-2 text-sm hover:bg-gray-50"
+        >
+          {totalPages}
+        </button>
+      </>
+    )}
+
+    {/* Next */}
+    <button
+      type="button"
+      onClick={() =>
+        setCurrentPage((page) => Math.min(totalPages, page + 1))
+      }
+      disabled={currentPage === totalPages}
+      className="rounded-lg border bg-white px-3 py-2 text-sm hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      Next
+    </button>
+
+    {/* Jump to page */}
+    <form
+      className="flex items-center gap-2"
+      onSubmit={(e) => {
+        e.preventDefault();
+
+        const input = e.currentTarget.elements.jumpPage;
+        const page = Number(input.value);
+
+        if (
+          Number.isInteger(page) &&
+          page >= 1 &&
+          page <= totalPages
+        ) {
+          setCurrentPage(page);
+          input.value = "";
+        } else {
+          alert(`Please enter a page between 1 and ${totalPages}`);
+        }
+      }}
+    >
+      <label htmlFor="jumpPage" className="text-sm text-gray-600">
+        Jump to:
+      </label>
+
+      <input
+        id="jumpPage"
+        name="jumpPage"
+        type="number"
+        min="1"
+        max={totalPages}
+        placeholder="Page"
+        className="w-20 rounded-lg border px-2 py-2 text-sm"
+        required
+      />
+
+      <button
+        type="submit"
+        className="rounded-lg bg-gray-800 px-3 py-2 text-sm text-white hover:bg-gray-700"
+      >
+        Go
+      </button>
+    </form>
+  </div>
+)}
+
 
       {/* ================= IMAGE MODAL ================= */}
       {selectedImage && (

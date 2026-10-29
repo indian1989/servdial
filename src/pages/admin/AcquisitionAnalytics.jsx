@@ -143,6 +143,12 @@ const AcquisitionAnalytics = () => {
   const trend =
     data?.trend || [];
 
+  const browsedCities =
+    data?.browsedCities || [];
+
+  const visitorCities =
+    data?.visitorCities || [];
+
   return (
     <div className="p-4 md:p-6 space-y-6">
       <div>
@@ -602,6 +608,94 @@ const AcquisitionAnalytics = () => {
               </table>
             </div>
           </section>
+
+          
+          {/* BROWSED CITY */}
+          <section className="bg-white border rounded-xl overflow-hidden">
+            <div className="p-5 border-b">
+              <h2 className="text-lg font-semibold">
+                Browsed City
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Cities associated with ServDial page views.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left p-4">City</th>
+                    <th className="text-right p-4">Visitors</th>
+                    <th className="text-right p-4">Sessions</th>
+                    <th className="text-right p-4">Page Views</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {browsedCities.map((item) => (
+                    <tr key={item.city} className="border-t">
+                      <td className="p-4 font-medium">{item.city}</td>
+                      <td className="p-4 text-right">
+                        {formatNumber(item.uniqueVisitors)}
+                      </td>
+                      <td className="p-4 text-right">
+                        {formatNumber(item.sessions)}
+                      </td>
+                      <td className="p-4 text-right">
+                        {formatNumber(item.pageViews)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {/* VISITOR ACTUAL CITY */}
+          <section className="bg-white border rounded-xl overflow-hidden">
+            <div className="p-5 border-b">
+              <h2 className="text-lg font-semibold">
+                Visitor’s Actual City
+              </h2>
+              <p className="text-sm text-gray-500 mt-1">
+                Based on location already stored in visitor analytics.
+                Missing locations appear as Unknown.
+              </p>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="text-left p-4">City</th>
+                    <th className="text-left p-4">State</th>
+                    <th className="text-left p-4">Country</th>
+                    <th className="text-right p-4">Visitors</th>
+                    <th className="text-right p-4">Page Views</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visitorCities.map((item, index) => (
+                    <tr
+                      key={`${item.city}-${item.state}-${item.country}-${index}`}
+                      className="border-t"
+                    >
+                      <td className="p-4 font-medium">{item.city}</td>
+                      <td className="p-4">{item.state || "—"}</td>
+                      <td className="p-4">{item.country || "—"}</td>
+                      <td className="p-4 text-right">
+                        {formatNumber(item.uniqueVisitors)}
+                      </td>
+                      <td className="p-4 text-right">
+                        {formatNumber(item.pageViews)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
 
           {/* DAILY TREND */}
           <section className="bg-white border rounded-xl overflow-hidden">

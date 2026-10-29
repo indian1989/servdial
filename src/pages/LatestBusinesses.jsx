@@ -309,19 +309,25 @@ const seoTitle =
 const seoDescription =
   `Discover the latest businesses near you in ${cityNameResolved} on ServDial. Find newly added local businesses, services and professionals with contact details, ratings and business information.`;
 
-  /* =====================================================
-     PAGE NUMBERS
-  ===================================================== */
+  
+/* =====================================================
+   PAGE NUMBERS: 4 PREVIOUS + CURRENT + 4 NEXT
+===================================================== */
 
-  const pageNumbers =
-    Array.from(
-      {
-        length:
-          pagination.totalPages,
-      },
-      (_, index) =>
-        index + 1
-    );
+const startPage = Math.max(1, currentPage - 4);
+
+const endPage = Math.min(
+  pagination.totalPages,
+  currentPage + 4
+);
+
+const pageNumbers = Array.from(
+  {
+    length: Math.max(0, endPage - startPage + 1),
+  },
+  (_, index) => startPage + index
+);
+
 
 
     return (
@@ -578,84 +584,135 @@ const seoDescription =
           </div>
 
 
-          {/* ================= PAGINATION ================= */}
+          
+{/* ================= PAGINATION ================= */}
 
-          {pagination.totalPages > 1 && (
+{pagination.totalPages > 1 && (
+  <div className="mt-10 mb-12 flex flex-wrap items-center justify-center gap-2">
 
-            <div className="flex flex-wrap items-center justify-center gap-2 mt-10 mb-12">
+    {/* PREVIOUS */}
+    <button
+      type="button"
+      onClick={() => goToPage(currentPage - 1)}
+      disabled={!pagination.hasPrevPage}
+      className="rounded-lg border px-4 py-2 text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      ← Previous
+    </button>
 
-              {/* PREVIOUS */}
+    {/* FIRST PAGE */}
+    {startPage > 1 && (
+      <>
+        <button
+          type="button"
+          onClick={() => goToPage(1)}
+          className="rounded-lg border bg-white px-3 py-2 text-sm hover:bg-gray-50"
+        >
+          1
+        </button>
 
-              <button
-                type="button"
-                onClick={() =>
-                  goToPage(
-                    pagination.page - 1
-                  )
-                }
-                disabled={
-                  !pagination.hasPrevPage
-                }
-                className={`px-4 py-2 rounded-lg border text-sm font-medium ${
-                  pagination.hasPrevPage
-                    ? "bg-white text-gray-700 hover:bg-gray-50"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                }`}
-              >
-                ← Previous
-              </button>
+        {startPage > 2 && (
+          <span className="px-1 text-gray-500">...</span>
+        )}
+      </>
+    )}
 
+    {/* PAGE NUMBERS */}
+    {pageNumbers.map((page) => (
+      <button
+        key={page}
+        type="button"
+        onClick={() => goToPage(page)}
+        aria-current={page === currentPage ? "page" : undefined}
+        className={`min-w-10 rounded-lg border px-3 py-2 text-sm font-semibold ${
+          page === currentPage
+            ? "border-blue-600 bg-blue-600 text-white"
+            : "bg-white text-gray-700 hover:bg-gray-50"
+        }`}
+      >
+        {page}
+      </button>
+    ))}
 
-              {/* PAGE NUMBERS */}
+    {/* LAST PAGE */}
+    {endPage < pagination.totalPages && (
+      <>
+        {endPage < pagination.totalPages - 1 && (
+          <span className="px-1 text-gray-500">...</span>
+        )}
 
-              {pageNumbers.map(
-                (page) => (
+        <button
+          type="button"
+          onClick={() => goToPage(pagination.totalPages)}
+          className="rounded-lg border bg-white px-3 py-2 text-sm hover:bg-gray-50"
+        >
+          {pagination.totalPages}
+        </button>
+      </>
+    )}
 
-                  <button
-                    key={page}
-                    type="button"
-                    onClick={() =>
-                      goToPage(page)
-                    }
-                    className={`min-w-10 px-3 py-2 rounded-lg text-sm font-semibold ${
-                      page ===
-                      pagination.page
-                        ? "bg-blue-600 text-white"
-                        : "bg-white border text-gray-700 hover:bg-gray-50"
-                    }`}
-                  >
-                    {page}
-                  </button>
+    {/* NEXT */}
+    <button
+      type="button"
+      onClick={() => goToPage(currentPage + 1)}
+      disabled={!pagination.hasNextPage}
+      className="rounded-lg border px-4 py-2 text-sm font-medium bg-white text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      Next →
+    </button>
 
-                )
-              )}
+    {/* JUMP TO PAGE */}
+    <form
+      className="flex items-center gap-2"
+      onSubmit={(e) => {
+        e.preventDefault();
 
+        const input = e.currentTarget.elements.jumpPage;
+        const page = Number(input.value);
 
-              {/* NEXT */}
+        if (
+          Number.isInteger(page) &&
+          page >= 1 &&
+          page <= pagination.totalPages
+        ) {
+          goToPage(page);
+          input.value = "";
+        } else {
+          alert(
+            `Please enter a page between 1 and ${pagination.totalPages}`
+          );
+        }
+      }}
+    >
+      <label
+        htmlFor="jumpPage"
+        className="text-sm text-gray-600"
+      >
+        Jump to:
+      </label>
 
-              <button
-                type="button"
-                onClick={() =>
-                  goToPage(
-                    pagination.page + 1
-                  )
-                }
-                disabled={
-                  !pagination.hasNextPage
-                }
-                className={`px-4 py-2 rounded-lg border text-sm font-medium ${
-                  pagination.hasNextPage
-                    ? "bg-white text-gray-700 hover:bg-gray-50"
-                    : "bg-gray-100 text-gray-400 cursor-not-allowed"
-                }`}
-              >
-                Next →
+      <input
+        id="jumpPage"
+        name="jumpPage"
+        type="number"
+        min="1"
+        max={pagination.totalPages}
+        placeholder="Page"
+        required
+        className="w-20 rounded-lg border px-2 py-2 text-sm"
+      />
 
-              </button>
+      <button
+        type="submit"
+        className="rounded-lg bg-gray-800 px-3 py-2 text-sm text-white hover:bg-gray-700"
+      >
+        Go
+      </button>
+    </form>
 
-            </div>
+  </div>
+)}
 
-          )}
 
         </>
 

@@ -7,6 +7,16 @@ import API from "./axios";
 export const getAllBusinesses = () => 
   API.get("/admin/businesses");
 
+// ==================== BULK BUSINESS IMPORT ====================
+
+export const bulkImportBusinesses = (formData, config = {}) =>
+  API.post("/admin/businesses/bulk-import", formData, config);
+
+export const getBulkImportProgress = (requestId) =>
+  API.get(
+    `/admin/businesses/bulk-import/progress/${encodeURIComponent(requestId)}`
+  );
+  
 export const addBusiness = (data) =>
   API.post("/admin/businesses", data);
 

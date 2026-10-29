@@ -26,7 +26,7 @@ const API = axios.create({
         import.meta.env.VITE_API_BASE_URL ||
         "https://api.servdial.com/api"
       ),
-  timeout: 60000,
+  timeout: 600000,
   headers: {
     "Content-Type": "application/json",
   },
@@ -52,6 +52,15 @@ API.interceptors.request.use(
     // ✅ AUTH TOKEN
     if (user?.token) {
       config.headers.Authorization = `Bearer ${user.token}`;
+    }
+
+        // ✅ FORM DATA: Remove JSON header only for file uploads
+    if (config.data instanceof FormData) {
+      if (config.headers.delete) {
+        config.headers.delete("Content-Type");
+      } else {
+        delete config.headers["Content-Type"];
+      }
     }
 
     // ✅ REQUEST ID
