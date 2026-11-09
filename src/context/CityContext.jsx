@@ -70,15 +70,29 @@ const setCity = (cityObj) => {
   };
 
   // ================= GET CITY LIST =================
-  const getCities = async () => {
-    const res = await API.get("/cities?dropdown=true");
+  
+const getCities = async () => {
+  const res = await API.get("/cities?dropdown=true");
 
-    return (
-      res?.data?.data?.cities ||
-      res?.data?.cities ||
-      []
-    );
-  };
+  const cities =
+    res?.data?.data?.cities ||
+    res?.data?.data ||
+    res?.data?.cities ||
+    [];
+
+  console.log("📍 TOTAL CITIES:", cities.length);
+
+  const patna = cities.find(
+    (c) =>
+      (c.name || "").trim().toLowerCase() === "patna" ||
+      (c.slug || "").trim().toLowerCase() === "patna-patna-bihar"
+  );
+
+  console.log("📍 PATNA API MATCH:", patna);
+
+  return Array.isArray(cities) ? cities : [];
+};
+
 
   // ================= DETECT LOCATION =================
 const detectLocation = () => {
@@ -289,18 +303,50 @@ const fallbackIP = async () => {
 };
 
   // ================= INIT =================
-  useEffect(() => {
+useEffect(() => {
+  const initializeCity = async () => {
     const saved = loadSavedCity();
 
+    // Existing saved city gets priority
     if (saved) {
       setCityState(saved);
       setLoadingCity(false);
       return;
     }
 
-    // ❌ IMPORTANT: do NOT auto-detect (as per your requirement)
-    setLoadingCity(false);
-  }, []);
+    // No saved city → Load Patna as default
+    try {
+      const cities = await getCities();
+
+      const patna = cities.find(
+        (c) =>
+          (c.name || "").trim().toLowerCase() === "patna"
+      );
+
+      if (patna?._id && patna?.slug) {
+        setCity(patna);
+
+        console.log(
+          "📍 Default City selected: Patna",
+          patna
+        );
+      } else {
+        console.warn(
+          "⚠️ Patna not found in active ServDial cities"
+        );
+      }
+    } catch (err) {
+      console.error(
+        "❌ Default Patna city loading failed:",
+        err
+      );
+    } finally {
+      setLoadingCity(false);
+    }
+  };
+
+  initializeCity();
+}, []);
 
 
   return (

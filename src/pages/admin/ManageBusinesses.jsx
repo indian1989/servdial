@@ -79,6 +79,13 @@ const [selectedIds, setSelectedIds] = useState([]);
 const [cityOptions, setCityOptions] = useState([]);
 const [categoryOptions, setCategoryOptions] = useState([]);
 
+const [exportScope, setExportScope] = useState("all");
+const [exportCityId, setExportCityId] = useState("");
+const [exportDistrictKey, setExportDistrictKey] = useState("");
+const [exportState, setExportState] = useState("");
+const [exportCategory, setExportCategory] = useState("all");
+const [exportLoading, setExportLoading] = useState(false);
+
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedImage, setSelectedImage] = useState(null);
   const [logo, setLogo] = useState("");
@@ -431,6 +438,113 @@ console.error(error);
 
         };
 
+        // ================= BUSINESS CSV EXPORT =================
+
+const handleExportBusinesses = async () => {
+  if (exportScope === "city" && !exportCityId) {
+    alert("Please select a city.");
+    return;
+  }
+
+  if (exportScope === "district" && !exportDistrictKey) {
+    alert("Please select a district.");
+    return;
+  }
+
+  if (exportScope === "state" && !exportState) {
+    alert("Please select a state.");
+    return;
+  }
+
+  setExportLoading(true);
+
+  try {
+    const params = {
+  scope: exportScope,
+};
+
+if (exportCategory !== "all") {
+  params.category = exportCategory;
+}
+
+    if (exportScope === "city") {
+      params.cityId = exportCityId;
+    }
+
+    if (exportScope === "district") {
+      const selectedDistrict = JSON.parse(exportDistrictKey);
+
+      params.district = selectedDistrict.district;
+      params.state = selectedDistrict.state;
+    }
+
+    if (exportScope === "state") {
+      params.state = exportState;
+    }
+
+    const response = await API.get(
+      "/admin/businesses/export/csv",
+      {
+        params,
+        responseType: "blob",
+      }
+    );
+
+    const blob = new Blob(
+      [response.data],
+      { type: "text/csv;charset=utf-8;" }
+    );
+
+    const downloadUrl = window.URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+
+    link.href = downloadUrl;
+
+    const contentDisposition =
+      response.headers?.["content-disposition"];
+
+    const filenameMatch = contentDisposition?.match(
+      /filename="?([^"]+)"?/i
+    );
+
+    link.download =
+      filenameMatch?.[1] ||
+      `ServDial-Businesses-${exportScope}.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    window.URL.revokeObjectURL(downloadUrl);
+
+  } catch (error) {
+    console.error("Business CSV export failed:", error);
+
+    let message = "Business CSV export failed.";
+
+    if (error.response?.data instanceof Blob) {
+      try {
+        const errorData = JSON.parse(
+          await error.response.data.text()
+        );
+
+        message = errorData.message || message;
+      } catch {
+        // Keep default error message
+      }
+    } else {
+      message =
+        error.response?.data?.message || message;
+    }
+
+    alert(message);
+
+  } finally {
+    setExportLoading(false);
+  }
+};
+
   // ================= FILTER =================
   const searchTerm = search.toLowerCase();
 
@@ -442,12 +556,15 @@ console.error(error);
     ]);
 
     setCityOptions(
-      (cityRes.data.data || []).map((city) => ({
-        label: `${city.name} (${city.district}, ${city.state})`,
-        value: city._id,
-        cityId: city._id,
-      }))
-    );
+  (cityRes.data.data || []).map((city) => ({
+    label: `${city.name} (${city.district}, ${city.state})`,
+    value: city._id,
+    cityId: city._id,
+    name: city.name,
+    district: city.district,
+    state: city.state,
+  }))
+);
 
     setCategoryOptions(
       (categoryRes.data.data || []).map((cat) => ({
@@ -460,6 +577,39 @@ console.error(error);
   }
 };
 
+
+// ================= EXPORT LOCATION OPTIONS =================
+
+const exportStateOptions = useMemo(() => {
+  return [...new Set(
+    cityOptions
+      .map((city) => city.state)
+      .filter(Boolean)
+  )].sort((a, b) => a.localeCompare(b));
+}, [cityOptions]);
+
+const exportDistrictOptions = useMemo(() => {
+  const uniqueDistricts = new Map();
+
+  cityOptions.forEach((city) => {
+    if (!city.district || !city.state) return;
+
+    const key = JSON.stringify({
+      district: city.district,
+      state: city.state,
+    });
+
+    uniqueDistricts.set(key, {
+      key,
+      district: city.district,
+      state: city.state,
+    });
+  });
+
+  return [...uniqueDistricts.values()].sort((a, b) =>
+    a.district.localeCompare(b.district)
+  );
+}, [cityOptions]);
 
 // ================= FILTERED BUSINESSES =================
 
@@ -674,6 +824,144 @@ const paginated = useMemo(() => {
       Reset
     </button>
   </div>
+</div>
+
+
+{/* ================= BUSINESS CSV EXPORT ================= */}
+
+<div className="bg-white rounded-xl shadow p-4 mb-4">
+
+  <div className="flex flex-col lg:flex-row lg:items-end gap-3">
+
+    <div className="flex-1">
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Export Businesses
+      </label>
+
+      <select
+        value={exportScope}
+        onChange={(e) => {
+          setExportScope(e.target.value);
+          setExportCityId("");
+          setExportDistrictKey("");
+          setExportState("");
+        }}
+        className="border rounded-lg px-3 py-2 w-full"
+      >
+        <option value="all">All Businesses</option>
+        <option value="state">By State</option>
+        <option value="district">By District</option>
+        <option value="city">By City</option>
+      </select>
+    </div>
+
+    {exportScope === "city" && (
+      <div className="flex-1">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Select City
+        </label>
+
+        <select
+          value={exportCityId}
+          onChange={(e) => setExportCityId(e.target.value)}
+          className="border rounded-lg px-3 py-2 w-full"
+        >
+          <option value="">Select City</option>
+
+          {cityOptions.map((city) => (
+            <option key={city.value} value={city.value}>
+              {city.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    )}
+
+    {exportScope === "district" && (
+      <div className="flex-1">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Select District
+        </label>
+
+        <select
+          value={exportDistrictKey}
+          onChange={(e) => setExportDistrictKey(e.target.value)}
+          className="border rounded-lg px-3 py-2 w-full"
+        >
+          <option value="">Select District</option>
+
+          {exportDistrictOptions.map((district) => (
+            <option key={district.key} value={district.key}>
+              {district.district} ({district.state})
+            </option>
+          ))}
+        </select>
+      </div>
+    )}
+
+    {exportScope === "state" && (
+      <div className="flex-1">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Select State
+        </label>
+
+        <select
+          value={exportState}
+          onChange={(e) => setExportState(e.target.value)}
+          className="border rounded-lg px-3 py-2 w-full"
+        >
+          <option value="">Select State</option>
+
+          {exportStateOptions.map((state) => (
+            <option key={state} value={state}>
+              {state}
+            </option>
+          ))}
+        </select>
+      </div>
+      
+    )}
+
+    <button
+      type="button"
+      onClick={handleExportBusinesses}
+      disabled={exportLoading}
+      className="px-5 py-2 rounded-lg bg-green-600 text-white font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+    >
+      {exportLoading ? (
+        "Preparing CSV..."
+      ) : (
+        "⬇ Download CSV"
+      )}
+    </button>
+
+  </div>
+
+  <p className="text-xs text-gray-500 mt-3">
+    Export businesses by location and category.
+    Current search, filters and pagination do not limit CSV export.
+  </p>
+
+</div>
+
+<div className="flex-1">
+  <label className="block text-sm font-medium text-gray-700 mb-1">
+    Filter by Category
+  </label>
+
+  <select
+    value={exportCategory}
+    onChange={(e) => setExportCategory(e.target.value)}
+    className="border rounded-lg px-3 py-2 w-full"
+  >
+    <option value="all">All Categories</option>
+
+    {categoryOptions.map((category) => (
+      <option key={category.value} value={category.value}>
+        {category.label}
+      </option>
+    ))}
+  </select>
 </div>
 
       {/* ================= FULL EDIT MODAL ================= */}

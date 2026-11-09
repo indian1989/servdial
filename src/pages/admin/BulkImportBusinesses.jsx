@@ -386,9 +386,6 @@ const handleUpload = async (event) => {
     : [];
 
   const rowCounts = getRowCounts(results);
-  const liveResults = Array.isArray(liveProgress?.results)
-  ? liveProgress.results
-  : [];
 
   const totalRows =
     summary?.totalRows ?? results.length;
@@ -407,23 +404,24 @@ const handleUpload = async (event) => {
   const hasFailures = Number(failedCount) > 0;
 
   const handleDownloadReport = () => {
-    const rows = [
-      ["CSV Row", "Business Name", "Status", "Details", "Business ID"],
-      ...results.map((item) => [
-        item.row ?? "",
-        item.businessName ?? "",
-        getStatusLabel(item.status),
-        item.message ?? "",
-        item.businessId ?? "",
-      ]),
-    ];
+  const rows = [
+    ["CSV Row", "Business Name", "City", "Status", "Details", "Business ID"],
+    ...results.map((item) => [
+      item.row ?? "",
+      item.businessName ?? "",
+      item.cityName ?? "",
+      getStatusLabel(item.status),
+      item.message ?? "",
+      item.businessId ?? "",
+    ]),
+  ];
 
-    downloadCsv("servdial-business-import-report.csv", rows);
-  };
+  downloadCsv("servdial-business-import-report.csv", rows);
+};
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      <div className="mx-auto max-w-7xl space-y-6">
+      <div className="w-full max-w-none space-y-6">
         {/* PAGE HEADER */}
         <header>
           <p className="text-sm font-semibold text-indigo-600">
@@ -702,60 +700,6 @@ const handleUpload = async (event) => {
         valueClass="text-indigo-700"
       />
 
-      
-{liveResults.length > 0 && (
-  <div className="mt-5">
-    <h4 className="mb-3 font-semibold text-gray-900">
-      Live Row-wise Results ({liveResults.length})
-    </h4>
-
-    <div className="max-h-[420px] overflow-auto rounded-xl border border-gray-200">
-      <table className="w-full min-w-[600px] text-left text-sm">
-        <thead className="sticky top-0 bg-gray-50 text-xs uppercase tracking-wide text-gray-600">
-          <tr>
-            <th className="px-4 py-3">CSV Row</th>
-            <th className="px-4 py-3">Business Name</th>
-            <th className="px-4 py-3">Status</th>
-            <th className="px-4 py-3">Details</th>
-          </tr>
-        </thead>
-
-        <tbody className="divide-y divide-gray-100">
-          {liveResults.map((item, index) => (
-            <tr
-              key={`${item.row ?? index}-${item.businessId ?? index}`}
-              className="align-top"
-            >
-              <td className="whitespace-nowrap px-4 py-3 text-gray-600">
-                {item.row ?? "—"}
-              </td>
-
-              <td className="px-4 py-3 font-medium text-gray-900">
-                {item.businessName || "—"}
-              </td>
-
-              <td className="px-4 py-3">
-                <span
-                  className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${getStatusClasses(
-                    item.status
-                  )}`}
-                >
-                  {getStatusIcon(item.status)}
-                  {getStatusLabel(item.status)}
-                </span>
-              </td>
-
-              <td className="max-w-md whitespace-normal break-words px-4 py-3 leading-5 text-gray-600">
-                {item.message || "Processing..."}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  </div>
-)}
-
     </div>
   </div>
 )}
@@ -797,7 +741,7 @@ const handleUpload = async (event) => {
 
         {/* IMPORT REPORT */}
         {report && (
-          <section className="space-y-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
+          <section className="w-full min-w-0 space-y-5 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
             <div className="flex items-start gap-3">
               {hasFailures ? (
                 <FaExclamationTriangle
@@ -868,12 +812,13 @@ const handleUpload = async (event) => {
                   </button>
                 </div>
 
-                <div className="overflow-x-auto rounded-xl border border-gray-200">
+                <div className="w-full min-w-0 overflow-x-auto rounded-xl border border-gray-200">
                   <table className="w-full min-w-[650px] text-left text-sm">
                     <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-600">
                       <tr>
                         <th className="px-4 py-3">CSV Row</th>
                         <th className="px-4 py-3">Business Name</th>
+                        <th className="px-4 py-3">City</th>
                         <th className="px-4 py-3">Status</th>
                         <th className="px-4 py-3">Details</th>
                       </tr>
@@ -891,6 +836,10 @@ const handleUpload = async (event) => {
 
                           <td className="px-4 py-3 font-medium text-gray-900">
                             {item.businessName || "—"}
+                          </td>
+
+                          <td className="whitespace-nowrap px-4 py-3 text-gray-700">
+                            {item.cityName || "—"}
                           </td>
 
                           <td className="px-4 py-3">

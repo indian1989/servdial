@@ -63,8 +63,14 @@ API.interceptors.request.use(
       }
     }
 
-    // ✅ REQUEST ID
-    config.headers["x-request-id"] = crypto.randomUUID();
+    // ✅ REQUEST ID — Preserve caller-provided ID
+const existingRequestId =
+  config.headers.get?.("x-request-id") ||
+  config.headers["x-request-id"];
+
+if (!existingRequestId) {
+  config.headers["x-request-id"] = crypto.randomUUID();
+}
 
     // ✅ REMOVE EMPTY PARAMS
     if (config.params) {

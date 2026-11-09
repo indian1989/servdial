@@ -502,6 +502,78 @@ const ManageCategories = () => {
     EMPTY_EDIT_CATEGORY
   );
 
+  /* =========================================================
+   DOWNLOAD CATEGORY CSV
+========================================================= */
+
+const downloadCategoryCSV = () => {
+  // Export only active categories
+  const activeCategories = flatCategories.filter(
+    (category) => category.status === "active"
+  );
+
+  const parentCategories = activeCategories.filter(
+    (category) => getCategoryLevel(category, activeCategories) === 0
+  );
+
+  const rows = [
+    [
+      "Parent Category",
+      "Subcategory",
+      "Leaf Category",
+    ],
+  ];
+
+  parentCategories.forEach((parent) => {
+    const subcategories = activeCategories.filter(
+      (category) =>
+        getCategoryLevel(category, activeCategories) === 1 &&
+        String(category.parentCategory) === String(parent._id)
+    );
+
+    subcategories.forEach((subcategory) => {
+      const leaves = activeCategories
+        .filter(
+          (category) =>
+            getCategoryLevel(category, activeCategories) === 2 &&
+            String(category.parentCategory) === String(subcategory._id)
+        )
+        .map((category) => category.name);
+
+      rows.push([
+        parent.name,
+        subcategory.name,
+        leaves.join(", "),
+      ]);
+    });
+  });
+
+  const escapeCSV = (value) =>
+    `"${String(value ?? "").replace(/"/g, '""')}"`;
+
+  const csvContent =
+    "\uFEFF" +
+    rows
+      .map((row) => row.map(escapeCSV).join(","))
+      .join("\r\n");
+
+  const blob = new Blob([csvContent], {
+    type: "text/csv;charset=utf-8;",
+  });
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = "ServDial-Category-Hierarchy.csv";
+
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+
+  URL.revokeObjectURL(url);
+};
+
 
   /* =======================================================
      FETCH
@@ -1768,15 +1840,33 @@ await updateCategory(id, {
       "
     >
 
-      <h2
-        className="
-          text-2xl
-          font-bold
-          mb-4
-        "
-      >
-        Manage Categories
-      </h2>
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+  <h2 className="text-2xl font-bold">
+    Manage Categories
+  </h2>
+
+  <button
+    type="button"
+    onClick={downloadCategoryCSV}
+    disabled={loading || flatCategories.length === 0}
+    className="
+      bg-green-600
+      hover:bg-green-700
+      disabled:opacity-50
+      text-white
+      rounded-lg
+      px-4
+      py-2
+      text-sm
+      font-medium
+      flex
+      items-center
+      gap-2
+    "
+  >
+    Download Category CSV
+  </button>
+</div>
 
 
       {(loading ||
