@@ -77,9 +77,13 @@ runtimeCaching: [
 
   navigateFallback: "index.html",
 
-  navigateFallbackDenylist: [
-    /^\/api\//,
-  ],
+navigateFallbackAllowlist: [
+  /^\/.*$/,
+],
+
+navigateFallbackDenylist: [
+  /^\/api\//,
+],
 
   cleanupOutdatedCaches: true,
   clientsClaim: true,
