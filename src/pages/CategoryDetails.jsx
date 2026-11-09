@@ -1,9 +1,10 @@
 // frontend/src/pages/CategoryDetails.jsx
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import API from "../api/axios";
+import { CategoryContext } from "../context/CategoryContext";
 
 import {
   ChevronRight,
@@ -15,9 +16,38 @@ import {
 
 import BusinessCard from "../components/business/BusinessCard";
 
+// ================= FIND CATEGORY IN OFFLINE TREE =================
+
+const findCategoryInTree = (nodes, targetSlug) => {
+  for (const node of nodes || []) {
+
+    const isMatch =
+      node.slug === targetSlug ||
+      node.slugHistory?.some(
+        (history) => history.slug === targetSlug
+      );
+
+    if (isMatch) {
+      return node;
+    }
+
+    const found = findCategoryInTree(
+      node.children,
+      targetSlug
+    );
+
+    if (found) {
+      return found;
+    }
+  }
+
+  return null;
+};
+
 const CategoryDetails = () => {
   const { citySlug, slug } = useParams();
   const navigate = useNavigate();
+  const { categoryTree } = useContext(CategoryContext);
 
   const [category, setCategory] = useState(null);
   const [businesses, setBusinesses] = useState([]);
@@ -151,15 +181,43 @@ try {
 }
 
     } catch (err) {
-      console.error(
-        "Category fetch error:",
-        err?.response?.data || err
-      );
 
-      setCategory(null);
-      setBusinesses([]);
+  console.error(
+    "Category fetch error:",
+    err?.response?.data || err
+  );
 
-    } finally {
+  // ==========================================
+  // OFFLINE CATEGORY FALLBACK
+  // ==========================================
+
+  const offlineCategory = findCategoryInTree(
+    categoryTree,
+    slug
+  );
+
+  if (offlineCategory) {
+
+    console.log(
+      "✅ Category loaded from IndexedDB:",
+      offlineCategory.name
+    );
+
+    setCategory({
+      ...offlineCategory,
+      children: offlineCategory.children || [],
+    });
+
+    setBusinesses([]);
+
+  } else {
+
+    setCategory(null);
+    setBusinesses([]);
+
+  }
+
+} finally {
       setLoading(false);
     }
   };
@@ -168,7 +226,7 @@ try {
     fetchCategory();
   }
 
-}, [slug, citySlug, navigate]);
+}, [slug, citySlug, navigate, categoryTree]);
 
   // ================= SEO =================
 const categoryName =

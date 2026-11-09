@@ -9,9 +9,126 @@ import {
   Sparkles,
   Hotel,
   MoreHorizontal,
+  Download,
+  CheckCircle2,
+  Share2,
 } from "lucide-react";
 
+import { useEffect, useState } from "react";
+
 const DownloadApp = () => {
+    // ================= PWA INSTALL STATE =================
+
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+  const [isIOS, setIsIOS] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
+
+  useEffect(() => {
+
+    // iOS detection
+    const ios =
+      /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+      (
+        navigator.platform === "MacIntel" &&
+        navigator.maxTouchPoints > 1
+      );
+
+    setIsIOS(ios);
+
+    // Already installed detection
+    const standaloneQuery = window.matchMedia(
+      "(display-mode: standalone)"
+    );
+
+    const checkInstalled = () => {
+      const installed =
+        standaloneQuery.matches ||
+        navigator.standalone === true;
+
+      setIsInstalled(installed);
+    };
+
+    checkInstalled();
+
+    standaloneQuery.addEventListener(
+      "change",
+      checkInstalled
+    );
+
+    // Android / Chrome installation prompt
+    const handleBeforeInstall = (event) => {
+      event.preventDefault();
+      setDeferredPrompt(event);
+    };
+
+    window.addEventListener(
+      "beforeinstallprompt",
+      handleBeforeInstall
+    );
+
+    // Installation completed
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+      setShowInstructions(false);
+    };
+
+    window.addEventListener(
+      "appinstalled",
+      handleAppInstalled
+    );
+
+    return () => {
+      standaloneQuery.removeEventListener(
+        "change",
+        checkInstalled
+      );
+
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstall
+      );
+
+      window.removeEventListener(
+        "appinstalled",
+        handleAppInstalled
+      );
+    };
+
+  }, []);
+
+  // ================= INSTALL BUTTON =================
+
+  const handleInstall = async () => {
+
+    // Already installed
+    if (isInstalled) {
+      window.location.assign("/");
+      return;
+    }
+
+    // Native browser install prompt
+    if (deferredPrompt) {
+
+      deferredPrompt.prompt();
+
+      const result = await deferredPrompt.userChoice;
+
+      setDeferredPrompt(null);
+
+      if (result?.outcome === "accepted") {
+        setShowInstructions(false);
+      }
+
+      return;
+    }
+
+    // iPhone or unsupported browser
+    setShowInstructions(true);
+
+  };
+
   const appCategories = [
     {
       name: "Home Services",
@@ -69,18 +186,22 @@ const DownloadApp = () => {
             </h2>
           </div>
 
-          {/* COMING SOON BADGE */}
-          <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-sm font-semibold mb-4">
-            <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
-            Coming Soon
-          </div>
+          {/* PWA AVAILABLE BADGE */}
+
+      <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-semibold mb-4">
+
+        <span className="w-2 h-2 bg-green-500 rounded-full" />
+
+        {isInstalled ? "App Installed" : "Installable Web App"}
+
+      </div>
 
           {/* DESCRIPTION */}
           <p className="text-gray-600 leading-7 mb-6">
-            Search and connect with trusted local businesses faster
-            using the upcoming ServDial mobile app. Discover services,
-            find nearby businesses, connect with providers, and explore
-            trusted local services wherever you go.
+            Install ServDial on your smartphone for quick access
+            to trusted local businesses and services across India.
+            Discover nearby businesses, explore services and
+            connect with providers directly from your home screen.
           </p>
 
           {/* FEATURES */}
@@ -108,42 +229,120 @@ const DownloadApp = () => {
 
           </div>
 
-          {/* =================================================
-              STORE BUTTONS
-          ================================================= */}
-          <div className="flex flex-wrap gap-4">
+          {/* ================= PWA INSTALL BUTTON ================= */}
 
-            {/* APP STORE */}
-            <button
-              type="button"
-              disabled
-              className="bg-gray-900 text-white px-5 py-3 rounded-lg text-sm font-medium opacity-80 cursor-not-allowed"
-            >
-              <span className="block text-xs text-gray-300">
-                Coming Soon
-              </span>
+<div className="flex flex-wrap gap-4">
 
-              <span className="font-semibold">
-                App Store
-              </span>
-            </button>
+  <button
+    type="button"
+    onClick={handleInstall}
+    className="inline-flex items-center justify-center gap-3 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl text-sm font-semibold shadow-md transition"
+  >
 
-            {/* GOOGLE PLAY */}
-            <button
-              type="button"
-              disabled
-              className="bg-gray-900 text-white px-5 py-3 rounded-lg text-sm font-medium opacity-80 cursor-not-allowed"
-            >
-              <span className="block text-xs text-gray-300">
-                Coming Soon
-              </span>
+    {isInstalled ? (
+      <>
+        <CheckCircle2 size={20} />
+        Go To The ServDial App
+      </>
+    ) : (
+      <>
+        <Download size={20} />
+        Install ServDial
+      </>
+    )}
 
-              <span className="font-semibold">
-                Google Play
-              </span>
-            </button>
+  </button>
 
-          </div>
+</div>
+
+{/* ================= INSTALL INSTRUCTIONS ================= */}
+
+{showInstructions && !isInstalled && (
+
+  <div className="mt-5 bg-white border border-blue-100 rounded-xl p-5 shadow-sm">
+
+    <div className="flex items-center justify-between mb-3">
+
+      <h3 className="font-semibold text-gray-900">
+        Install ServDial
+      </h3>
+
+      <button
+        type="button"
+        onClick={() => setShowInstructions(false)}
+        className="text-gray-400 hover:text-gray-700 text-xl"
+        aria-label="Close installation instructions"
+      >
+        ×
+      </button>
+
+    </div>
+
+    {isIOS ? (
+
+      <div className="text-sm text-gray-600 space-y-3">
+
+        <p className="font-medium text-gray-800">
+          Install ServDial on your iPhone:
+        </p>
+
+        <div className="flex items-start gap-3">
+          <Share2
+            size={20}
+            className="text-blue-600 shrink-0"
+          />
+          <p>
+            1. Tap the Share button in Safari.
+          </p>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <Smartphone
+            size={20}
+            className="text-blue-600 shrink-0"
+          />
+          <p>
+            2. Select "Add to Home Screen".
+          </p>
+        </div>
+
+        <div className="flex items-start gap-3">
+          <CheckCircle2
+            size={20}
+            className="text-green-600 shrink-0"
+          />
+          <p>
+            3. Tap "Add" to install ServDial.
+          </p>
+        </div>
+
+        <p className="text-xs text-gray-400">
+          Use Safari to install ServDial on iPhone.
+        </p>
+
+      </div>
+
+    ) : (
+
+      <div className="text-sm text-gray-600 space-y-2">
+
+        <p>
+          Your browser has not provided the automatic
+          installation prompt.
+        </p>
+
+        <p>
+          Open your browser menu and look for
+          "Install app" or "Add to Home Screen".
+        </p>
+
+      </div>
+
+    )}
+
+  </div>
+
+)}
 
         </div>
 
